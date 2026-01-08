@@ -132,6 +132,9 @@ class ExecutionConfiguration(ImplicitDict):
     stop_when_resource_not_created: bool | None = False
     """If true, stop test execution if one of the resources cannot be created.  Otherwise, resources that cannot be created due to missing prerequisites are simply treated as omitted."""
 
+    _scenarios_filter: str | None = None
+    """Internal copy of regex used to filter specific test scenario."""
+
 
 class TestConfiguration(ImplicitDict):
     action: TestSuiteActionDeclaration
