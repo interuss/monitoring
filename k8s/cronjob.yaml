@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: uss-qualifier-tests
+  namespace: DEV
+  labels:
+    app: uss-qualifier
+    component: test-runner
+spec:
+  # Run daily at midnight UTC
+  schedule: "0 0 * * *"
+  # Keep last 3 successful and 1 failed job for debugging
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  # Don't allow concurrent runs
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 3600 # 1 hour timeout
+      template:
+        metadata:
+          labels:
+            app: uss-qualifier
+            component: test-runner
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: test-runner
+              # TODO: Replace with your registry/image
+              image: your-registry/uss-qualifier-test-runner:latest
+              imagePullPolicy: Always
+              env:
+                - name: SLACK_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: uss-qualifier-slack-secret
+                      key: webhook-url
+                - name: SLACK_BOT_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: uss-qualifier-slack-secret
+                      key: bot-token
+                - name: SLACK_CHANNEL_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: uss-qualifier-slack-secret
+                      key: channel-id
+                # UTM Backend URL - UPDATE THIS to your actual service
+                - name: UTM_BACKEND_URL
+                  value: "http://utm-backend.dev.svc.cluster.local:5000"
+                - name: TEST_CONFIG
+                  value: "configurations.personal.airwayz_rid_test"
+              resources:
+                requests:
+                  memory: "512Mi"
+                  cpu: "250m"
+                limits:
+                  memory: "2Gi"
+                  cpu: "1000m"
+              volumeMounts:
+                - name: test-output
+                  mountPath: /app/monitoring/uss_qualifier/output
+          volumes:
+            - name: test-output
+              emptyDir: {}

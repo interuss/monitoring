@@ -1,0 +1,70 @@
+# Dockerfile for USS Qualifier Test Runner
+# Extends the base monitoring image with Slack notification support
+#
+# Build from repository root:
+#   docker build -f Dockerfile.test-runner -t uss-qualifier-test-runner:latest .
+
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS base
+
+# Install system tools
+RUN apt-get update --fix-missing && apt-get install -y \
+    make \
+    openssl \
+    curl \
+    ca-certificates \
+    zip \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Required to build in an ARM environment
+RUN if [ "$(uname -m)" = "aarch64" ]; then \
+    apt-get update && apt-get install -y libffi-dev libssl-dev python3-dev build-essential libxml2-dev libxslt-dev pkg-config libhdf5-dev \
+; fi
+
+RUN mkdir -p /app/
+
+# Install dependencies
+ENV UV_LINK_MODE=copy
+ENV UV_PROJECT_ENVIRONMENT=/venv/
+ENV VIRTUAL_ENV=/venv/
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=./uv.lock,target=/app/uv.lock \
+    --mount=type=bind,source=./pyproject.toml,target=/app/pyproject.toml \
+    cd /app/ && \
+    uv sync --locked --no-install-project --compile-bytecode
+
+# Ensure UV don't check dependencies or lock file
+ENV UV_FROZEN=1
+
+# Ensure the cache folder is present and writable
+RUN mkdir -p /.cache/uv/ && chmod 777 /.cache/uv/
+RUN find /root/ -type d -exec chmod a+rx {} +
+
+# Start in this folder
+WORKDIR /app/monitoring
+
+# Add core content from repo
+ADD ./interfaces /app/interfaces
+ADD ./monitoring /app/monitoring
+
+# Add the test runner script
+COPY ./scripts/run-tests-and-notify.sh /app/scripts/run-tests-and-notify.sh
+RUN chmod +x /app/scripts/run-tests-and-notify.sh
+
+# Create output directory
+RUN mkdir -p /app/monitoring/uss_qualifier/output
+
+# Discover `monitoring` module in Python
+ENV PYTHONPATH=/app
+
+# Add venv to path
+ENV PATH="/venv/bin/:$PATH"
+
+# Version information
+ARG version=dev
+ARG commit_hash=unknown
+ENV MONITORING_VERSION=$version
+ENV GIT_COMMIT_HASH=$commit_hash
+
+# Use the test runner script as entrypoint
+ENTRYPOINT ["/app/scripts/run-tests-and-notify.sh"]
