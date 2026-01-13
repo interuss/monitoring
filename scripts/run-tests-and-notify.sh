@@ -4,14 +4,14 @@
 set -e
 
 # Configuration from environment variables
-SLACK_WEBHOOK_URL="https://hooks.slack.com/services/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"
-SLACK_BOT_TOKEN="xoxb-4835892069510-9152059209265-MA5y5I6wNplYbY4cLF8SO7Bf"
+SLACK_WEBHOOK_URL="https://hooks.slack.com/services/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"
+SLACK_BOT_TOKEN="xoxb-4835892069510-9152059209265-oVldazOzj3u0MrFm7RuabxGq"
 SLACK_CHANNEL_ID="C094R1ZCH9N"
 
 # SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL:-}"
 # SLACK_BOT_TOKEN="${SLACK_BOT_TOKEN:-}"
 # SLACK_CHANNEL_ID="${SLACK_CHANNEL_ID:-}"
-TEST_CONFIG="${TEST_CONFIG:-configurations.personal.airwayz_rid_test}"
+TEST_CONFIG="configurations.personal.airwayz_rid_test"
 
 # Use existing output folder for local testing
 OUTPUT_DIR="./output/airwayz_rid_test"
@@ -26,15 +26,17 @@ echo "Config: ${TEST_CONFIG}"
 echo "Timestamp: ${TIMESTAMP}"
 echo "================================="
 
-# Run the tests
 cd ..
 cd ./monitoring/uss_qualifier
 
+# 1. Run from subdirectory so relative paths in .yaml config work (fixing FileNotFoundError)
+# 2. Add repo root to PYTHONPATH so 'monitoring' package is found (fixing ModuleNotFoundError)
+export PYTHONPATH="../../"
+
 echo "[INFO] Starting test execution..."
 TEST_EXIT_CODE=0
-python main.py \
+uv run main.py \
     --config "${TEST_CONFIG}" \
-    --output-path "${OUTPUT_DIR}" \
     || TEST_EXIT_CODE=$?
 
 echo "[INFO] Test execution completed with exit code: ${TEST_EXIT_CODE}"

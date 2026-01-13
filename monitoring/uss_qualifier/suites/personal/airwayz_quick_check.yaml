@@ -1,0 +1,35 @@
+name: Airwayz Quick Check
+resources:
+  # Define only the resources needed for these specific tests
+  test_env_version_providers: resources.versioning.VersionProvidersResource?
+  prod_env_version_providers: resources.versioning.VersionProvidersResource?
+  flight_planners: resources.flight_planning.FlightPlannersResource
+  system_identity: resources.versioning.SystemIdentityResource?
+  utm_auth: resources.communications.AuthAdapterResource?
+  # Need at least one flight intent resource to define the area for clearing,
+  # but we can reuse conflicting_flights as it's just a data source.
+  conflicting_flights: resources.flight_planning.FlightIntentsResource
+
+  # --- FUTURE: To enable DSS checks ---
+  # 1. Uncomment the following line:
+  # dss: resources.astm.f3548.v21.DSSInstanceResource
+
+actions:
+  - test_scenario:
+      scenario_type: scenarios.versioning.GetSystemVersions
+      resources:
+        version_providers: test_env_version_providers
+        system_identity: system_identity
+      on_failure: Continue
+  # - test_scenario:
+  #     # --- FUTURE: To check DSS synchronization ---
+  #     # 1. Change scenario_type back to: scenarios.astm.utm.PrepareFlightPlanners
+  #     # 2. Add 'dss: dss' to the resources list below.
+
+  #     # Use the base scenario which only talks to the flight planners (no DSS needed)
+  #     scenario_type: scenarios.flight_planning.prep_planners.PrepareFlightPlannersScenario
+  #     resources:
+  #       flight_planners: flight_planners
+  #       flight_intents: conflicting_flights
+  #       # Optional resources can be omitted
+  #     on_failure: Continue

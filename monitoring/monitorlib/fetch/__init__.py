@@ -624,10 +624,15 @@ def query_and_describe(
         utm_session = True
     req_kwargs = kwargs.copy()
     if "timeout" not in req_kwargs:
-        req_kwargs["timeout"] = (
-            settings.connect_timeout_seconds,
-            settings.read_timeout_seconds,
-        )
+        # If the client session has a timeout configured, respect it.
+        # Otherwise fall back to global settings.
+        if utm_session and client.timeout_seconds:
+             req_kwargs["timeout"] = client.timeout_seconds
+        else:
+            req_kwargs["timeout"] = (
+                settings.connect_timeout_seconds,
+                settings.read_timeout_seconds,
+            )
 
     # Attach a request_id field to the JSON body of any outgoing request with a JSON body that doesn't already have one
     if (
