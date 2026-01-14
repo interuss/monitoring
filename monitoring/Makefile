@@ -9,6 +9,7 @@ format:
 .PHONY: unit-test
 unit-test:
 	cd uss_qualifier && make unit_test
+	cd monitorlib && make unit_test
 
 image: ../uv.lock ../pyproject.toml $(shell find . -type f ! -path "*/output/*" ! -name image ! -name *.pyc) $(shell find ../interfaces -type f)
 	./build.sh
