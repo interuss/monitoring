@@ -1,6 +1,6 @@
 from enum import Enum
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.interuss.automated_testing.geospatial_map.v1 import (
     api as geospatial_map_api,
 )
@@ -27,18 +27,18 @@ class GeospatialFeatureFilter(ImplicitDict):
 
     # TODO: Add position
 
-    volumes4d: list[Volume4D] | None
+    volumes4d: Optional[list[Volume4D]]
     """If specified, only select geospatial features at least partially intersecting one or more of these volumes."""
 
     # TODO: Add after & before
 
-    restriction_source: str | None
+    restriction_source: Optional[str]
     """If specified, only select geospatial features originating from the named source.  The acceptable values for this field will be established by the test designers and will generally be used to limit responses to only the intended datasets under test even when the USS may have more additional geospatial features from other sources that may otherwise be relevant."""
 
-    operation_rule_set: str | None
+    operation_rule_set: Optional[str]
     """If specified, only select geospatial features that would be relevant when planning an operation under the specified rule set.  The acceptable values for this field will be established by the test designers and will generally correspond to sets of rules under which the system under test plans operations."""
 
-    resulting_operational_impact: OperationalImpact | None
+    resulting_operational_impact: Optional[OperationalImpact]
     """If specified, only select geospatial features that would cause the specified outcome if a user attempted to plan a flight applicable to all the other criteria in this filter set."""
 
     def to_geospatial_map(self) -> geospatial_map_api.GeospatialFeatureFilterSet:
@@ -59,7 +59,7 @@ class GeospatialFeatureFilter(ImplicitDict):
 
 
 class GeospatialFeatureCheck(ImplicitDict):
-    filter_sets: list[GeospatialFeatureFilter] | None
+    filter_sets: Optional[list[GeospatialFeatureFilter]]
     """Select geospatial features which match any of the specified filter sets."""
 
     def to_geospatial_map(self) -> geospatial_map_api.GeospatialMapCheck:
@@ -88,7 +88,7 @@ class GeospatialFeatureCheckResult(ImplicitDict):
     features_selection_outcome: SelectionOutcome
     """Indication of whether one or more applicable geospatial features were selected according to the selection criteria of the corresponding check."""
 
-    message: str | None
+    message: Optional[str]
     """A human-readable description of why the unsuccessful `features_selection_outcome` was reported.  Should only be populated when appropriate according to the value of the `features_selection_outcome` field."""
 
 

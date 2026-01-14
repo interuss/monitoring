@@ -1,4 +1,4 @@
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 
 class TestV1(ImplicitDict):
@@ -6,4 +6,4 @@ class TestV1(ImplicitDict):
 
 
 class Test(ImplicitDict):
-    v1: TestV1 | None
+    v1: Optional[TestV1]

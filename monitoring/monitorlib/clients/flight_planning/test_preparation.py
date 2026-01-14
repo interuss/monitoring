@@ -1,13 +1,13 @@
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.fetch import Query
 
 
 class ClearAreaOutcome(ImplicitDict):
-    success: bool | None = False
+    success: Optional[bool] = False
     """True if, and only if, all flight plans in the specified area managed by the USS were canceled and removed."""
 
-    message: str | None
+    message: Optional[str]
     """If the USS was unable to clear the entire area, this message can provide information on the problem encountered."""
 
 
@@ -16,7 +16,7 @@ class ClearAreaResponse(ImplicitDict):
 
 
 class TestPreparationActivityResponse(ImplicitDict):
-    errors: list[str] | None = None
+    errors: Optional[list[str]] = None
     """If any errors occurred during this activity, a list of those errors."""
 
     queries: list[Query]

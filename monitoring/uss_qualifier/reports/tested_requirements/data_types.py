@@ -1,6 +1,6 @@
 from enum import Enum
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.requirements.definitions import PackageID
@@ -167,8 +167,8 @@ class TestedBreakdown(ImplicitDict):
 
 class TestRunInformation(ImplicitDict):
     test_run_id: str
-    start_time: str | None = None
-    end_time: str | None = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
     baseline: str
     environment: str
 
@@ -206,7 +206,7 @@ class ParticipantVerificationInfo(ImplicitDict):
     status: ParticipantVerificationStatus
     """Verification status of participant for the associated requirements set."""
 
-    system_version: str | None = None
+    system_version: Optional[str] = None
     """The version of the participant's system that was tested, if this information was acquired during testing."""
 
 
@@ -217,6 +217,6 @@ class RequirementsVerificationReport(ImplicitDict):
     participant_verifications: dict[ParticipantID, ParticipantVerificationInfo]
     """Information regarding verification of compliance for each participant."""
 
-    artifact_configuration: str | None
+    artifact_configuration: Optional[str]
     """Name of the tested requirements artifact configuration from the test run configuration, or "post-hoc" if the
     artifact configuration generating this verification report is not specified in the test run configuration."""

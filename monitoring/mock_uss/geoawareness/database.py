@@ -1,6 +1,6 @@
 import json
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.eurocae_ed269 import ED269Schema
 from uas_standards.interuss.automated_testing.geo_awareness.v1.api import (
     CreateGeozoneSourceRequest,
@@ -17,8 +17,8 @@ class ExistingRecordException(ValueError):
 class SourceRecord(ImplicitDict):
     definition: CreateGeozoneSourceRequest
     state: GeozoneSourceResponseResult
-    message: str | None
-    geozone_ed269: ED269Schema | None
+    message: Optional[str]
+    geozone_ed269: Optional[ED269Schema]
 
 
 class Database(ImplicitDict):

@@ -1,4 +1,4 @@
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
@@ -41,16 +41,16 @@ class FlightInfoTemplate(ImplicitDict):
 
     basic_information: BasicFlightPlanInformationTemplate
 
-    astm_f3548_21: ASTMF354821OpIntentInformation | None
+    astm_f3548_21: Optional[ASTMF354821OpIntentInformation]
 
-    uspace_flight_authorisation: FlightAuthorisationData | None
+    uspace_flight_authorisation: Optional[FlightAuthorisationData]
 
-    rpas_operating_rules_2_6: RPAS26FlightDetails | None
+    rpas_operating_rules_2_6: Optional[RPAS26FlightDetails]
 
-    additional_information: dict | None
+    additional_information: Optional[dict]
     """Any information relevant to a particular jurisdiction or use case not described in the standard schema. The keys and values must be agreed upon between the test designers and USSs under test."""
 
-    transformations: list[Transformation] | None
+    transformations: Optional[list[Transformation]]
     """If specified, transform this flight according to these transformations in order (after all templates are resolved)."""
 
     def resolve(self, context: TestTimeContext) -> FlightInfo:

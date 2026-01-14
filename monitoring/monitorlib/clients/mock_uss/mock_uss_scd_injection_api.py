@@ -1,4 +1,4 @@
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     UpsertFlightPlanRequest,
 )
@@ -29,10 +29,10 @@ class MockUssFlightBehavior(ImplicitDict):
 class MockUSSInjectFlightRequest(InjectFlightRequest):
     """InjectFlightRequest sent to mock_uss, which looks for the optional additional fields below."""
 
-    behavior: MockUssFlightBehavior | None
+    behavior: Optional[MockUssFlightBehavior]
 
 
 class MockUSSUpsertFlightPlanRequest(UpsertFlightPlanRequest):
     """UpsertFlightPlanRequest sent to mock_uss, which looks for the optional additional fields below."""
 
-    behavior: MockUssFlightBehavior | None
+    behavior: Optional[MockUssFlightBehavior]

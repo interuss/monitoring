@@ -1,6 +1,6 @@
 from urllib.parse import urlparse
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
@@ -16,13 +16,13 @@ class FlightPlannerConfiguration(ImplicitDict):
     participant_id: str
     """ID of the flight planner into which test data can be injected"""
 
-    scd_injection_base_url: str | None
+    scd_injection_base_url: Optional[str]
     """Base URL for the flight planner's implementation of the interfaces/automated_testing/scd/v1/scd.yaml API"""
 
-    v1_base_url: str | None
+    v1_base_url: Optional[str]
     """Base URL for the flight planner's implementation of the interfaces/automated_testing/flight_planning/v1/flight_planning.yaml API"""
 
-    timeout_seconds: float | None = None
+    timeout_seconds: Optional[float | None] = None
     """Number of seconds to allow for requests to this flight planner.  If None, use default."""
 
     def __init__(self, *args, **kwargs):

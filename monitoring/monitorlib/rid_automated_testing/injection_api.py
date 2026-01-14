@@ -2,6 +2,7 @@ import datetime
 
 import arrow
 import s2sphere
+from implicitdict import Optional
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     UASID,
@@ -30,7 +31,7 @@ MANDATORY_POSITION_FIELDS = ["lat", "lng", "alt"]
 
 
 class TestFlight(injection.TestFlight):
-    raw_telemetry: list[RIDAircraftState] | None
+    raw_telemetry: Optional[list[RIDAircraftState]]
     """Copy of original telemetry with potential invalid data"""
 
     def __init__(self, *args, **kwargs):

@@ -2,7 +2,7 @@ import datetime
 
 import s2sphere
 import yaml
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.astm.f3548.v21.api import (
     OPERATIONS,
     OperationID,
@@ -21,7 +21,7 @@ from monitoring.monitorlib.geotemporal import Volume4D
 class FetchedEntityReferences(fetch.Query):
     """Wrapper to interpret a DSS Entity query as a set of Entity references."""
 
-    entity_type: str | None = None
+    entity_type: Optional[str] = None
 
     @property
     def success(self) -> bool:
@@ -125,8 +125,8 @@ def operational_intent_references(
 
 
 class FetchedEntity(fetch.Query):
-    id_requested: str | None = None
-    entity_type: str | None = None
+    id_requested: Optional[str] = None
+    entity_type: Optional[str] = None
 
     @property
     def success(self) -> bool:

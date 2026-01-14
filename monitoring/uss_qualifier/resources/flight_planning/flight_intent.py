@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
@@ -23,7 +23,7 @@ class DeltaFlightIntent(ImplicitDict):
     source: FlightIntentID
     """Base the flight intent for this element of a FlightIntentCollection on the element of the collection identified by this field."""
 
-    mutation: dict | None
+    mutation: Optional[dict]
     """For each leaf subfield specified in this object, override the value in the corresponding subfield of the flight intent for this element with the specified value.
 
     Consider subfields prefixed with + as leaf subfields."""
@@ -32,10 +32,10 @@ class DeltaFlightIntent(ImplicitDict):
 class FlightIntentCollectionElement(ImplicitDict):
     """Definition of a single flight intent within a FlightIntentCollection.  Exactly one field must be specified."""
 
-    full: FlightInfoTemplate | None
+    full: Optional[FlightInfoTemplate]
     """If specified, the full definition of the flight planning intent."""
 
-    delta: DeltaFlightIntent | None
+    delta: Optional[DeltaFlightIntent]
     """If specified, a flight planning intent based on another flight intent, but with some changes."""
 
 
@@ -45,7 +45,7 @@ class FlightIntentCollection(ImplicitDict):
     intents: dict[FlightIntentID, FlightIntentCollectionElement]
     """Flight planning actions that users want to perform."""
 
-    transformations: list[Transformation] | None
+    transformations: Optional[list[Transformation]]
     """Transformations to append to all FlightInfoTemplates."""
 
     def resolve(self) -> dict[FlightIntentID, FlightInfoTemplate]:
@@ -107,11 +107,11 @@ class FlightIntentCollection(ImplicitDict):
 class FlightIntentsSpecification(ImplicitDict):
     """Exactly one field must be specified."""
 
-    intent_collection: FlightIntentCollection | None
+    intent_collection: Optional[FlightIntentCollection]
     """Full flight intent collection, or a $ref to an external file containing a FlightIntentCollection."""
 
-    file: ExternalFile | None
+    file: Optional[ExternalFile]
     """Location of file to load, containing a FlightIntentCollection"""
 
-    transformations: list[Transformation] | None
+    transformations: Optional[list[Transformation]]
     """Transformations to apply to all flight intents' 4D volumes after resolution (if specified)"""

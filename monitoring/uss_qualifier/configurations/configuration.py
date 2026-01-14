@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.dicts import JSONAddress
 from monitoring.uss_qualifier.action_generators.definitions import GeneratorTypeName
@@ -20,13 +20,13 @@ ParticipantID = str
 
 
 class InstanceIndexRange(ImplicitDict):
-    lo: int | None
+    lo: Optional[int]
     """If specified, no indices lower than this value will be included in the range."""
 
-    i: int | None
+    i: Optional[int]
     """If specified, no index other than this one will be included in the range."""
 
-    hi: int | None
+    hi: Optional[int]
     """If specified, no indices higher than this value will be included in the range."""
 
     def includes(self, i: int) -> bool:
@@ -42,21 +42,21 @@ class InstanceIndexRange(ImplicitDict):
 class ActionGeneratorSelectionCondition(ImplicitDict):
     """By default, select all action generators.  When specified, limit selection to specified conditions."""
 
-    types: list[GeneratorTypeName] | None
+    types: Optional[list[GeneratorTypeName]]
     """Only select action generators of the specified types."""
 
 
 class TestSuiteSelectionCondition(ImplicitDict):
     """By default, select all test suites.  When specified, limit selection to specified conditions."""
 
-    types: list[TestSuiteTypeName] | None
+    types: Optional[list[TestSuiteTypeName]]
     """Only select test suites of the specified types."""
 
 
 class TestScenarioSelectionCondition(ImplicitDict):
     """By default, select all test scenarios.  When specified, limit selection to specified conditions."""
 
-    types: list[TestScenarioTypeName] | None
+    types: Optional[list[TestScenarioTypeName]]
     """Only select test scenarios of the specified types."""
 
 
@@ -73,7 +73,7 @@ class NthInstanceCondition(ImplicitDict):
 class AncestorSelectionCondition(ImplicitDict):
     """Select ancestor actions meeting all the specified conditions."""
 
-    of_generation: int | None
+    of_generation: Optional[int]
     """The ancestor is exactly this many generations removed (1 = parent, 2 = grandparent, etc).
 
     If not specified, an ancestor of any generation meeting the `which` conditions will be selected."""
@@ -88,19 +88,19 @@ class TestSuiteActionSelectionCondition(ImplicitDict):
     If more than one subcondition is specified, satisfaction of ALL subconditions are necessary to select the action.
     """
 
-    is_action_generator: ActionGeneratorSelectionCondition | None
+    is_action_generator: Optional[ActionGeneratorSelectionCondition]
     """Select these action generator actions."""
 
-    is_test_suite: TestSuiteSelectionCondition | None
+    is_test_suite: Optional[TestSuiteSelectionCondition]
     """Select these test suite actions."""
 
-    is_test_scenario: TestScenarioSelectionCondition | None
+    is_test_scenario: Optional[TestScenarioSelectionCondition]
     """Select these test scenario actions."""
 
-    regex_matches_name: str | None
+    regex_matches_name: Optional[str]
     """Select actions where this regular expression has a match in the action's name."""
 
-    defined_at: list[JSONAddress] | None
+    defined_at: Optional[list[JSONAddress]]
     """Select actions defined at one of the specified addresses.
 
     The top-level action in a test run is 'test_scenario', 'test_suite', or 'action_generator'.  Children use the
@@ -109,27 +109,27 @@ class TestSuiteActionSelectionCondition(ImplicitDict):
     'action_generator.actions[1].test_suite.actions[2].test_scenario'.  An address that starts or ends with 'actions[i]'
     is invalid and will never match."""
 
-    nth_instance: NthInstanceCondition | None
+    nth_instance: Optional[NthInstanceCondition]
     """Select only certain instances of matching actions."""
 
-    has_ancestor: AncestorSelectionCondition | None
+    has_ancestor: Optional[AncestorSelectionCondition]
     """Select only actions with a matching ancestor."""
 
-    except_when: list[TestSuiteActionSelectionCondition] | None
+    except_when: Optional[list[TestSuiteActionSelectionCondition]]
     """Do not select actions selected by any of these conditions, even when they are selected by one or more conditions above."""
 
 
 class ExecutionConfiguration(ImplicitDict):
-    include_action_when: list[TestSuiteActionSelectionCondition] | None = None
+    include_action_when: Optional[list[TestSuiteActionSelectionCondition]] = None
     """If specified, only execute test actions if they are selected by ANY of these conditions (and not selected by any of the `skip_when` conditions)."""
 
-    skip_action_when: list[TestSuiteActionSelectionCondition] | None = None
+    skip_action_when: Optional[list[TestSuiteActionSelectionCondition]] = None
     """If specified, do not execute test actions if they are selected by ANY of these conditions."""
 
-    stop_fast: bool | None = False
+    stop_fast: Optional[bool] = False
     """If true, escalate the Severity of any failed check to Critical in order to end the test run early."""
 
-    stop_when_resource_not_created: bool | None = False
+    stop_when_resource_not_created: Optional[bool] = False
     """If true, stop test execution if one of the resources cannot be created.  Otherwise, resources that cannot be created due to missing prerequisites are simply treated as omitted."""
 
 
@@ -137,13 +137,13 @@ class TestConfiguration(ImplicitDict):
     action: TestSuiteActionDeclaration
     """The action this test configuration wants to run (usually a test suite)"""
 
-    non_baseline_inputs: list[JSONAddress] | None = None
+    non_baseline_inputs: Optional[list[JSONAddress]] = None
     """List of portions of the configuration that should not be considered when computing the test baseline signature (e.g., environmental definitions)."""
 
     resources: ResourceCollection
     """Declarations for resources used by the test suite"""
 
-    execution: ExecutionConfiguration | None
+    execution: Optional[ExecutionConfiguration]
     """Specification for how to execute the test run."""
 
 
@@ -155,20 +155,20 @@ class TestedRequirementsConfiguration(ImplicitDict):
     report_name: str
     """Name of subfolder in output path to contain the rendered templated report"""
 
-    requirement_collections: (
-        dict[TestedRequirementsCollectionIdentifier, RequirementCollection] | None
-    )
+    requirement_collections: Optional[
+        dict[TestedRequirementsCollectionIdentifier, RequirementCollection]
+    ]
     """Definition of requirement collections specific to production of this artifact."""
 
-    aggregate_participants: dict[ParticipantID, list[ParticipantID]] | None
+    aggregate_participants: Optional[dict[ParticipantID, list[ParticipantID]]]
     """If specified, a list of 'aggregate participants', each of which is composed of multiple test participants.
 
     If specified, these aggregate participants are the preferred subject for `participant_requirements`.
     """
 
-    participant_requirements: (
-        dict[ParticipantID, TestedRequirementsCollectionIdentifier | None] | None
-    )
+    participant_requirements: Optional[
+        dict[ParticipantID, TestedRequirementsCollectionIdentifier | None]
+    ]
     """If a requirement collection is specified for a participant, only the requirements in the specified collection will be listed on that participant's report.
 
     If a requirement collection is specified as None/null for a participant, all potentially-testable requirements will be included.
@@ -201,7 +201,7 @@ class TemplatedReportConfiguration(ImplicitDict):
     report_name: str
     """Name of HTML file (without extension) to contain the rendered templated report"""
 
-    configuration: TemplatedReportInjectedConfiguration | None = None
+    configuration: Optional[TemplatedReportInjectedConfiguration] = None
     """Configuration to be injected in the templated report"""
 
 
@@ -209,7 +209,7 @@ class RawReportConfiguration(ImplicitDict):
     redact_access_tokens: bool = True
     """When True, look for instances of "Authorization" keys in the report with values starting "Bearer " and redact the signature from those access tokens"""
 
-    indent: int | None = None
+    indent: Optional[int] = None
     """To pretty-print JSON content, specify an indent level (generally 2), or omit or set to None to write compactly."""
 
 
@@ -219,36 +219,36 @@ class GloballyExpandedReportConfiguration(ImplicitDict):
 
 
 class ArtifactsConfiguration(ImplicitDict):
-    raw_report: RawReportConfiguration | None = None
+    raw_report: Optional[RawReportConfiguration] = None
     """Configuration for raw report generation"""
 
-    report_html: ReportHTMLConfiguration | None = None
+    report_html: Optional[ReportHTMLConfiguration] = None
     """If specified, configuration describing how an HTML version of the raw report should be generated"""
 
-    templated_reports: list[TemplatedReportConfiguration] | None = None
+    templated_reports: Optional[list[TemplatedReportConfiguration]] = None
     """List of report templates to be rendered"""
 
-    tested_requirements: list[TestedRequirementsConfiguration] | None = None
+    tested_requirements: Optional[list[TestedRequirementsConfiguration]] = None
     """If specified, list of configurations describing desired reports summarizing tested requirements for each participant"""
 
-    sequence_view: SequenceViewConfiguration | None = None
+    sequence_view: Optional[SequenceViewConfiguration] = None
     """If specified, configuration describing a desired report describing the sequence of events that occurred during the test"""
 
-    globally_expanded_report: GloballyExpandedReportConfiguration | None = None
+    globally_expanded_report: Optional[GloballyExpandedReportConfiguration] = None
     """If specified, configuration describing a desired report mimicking what might be seen had the test run been conducted manually."""
 
 
 class USSQualifierConfigurationV1(ImplicitDict):
-    test_run: TestConfiguration | None = None
+    test_run: Optional[TestConfiguration] = None
     """If specified, configuration describing how to perform a test run"""
 
-    artifacts: ArtifactsConfiguration | None = None
+    artifacts: Optional[ArtifactsConfiguration] = None
     """If specified, configuration describing the artifacts related to the test run"""
 
-    validation: ValidationConfiguration | None = None
+    validation: Optional[ValidationConfiguration] = None
     """If specified, configuration describing how to validate the output report (and return an error code if validation fails)"""
 
 
 class USSQualifierConfiguration(ImplicitDict):
-    v1: USSQualifierConfigurationV1 | None
+    v1: Optional[USSQualifierConfigurationV1]
     """Configuration in version 1 format"""
