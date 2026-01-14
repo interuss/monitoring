@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from abc import abstractmethod
 
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 
 from monitoring.monitorlib.fetch import RequestDescription, summarize
 from monitoring.monitorlib.fetch import rid as rid_fetch
@@ -124,7 +124,7 @@ class RIDUnsubscribe(TracerLogEntry):
     existing_subscription: rid_fetch.FetchedSubscription
     """Subscription, as read from the DSS just before deletion."""
 
-    deleted_subscription: rid_mutate.ChangedSubscription | None
+    deleted_subscription: Optional[rid_mutate.ChangedSubscription]
     """Subscription returned from DSS upon deletion."""
 
 
@@ -214,7 +214,7 @@ class SCDUnsubscribe(TracerLogEntry):
     existing_subscription: scd_fetch.FetchedSubscription
     """Subscription, as read from the DSS just before deletion."""
 
-    deleted_subscription: scd_mutate.MutatedSubscription | None
+    deleted_subscription: Optional[scd_mutate.MutatedSubscription]
     """Subscription returned from DSS upon deletion."""
 
 
@@ -270,7 +270,7 @@ class ObservationAreaImportError(TracerLogEntry):
     def prefix_code() -> str:
         return "import_obs_areas_error"
 
-    rid_subscriptions: rid_fetch.FetchedSubscriptions | None
+    rid_subscriptions: Optional[rid_fetch.FetchedSubscriptions]
     """Result of attempting to fetch RID subscriptions"""
 
 

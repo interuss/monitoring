@@ -1,7 +1,7 @@
 import json
 from datetime import timedelta
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.astm.f3548.v21.api import OperationalIntent
 
 from monitoring.mock_uss.user_interactions.notifications import UserNotification
@@ -19,7 +19,7 @@ class FlightRecord(ImplicitDict):
 
     flight_info: FlightInfo
     op_intent: OperationalIntent
-    mod_op_sharing_behavior: MockUssFlightBehavior | None = None
+    mod_op_sharing_behavior: Optional[MockUssFlightBehavior] = None
     locked: bool = False
 
 

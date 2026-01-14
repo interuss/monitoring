@@ -7,7 +7,7 @@ import uas_standards.astm.f3411.v19.constants as v19_constants
 import uas_standards.astm.f3411.v22a.api as v22a_api
 import uas_standards.astm.f3411.v22a.constants as v22a_constants
 import yaml
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards import Operation
 from yaml.representer import Representer
 
@@ -20,7 +20,7 @@ from monitoring.monitorlib.rid import RIDVersion
 class ChangedSubscription(RIDQuery):
     """Version-independent representation of a subscription following a change in the DSS."""
 
-    mutation: str | None = None
+    mutation: Optional[str] = None
 
     @property
     def _v19_response(self) -> v19_api.PutSubscriptionResponse:
@@ -238,8 +238,8 @@ class ISAChangeNotification(RIDQuery):
 class SubscriberToNotify(ImplicitDict):
     """Version-independent representation of a subscriber to notify of a change in the DSS."""
 
-    v19_value: v19_api.SubscriberToNotify | None = None
-    v22a_value: v22a_api.SubscriberToNotify | None = None
+    v19_value: Optional[v19_api.SubscriberToNotify] = None
+    v22a_value: Optional[v22a_api.SubscriberToNotify] = None
 
     @property
     def rid_version(self) -> RIDVersion:
@@ -323,7 +323,7 @@ class SubscriberToNotify(ImplicitDict):
 class ChangedISA(RIDQuery):
     """Version-independent representation of a changed F3411 identification service area."""
 
-    mutation: str | None = None
+    mutation: Optional[str] = None
 
     @property
     def _v19_response(

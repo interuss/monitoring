@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 
 import s2sphere
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.astm.f3548.v21.api import PutSubscriptionParameters
 
 from monitoring.monitorlib.geo import LatLngPoint
@@ -21,13 +21,13 @@ class SubscriptionParams(ImplicitDict):
     area_vertices: list[LatLngPoint]
     """List of vertices of a polygon defining the area of interest"""
 
-    min_alt_m: float | None
+    min_alt_m: Optional[float]
     """Minimum altitude in meters"""
 
-    max_alt_m: float | None
+    max_alt_m: Optional[float]
     """Maximum altitude in meters"""
 
-    start_time: datetime.datetime | None = None
+    start_time: Optional[datetime.datetime] = None
     """Start time of subscription"""
 
     end_time: datetime.datetime

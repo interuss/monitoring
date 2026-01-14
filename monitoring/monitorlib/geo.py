@@ -8,7 +8,7 @@ import numpy as np
 import pyproj
 import s2sphere
 import shapely.geometry
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from s2sphere import LatLng
 from scipy.interpolate import RectBivariateSpline as Spline
 from uas_standards.astm.f3411.v19 import api as f3411v19
@@ -110,7 +110,7 @@ class Radius(ImplicitDict):
 
 
 class Polygon(ImplicitDict):
-    vertices: list[LatLngPoint] | None
+    vertices: Optional[list[LatLngPoint]]
 
     def vertex_average(self) -> LatLngPoint:
         lat = sum(p.lat for p in self.vertices) / len(self.vertices)
@@ -226,10 +226,10 @@ class Altitude(ImplicitDict):
 
 
 class Volume3D(ImplicitDict):
-    outline_circle: Circle | None = None
-    outline_polygon: Polygon | None = None
-    altitude_lower: Altitude | None = None
-    altitude_upper: Altitude | None = None
+    outline_circle: Optional[Circle] = None
+    outline_polygon: Optional[Polygon] = None
+    altitude_lower: Optional[Altitude] = None
+    altitude_upper: Optional[Altitude] = None
 
     def altitude_lower_wgs84_m(self, default_value: float | None = None) -> float:
         if self.altitude_lower is None:

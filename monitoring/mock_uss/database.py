@@ -1,14 +1,19 @@
 import json
 
-from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
+from implicitdict import (
+    ImplicitDict,
+    Optional,
+    StringBasedDateTime,
+    StringBasedTimeDelta,
+)
 
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 
 
 class PeriodicTaskStatus(ImplicitDict):
-    last_execution_time: StringBasedDateTime | None = None
-    period: StringBasedTimeDelta | None = None
+    last_execution_time: Optional[StringBasedDateTime] = None
+    period: Optional[StringBasedTimeDelta] = None
     executing: bool = False
 
 
@@ -43,7 +48,7 @@ class Database(ImplicitDict):
     periodic_tasks: dict[str, PeriodicTaskStatus]
     """Tasks to perform periodically, by name"""
 
-    most_recent_periodic_check: StringBasedDateTime | None
+    most_recent_periodic_check: Optional[StringBasedDateTime]
     """Timestamp of most recent time periodic task loop iterated"""
 
 

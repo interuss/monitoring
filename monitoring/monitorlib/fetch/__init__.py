@@ -13,7 +13,7 @@ import jwt
 import requests
 import urllib3
 import yaml
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from loguru import logger
 from yaml.representer import Representer
 
@@ -47,12 +47,12 @@ settings = Settings()
 class RequestDescription(ImplicitDict):
     method: str
     url: str
-    headers: dict | None
-    json: dict | None = None
-    body: str | None = None
+    headers: Optional[dict]
+    json: Optional[dict] = None
+    body: Optional[str] = None
 
-    initiated_at: StringBasedDateTime | None
-    received_at: StringBasedDateTime | None
+    initiated_at: Optional[StringBasedDateTime]
+    received_at: Optional[StringBasedDateTime]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -139,13 +139,13 @@ def describe_request(
 
 
 class ResponseDescription(ImplicitDict):
-    code: int | None = None
-    failure: str | None
-    headers: dict | None
+    code: Optional[int] = None
+    failure: Optional[str]
+    headers: Optional[dict]
     elapsed_s: float
     reported: StringBasedDateTime
-    json: dict | None = None
-    body: str | None = None
+    json: Optional[dict] = None
+    body: Optional[str] = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -452,10 +452,10 @@ class Query(ImplicitDict):
     request: RequestDescription
     response: ResponseDescription
 
-    participant_id: str | None
+    participant_id: Optional[str]
     """If specified, identifier of the USS/participant hosting the server involved in this query."""
 
-    query_type: QueryType | None
+    query_type: Optional[QueryType]
     """If specified, the recognized type of this query."""
 
     @property

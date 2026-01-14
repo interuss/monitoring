@@ -1,7 +1,7 @@
 import os
 from enum import Enum
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.auth import make_auth_adapter
@@ -16,10 +16,10 @@ class AuthAdapterSpecification(ImplicitDict):
       * environment_variable_containing_auth_spec
     """
 
-    auth_spec: str | None
+    auth_spec: Optional[str]
     """Literal representation of auth spec.  WARNING: Specifying this directly may cause sensitive information to be included in reports and unprotected configuration files."""
 
-    environment_variable_containing_auth_spec: str | None
+    environment_variable_containing_auth_spec: Optional[str]
     """Name of environment variable containing the auth spec.  This is the preferred method of providing the auth spec."""
 
     scopes_authorized: list[str]

@@ -1,6 +1,6 @@
 import datetime
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
     EntityOVN,
@@ -26,7 +26,7 @@ class PlanningAreaSpecification(ImplicitDict):
     - The volume itself is declared separately and passed as a dependency: see resource.VolumeResource for details.
     """
 
-    base_url: str | None
+    base_url: Optional[str]
     """Base URL for the USS
 
     Note that this is the base URL for the F3548-21 USS API, not the flights or any other specific URL.

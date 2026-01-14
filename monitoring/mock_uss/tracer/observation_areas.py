@@ -1,4 +1,4 @@
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import AuthSpec
@@ -45,7 +45,7 @@ class F3548ObservationArea(ImplicitDict):
     poll: bool
     """This area observes by periodically polling for information."""
 
-    subscription_id: str | None = None
+    subscription_id: Optional[str] = None
     """The F3548 subscription ID established to provide observation via notifications."""
 
 
@@ -58,10 +58,10 @@ class ObservationArea(ImplicitDict):
     area: Volume4D
     """Spatial-temporal area being observed."""
 
-    f3411: F3411ObservationArea | None = None
+    f3411: Optional[F3411ObservationArea] = None
     """How F3411 information is being observed (or not observed, if not specified)."""
 
-    f3548: F3548ObservationArea | None = None
+    f3548: Optional[F3548ObservationArea] = None
     """How F3548 information is being observed (or not observed, if not specified)."""
 
     @property
@@ -75,12 +75,12 @@ class ObservationArea(ImplicitDict):
 class F3411ObservationAreaRequest(ImplicitDict):
     """How to observe F3411 activity."""
 
-    auth_spec: AuthSpec | None = None
+    auth_spec: Optional[AuthSpec] = None
     """If specified, use this auth spec when performing observation activities.
 
     If not specified or blank, use auth spec provided on the command line."""
 
-    dss_base_url: str | None = None
+    dss_base_url: Optional[str] = None
     """If specified, use the DSS at this base URL when performing relevant observation activities.
 
     If not specified or blank, use DSS URL provided on the command line."""
@@ -98,12 +98,12 @@ class F3411ObservationAreaRequest(ImplicitDict):
 class F3548ObservationAreaRequest(ImplicitDict):
     """How to observe F3548 activity."""
 
-    auth_spec: AuthSpec | None = None
+    auth_spec: Optional[AuthSpec] = None
     """If specified, use this auth spec when performing observation activities.
 
     If not specified or blank, use auth spec provided on the command line."""
 
-    dss_base_url: str | None = None
+    dss_base_url: Optional[str] = None
     """If specified, use the DSS at this base URL when performing relevant observation activities.
 
     If not specified or blank, use DSS URL provided on the command line."""
@@ -127,10 +127,10 @@ class ObservationAreaRequest(ImplicitDict):
     area: Volume4D
     """Spatial-temporal area that should be observed."""
 
-    f3411: F3411ObservationAreaRequest | None = None
+    f3411: Optional[F3411ObservationAreaRequest] = None
     """How to observe F3411 (NetRID) activity."""
 
-    f3548: F3548ObservationAreaRequest | None = None
+    f3548: Optional[F3548ObservationAreaRequest] = None
     """How to observe F3548 (strategic coordination, conformance monitoring, and constraints) activity."""
 
     @property
@@ -168,7 +168,7 @@ class ImportObservationAreasRequest(ImplicitDict):
     area: Volume4D
     """Spatial-temporal area containing subscriptions to be imported."""
 
-    f3411: RIDVersion | None = None
+    f3411: Optional[RIDVersion] = None
     """If specified, search for subscriptions using this F3411 version."""
 
     f3548: bool = False

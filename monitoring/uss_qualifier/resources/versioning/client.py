@@ -1,4 +1,4 @@
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.interuss.automated_testing.versioning.constants import Scope
 
 from monitoring.monitorlib.clients.versioning.client import VersioningClient
@@ -18,7 +18,7 @@ class InterUSSVersionProvider(ImplicitDict):
 
 
 class VersionProviderSpecification(ImplicitDict):
-    interuss: InterUSSVersionProvider | None = None
+    interuss: Optional[InterUSSVersionProvider] = None
     """Populated when the version provider is using the InterUSS automated testing versioning API to provide versioning information."""
 
     participant_id: ParticipantID

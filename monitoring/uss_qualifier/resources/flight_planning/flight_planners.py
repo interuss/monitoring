@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.interuss.automated_testing.flight_planning.v1.constants import (
     Scope as ScopeFlightPlanning,
 )
@@ -91,10 +91,10 @@ class FlightPlannersResource(Resource[FlightPlannersSpecification]):
 
 
 class FlightPlannerCombinationSelectorSpecification(ImplicitDict):
-    must_include: list[ParticipantID] | None
+    must_include: Optional[list[ParticipantID]]
     """The set of flight planners which must be included in every combination"""
 
-    maximum_roles: dict[ParticipantID, int] | None
+    maximum_roles: Optional[dict[ParticipantID, int]]
     """Maximum number of roles a particular participant may fill in any given combination"""
 
 

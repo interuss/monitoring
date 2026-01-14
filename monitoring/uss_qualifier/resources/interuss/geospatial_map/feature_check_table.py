@@ -3,7 +3,7 @@ import os
 
 import _jsonnet
 import arrow
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.uss_qualifier.resources.files import (
     ExternalFile,
@@ -17,14 +17,14 @@ from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class FeatureCheckTableGenerationSpecification(ImplicitDict):
-    dict_resources: dict[str, ExternalFile] | None
+    dict_resources: Optional[dict[str, ExternalFile]]
     """External dict-like content (.json, .yaml, .jsonnet) to load and make available to the script.
     Key defines the name of the resource accessible to the script.
     """
 
     jsonnet_script: ExternalFile
     """Source of Jsonnet "script" that produces a FeatureCheckTable.
-    
+
     This converter may access resources with std.extVars("resource_name").  Also, std.extVars("now") returns the current
     datetime as an ISO string.  The return value of the Jsonnet must be an object following the FeatureCheckTable
     schema.  `import` is not allowed.  The following additional functions are available:
@@ -35,10 +35,10 @@ class FeatureCheckTableGenerationSpecification(ImplicitDict):
 
 
 class FeatureCheckTableSpecification(ImplicitDict):
-    table: FeatureCheckTable | None
+    table: Optional[FeatureCheckTable]
     """Statically-defined feature check table"""
 
-    generate_at_runtime: FeatureCheckTableGenerationSpecification | None
+    generate_at_runtime: Optional[FeatureCheckTableGenerationSpecification]
     """Generate feature check table at runtime"""
 
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
     GetOperationalIntentDetailsResponse,
@@ -55,7 +55,7 @@ class OpIntentValidator:
     _after_oi_refs: list[OperationalIntentReference]
     _after_query: fetch.Query
 
-    _new_oi_ref: OperationalIntentReference | None = None
+    _new_oi_ref: Optional[OperationalIntentReference] = None
 
     def __init__(
         self,
@@ -627,10 +627,10 @@ class OpIntentValidationFailureType(str, Enum):
 class OpIntentValidationFailure(ImplicitDict):
     validation_failure_type: OpIntentValidationFailureType
 
-    error_text: str | None = None
+    error_text: Optional[str] = None
     """Any error_text returned after validation check"""
 
-    errors: list[schema_validation.ValidationError] | None = None
+    errors: Optional[list[schema_validation.ValidationError]] = None
     """Any errors returned after validation check"""
 
     def __hash__(self):

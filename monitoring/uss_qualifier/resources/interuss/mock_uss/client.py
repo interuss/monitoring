@@ -1,4 +1,4 @@
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
@@ -136,7 +136,7 @@ class MockUSSSpecification(ImplicitDict):
     participant_id: ParticipantID
     """Test participant responsible for this mock USS."""
 
-    timeout_seconds: float | None = None
+    timeout_seconds: Optional[float] = None
     """Number of seconds to allow for requests to this mock_uss instance.  If None, use default."""
 
 

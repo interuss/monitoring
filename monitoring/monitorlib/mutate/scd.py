@@ -2,7 +2,7 @@ import datetime
 
 import s2sphere
 import yaml
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.astm.f3548.v21.api import (
     OPERATIONS,
     OperationalIntentReference,
@@ -19,7 +19,7 @@ from monitoring.monitorlib.geotemporal import Volume4D
 
 
 class MutatedSubscription(fetch.Query):
-    mutation: str | None = None
+    mutation: Optional[str] = None
 
     @property
     def success(self) -> bool:

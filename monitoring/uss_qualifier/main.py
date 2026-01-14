@@ -6,7 +6,7 @@ import os
 import sys
 
 import yaml
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from loguru import logger
 
 from monitoring.monitorlib.dicts import get_element_or_default, remove_elements
@@ -87,8 +87,8 @@ class TestDefinitionDescription(ImplicitDict):
 
     codebase_version: str
     commit_hash: str
-    baseline_signature: str | None = None
-    environment_signature: str | None = None
+    baseline_signature: Optional[str] = None
+    environment_signature: Optional[str] = None
 
     def sign(self, whole_config: USSQualifierConfiguration) -> None:
         logger.debug("Computing signatures of inputs")

@@ -1,6 +1,6 @@
 from urllib.parse import urlparse
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.interuss.automated_testing.geospatial_map.v1.constants import (
     Scope as ScopeGeospatialMap,
 )
@@ -19,10 +19,10 @@ class GeospatialInfoProviderConfiguration(ImplicitDict):
     participant_id: str
     """ID of the geospatial information provider for which geospatial data can be queried"""
 
-    geospatial_map_v1_base_url: str | None
+    geospatial_map_v1_base_url: Optional[str]
     """Base URL for the geospatial information provider's implementation of the interfaces/automated_testing/geospatial_map/v1/geospatial_map.yaml API"""
 
-    timeout_seconds: float | None = None
+    timeout_seconds: Optional[float | None] = None
     """Number of seconds to allow for requests to this geospatial information provider.  If None, use default."""
 
     def __init__(self, *args, **kwargs):

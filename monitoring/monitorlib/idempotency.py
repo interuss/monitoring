@@ -6,7 +6,7 @@ from functools import wraps
 
 import arrow
 import flask
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from loguru import logger
 
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
@@ -21,8 +21,8 @@ class Response(ImplicitDict):
     Note that this object is never actually used (in order to maximize performance); instead it serves as documentation
     of the structure of the fields within a plain JSON dict/object."""
 
-    json: dict | None
-    body: str | None
+    json: Optional[dict]
+    body: Optional[str]
     code: int
     timestamp: StringBasedDateTime
 

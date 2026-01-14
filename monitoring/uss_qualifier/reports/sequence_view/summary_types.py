@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.fetch import Query
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -32,11 +32,11 @@ class EventType(str, Enum):
 
 class Event(ImplicitDict):
     event_index: int = 0
-    passed_check: PassedCheck | None = None
-    failed_check: FailedCheck | None = None
-    query_events: list[Event | str] | None = None
-    query: Query | None = None
-    note: NoteEvent | None = None
+    passed_check: Optional[PassedCheck] = None
+    failed_check: Optional[FailedCheck] = None
+    query_events: Optional[list[Event | str]] = None
+    query: Optional[Query] = None
+    note: Optional[NoteEvent] = None
 
     @property
     def type(self) -> EventType:
@@ -100,8 +100,8 @@ class EpochType(str, Enum):
 
 
 class Epoch(ImplicitDict):
-    case: TestedCase | None = None
-    events: list[Event] | None = None
+    case: Optional[TestedCase] = None
+    events: Optional[list[Event]] = None
 
     @property
     def type(self) -> EpochType:
@@ -163,8 +163,8 @@ class ActionNode(ImplicitDict):
     name: str
     node_type: ActionNodeType
     children: list[ActionNode]
-    scenario: TestedScenario | None = None
-    skipped_action: SkippedAction | None = None
+    scenario: Optional[TestedScenario] = None
+    skipped_action: Optional[SkippedAction] = None
 
     @property
     def rows(self) -> int:

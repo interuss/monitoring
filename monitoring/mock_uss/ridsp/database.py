@@ -1,6 +1,6 @@
 import json
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 from monitoring.monitorlib.rid_automated_testing import injection_api
@@ -14,7 +14,7 @@ class TestRecord(ImplicitDict):
 
     version: str
     flights: list[injection_api.TestFlight]
-    isa_version: str | None = None
+    isa_version: Optional[str] = None
 
     def __init__(self, **kwargs):
         kwargs["flights"] = [

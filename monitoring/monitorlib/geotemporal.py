@@ -4,7 +4,7 @@ import math
 from datetime import datetime, timedelta
 
 import s2sphere as s2sphere
-from implicitdict import ImplicitDict, StringBasedTimeDelta
+from implicitdict import ImplicitDict, Optional, StringBasedTimeDelta
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api as fp_api
 from uas_standards.interuss.automated_testing.geospatial_map.v1 import (
@@ -23,28 +23,28 @@ from monitoring.monitorlib.transformations import Transformation
 
 
 class Volume4DTemplate(ImplicitDict):
-    outline_polygon: Polygon | None = None
+    outline_polygon: Optional[Polygon] = None
     """Polygonal 2D outline/footprint of the specified area.  May not be defined if outline_circle is defined."""
 
-    outline_circle: Circle | None = None
+    outline_circle: Optional[Circle] = None
     """Circular outline/footprint of the specified area.  May not be defined if outline_polygon is defined."""
 
-    start_time: TestTime | None = None
+    start_time: Optional[TestTime] = None
     """The time at which the virtual user may start using the specified geospatial area for their flight.  May not be defined if duration and end_time are defined."""
 
-    end_time: TestTime | None = None
+    end_time: Optional[TestTime] = None
     """The time at which the virtual user will be finished using the specified geospatial area for their flight.  May not be defined if duration and start_time are defined."""
 
-    duration: StringBasedTimeDelta | None = None
+    duration: Optional[StringBasedTimeDelta] = None
     """If only one of start_time and end_time is specified, then the other time should be separated from the specified time by this amount.  May not be defined in both start_time and end_time are defined."""
 
-    altitude_lower: Altitude | None = None
+    altitude_lower: Optional[Altitude] = None
     """The minimum altitude at which the virtual user will fly while using this volume for their flight."""
 
-    altitude_upper: Altitude | None = None
+    altitude_upper: Optional[Altitude] = None
     """The maximum altitude at which the virtual user will fly while using this volume for their flight."""
 
-    transformations: list[Transformation] | None = None
+    transformations: Optional[list[Transformation]] = None
     """If specified, transform this volume according to these transformations in order."""
 
     def _get_volume(self) -> Volume3D:
@@ -118,8 +118,8 @@ class Volume4D(ImplicitDict):
     """Generic representation of a 4D volume, usable across multiple standards and formats."""
 
     volume: Volume3D
-    time_start: Time | None = None
-    time_end: Time | None = None
+    time_start: Optional[Time] = None
+    time_end: Optional[Time] = None
 
     def offset_time(self, dt: timedelta) -> Volume4D:
         kwargs = {"volume": self.volume}

@@ -4,7 +4,12 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 import arrow
-from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
+from implicitdict import (
+    ImplicitDict,
+    Optional,
+    StringBasedDateTime,
+    StringBasedTimeDelta,
+)
 from pvlib.solarposition import get_solarposition
 from uas_standards.astm.f3548.v21 import api as f3548v21
 
@@ -58,7 +63,7 @@ class NextDay(ImplicitDict):
       * "-08:00" (ISO time zone)
       * "US/Pacific" (IANA time zone)"""
 
-    days_of_the_week: list[DayOfTheWeek] | None = None
+    days_of_the_week: Optional[list[DayOfTheWeek]] = None
     """Acceptable days of the week.  Omit to indicate that any day of the week is acceptable."""
 
 
@@ -131,28 +136,28 @@ class TestTimeContext(dict[TimeDuringTest, Time]):
 class TestTime(ImplicitDict):
     """Exactly one of the time option fields of this object must be specified."""
 
-    absolute_time: StringBasedDateTime | None = None
+    absolute_time: Optional[StringBasedDateTime] = None
     """Time option field to use a precise timestamp which does not change with test conditions.
 
     The value of absolute_time is limited given that the specific time a test will be started is unknown, and the jurisdictions usually impose a limit on how far in the future an operation can be planned.
     """
 
-    time_during_test: TimeDuringTest | None = None
+    time_during_test: Optional[TimeDuringTest] = None
     """Time option field to, if specified, use a timestamp relating to the current test run."""
 
-    name: TimeDuringTest | None
+    name: Optional[TimeDuringTest]
     """If specified, update the TestTimeContext with the time computed for this TestTime as this name, which may then later be referenced by a different TestTime via time_during_test."""
 
-    next_day: NextDay | None = None
+    next_day: Optional[NextDay] = None
     """Time option field to use a timestamp equal to midnight beginning the next occurrence of any matching day following the specified reference timestamp."""
 
-    next_sun_position: NextSunPosition | None = None
+    next_sun_position: Optional[NextSunPosition] = None
     """Time option field to use a timestamp equal to the next time after the specified reference timestamp at which the sun will be at the specified angle above the horizon."""
 
-    offset_from: OffsetTime | None = None
+    offset_from: Optional[OffsetTime] = None
     """Time option field to use a timestamp that is offset by the specified amount from the specified time."""
 
-    use_timezone: str | None = None
+    use_timezone: Optional[str] = None
     """If specified, report the timestamp in the specified time zone.  Examples:
       * "local" (local time of machine running this code)
       * "Z" (Zulu time)

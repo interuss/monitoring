@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.interuss.automated_testing.flight_planning.v1 import (
     api as flight_planning_api,
@@ -89,10 +89,10 @@ class PlanningActivityResponse(ImplicitDict):
     flight_plan_status: FlightPlanStatus
     """Status of the flight plan following the flight planning activity."""
 
-    notes: str | None
+    notes: Optional[str]
     """Any human-readable notes regarding the activity."""
 
-    includes_advisories: AdvisoryInclusion | None = AdvisoryInclusion.Unknown
+    includes_advisories: Optional[AdvisoryInclusion] = AdvisoryInclusion.Unknown
 
     def to_inject_flight_response(self) -> scd_api.InjectFlightResponse:
         if self.activity_result == PlanningActivityResult.Completed:
@@ -141,7 +141,7 @@ class ClearAreaResponse(ImplicitDict):
     op_intent_removal_errors: dict[f3548v21.EntityOVN, dict]
     """When an error was encountered removing a particular operational intent reference, information about that error."""
 
-    error: dict | None = None
+    error: Optional[dict] = None
     """If an error was encountered that could not be linked to a specific flight or operational intent, information about it will be populated here."""
 
     @property

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.en4709_02 import OperatorRegistrationNumber
@@ -21,7 +21,7 @@ Priority = int
 class ASTMF354821OpIntentInformation(ImplicitDict):
     """Information provided about a flight plan that is necessary for ASTM F3548-21."""
 
-    priority: Priority | None
+    priority: Optional[Priority]
 
 
 # ===== U-space =====
@@ -76,7 +76,7 @@ class FlightAuthorisationData(ImplicitDict):
     identification_technologies: list[str]
     """Technology used to identify the UAS. Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 6."""
 
-    uas_type_certificate: str | None
+    uas_type_certificate: Optional[str]
     """Provisional field. Not applicable as of September 2021. Required only if `uas_class` is set to `other` by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 4."""
 
     connectivity_methods: list[str]
@@ -95,7 +95,7 @@ class FlightAuthorisationData(ImplicitDict):
     Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 10.
     """
 
-    uas_id: str | None
+    uas_id: Optional[str]
     """When applicable, the registration number of the unmanned aircraft.
     This is expressed using the nationality and registration mark of the unmanned aircraft in
     line with ICAO Annex 7.
@@ -146,28 +146,28 @@ class RPAS26FlightDetailsFlightProfile(str, Enum):
 class RPAS26FlightDetails(ImplicitDict):
     """Information about a flight necessary to plan successfully using the RPAS Platform Operating Rules version 2.6."""
 
-    operator_type: RPAS26FlightDetailsOperatorType | None
+    operator_type: Optional[RPAS26FlightDetailsOperatorType]
     """The type of operator."""
 
-    uas_serial_numbers: list[str] | None
+    uas_serial_numbers: Optional[list[str]]
     """The list of UAS/drone serial numbers that will be operated during the operation."""
 
-    uas_registration_numbers: list[str] | None
+    uas_registration_numbers: Optional[list[str]]
     """The list of UAS/drone registration numbers that will be operated during the operation."""
 
-    aircraft_type: RPAS26FlightDetailsAircraftType | None
+    aircraft_type: Optional[RPAS26FlightDetailsAircraftType]
     """Type of vehicle being used as per ASTM F3411-22a."""
 
-    flight_profile: RPAS26FlightDetailsFlightProfile | None
+    flight_profile: Optional[RPAS26FlightDetailsFlightProfile]
     """Type of flight profile."""
 
-    pilot_license_number: str | None
+    pilot_license_number: Optional[str]
     """License number for the pilot."""
 
-    pilot_phone_number: str | None
+    pilot_phone_number: Optional[str]
     """Contact phone number for the pilot."""
 
-    operator_number: str | None
+    operator_number: Optional[str]
     """Operator number."""
 
 
@@ -255,13 +255,13 @@ class FlightInfo(ImplicitDict):
 
     basic_information: BasicFlightPlanInformation
 
-    astm_f3548_21: ASTMF354821OpIntentInformation | None
+    astm_f3548_21: Optional[ASTMF354821OpIntentInformation]
 
-    uspace_flight_authorisation: FlightAuthorisationData | None
+    uspace_flight_authorisation: Optional[FlightAuthorisationData]
 
-    rpas_operating_rules_2_6: RPAS26FlightDetails | None
+    rpas_operating_rules_2_6: Optional[RPAS26FlightDetails]
 
-    additional_information: dict | None
+    additional_information: Optional[dict]
     """Any information relevant to a particular jurisdiction or use case not described in the standard schema. The keys and values must be agreed upon between the test designers and USSs under test."""
 
     @staticmethod

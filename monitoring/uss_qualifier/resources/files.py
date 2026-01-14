@@ -1,7 +1,7 @@
 import hashlib
 import json
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.uss_qualifier import fileio
 from monitoring.uss_qualifier.fileio import FileReference
@@ -11,7 +11,7 @@ class ExternalFile(ImplicitDict):
     path: FileReference
     """Location of the external file."""
 
-    hash_sha512: str | None
+    hash_sha512: Optional[str]
     """SHA-512 hash of the external file.
 
     If specified, the external file's content will be verified to have this hash or else produce an error.

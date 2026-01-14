@@ -6,7 +6,7 @@ from enum import Enum
 from urllib.parse import urlparse
 
 import s2sphere
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.astm.f3548.v21.api import (
     OPERATIONS,
     AirspaceConflictResponse,
@@ -56,13 +56,13 @@ class DSSInstanceSpecification(ImplicitDict):
     participant_id: str
     """ID of the USS responsible for this DSS instance"""
 
-    user_participant_ids: list[str] | None
+    user_participant_ids: Optional[list[str]]
     """IDs of any participants using this DSS instance, apart from the USS responsible for this DSS instance."""
 
     base_url: str
     """Base URL for the DSS instance according to the ASTM F3548-21 API"""
 
-    supports_ovn_request: bool | None
+    supports_ovn_request: Optional[bool]
     """Whether this DSS instance supports the optional extension not part of the original F3548 standard API allowing a USS to request a specific OVN when creating or updating an operational intent."""
 
     def __init__(self, *args, **kwargs):

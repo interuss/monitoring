@@ -1,6 +1,6 @@
 from enum import Enum
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.geotemporal import Volume4DTemplateCollection
 
@@ -26,7 +26,7 @@ class FeatureCheck(ImplicitDict):
     description: str
     """Human-readable test step description to aid in the debugging and traceability."""
 
-    operation_rule_set: str | None = None
+    operation_rule_set: Optional[str] = None
     """The set of operating rules (or rule set) under which the operation described in the feature check should be performed."""
 
     volumes: Volume4DTemplateCollection
@@ -35,7 +35,7 @@ class FeatureCheck(ImplicitDict):
     A service provider is expected to provide geospatial features relevant to any of the entire area specified and for any of the entire time specified.
     """
 
-    restriction_source: str | None = None
+    restriction_source: Optional[str] = None
     """Which source for geospatial features describing restrictions should be considered when looking for the expected outcome."""
 
     expected_result: ExpectedFeatureCheckResult

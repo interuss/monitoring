@@ -1,6 +1,6 @@
 import re
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.fetch import Query
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -8,18 +8,18 @@ from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class AccessTokenIdentifier(ImplicitDict):
-    issuer: str | None
+    issuer: Optional[str]
     """If specified, this identifier only applies to access tokens from this issuer.  If not specified, this identifier applies to any access token."""
 
-    subject: str | None
+    subject: Optional[str]
     """If specified, assume the participant is responsible for applicable access tokens containing this subject."""
 
 
 class USSIdentifiers(ImplicitDict):
-    astm_url_regexes: list[str] | None
+    astm_url_regexes: Optional[list[str]]
     """If a URL to an ASTM (F3411, F3548, etc) endpoint matches one of these regular expressions, assume the participant is responsible for that server"""
 
-    access_tokens: list[AccessTokenIdentifier] | None
+    access_tokens: Optional[list[AccessTokenIdentifier]]
     """If an access token matches one of these identifiers, assume the participant is responsible for that access token"""
 
 

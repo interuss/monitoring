@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.uss_qualifier.requirements.definitions import RequirementCollection
 
@@ -60,7 +60,7 @@ class CapabilityVerifiedCondition(SpecificCondition):
     capability_ids: list[CapabilityID]
     """List of identifier of capability that must be verified for this condition to be satisfied."""
 
-    capability_location: JSONPathExpression | None
+    capability_location: Optional[JSONPathExpression]
     """Location of report to inspect for the verification of the specified capability, relative to the report in which
     the capability is defined.  Implicit default value is "$" (look for verified capability in the report in which the
     dependant capability is defined).
@@ -83,11 +83,11 @@ class CapabilityVerificationCondition(ImplicitDict):
 
     Exactly one field must be specified."""
 
-    all_conditions: AllConditions | None
-    any_conditions: AnyCondition | None
-    no_failed_checks: NoFailedChecksCondition | None
-    requirements_checked: RequirementsCheckedCondition | None
-    capability_verified: CapabilityVerifiedCondition | None
+    all_conditions: Optional[AllConditions]
+    any_conditions: Optional[AnyCondition]
+    no_failed_checks: Optional[NoFailedChecksCondition]
+    requirements_checked: Optional[RequirementsCheckedCondition]
+    capability_verified: Optional[CapabilityVerifiedCondition]
 
 
 class ParticipantCapabilityDefinition(ImplicitDict):

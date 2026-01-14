@@ -3,7 +3,7 @@ import json
 import sys
 
 import arrow
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 
 from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.tracer import context, diff, tracerlog
@@ -55,9 +55,9 @@ polling_status = SynchronizedValue[PollingStatus](
 
 class PollingValues(ImplicitDict):
     need_line_break: bool = False
-    last_isa_result: FetchedISAs | None = None
-    last_ops_result: FetchedEntities | None = None
-    last_constraints_result: FetchedEntities | None = None
+    last_isa_result: Optional[FetchedISAs] = None
+    last_ops_result: Optional[FetchedEntities] = None
+    last_constraints_result: Optional[FetchedEntities] = None
 
 
 polling_values = SynchronizedValue[PollingValues](

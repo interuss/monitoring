@@ -5,7 +5,7 @@ from datetime import timedelta
 from typing import Self
 
 import arrow
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     RIDAircraftState,
     TestFlightDetails,
@@ -221,10 +221,10 @@ class FlightDataResource(Resource[FlightDataSpecification]):
 
 
 class FlightDataStorageSpecification(ImplicitDict):
-    flight_record_collection_path: str | None
+    flight_record_collection_path: Optional[str]
     """Path, usually ending with .json, at which to store the FlightRecordCollection"""
 
-    geojson_tracks_path: str | None
+    geojson_tracks_path: Optional[str]
     """Path (folder) in which to store track_XX.geojson files, 1 for each flight"""
 
 
