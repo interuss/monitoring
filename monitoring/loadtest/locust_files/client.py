@@ -33,11 +33,12 @@ class DSSClient(infrastructure.UTMClientSession):
                 self.log_exception(real_method, name, start_time, Exception(msg))
             else:
                 total_time = int((time.time() - start_time) * 1000)
-                self._locust_environment.events.request_success.fire(
+                self._locust_environment.events.request.fire(
                     request_type=real_method,
                     name=name,
                     response_time=total_time,
                     response_length=0,
+                    exception=None,
                 )
         return result
 
@@ -45,12 +46,12 @@ class DSSClient(infrastructure.UTMClientSession):
         self, real_method: str, name: str, start_time: float, e: Exception
     ):
         total_time = int((time.time() - start_time) * 1000)
-        self._locust_environment.events.request_failure.fire(
+        self._locust_environment.events.request.fire(
             request_type=real_method,
             name=name,
             response_time=total_time,
-            exception=e,
             response_length=0,
+            exception=e,
         )
 
 
