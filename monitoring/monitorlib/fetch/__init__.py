@@ -6,6 +6,7 @@ import traceback
 import uuid
 from dataclasses import dataclass
 from enum import Enum
+from http.client import RemoteDisconnected
 from typing import Self, TypeVar
 from urllib.parse import urlparse
 
@@ -714,10 +715,21 @@ def query_and_describe(
                 logger.warning(failure_message)
             failures.append(failure_message)
         except requests.ConnectionError as e:
-            if "RemoteDisconnected" in str(e):
-                # This error manifests as:
-                #   ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
-                # ...and this may be retryable
+
+            def context_contains(exception, types) -> bool:
+                if (
+                    exception.__class__ in types
+                ):  # We don't use isinstance, we want exact type
+                    return True
+
+                parent = getattr(exception, "__context__", None)
+
+                if parent:
+                    return context_contains(parent, types)
+                else:
+                    return False
+
+            if context_contains(e, (RemoteDisconnected, ConnectionResetError)):
                 retryable = True
             else:
                 retryable = False
