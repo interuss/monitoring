@@ -158,6 +158,7 @@ class TestSuiteAction[T: ActionGenerator]:
         scenario.time_context[TimeDuringTest.StartOfScenario] = Time(
             arrow.utcnow().datetime
         )
+
         try:
             try:
                 scenario.run(context)
@@ -629,6 +630,21 @@ class ExecutionContext:
                         reason=f"Action selected to be skipped by skip_action_when condition {f}",
                         declaration=self.current_frame.action.declaration,
                     )
+
+        if (
+            "scenarios_filter" in self.config
+            and self.config.scenarios_filter
+            and self.current_frame.action.test_scenario
+        ):
+            if not re.match(
+                self.config.scenarios_filter,
+                self.current_frame.action.test_scenario.__class__.__name__,
+            ):
+                return SkippedActionReport(
+                    timestamp=StringBasedDateTime(arrow.utcnow()),
+                    reason="Filtered scenario",
+                    declaration=self.current_frame.action.declaration,
+                )
 
         return None
 
