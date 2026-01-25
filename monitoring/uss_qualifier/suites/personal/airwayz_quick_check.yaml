@@ -19,7 +19,14 @@ actions:
       scenario_type: scenarios.versioning.GetSystemVersions
       resources:
         version_providers: test_env_version_providers
-        system_identity: system_identity
+        system_identity: system_identity?
+      on_failure: Continue
+  - test_scenario:
+      # Use the base scenario which only talks to the flight planners (no DSS needed)
+      scenario_type: scenarios.flight_planning.prep_planners.PrepareFlightPlannersScenario
+      resources:
+        flight_planners: flight_planners
+        flight_intents: conflicting_flights
       on_failure: Continue
   # - test_scenario:
   #     # --- FUTURE: To check DSS synchronization ---
