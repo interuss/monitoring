@@ -47,6 +47,7 @@ class Sub(client.USS):
                 },
                 "callbacks": {"identification_service_area_url": make_fake_url()},
             },
+            name="/subscriptions/[sub_uuid]",
         )
         if resp.status_code == 200:
             self.sub_dict[sub_uuid] = resp.json()["subscription"]["version"]
@@ -59,7 +60,10 @@ class Sub(client.USS):
         if not target_sub:
             print("Nothing to pick from sub_dict for GET")
             return
-        self.client.get(f"/subscriptions/{target_sub}")
+        self.client.get(
+            f"/subscriptions/{target_sub}",
+            name="/subscriptions/[target_sub]",
+        )
 
     @task(50)
     def update_sub(self):
@@ -86,6 +90,7 @@ class Sub(client.USS):
                 },
                 "callbacks": {"identification_service_area_url": make_fake_url()},
             },
+            name="/subscriptions/[target_sub]/[target_version]",
         )
         if resp.status_code == 200:
             self.sub_dict[target_sub] = resp.json()["subscription"]["version"]
@@ -96,7 +101,10 @@ class Sub(client.USS):
         if not target_sub:
             print("Nothing to pick from sub_dict for DELETE")
             return
-        self.client.delete(f"/subscriptions/{target_sub}/{target_version}")
+        self.client.delete(
+            f"/subscriptions/{target_sub}/{target_version}",
+            name="/subscriptions/[target_sub]/[target_version]",
+        )
 
     def checkout_sub(self):
         self.lock.acquire()

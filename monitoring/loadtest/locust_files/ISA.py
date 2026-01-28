@@ -45,6 +45,7 @@ class ISA(client.USS):
                 },
                 "flights_url": make_fake_url(),
             },
+            name="/identification_service_areas/[isa_uuid]",
         )
         if resp.status_code == 200:
             self.isa_dict[isa_uuid] = resp.json()["service_area"]["version"]
@@ -74,6 +75,7 @@ class ISA(client.USS):
                 },
                 "flights_url": make_fake_url(),
             },
+            name="/identification_service_areas/[target_isa]/[target_version]",
         )
         if resp.status_code == 200:
             self.isa_dict[target_isa] = resp.json()["service_area"]["version"]
@@ -86,7 +88,10 @@ class ISA(client.USS):
         if not target_isa:
             print("Nothing to pick from isa_dict for GET")
             return
-        self.client.get(f"/identification_service_areas/{target_isa}")
+        self.client.get(
+            f"/identification_service_areas/{target_isa}",
+            name="/identification_service_areas/[target_isa]",
+        )
 
     @task(1)
     def delete_isa(self):
@@ -95,7 +100,8 @@ class ISA(client.USS):
             print("Nothing to pick from isa_dict for DELETE")
             return
         self.client.delete(
-            f"/identification_service_areas/{target_isa}/{target_version}"
+            f"/identification_service_areas/{target_isa}/{target_version}",
+            name="/identification_service_areas/[target_isa]/[target_version]",
         )
 
     def checkout_isa(self):
