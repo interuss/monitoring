@@ -35,8 +35,13 @@ def generate_tested_requirements(
     report: TestRunReport, config: TestedRequirementsConfiguration, output_path: str
 ) -> None:
     # Determine where the configuration to generate these tested requirements originated
+    assert report.configuration.v1 is not None
     artifacts = report.configuration.v1.artifacts
-    if "tested_requirements" in artifacts and artifacts.tested_requirements:
+    if (
+        artifacts
+        and "tested_requirements" in artifacts
+        and artifacts.tested_requirements
+    ):
         i = (
             artifacts.tested_requirements.index(config)
             if config in artifacts.tested_requirements

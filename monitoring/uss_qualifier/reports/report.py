@@ -125,7 +125,7 @@ class TestStepReport(ImplicitDict):
 
     def query_failed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
         for i, fc in enumerate(self.failed_checks):
             if participant_id is None or participant_id in fc.participants:
                 yield f"failed_checks[{i}]", fc
@@ -173,7 +173,7 @@ class TestCaseReport(ImplicitDict):
 
     def query_failed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
         for i, step in enumerate(self.steps):
             for path, fc in step.query_failed_checks(participant_id):
                 yield f"steps[{i}].{path}", fc
@@ -341,7 +341,7 @@ class ActionGeneratorReport(ImplicitDict):
 
     def query_failed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
         for i, action in enumerate(self.actions):
             for path, fc in action.query_failed_checks(participant_id):
                 yield f"actions[{i}].{path}", fc
@@ -407,24 +407,29 @@ class TestSuiteActionReport(ImplicitDict):
 
     def _conditional(
         self,
-        test_suite_func: Callable[[TestSuiteReport], Any] | Callable[[Any], Any],
+        test_suite_func: Callable[[Any], Any],
         test_scenario_func: Callable[[TestScenarioReport], Any] | None = None,
         action_generator_func: Callable[[ActionGeneratorReport], Any] | None = None,
         skipped_action_func: Callable[[SkippedActionReport], Any] | None = None,
     ) -> Any:
         test_suite, test_scenario, action_generator = self.get_applicable_report()
         if test_suite:
+            assert self.test_suite is not None
             return test_suite_func(self.test_suite)
         if test_scenario:
+            assert self.test_scenario is not None
             if test_scenario_func is not None:
                 return test_scenario_func(self.test_scenario)
             else:
                 return test_suite_func(self.test_scenario)
         if action_generator:
+            assert self.action_generator is not None
             if action_generator_func is not None:
                 return action_generator_func(self.action_generator)
             else:
                 return test_suite_func(self.action_generator)
+
+        assert self.skipped_action is not None
         if skipped_action_func is not None:
             return skipped_action_func(self.skipped_action)
         else:
@@ -455,6 +460,9 @@ class TestSuiteActionReport(ImplicitDict):
         else:
             return
 
+        if report is None:
+            return
+
         for path, pc in report.query_passed_checks(participant_id):
             yield f"{prefix}.{path}", pc
 
@@ -472,6 +480,9 @@ class TestSuiteActionReport(ImplicitDict):
             report = self.action_generator
             prefix = "action_generator"
         else:
+            return
+
+        if report is None:
             return
 
         for path, fc in report.query_failed_checks(participant_id):

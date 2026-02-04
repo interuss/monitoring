@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import Any, TypeVar
 
-import bc_jsonpath_ng.ext
+from bc_jsonpath_ng.ext.parser import parse as bc_jsonpath_ng_ext_parse
 
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.reports.capability_definitions import (
@@ -35,11 +35,11 @@ ConditionEvaluator = Callable[
     [SpecificConditionType, ParticipantID, TestSuiteReport],
     ParticipantCapabilityConditionEvaluationReport,
 ]
-_capability_condition_evaluators: dict[SpecificConditionType, ConditionEvaluator] = {}
+_capability_condition_evaluators: dict[type[SpecificCondition], ConditionEvaluator] = {}
 
 
 def capability_condition_evaluator[SpecificConditionType: SpecificCondition](
-    condition_type: SpecificConditionType,
+    condition_type: type[SpecificConditionType],
 ):
     """Decorator to label a function that evaluates a specific condition for verifying a capability.
 
@@ -196,27 +196,35 @@ def evaluate_requirements_checked_conditions(
     )
 
 
-def _jsonpath_of(descendant: Any, ancestor: Any) -> str | None:
+def _jsonpath_of(descendant: Any, ancestor: Any) -> str:
     """Construct a relative JSONPath to descendant from ancestor by exhaustive reference equality search.
 
     One would think this functionality would be part of the jsonpath_ng package when producing matches, but one would
     apparently be wrong.  This approach is monstrously inefficient, but easy to write and easy to understand.
     """
-    if ancestor is descendant:
-        return ""
-    elif isinstance(ancestor, dict):
-        for k, v in ancestor.items():
-            subpath = _jsonpath_of(descendant, v)
-            if subpath is not None:
-                return f".{k}{subpath}"
+
+    def __jsonpath_of(descendant: Any, ancestor: Any) -> str | None:
+        if ancestor is descendant:
+            return ""
+        elif isinstance(ancestor, dict):
+            for k, v in ancestor.items():
+                subpath = __jsonpath_of(descendant, v)
+                if subpath is not None:
+                    return f".{k}{subpath}"
+        elif isinstance(ancestor, list):
+            for i, v in enumerate(ancestor):
+                subpath = __jsonpath_of(descendant, v)
+                if subpath is not None:
+                    return f"[{i}]{subpath}"
+
         return None
-    elif isinstance(ancestor, list):
-        for i, v in enumerate(ancestor):
-            subpath = _jsonpath_of(descendant, v)
-            if subpath is not None:
-                return f"[{i}]{subpath}"
-    else:
-        return None
+
+    result = __jsonpath_of(descendant, ancestor)
+
+    if result is None:
+        raise ValueError(f"No path to {descendant} from {ancestor}")
+
+    return result
 
 
 @capability_condition_evaluator(CapabilityVerifiedCondition)
@@ -225,8 +233,13 @@ def evaluate_capability_verified_condition(
     participant_id: ParticipantID,
     report: TestSuiteReport,
 ) -> ParticipantCapabilityConditionEvaluationReport:
-    path = condition.capability_location if "capability_location" in condition else "$"
-    matching_reports = bc_jsonpath_ng.ext.parse(path).find(report)
+    path = (
+        condition.capability_location
+        if "capability_location" in condition
+        and condition.capability_location is not None
+        else "$"
+    )
+    matching_reports = bc_jsonpath_ng_ext_parse(path).find(report)
     checked_capabilities = []
     spurious_matches = []
     for matching_report in matching_reports:
