@@ -178,22 +178,26 @@ def _get_applicable_elements_from_action(
 ) -> Iterator[TestReportElement]:
     test_suite, test_scenario, action_generator = report.get_applicable_report()
     if test_scenario:
+        assert report.test_scenario is not None
         return _get_applicable_elements_from_test_scenario(
             applicability,
             report.test_scenario,
             JSONAddress(location + ".test_scenario"),
         )
     elif test_suite:
+        assert report.test_suite is not None
         return _get_applicable_elements_from_test_suite(
             applicability, report.test_suite, JSONAddress(location + ".test_suite")
         )
     elif action_generator:
+        assert report.action_generator is not None
         return _get_applicable_elements_from_action_generator(
             applicability,
             report.action_generator,
             JSONAddress(location + ".action_generator"),
         )
     else:
+        assert report.skipped_action is not None
         return _get_applicable_elements_from_skipped_action(
             applicability,
             report.skipped_action,

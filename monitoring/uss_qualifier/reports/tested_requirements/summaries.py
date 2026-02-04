@@ -60,12 +60,15 @@ def find_participant_system_versions(
     test_suite, test_scenario, action_generator = report.get_applicable_report()
     result = []
     if test_suite:
+        assert report.test_suite is not None
         for action in report.test_suite.actions:
             result.extend(find_participant_system_versions(action, participant_ids))
     elif action_generator:
+        assert report.action_generator is not None
         for action in report.action_generator.actions:
             result.extend(find_participant_system_versions(action, participant_ids))
     elif test_scenario:
+        assert report.test_scenario is not None
         if (
             report.test_scenario.scenario_type
             in (
@@ -73,6 +76,7 @@ def find_participant_system_versions(
                 "scenarios.versioning.GetSystemVersions",
             )
             and "notes" in report.test_scenario
+            and report.test_scenario.notes is not None
         ):
             for participant_id in participant_ids:
                 if participant_id in report.test_scenario.notes:
