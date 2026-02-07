@@ -1,8 +1,44 @@
+import json
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+
+import arrow
+from implicitdict import ImplicitDict
 
 from monitoring.mock_uss.flights.database import DEADLOCK_TIMEOUT, FlightRecord, db
+from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 from monitoring.monitorlib.delay import sleep
+from monitoring.monitorlib.temporal import Time
+
+
+def adjust_flight_info(info: FlightInfo) -> FlightInfo:
+    result: FlightInfo = ImplicitDict.parse(json.loads(json.dumps(info)), FlightInfo)
+
+    now = arrow.utcnow()
+
+    for v4d in result.basic_information.area:
+        # Fill in empty start times with now
+        if "time_start" not in v4d or not v4d.time_start:
+            v4d.time_start = Time(now)
+
+        # Truncate volume start times to current
+        elif v4d.time_start.datetime < now:
+            v4d.time_start = Time(now + timedelta(seconds=5))
+
+    # Validate volume times
+    for i, v4d in enumerate(result.basic_information.area):
+        if (
+            "time_start" in v4d
+            and v4d.time_start
+            and "time_end" in v4d
+            and v4d.time_end
+            and v4d.time_start >= v4d.time_end
+        ):
+            raise ValueError(
+                f"Volume {i} start time {v4d.time_start} (originally {info.basic_information.area[i].time_start}) is at or after end time {v4d.time_end}"
+            )
+
+    return result
 
 
 def lock_flight(flight_id: str, log: Callable[[str], None]) -> FlightRecord:

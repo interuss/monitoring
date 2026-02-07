@@ -19,8 +19,14 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
     PlanningActivityResult,
 )
+from monitoring.monitorlib.dicts import JSONPath
 from monitoring.monitorlib.fetch import Query, QueryError
 from monitoring.monitorlib.geotemporal import end_time_of
+from monitoring.uss_qualifier.scenarios.flight_planning.injection_evaluation import (
+    require_compatible_values,
+    times_not_later_than_specified_or_now,
+    values_exactly_equal,
+)
 from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioDidNotStopError,
     TestScenario,
@@ -278,6 +284,7 @@ def submit_flight(
                 details=f"{str(e)}\n\nStack trace:\n{e.stacktrace}",
                 query_timestamps=[q.request.timestamp for q in e.queries],
             )
+            raise ScenarioDidNotStopError(check)
 
         if (
             skip_if_not_supported
@@ -309,6 +316,26 @@ def submit_flight(
                 details=msg,
                 query_timestamps=[query.request.timestamp],
             )
+
+        if resp.flight_plan_status in {
+            FlightPlanStatus.Planned,
+            FlightPlanStatus.OkToFly,
+        }:
+            if "as_planned" in resp and resp.as_planned:
+                with scenario.check(
+                    "Injection fidelity", flight_planner.participant_id
+                ) as fidelity_check:
+                    require_compatible_values(
+                        flight_info,
+                        resp.as_planned,
+                        fidelity_check,
+                        default_compatibility=values_exactly_equal,
+                        compatibility={
+                            JSONPath(
+                                "$.basic_information.area[*].time_start"
+                            ): times_not_later_than_specified_or_now
+                        },
+                    )
 
     return resp, flight_id
 
