@@ -227,7 +227,7 @@ class BasicFlightPlanInformation(ImplicitDict):
     def to_flight_planning_api(self) -> fp_api.BasicFlightPlanInformation:
         return fp_api.BasicFlightPlanInformation(
             usage_state=fp_api.BasicFlightPlanInformationUsageState(self.usage_state),
-            uas_state=fp_api.BasicFlightPlanInformationUasState(self.uas_state),
+            uas_state=fp_api.FunctionalState(self.uas_state),
             area=[v.to_flight_planning_api() for v in self.area],
         )
 

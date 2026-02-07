@@ -3,8 +3,8 @@ from collections.abc import Iterable
 
 import arrow
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
-    BasicFlightPlanInformationUasState,
     BasicFlightPlanInformationUsageState,
+    FunctionalState,
 )
 
 from monitoring.monitorlib.clients.flight_planning.client import PlanningActivityError
@@ -30,7 +30,7 @@ from monitoring.uss_qualifier.scenarios.scenario import (
 def expect_flight_intent_state(
     flight_intent: FlightInfo,
     expected_usage_state: BasicFlightPlanInformationUsageState,
-    expected_uas_state: BasicFlightPlanInformationUasState,
+    expected_uas_state: FunctionalState,
     scenario: TestScenario,
 ) -> None:
     """Confirm that provided flight intent test data has the expected state or raise a ValueError."""
@@ -104,7 +104,7 @@ def modify_planned_flight(
     expect_flight_intent_state(
         flight_info,
         BasicFlightPlanInformationUsageState.Planned,
-        BasicFlightPlanInformationUasState.Nominal,
+        FunctionalState.Nominal,
         scenario,
     )
 
@@ -144,7 +144,7 @@ def modify_activated_flight(
     expect_flight_intent_state(
         flight_info,
         BasicFlightPlanInformationUsageState.InUse,
-        BasicFlightPlanInformationUasState.Nominal,
+        FunctionalState.Nominal,
         scenario,
     )
 
