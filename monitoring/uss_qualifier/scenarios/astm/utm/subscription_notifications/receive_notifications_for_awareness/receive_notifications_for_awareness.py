@@ -156,11 +156,13 @@ class ReceiveNotificationsForAwareness(TestScenario):
             self.dss,
             resolved_extents,
         ) as validator:
-            _, self.flight_1_id = plan_flight(
+            _, self.flight_1_id, as_planned = plan_flight(
                 self,
                 self.tested_uss_client,
                 flight_1_planned,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight_1_planned = as_planned
             self.flight_1_oi_ref = validator.expect_shared(flight_1_planned)
 
         with OpIntentValidator(
@@ -170,12 +172,14 @@ class ReceiveNotificationsForAwareness(TestScenario):
             resolved_extents,
             self.flight_1_oi_ref,
         ) as validator:
-            _, self.flight_1_id = activate_flight(
+            _, self.flight_1_id, as_planned = activate_flight(
                 self,
                 self.tested_uss_client,
                 flight_1_activated,
                 self.flight_1_id,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight_1_activated = as_planned
             self.flight_1_oi_ref = validator.expect_shared(flight_1_activated)
 
         self.end_test_step()
@@ -188,11 +192,13 @@ class ReceiveNotificationsForAwareness(TestScenario):
             resolved_extents,
         ) as validator:
             flight_2_planning_time = arrow.utcnow().datetime
-            _, self.flight_2_id = plan_flight(
+            _, self.flight_2_id, as_planned = plan_flight(
                 self,
                 self.mock_uss_client,
                 flight_2_planned,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight_2_planned = as_planned
             self.flight_2_oi_ref = validator.expect_shared(flight_2_planned)
 
         self.end_test_step()
@@ -224,12 +230,13 @@ class ReceiveNotificationsForAwareness(TestScenario):
             self.flight_2_oi_ref,
         ) as validator:
             flight_2_modif_time = arrow.utcnow().datetime
-            modify_planned_flight(
+            _, as_planned = modify_planned_flight(
                 self,
                 self.mock_uss_client,
                 flight_2_planned_modified,
                 self.flight_2_id,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             self.flight_2_oi_ref = validator.expect_shared(flight_2_planned_modified)
 
         self.end_test_step()

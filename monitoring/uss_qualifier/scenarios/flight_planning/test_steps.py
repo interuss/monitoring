@@ -58,7 +58,7 @@ def plan_flight(
     flight_info: FlightInfo,
     additional_fields: dict | None = None,
     nearby_potential_conflict: bool = False,
-) -> tuple[PlanningActivityResponse, str | None]:
+) -> tuple[PlanningActivityResponse, str | None, FlightInfo | None]:
     """Plan a flight intent that should result in success.
 
     This function implements the test step fragment described in
@@ -70,9 +70,10 @@ def plan_flight(
     Returns:
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
+      * The flight info, as actually planned by the client.
     """
 
-    resp, flight_id = submit_flight(
+    resp, flight_id, as_planned = submit_flight(
         scenario=scenario,
         success_check="Successful planning",
         expected_results={(PlanningActivityResult.Completed, FlightPlanStatus.Planned)},
@@ -90,7 +91,7 @@ def plan_flight(
             "Validate tested USS intersection algorithm", flight_planner.participant_id
         ).record_passed()
 
-    return resp, flight_id
+    return resp, flight_id, as_planned
 
 
 def modify_planned_flight(
@@ -99,13 +100,15 @@ def modify_planned_flight(
     flight_info: FlightInfo,
     flight_id: str,
     additional_fields: dict | None = None,
-) -> PlanningActivityResponse:
+) -> tuple[PlanningActivityResponse, FlightInfo | None]:
     """Modify a planned flight intent that should result in success.
 
     This function implements the test step described in
     modify_planned_flight_intent.md.
 
-    Returns: The injection response.
+    Returns:
+        * The injection response.
+        * The flight info, as actually planned by the client.
     """
     expect_flight_intent_state(
         flight_info,
@@ -114,7 +117,7 @@ def modify_planned_flight(
         scenario,
     )
 
-    return submit_flight(
+    resp, _, as_planned = submit_flight(
         scenario=scenario,
         success_check="Successful modification",
         expected_results={
@@ -129,7 +132,8 @@ def modify_planned_flight(
         flight_info=flight_info,
         flight_id=flight_id,
         additional_fields=additional_fields,
-    )[0]
+    )
+    return resp, as_planned
 
 
 def modify_activated_flight(
@@ -139,13 +143,15 @@ def modify_activated_flight(
     flight_id: str,
     preexisting_conflict: bool = False,
     additional_fields: dict | None = None,
-) -> PlanningActivityResponse:
+) -> tuple[PlanningActivityResponse, FlightInfo | None]:
     """Modify an activated flight intent that should result in success.
 
     This function implements the test step described in
     modify_activated_flight_intent.md.
 
-    Returns: The injection response.
+    Returns:
+        * The injection response.
+        * The flight info, as actually planned by the client.
     """
     expect_flight_intent_state(
         flight_info,
@@ -155,7 +161,7 @@ def modify_activated_flight(
     )
 
     if preexisting_conflict:
-        resp, _ = submit_flight(
+        resp, _, as_planned = submit_flight(
             scenario=scenario,
             success_check="Successful modification",
             expected_results={
@@ -170,6 +176,7 @@ def modify_activated_flight(
             flight_id=flight_id,
             additional_fields=additional_fields,
         )
+        assert as_planned is not None
 
         with scenario.check(
             "Rejected modification", [flight_planner.participant_id]
@@ -186,7 +193,7 @@ def modify_activated_flight(
                 )
 
     else:
-        resp, _ = submit_flight(
+        resp, _, as_planned = submit_flight(
             scenario=scenario,
             success_check="Successful modification",
             expected_results={
@@ -202,8 +209,9 @@ def modify_activated_flight(
             flight_id=flight_id,
             additional_fields=additional_fields,
         )
+        assert as_planned is not None
 
-    return resp
+    return resp, as_planned
 
 
 def activate_flight(
@@ -212,7 +220,7 @@ def activate_flight(
     flight_info: FlightInfo,
     flight_id: str | None = None,
     additional_fields: dict | None = None,
-) -> tuple[PlanningActivityResponse, str | None]:
+) -> tuple[PlanningActivityResponse, str | None, FlightInfo | None]:
     """Activate a flight intent that should result in success.
 
     This function implements the test step fragment described in
@@ -221,6 +229,7 @@ def activate_flight(
     Returns:
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
+      * The flight info, as actually planned by the client.
     """
     return submit_flight(
         scenario=scenario,
@@ -245,7 +254,7 @@ def submit_flight(
     additional_fields: dict | None = None,
     skip_if_not_supported: bool = False,
     may_end_in_past: bool = False,
-) -> tuple[PlanningActivityResponse, str | None]:
+) -> tuple[PlanningActivityResponse, str | None, FlightInfo | None]:
     """Submit a flight intent with an expected result.
     A check fail is considered by default of high severity and as such will raise an ScenarioCannotContinueError.
     The severity of each failed check may be overridden if needed.
@@ -258,6 +267,7 @@ def submit_flight(
     Returns:
       * The injection response.
       * The ID of the injected flight if it is returned, None otherwise.
+      * The flight info, as actually planned by the client.
     """
     if expected_results.intersection(failed_checks.keys()):
         raise ValueError(
@@ -291,7 +301,7 @@ def submit_flight(
             and resp.activity_result == PlanningActivityResult.NotSupported
         ):
             check.skip()
-            return resp, None
+            return resp, None, None
 
         msg = f"{flight_planner.participant_id} indicated flight planning activity {resp.activity_result} leaving flight plan {resp.flight_plan_status} rather than the expected {' or '.join([f'(Activity {expected_result[0]}, flight plan {expected_result[1]})' for expected_result in expected_results])}"
         if "notes" in resp and resp.notes:
@@ -320,11 +330,14 @@ def submit_flight(
         if resp.flight_plan_status in {
             FlightPlanStatus.Planned,
             FlightPlanStatus.OkToFly,
+            FlightPlanStatus.OffNominal,
         }:
             if "as_planned" in resp and resp.as_planned:
                 with scenario.check(
                     "Injection fidelity", flight_planner.participant_id
                 ) as fidelity_check:
+                    # TODO(#1326): Relax/remove this global fidelity check when each individual scenario validates that
+                    #  the flight, as injected, will satisfy the needs of the scenario.
                     require_compatible_values(
                         flight_info,
                         resp.as_planned,
@@ -336,8 +349,13 @@ def submit_flight(
                             ): times_not_later_than_specified_or_now
                         },
                     )
+                as_planned = resp.as_planned
+            else:
+                as_planned = flight_info
+        else:
+            as_planned = None
 
-    return resp, flight_id
+    return resp, flight_id, as_planned
 
 
 def request_flight(

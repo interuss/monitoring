@@ -235,7 +235,7 @@ class DownUSS(TestScenario):
             self.dss,
             flight1_planned,
         ) as validator:
-            resp, flight_id = submit_flight(
+            resp, flight_id, as_planned = submit_flight(
                 scenario=self,
                 success_check="Successful planning",
                 expected_results={
@@ -247,6 +247,8 @@ class DownUSS(TestScenario):
                 flight_planner=self.tested_uss,
                 flight_info=flight1_planned,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight1_planned = as_planned
 
             if resp.activity_result == PlanningActivityResult.Completed:
                 validator.expect_shared(flight1_planned)

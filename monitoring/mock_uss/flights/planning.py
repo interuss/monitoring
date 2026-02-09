@@ -1,6 +1,6 @@
 import json
 from collections.abc import Callable
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
 import arrow
 from implicitdict import ImplicitDict
@@ -23,7 +23,7 @@ def adjust_flight_info(info: FlightInfo) -> FlightInfo:
 
         # Truncate volume start times to current
         elif v4d.time_start.datetime < now:
-            v4d.time_start = Time(now + timedelta(seconds=5))
+            v4d.time_start = Time(now)
 
     # Validate volume times
     for i, v4d in enumerate(result.basic_information.area):

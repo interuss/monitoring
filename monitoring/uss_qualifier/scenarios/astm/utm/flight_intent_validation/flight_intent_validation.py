@@ -208,11 +208,14 @@ class FlightIntentValidation(TestScenario):
             self.dss,
             valid_flight,
         ) as planned_validator:
-            _, flight_id = plan_flight(
+            _, flight_id, as_planned = plan_flight(
                 self,
                 self.tested_uss,
                 valid_flight,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            assert as_planned is not None
+            valid_flight = as_planned
             oi_ref = planned_validator.expect_shared(valid_flight)
         self.end_test_step()
 
@@ -231,11 +234,12 @@ class FlightIntentValidation(TestScenario):
         self.begin_test_step(self.PLAN_VALID_FLIGHT_STEP)
         valid_flight = self.resolve_flight(self.valid_flight)
 
-        plan_flight(
+        _, _, as_planned = plan_flight(
             self,
             self.tested_uss,
             valid_flight,
         )
+        # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
         self.end_test_step()
 
         self.begin_test_step("Attempt to plan Tiny Overlap Conflict Flight")

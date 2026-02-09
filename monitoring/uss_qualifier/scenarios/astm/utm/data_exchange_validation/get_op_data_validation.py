@@ -156,11 +156,13 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             flight_2.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             flight_2_planning_time = Time(arrow.utcnow().datetime)
-            _, self.flight_2_id = plan_flight(
+            _, self.flight_2_id, as_planned = plan_flight(
                 self,
                 self.mock_uss_client,
                 flight_2,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight_2 = as_planned
 
             flight_2_oi_ref = validator.expect_shared(flight_2)
             self.op_intent_ids.add(flight_2_oi_ref.id)
@@ -176,11 +178,13 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             flight_1.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             flight_1_planning_time = Time(arrow.utcnow().datetime)
-            plan_res, self.flight_1_id = plan_flight(
+            plan_res, self.flight_1_id, as_planned = plan_flight(
                 self,
                 self.tested_uss_client,
                 flight_1,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight_1 = as_planned
             flight_1_oi_ref = validator.expect_shared(flight_1)
             self.op_intent_ids.add(flight_1_oi_ref.id)
         self.end_test_step()
@@ -243,12 +247,14 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             flight_info.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             flight_2_planning_time = Time(arrow.utcnow().datetime)
-            _, self.flight_2_id = plan_flight(
+            _, self.flight_2_id, as_planned = plan_flight(
                 self,
                 self.mock_uss_client,
                 flight_info,
                 additional_fields,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight_info = as_planned
             flight_2_oi_ref = validator.expect_shared_with_invalid_data(
                 flight_info,
                 validation_failure_type=OpIntentValidationFailureType.DataFormat,
@@ -266,7 +272,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             flight_1.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             flight_1_planning_time = Time(arrow.utcnow().datetime)
-            _, self.flight_1_id = submit_flight(
+            _, self.flight_1_id, _ = submit_flight(
                 self,
                 "Plan should fail",
                 {
