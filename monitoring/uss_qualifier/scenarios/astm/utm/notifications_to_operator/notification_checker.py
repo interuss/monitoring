@@ -58,6 +58,24 @@ class NotificationChecker(GenericTestScenario, ABC):
                         query_timestamps=[query.request.timestamp],
                     )
                     continue
+
+                if any(
+                    [
+                        notification.observed_at.datetime
+                        > arrow.now() + NOTIFICATIONS_MAX_CLOCK_SKEW
+                        for notification in resp.user_notifications
+                    ]
+                ):
+                    notifications[client.participant_id] = Notifications(
+                        notifications=None, query=query
+                    )
+                    check.record_failed(
+                        summary="Error while trying to retrieve notifications",
+                        details=f"Response from {client.participant_id} returned notifications in the future.",
+                        query_timestamps=[query.request.timestamp],
+                    )
+                    continue
+
                 notifications[client.participant_id] = Notifications(
                     notifications=resp.user_notifications, query=query
                 )
@@ -101,6 +119,23 @@ class NotificationChecker(GenericTestScenario, ABC):
                         check.record_failed(
                             summary="No notifications returned",
                             details=f"{client.participant_id} didn't return a list of notifications when querying for new notifications",
+                            query_timestamps=[query.request.timestamp],
+                        )
+                        continue
+
+                    if any(
+                        [
+                            notification.observed_at.datetime
+                            > arrow.now() + NOTIFICATIONS_MAX_CLOCK_SKEW
+                            for notification in resp.user_notifications
+                        ]
+                    ):
+                        notifications[client.participant_id] = Notifications(
+                            notifications=None, query=query
+                        )
+                        check.record_failed(
+                            summary="Error while trying to retrieve notifications",
+                            details=f"Response from {client.participant_id} returned notifications in the future.",
                             query_timestamps=[query.request.timestamp],
                         )
                         continue
