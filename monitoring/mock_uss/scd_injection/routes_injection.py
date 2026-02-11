@@ -142,7 +142,12 @@ def scdsc_inject_flight(flight_id: str) -> tuple[str | flask.Response, int]:
         )
     finally:
         release_flight_lock(flight_id, log)
-    return flask.jsonify(resp.to_inject_flight_response()), 200
+    api_response = resp.to_inject_flight_response()
+    if "as_planned" in resp and resp.as_planned:
+        # Append as_planned as an additional field formatted according to flight_planning API to ease continuing support
+        # of legacy scd injection API
+        api_response["as_planned"] = resp.as_planned.to_flight_plan()
+    return flask.jsonify(api_response), 200
 
 
 def inject_flight(
