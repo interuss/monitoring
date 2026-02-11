@@ -210,6 +210,10 @@ def ridsp_get_user_notifications() -> tuple[str | flask.Response, int]:
             400,
         )
 
+    before = min(
+        arrow.utcnow(), before
+    )  # Ensure we don't return notifications from the future
+
     final_list = []
 
     for user_notification in db.value.notifications.user_notifications:
