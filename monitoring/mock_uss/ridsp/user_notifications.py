@@ -2,6 +2,7 @@ import datetime
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
+from uas_standards.astm.f3411.v22a import constants
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     Time,
     UserNotification,
@@ -94,22 +95,45 @@ def check_and_generate_missing_fields_notifications(
 
 def check_and_generate_slow_update_notification(
     injected_flights: list[injection_api.TestFlight],
-) -> list[datetime]:
+) -> list[datetime.datetime]:
     """
     Iterate over the provided list of injected TestFlight objects and, for any flight that has
     an average update rate under 1Hz, return a time for which a notification should be sent to the operator.
     """
-    operator_slow_update_notifications: list[datetime] = []
+    operator_slow_update_notifications: list[datetime.datetime] = []
     for f in injected_flights:
         # Mean rate is not technically correct as per Net0040
         # (20% of the samples may be above 1Hz with a mean rate below 1Hz),
         # but sufficient to trigger a notification to test the relevant scenario.
-        mean_rate = f.get_mean_update_rate_hz()
-        if mean_rate and mean_rate < 0.99:
-            # Arbitrarily use middle of the flight as notification time:
-            f_start, f_end = f.get_span()
-            if f_start and f_end:
+
+        f_start, _ = f.get_span()
+        if not f_start:
+            continue
+
+        # Compute update rate in 1s buckets:
+        rates = f.get_update_rates()
+
+        if not rates:
+            continue
+
+        # Check in a moving windows of 10s, that NetMinUasLocRefreshPercentage
+        # samples are >= NetMinUasLocRefreshFrequency
+        if len(rates) < 10:
+            continue
+
+        for wpos in range(0, len(rates) - 10):
+            count_ok = sum(
+                [
+                    1 if rate >= constants.NetMinUasLocRefreshFrequencyHz else 0
+                    for rate in rates[wpos : wpos + 10]
+                ]
+            )
+
+            if count_ok < constants.NetMinUasLocRefreshPercentage / 100.0 * 10:
                 operator_slow_update_notifications.append(
-                    f_start + (f_end - f_start) / 2
+                    f_start
+                    + datetime.timedelta(
+                        seconds=wpos + 2 + 10
+                    )  # get_update_rates is skipping the first 2 seconds (moving average of 3)
                 )
     return operator_slow_update_notifications
