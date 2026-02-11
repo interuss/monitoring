@@ -237,6 +237,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
                 self.flight_2_id,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight_2_planned_modified = as_planned
             self.flight_2_oi_ref = validator.expect_shared(flight_2_planned_modified)
 
         self.end_test_step()
