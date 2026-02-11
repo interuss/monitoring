@@ -18,24 +18,26 @@ requirement that the set of scenarios run may have been capable of measuring.
 
 ### Summaries
 
-Each requirement is summarized for a participant in the following way:
+Each requirement is summarized (see [`TestedRequirement.classname`](./data_types.py)) for a participant in the following way:
 
 * If any test check relevant to that requirement failed, then the compliance
   summary for that requirement is indicated as "Fail".
 * Otherwise, if at least one test check measured compliance with the
   requirement did not detect non-compliance, then the compliance summary for
   that requirement is indicated as "Pass".
+    * If the summary would be "Pass" but there are one or more low-severity findings (not indicating non-compliance to a requirement), the summary for that requirement is instead indicated as "Pass with findings".
 * If no test checks measuring compliance with the requirement were performed
   for the participant, then the compliance summary for that requirement is
   indicated as "Not tested"
 
 The overall "Requirement verification status" for the participant is
-summarized in the following way:
+summarized in the following way (see [`compute_overall_status`](./summaries.py)):
 
 * If any relevant requirement for the participant indicates "Fail", then the
   overall status is indicated as "Fail".
 * Otherwise, if any relevant requirement for the participant indicates "Not
   tested", then the overall status is indicated as "Not fully verified".
+* If at least one relevant requirement for the participant indicates "Pass with findings" and all relevant requirements for the participant indicate either "Pass" or "Pass with findings", then the overall status is indicated as "Pass (with findings)".
 * If all relevant requirements for the participant indicate "Pass", then the
   overall status is indicated as "Pass".
 
