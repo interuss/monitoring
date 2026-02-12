@@ -543,7 +543,6 @@ class GenericTestScenario(ABC):
     def end_test_scenario(self) -> None:
         self._expect_phase(ScenarioPhase.ReadyForTestCase)
         assert self._scenario_report is not None
-        self._scenario_report.end_time = StringBasedDateTime(datetime.now(UTC))
         self._phase = ScenarioPhase.ReadyForCleanup
 
     def go_to_cleanup(self) -> None:
@@ -587,7 +586,6 @@ class GenericTestScenario(ABC):
     def end_cleanup(self) -> None:
         self._expect_phase(ScenarioPhase.CleaningUp)
         assert self._step_report is not None
-        self._step_report.end_time = StringBasedDateTime(datetime.now(UTC))
         self._phase = ScenarioPhase.Complete
 
     def ensure_cleanup_ended(self) -> None:
@@ -598,7 +596,6 @@ class GenericTestScenario(ABC):
         self._expect_phase({ScenarioPhase.CleaningUp, ScenarioPhase.Complete})
         if self._phase == ScenarioPhase.CleaningUp:
             assert self._step_report is not None
-            self._step_report.end_time = StringBasedDateTime(datetime.now(UTC))
             self._phase = ScenarioPhase.Complete
 
     def record_execution_error(self, e: Exception) -> None:
@@ -622,6 +619,13 @@ class GenericTestScenario(ABC):
                 self._expect_phase(ScenarioPhase.Complete)
             except RuntimeError as e:
                 self.record_execution_error(e)
+        if (
+            "end_time" not in self._scenario_report
+            or self._scenario_report.end_time is None
+        ):
+            self._scenario_report.end_time = StringBasedDateTime(
+                arrow.utcnow().datetime
+            )
 
         # Evaluate success
         self._scenario_report.successful = (

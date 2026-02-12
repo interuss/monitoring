@@ -226,6 +226,8 @@ def describe_flask_response(resp: flask.Response, elapsed_s: float):
 
 
 class QueryType(str, Enum):
+    Unknown = "unknown"
+
     # ASTM F3411-19 and F3411-22a (RID)
     # DSS endpoints
     F3411v19DSSSearchIdentificationServiceAreas = (
