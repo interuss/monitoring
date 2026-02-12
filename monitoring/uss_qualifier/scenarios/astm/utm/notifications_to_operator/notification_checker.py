@@ -15,7 +15,6 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     Conflict,
     UserNotification,
 )
-from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch import Query
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
@@ -165,7 +164,7 @@ class NotificationChecker(GenericTestScenario, ABC):
                 if client.participant_id not in notifications
             ]
             if len(remaining_participants) > 0:
-                sleep(
+                self.sleep(
                     2,
                     f"user notifications have not yet appeared in {', '.join(remaining_participants)}",
                 )

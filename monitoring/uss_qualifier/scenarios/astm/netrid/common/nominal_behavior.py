@@ -87,6 +87,7 @@ class NominalBehavior(GenericTestScenario):
             + config.max_propagation_latency.timedelta
             # add two 'min_polling_interval' to make sure we poll at least once after flights are over
             + (config.min_polling_interval.timedelta * 2),
+            sleep=self.sleep,
         )
         evaluator = display_data_evaluator.RIDObservationEvaluator(
             self,

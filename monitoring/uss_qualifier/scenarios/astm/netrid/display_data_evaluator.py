@@ -253,6 +253,7 @@ class RIDObservationEvaluator:
             min_query_diagonal_m=config.min_query_diagonal,
             relevant_past_data_period=rid_version.realtime_period
             + config.max_propagation_latency.timedelta,
+            sleep=test_scenario.sleep,
         )
         self._config = config
         self._rid_version = rid_version

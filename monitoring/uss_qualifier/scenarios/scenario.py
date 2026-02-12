@@ -1,8 +1,9 @@
 import inspect
+import time as pytime
 import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import TypeVar
 
@@ -641,6 +642,26 @@ class GenericTestScenario(ABC):
                     self._scenario_report.successful = False
 
         return self._scenario_report
+
+    def sleep(self, duration: float | timedelta, reason: str) -> None:
+        """Sleep for the specified amount of time, logging the fact that the delay is occurring (when appropriate).
+
+        Args:
+            duration: Amount of time to sleep for; interpreted as seconds if float.
+            reason: Reason the delay is happening (to be printed to console/log if appropriate).
+        """
+        MAX_SILENT_DELAY_S = 0.4
+        """Number of seconds to delay above which a reasoning message should be displayed."""
+
+        if isinstance(duration, timedelta):
+            duration = duration.total_seconds()
+        if duration <= 0:
+            # No need to delay
+            return
+
+        if duration > MAX_SILENT_DELAY_S:
+            logger.debug(f"Delaying {duration:.1f} seconds because {reason}")
+        pytime.sleep(duration)
 
 
 class TestScenario(GenericTestScenario):

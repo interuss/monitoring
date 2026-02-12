@@ -10,7 +10,6 @@ from uas_standards.astm.f3548.v21.api import (
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
-from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import register_resource_type
@@ -374,7 +373,7 @@ class SubscriptionInteractions(TestScenario):
                     )
             self._current_subs.pop(sub_id)
 
-        sleep(
+        self.sleep(
             timedelta(seconds=WAIT_FOR_EXPIRY_SEC),
             "waiting for subscriptions to expire",
         )

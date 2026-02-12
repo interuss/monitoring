@@ -5,7 +5,6 @@ import arrow
 from loguru import logger
 from s2sphere import LatLngRect
 
-from monitoring.monitorlib.delay import sleep
 from monitoring.uss_qualifier.scenarios.astm.netrid.injected_flight_collection import (
     InjectedFlightCollection,
 )
@@ -37,17 +36,22 @@ class VirtualObserver:
     _last_rect: LatLngRect | None = None
     """The most recent query rectangle"""
 
+    _sleep: Callable[[float | timedelta, str], None]
+    """Means by which to cause a delay."""
+
     def __init__(
         self,
         injected_flights: InjectedFlightCollection,
         repeat_query_rect_period: int,
         min_query_diagonal_m: float,
         relevant_past_data_period: timedelta,
+        sleep: Callable[[float | timedelta, str], None],
     ):
         self._injected_flights = injected_flights
         self._repeat_query_rect_period = repeat_query_rect_period
         self._min_query_diagonal_m = min_query_diagonal_m
         self._relevant_past_data_period = relevant_past_data_period
+        self._sleep = sleep
 
     def get_query_rect(self, diagonal_m: float = None) -> LatLngRect:
         if not diagonal_m or diagonal_m < self._min_query_diagonal_m:
@@ -114,6 +118,6 @@ class VirtualObserver:
                 break
             delay = t_next - arrow.utcnow()
             if delay.total_seconds() > 0:
-                sleep(
+                self._sleep(
                     delay, "RID sytem doesn't need to be polled again until this time"
                 )

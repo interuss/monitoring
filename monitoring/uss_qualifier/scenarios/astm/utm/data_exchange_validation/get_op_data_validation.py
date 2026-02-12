@@ -17,7 +17,6 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUssFlightBehavior,
 )
-from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
@@ -186,7 +185,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.end_test_step()
 
         self.begin_test_step("Validate that tested_uss obtained flight2 details")
-        sleep(
+        self.sleep(
             max_wait_time,
             "we have to wait the longest it may take a USS to send a notification before we can establish another USS has obtained operational intent details",
         )
@@ -281,7 +280,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.end_test_step()
 
         self.begin_test_step("Validate that tested_uss obtained flight2 details")
-        sleep(
+        self.sleep(
             max_wait_time,
             "we have to wait the longest it may take a USS to send a notification before we can establish another USS has obtained operational intent details",
         )

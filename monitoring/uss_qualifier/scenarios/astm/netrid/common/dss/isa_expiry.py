@@ -1,6 +1,5 @@
 import datetime
 
-from monitoring.monitorlib.delay import sleep
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
@@ -82,7 +81,7 @@ class ISAExpiry(GenericTestScenario):
             )
 
         # Wait for it to expire
-        sleep(5, "we need to wait for the short-lived ISA to expire")
+        self.sleep(5, "we need to wait for the short-lived ISA to expire")
 
         # Search for ISAs: we should not find the expired one
         with self.check(
