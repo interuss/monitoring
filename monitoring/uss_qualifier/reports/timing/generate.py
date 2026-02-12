@@ -257,6 +257,8 @@ class _ScenarioBreakdownRow:
 def _truncate(items, value_of, fraction):
     result = []
     items_list = list(items)
+    if not items_list:
+        return result
 
     total_value = value_of(items_list[0])
     for item in items_list[1:]:
