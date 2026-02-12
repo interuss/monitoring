@@ -143,9 +143,14 @@ def generate_tested_requirements(
                     ParticipantVerificationStatus=ParticipantVerificationStatus,
                     codebase_version=get_code_version(),
                     config_source=config_source,
+                    anchor_name_of=_anchor_name_of,
                 )
             )
 
     status_file = os.path.join(output_path, "status.json")
     with open(status_file, "w") as f:
         json.dump(verification_report, f, indent=2)
+
+
+def _anchor_name_of(fully_qualified_req_id: str) -> str:
+    return "req-" + fully_qualified_req_id.replace(".", "-")
