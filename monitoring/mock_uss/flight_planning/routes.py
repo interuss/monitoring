@@ -174,6 +174,10 @@ def flight_planning_v1_user_notifications() -> tuple[str, int]:
             400,
         )
 
+    before = min(
+        arrow.utcnow(), before
+    )  # Ensure we don't return notifications from the future
+
     final_list: list[api.UserNotification] = []
 
     for user_notification in db.value.flight_planning_notifications:
