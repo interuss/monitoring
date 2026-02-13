@@ -243,7 +243,7 @@
             {% endfor %}
           {% endfor %}
         {% else %}
-          <tr>
+          <tr id="{{ anchor_name_of(package.id + '.' + requirement.id) }}">
             {% if first_row.package %}
               <td rowspan="{{ package.rows }}"><span class="sticky_cell_value"><a href="{{ package.url }}">{{ package.name }}</a></span></td>
             {% endif %}
