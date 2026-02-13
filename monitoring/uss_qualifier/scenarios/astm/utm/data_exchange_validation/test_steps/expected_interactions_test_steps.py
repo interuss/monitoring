@@ -42,7 +42,7 @@ def expect_mock_uss_receives_op_intent_notification(
     """
 
     # Check for 'notification found' will be done periodically by waiting for a duration till max_wait_time
-    found, query = wait_in_intervals(get_mock_uss_interactions)(
+    found, query = wait_in_intervals(get_mock_uss_interactions, scenario)(
         scenario,
         mock_uss,
         st,

@@ -13,7 +13,6 @@ from monitoring.monitorlib.clients.mock_uss.interactions import (
     Interaction,
     QueryDirection,
 )
-from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.temporal import Time
@@ -41,6 +40,8 @@ from monitoring.uss_qualifier.scenarios.interuss.mock_uss.test_steps import (
 )
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
+
+TOperationResult = TypeVar("TOperationResult")
 
 
 class ServiceProviderNotificationBehavior(GenericTestScenario):
@@ -179,7 +180,7 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
 
         # notifications are not immediate: we optimistically try early, and retry until
         # the permissible delay has passed, or we have received all notifications.
-        interactions = _retry_with_backoff(
+        interactions = self._retry_with_backoff(
             fetch_interactions,
             retries=3,
             delay_s=1,
@@ -300,24 +301,21 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
                 )
         self.end_cleanup()
 
-
-TOperationResult = TypeVar("TOperationResult")
-
-
-def _retry_with_backoff(
-    operation: Callable[[], TOperationResult],
-    retries: int,
-    delay_s: float,
-    delay_reason: str,
-    was_successful: Callable[[TOperationResult], bool],
-) -> TOperationResult:
-    """Retry an operation with a delay, up to a certain number of retries,
-    until the condition is met or retries are exhausted.
-    """
-    for attempt in range(retries + 1):
+    def _retry_with_backoff(
+        self,
+        operation: Callable[[], TOperationResult],
+        retries: int,
+        delay_s: float,
+        delay_reason: str,
+        was_successful: Callable[[TOperationResult], bool],
+    ) -> TOperationResult:
+        """Retry an operation with a delay, up to a certain number of retries,
+        until the condition is met or retries are exhausted.
+        """
         result = operation()
-        if was_successful(result):
-            return result
-        if attempt < retries:
-            sleep(timedelta(seconds=delay_s), delay_reason)
-    return result
+        for attempt in range(retries):
+            if was_successful(result):
+                return result
+            self.sleep(timedelta(seconds=delay_s), delay_reason)
+            result = operation()
+        return result
