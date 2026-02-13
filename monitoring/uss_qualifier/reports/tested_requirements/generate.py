@@ -93,11 +93,6 @@ def generate_tested_requirements(
     index_file = os.path.join(output_path, "index.html")
 
     all_participant_ids = list(report.report.participant_ids())
-    reported_participant_ids = list(participant_req_collections)
-    reported_participant_ids.sort()
-    template = jinja_env.get_template("tested_requirements/test_run_report.html")
-    with open(index_file, "w") as f:
-        f.write(template.render(participant_ids=reported_participant_ids))
 
     verification_report = RequirementsVerificationReport(
         test_run_information=test_run,
@@ -146,6 +141,17 @@ def generate_tested_requirements(
                     anchor_name_of=_anchor_name_of,
                 )
             )
+
+    reported_participant_ids = list(participant_req_collections)
+    reported_participant_ids.sort()
+    template = jinja_env.get_template("tested_requirements/test_run_report.html")
+    with open(index_file, "w") as f:
+        f.write(
+            template.render(
+                participant_ids=reported_participant_ids,
+                verification_report=verification_report,
+            )
+        )
 
     status_file = os.path.join(output_path, "status.json")
     with open(status_file, "w") as f:
