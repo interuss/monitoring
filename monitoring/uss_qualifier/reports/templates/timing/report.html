@@ -135,7 +135,7 @@
                 <td>{{ format_time(row.total_time) }}</td>
                 <td>{{ format_time(row.average_time) }}</td>
                 <td>{{ round(row.query_fraction * 100, 1) }}%
-                {{% if row.query_fraction > 1 %} (concurrent queries){% endif %}
+                {% if row.query_fraction > 1 %} (concurrent queries){% endif %}
                 </td>
             </tr>
             {% endfor %}
