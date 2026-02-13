@@ -132,15 +132,17 @@ It conflicts with Flight 1, but it has higher priority.
 
 ### Check for conflict notifications test step
 
-The test director checks whether a notification reporting the creation of a conflict by Flight 2 was sent to UAS personnel for the control_uss.
+The test director checks whether a notification reporting the creation of a conflict by Flight 2 was sent to UAS personnel for the control_uss as is required by SCD0090.
 
-The test director also checks whether a notification reporting the creation of a new conflict with Flight 1 was sent to the UAS personnel for the tested_uss managing Flight 1.
+The test director also checks whether a notification reporting the creation of a new conflict with Flight 1 was sent to the UAS personnel for the tested_uss managing Flight 1 as is required by SCD0095.
+
+The timeliness and completeness of these notifications will be checked for compliance with SCD0090 and SCD0095 in aggregate in a later test scenario -- only the raw data is gathered in this test scenario.  When eligible notifications are found, they are reported as [notes](../../notifications_to_operator/notification_checker.py) in the test scenario; if a USS does not have a `scd0090_notification` or `scd0095_notification` note, then uss_qualifier did not detect a required notification.
 
 Note that these actions will not be performed if the test director was unable to retrieve the notifications before the planning activity.
 
 #### ℹ️ Retrieve notifications check
 
-We fetch the list of notifications. If the USS doesn't return a valid answer, the USS has not fully implemented **[interuss.automated_testing.flight_planning.ImplementAPI](../../../../../requirements/interuss/automated_testing/flight_planning.md)** and we cannot proceed with notification tests.
+We fetch the list of notifications. If the USS doesn't return a valid answer, the USS has not fully implemented **[interuss.automated_testing.flight_planning.ImplementAPI](../../../../../requirements/interuss/automated_testing/flight_planning.md)** and we cannot proceed with notification checks.
 
 ### Attempt to modify planned Flight 1 in conflict test step
 
@@ -201,15 +203,17 @@ The test driver activates Flight 2, which should be done successfully given that
 
 ### Check for conflict notifications test step
 
-The test director checks whether a notification reporting the modification of Flight 2 while in conflict was sent to UAS personnel for the control_uss.
+The test director checks whether a notification reporting the modification of Flight 2 while in conflict was sent to UAS personnel for the control_uss as required by SCD0090.
 
-The test director also checks whether a notification reporting the modification of a flight conflicting with Flight 1 was sent to the UAS personnel for the tested_uss managing Flight 1.
+The test director also checks whether a notification reporting the modification of a flight conflicting with Flight 1 was sent to the UAS personnel for the tested_uss managing Flight 1 as required by SCD0095.
+
+The timeliness and completeness of these notifications will be checked for compliance with SCD0090 and SCD0095 in aggregate in a later test scenario -- only the raw data is gathered in this test scenario.  When eligible notifications are found, they are reported as [notes](../../notifications_to_operator/notification_checker.py) in the test scenario; if a USS does not have a `scd0090_notification` or `scd0095_notification` note, then uss_qualifier did not detect a required notification.
 
 Note that these actions will not be performed if the test director was unable to retrieve the notifications before the planning activity.
 
 #### ℹ️ Retrieve notifications check
 
-We fetch the list of notifications. If the USS doesn't return a valid answer, the USS has not fully implemented **[interuss.automated_testing.flight_planning.ImplementAPI](../../../../../requirements/interuss/automated_testing/flight_planning.md)** and we cannot proceed with notification tests.
+We fetch the list of notifications. If the USS doesn't return a valid answer, the USS has not fully implemented **[interuss.automated_testing.flight_planning.ImplementAPI](../../../../../requirements/interuss/automated_testing/flight_planning.md)** and we cannot proceed with notification checks.
 
 ### Modify activated Flight 1 in conflict with activated Flight 2 test step
 
