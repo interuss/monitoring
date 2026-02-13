@@ -6,10 +6,8 @@ import uas_standards.astm.f3411.v19.api as v19_api
 import uas_standards.astm.f3411.v19.constants as v19_constants
 import uas_standards.astm.f3411.v22a.api as v22a_api
 import uas_standards.astm.f3411.v22a.constants as v22a_constants
-import yaml
 from implicitdict import ImplicitDict, Optional
 from uas_standards import Operation
-from yaml.representer import Representer
 
 from monitoring.monitorlib import fetch, infrastructure, rid_v1, rid_v2
 from monitoring.monitorlib.fetch import QueryType
@@ -728,8 +726,3 @@ class UpdatedISA(RIDQuery):
                 f"Cannot retrieve ISA ID using RID version {self.rid_version}"
             )
         return url.split("?")[0].split("/")[-1]
-
-
-yaml.add_representer(ChangedSubscription, Representer.represent_dict)
-yaml.add_representer(ChangedISA, Representer.represent_dict)
-yaml.add_representer(ISAChange, Representer.represent_dict)
