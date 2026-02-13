@@ -170,8 +170,23 @@
         </table>
     </div>
     <div>
-        <h2>Intentional delay breakdown</h2>
-        TODO
+        <h2>Breakdown by intentional delay</h2>
+        <table>
+            <tr>
+                <th>Scenario</th>
+                <th>Reason</th>
+                <th>Total time</th>
+                <th>Average time</th>
+            </tr>
+            {% for row in delays_breakdown %}
+            <tr>
+                <td>{{ row.scenario_type }}</td>
+                <td>{{ row.reason }}</td>
+                <td>{{ format_time(row.total_time) }}</td>
+                <td>{{ format_time(row.average_time) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
     </div>
 </div>
 </body>

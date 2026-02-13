@@ -39,11 +39,12 @@ def generate_timing_report(
         if report.report.end_time is None:
             raise _GenerationError("end_time is missing")
         duration = report.report.end_time.datetime - report.report.start_time.datetime
-        scenario_summaries, query_summaries = _summarize(report.report)
+        scenario_summaries, query_summaries, delays_summary = _summarize(report.report)
         scenario_breakdown = _make_scenario_breakdown(
             report, scenario_summaries, config
         )
         query_breakdown = _make_query_breakdown(query_summaries, config)
+        delays_breakdown = _make_delays_breakdown(delays_summary)
         servers = _list_servers(query_summaries)
     except _GenerationError as e:
         template = jinja_env.get_template("timing/cannot_generate.html")
@@ -63,6 +64,7 @@ def generate_timing_report(
                 scenario_breakdown=scenario_breakdown,
                 servers=servers,
                 query_breakdown=query_breakdown,
+                delays_breakdown=delays_breakdown,
                 round=round,
                 len=len,
                 sum=_sum,
@@ -166,9 +168,27 @@ class _QuerySummaryCollection(dict[QueryType, _QuerySummary]):
             raise TypeError(f"Cannot add _QuerySummaryCollection to {type(other)}")
 
 
+DelayReason = tuple[str, str]
+"""(scenario type, reason)"""
+
+
+@dataclass
+class _DelaysSummary:
+    times_per_reason: dict[DelayReason, list[timedelta]]
+
+    def __add__(self, other):
+        if isinstance(other, _DelaysSummary):
+            times_per_reason = {}
+            _add_dicts(self.times_per_reason, other.times_per_reason, times_per_reason)
+            result = _DelaysSummary(times_per_reason=times_per_reason)
+            return result
+        else:
+            raise TypeError(f"Cannot add _DelaysSummary to {type(other)}")
+
+
 def _summarize(
     report: TestSuiteActionReport,
-) -> tuple[_ScenarioSummaryCollection, _QuerySummaryCollection]:
+) -> tuple[_ScenarioSummaryCollection, _QuerySummaryCollection, _DelaysSummary]:
     if "test_scenario" in report and report.test_scenario:
         scenario = report.test_scenario
         if "start_time" not in scenario or not scenario.start_time:
@@ -185,6 +205,13 @@ def _summarize(
             for delay in scenario.delays:
                 delay_time += delay.duration.timedelta
         query_summaries = _QuerySummaryCollection()
+        delays_summary = _DelaysSummary(times_per_reason={})
+        if "delays" in scenario and scenario.delays:
+            for delay in scenario.delays:
+                reason = (scenario.scenario_type, delay.reason)
+                if reason not in delays_summary.times_per_reason:
+                    delays_summary.times_per_reason[reason] = []
+                delays_summary.times_per_reason[reason].append(delay.duration.timedelta)
         if "cases" in scenario and scenario.cases:
             for case in scenario.cases:
                 if "steps" in case and case.steps:
@@ -217,6 +244,12 @@ def _summarize(
                         if "delays" in step and step.delays:
                             for delay in step.delays:
                                 delay_time += delay.duration.timedelta
+                                reason = (scenario.scenario_type, delay.reason)
+                                if reason not in delays_summary.times_per_reason:
+                                    delays_summary.times_per_reason[reason] = []
+                                delays_summary.times_per_reason[reason].append(
+                                    delay.duration.timedelta
+                                )
         scenario_summaries = _ScenarioSummaryCollection(
             {
                 scenario.scenario_type: _ScenarioSummary(
@@ -228,14 +261,18 @@ def _summarize(
                 )
             }
         )
-        return scenario_summaries, query_summaries
+        return scenario_summaries, query_summaries, delays_summary
 
     elif "test_suite" in report and report.test_suite:
         actions = report.test_suite.actions
     elif "action_generator" in report and report.action_generator:
         actions = report.action_generator.actions
     elif "skipped_action" in report and report.skipped_action:
-        return _ScenarioSummaryCollection(), _QuerySummaryCollection()
+        return (
+            _ScenarioSummaryCollection(),
+            _QuerySummaryCollection(),
+            _DelaysSummary(times_per_reason={}),
+        )
     else:
         raise _GenerationError(
             f"test action started at {report.start_time} does not have action content"
@@ -243,11 +280,13 @@ def _summarize(
 
     summaries = _ScenarioSummaryCollection()
     queries = _QuerySummaryCollection()
+    delays = _DelaysSummary(times_per_reason={})
     for action in actions:
-        ds, dq = _summarize(action)
+        ds, dq, dd = _summarize(action)
         summaries = summaries + ds
         queries = queries + dq
-    return summaries, queries
+        delays = delays + dd
+    return summaries, queries, delays
 
 
 @dataclass
@@ -371,3 +410,30 @@ def _list_servers(summaries: _QuerySummaryCollection) -> list[str]:
     servers = list(server_set)
     servers.sort()
     return servers
+
+
+@dataclass
+class _DelaysBreakdownRow:
+    scenario_type: str
+    reason: str
+    times: list[timedelta]
+
+    @property
+    def total_time(self) -> timedelta:
+        result = _sum(self.times)
+        assert result
+        return result
+
+    @property
+    def average_time(self) -> timedelta:
+        return self.total_time / len(self.times)
+
+
+def _make_delays_breakdown(summary: _DelaysSummary) -> list[_DelaysBreakdownRow]:
+    rows = []
+    for reason, times in summary.times_per_reason.items():
+        rows.append(
+            _DelaysBreakdownRow(scenario_type=reason[0], reason=reason[1], times=times)
+        )
+    rows.sort(key=lambda row: row.total_time, reverse=True)
+    return rows
