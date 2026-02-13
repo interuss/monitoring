@@ -133,7 +133,7 @@ class ExecutionConfiguration(ImplicitDict):
     """If true, stop test execution if one of the resources cannot be created.  Otherwise, resources that cannot be created due to missing prerequisites are simply treated as omitted."""
 
     scenarios_filter: str | None
-    """Filter test scenarios by class name using a regex. When empty, all scenarios are executed. Useful for targeted debugging. Overridden by --filter"""
+    """Filter test scenarios by scenario type using a regex. If the filter regex does not match within the scenario type, the scenario is skipped. When empty, all scenarios are executed. Useful for targeted debugging. Overridden by --filter"""
 
 
 class TestConfiguration(ImplicitDict):
