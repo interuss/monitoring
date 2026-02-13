@@ -221,6 +221,11 @@ class GloballyExpandedReportConfiguration(ImplicitDict):
     """When True, look for instances of "Authorization" keys in the report with values starting "Bearer " and redact the signature from those access tokens"""
 
 
+class TimingReportConfiguration(ImplicitDict):
+    percentage_of_time_to_break_down: float = 100.0
+    """Percentage of test time to break down in the timing report (smaller contributions are not reported)"""
+
+
 class ArtifactsConfiguration(ImplicitDict):
     raw_report: Optional[RawReportConfiguration] = None
     """Configuration for raw report generation"""
@@ -239,6 +244,9 @@ class ArtifactsConfiguration(ImplicitDict):
 
     globally_expanded_report: Optional[GloballyExpandedReportConfiguration] = None
     """If specified, configuration describing a desired report mimicking what might be seen had the test run been conducted manually."""
+
+    timing_report: Optional[TimingReportConfiguration] = None
+    """If specified, configuration describing a desired report describing where and how time was spent during the test."""
 
 
 class USSQualifierConfigurationV1(ImplicitDict):
