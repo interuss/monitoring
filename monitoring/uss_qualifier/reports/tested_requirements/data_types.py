@@ -201,6 +201,18 @@ class ParticipantVerificationStatus(str, Enum):
         else:
             return ""
 
+    def get_text(self) -> str:
+        if self == ParticipantVerificationStatus.Pass:
+            return "Pass"
+        elif self == ParticipantVerificationStatus.PassWithFindings:
+            return "Pass (with findings)"
+        elif self == ParticipantVerificationStatus.Fail:
+            return "Fail"
+        elif self == ParticipantVerificationStatus.Incomplete:
+            return "Not fully verified"
+        else:
+            return "???"
+
 
 class ParticipantVerificationInfo(ImplicitDict):
     status: ParticipantVerificationStatus
