@@ -14,10 +14,8 @@ import flask
 import jwt
 import requests
 import urllib3
-import yaml
 from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from loguru import logger
-from yaml.representer import Representer
 
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.errors import stacktrace_string
@@ -97,9 +95,6 @@ class RequestDescription(ImplicitDict):
             return self.body
 
 
-yaml.add_representer(RequestDescription, Representer.represent_dict)
-
-
 def describe_flask_request(request: flask.Request) -> RequestDescription:
     headers = {k: v for k, v in request.headers}
     kwargs = {
@@ -164,9 +159,6 @@ class ResponseDescription(ImplicitDict):
             return json.dumps(self.json)
         else:
             return self.body
-
-
-yaml.add_representer(ResponseDescription, Representer.represent_dict)
 
 
 def describe_response(resp: requests.Response) -> ResponseDescription:
@@ -572,11 +564,6 @@ class QueryError(RuntimeError):
     @property
     def stacktrace(self) -> str:
         return stacktrace_string(self)
-
-
-yaml.add_representer(Query, Representer.represent_dict)
-
-yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
 
 def describe_query(

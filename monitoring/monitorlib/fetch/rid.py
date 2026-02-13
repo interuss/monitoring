@@ -4,7 +4,6 @@ import datetime
 from typing import Any
 
 import s2sphere
-import yaml
 from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v19, v22a
@@ -13,7 +12,6 @@ from uas_standards.astm.f3411.v22a.api import (
     RIDHeight,
     VerticalAccuracy,
 )
-from yaml.representer import Representer
 
 from monitoring.monitorlib import fetch, geo, rid_v1, rid_v2
 from monitoring.monitorlib.fetch import Query, QueryType
@@ -1625,12 +1623,3 @@ def subscriptions(
         raise NotImplementedError(
             f"Cannot query DSS for subscriptions using RID version {rid_version}"
         )
-
-
-yaml.add_representer(FetchedISA, Representer.represent_dict)
-yaml.add_representer(FetchedISAs, Representer.represent_dict)
-yaml.add_representer(FetchedUSSFlights, Representer.represent_dict)
-yaml.add_representer(FetchedUSSFlightDetails, Representer.represent_dict)
-yaml.add_representer(FetchedFlights, Representer.represent_dict)
-yaml.add_representer(FetchedSubscription, Representer.represent_dict)
-yaml.add_representer(FetchedSubscriptions, Representer.represent_dict)

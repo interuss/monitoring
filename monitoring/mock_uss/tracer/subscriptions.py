@@ -1,9 +1,7 @@
 import uuid
 
 import arrow
-import yaml
 from implicitdict import StringBasedDateTime
-from yaml.representer import Representer
 
 import monitoring.monitorlib.fetch.rid as fetch_rid
 import monitoring.monitorlib.fetch.scd as fetch_scd
@@ -22,8 +20,6 @@ from monitoring.monitorlib.geo import get_latlngrect_vertices, make_latlng_rect
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
-
-yaml.add_representer(StringBasedDateTime, Representer.represent_str)
 
 
 class SubscriptionManagementError(RuntimeError):

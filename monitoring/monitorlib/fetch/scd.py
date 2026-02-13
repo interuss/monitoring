@@ -1,7 +1,6 @@
 import datetime
 
 import s2sphere
-import yaml
 from implicitdict import ImplicitDict, Optional
 from uas_standards.astm.f3548.v21.api import (
     OPERATIONS,
@@ -10,7 +9,6 @@ from uas_standards.astm.f3548.v21.api import (
     Subscription,
 )
 from uas_standards.astm.f3548.v21.api import Volume4D as SCDVolume4D
-from yaml.representer import Representer
 
 from monitoring.monitorlib import fetch, infrastructure, scd
 from monitoring.monitorlib.fetch import QueryType
@@ -70,9 +68,6 @@ class FetchedEntityReferences(fetch.Query):
                 if id not in other_refs or r != other_refs[id]:
                     return True
         return False
-
-
-yaml.add_representer(FetchedEntityReferences, Representer.represent_dict)
 
 
 def _entity_references(
@@ -176,9 +171,6 @@ class FetchedEntity(fetch.Query):
             return self.error != other.error
 
 
-yaml.add_representer(FetchedEntity, Representer.represent_dict)
-
-
 def _full_entity(
     uss_resource_name: str,
     uss_base_url: str,
@@ -252,9 +244,6 @@ class FetchedEntities(ImplicitDict):
         for id in other_entities:
             if id not in my_entities:
                 return True
-
-
-yaml.add_representer(FetchedEntities, Representer.represent_dict)
 
 
 class CachedEntity(ImplicitDict):
@@ -404,9 +393,6 @@ class FetchedSubscription(fetch.Query):
             return None
 
 
-yaml.add_representer(FetchedSubscription, Representer.represent_dict)
-
-
 class FetchedSubscriptions(fetch.Query):
     @property
     def success(self) -> bool:
@@ -440,9 +426,6 @@ class FetchedSubscriptions(fetch.Query):
             return {}
         else:
             return {sub.id: sub for sub in self._subscriptions}
-
-
-yaml.add_representer(FetchedSubscriptions, Representer.represent_dict)
 
 
 def get_subscription(
