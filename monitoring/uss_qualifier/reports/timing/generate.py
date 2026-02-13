@@ -180,6 +180,10 @@ def _summarize(
                 f"test scenario {scenario.scenario_type} started at {scenario.start_time} is missing end_time"
             )
         query_time = timedelta(seconds=0)
+        delay_time = timedelta(seconds=0)
+        if "delays" in scenario and scenario.delays:
+            for delay in scenario.delays:
+                delay_time += delay.duration.timedelta
         query_summaries = _QuerySummaryCollection()
         if "cases" in scenario and scenario.cases:
             for case in scenario.cases:
@@ -210,8 +214,9 @@ def _summarize(
                                 query_summaries[query_type].times_per_server[
                                     server
                                 ].append(dt)
-        delay_time = timedelta(seconds=0)
-        # TODO: populate delay_time
+                        if "delays" in step and step.delays:
+                            for delay in step.delays:
+                                delay_time += delay.duration.timedelta
         scenario_summaries = _ScenarioSummaryCollection(
             {
                 scenario.scenario_type: _ScenarioSummary(

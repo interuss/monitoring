@@ -128,6 +128,7 @@
                 <th>Total time</th>
                 <th>Average time</th>
                 <th>Query time<br>(fraction of scenario)</th>
+                <th>Delay time<br>(fraction of scenario)</th>
             </tr>
             {% for row in scenario_breakdown %}
             <tr>
@@ -137,6 +138,7 @@
                 <td>{{ round(row.query_fraction * 100, 1) }}%
                 {% if row.query_fraction > 1 %} (concurrent queries){% endif %}
                 </td>
+                <td>{{ round(row.delay_fraction * 100, 1) }}%</td>
             </tr>
             {% endfor %}
         </table>
