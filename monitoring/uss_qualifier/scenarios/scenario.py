@@ -8,7 +8,7 @@ from enum import Enum
 from typing import TypeVar
 
 import arrow
-from implicitdict import StringBasedDateTime
+from implicitdict import StringBasedDateTime, StringBasedTimeDelta
 from loguru import logger
 
 from monitoring import uss_qualifier as uss_qualifier_module
@@ -22,6 +22,7 @@ from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.reports.report import (
     ErrorReport,
     FailedCheck,
+    IntentionalDelay,
     Note,
     ParticipantID,
     PassedCheck,
@@ -665,6 +666,26 @@ class GenericTestScenario(ABC):
 
         if duration > MAX_SILENT_DELAY_S:
             logger.debug(f"Delaying {duration:.1f} seconds because {reason}")
+        delay = IntentionalDelay(
+            start_time=StringBasedDateTime(arrow.utcnow().datetime),
+            duration=StringBasedTimeDelta(duration),
+            reason=reason,
+        )
+        if self._phase == ScenarioPhase.RunningTestStep and self._step_report:
+            if "delays" not in self._step_report or not self._step_report.delays:
+                self._step_report.delays = []
+            self._step_report.delays.append(delay)
+        elif self._scenario_report:
+            if (
+                "delays" not in self._scenario_report
+                or not self._scenario_report.delays
+            ):
+                self._scenario_report.delays = []
+            self._scenario_report.delays.append(delay)
+        else:
+            raise RuntimeError(
+                f"Scenario {type(self).__name__} attempted to sleep when not executing the test scenario (phase={self._phase})"
+            )
         pytime.sleep(duration)
 
 

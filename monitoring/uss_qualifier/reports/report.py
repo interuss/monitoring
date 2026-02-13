@@ -4,7 +4,12 @@ from collections.abc import Callable, Iterator
 from datetime import UTC, datetime
 from typing import Any
 
-from implicitdict import ImplicitDict, Optional, StringBasedDateTime
+from implicitdict import (
+    ImplicitDict,
+    Optional,
+    StringBasedDateTime,
+    StringBasedTimeDelta,
+)
 
 from monitoring.monitorlib import fetch, inspection
 from monitoring.monitorlib.errors import stacktrace_string
@@ -71,6 +76,17 @@ class PassedCheck(ImplicitDict):
     """Participants that may not have met the relevant requirements if this check had failed"""
 
 
+class IntentionalDelay(ImplicitDict):
+    start_time: StringBasedDateTime
+    """When the delay started"""
+
+    duration: StringBasedTimeDelta
+    """Duration of the delay"""
+
+    reason: str
+    """Reason given for this delay"""
+
+
 class TestStepReport(ImplicitDict):
     name: str
     """Name of this test step"""
@@ -89,6 +105,9 @@ class TestStepReport(ImplicitDict):
 
     passed_checks: list[PassedCheck]
     """The checks which successfully passed in this test step"""
+
+    delays: Optional[list[IntentionalDelay]]
+    """Delays intentionally introduced during this test step"""
 
     end_time: Optional[StringBasedDateTime]
     """Time at which the test step completed or encountered an error"""
@@ -228,6 +247,9 @@ class TestScenarioReport(ImplicitDict):
 
     notes: Optional[dict[str, Note]]
     """Additional information about this scenario that may be useful"""
+
+    delays: Optional[list[IntentionalDelay]]
+    """Delays intentionally introduced during this test scenario, but not during any test step"""
 
     start_time: StringBasedDateTime
     """Time at which the test scenario started"""

@@ -1,0 +1,31 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/reports/report/IntentionalDelay.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.reports.report.IntentionalDelay, as defined in monitoring/uss_qualifier/reports/report.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "duration": {
+      "description": "Duration of the delay",
+      "format": "duration",
+      "type": "string"
+    },
+    "reason": {
+      "description": "Reason given for this delay",
+      "type": "string"
+    },
+    "start_time": {
+      "description": "When the delay started",
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "required": [
+    "duration",
+    "reason",
+    "start_time"
+  ],
+  "type": "object"
+}
