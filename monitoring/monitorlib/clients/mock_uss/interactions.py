@@ -1,9 +1,7 @@
 from datetime import datetime
 from enum import Enum
 
-import yaml
 from implicitdict import ImplicitDict
-from yaml.representer import Representer
 
 from monitoring.monitorlib.fetch import Query
 
@@ -40,9 +38,6 @@ class Interaction(ImplicitDict):
             raise ValueError(
                 f"There is no received_at or initiated_at field in the interaction {self}"
             )
-
-
-yaml.add_representer(Interaction, Representer.represent_dict)
 
 
 class ListLogsResponse(ImplicitDict):

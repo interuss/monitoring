@@ -368,6 +368,11 @@ function(env) {
 
       // Write out a human-readable report showing the sequence of events of the test
       sequence_view: {},
+
+      // Write out a timing report showing where and how time was spent during the test
+      timing_report: {
+        percentage_of_time_to_break_down: 90,
+      },
     }, // artifacts
 
     validation: {

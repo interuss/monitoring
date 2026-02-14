@@ -17,6 +17,7 @@ from monitoring.uss_qualifier.reports.templates import render_templates
 from monitoring.uss_qualifier.reports.tested_requirements.generate import (
     generate_tested_requirements,
 )
+from monitoring.uss_qualifier.reports.timing.generate import generate_timing_report
 
 
 def default_output_path(config_name: str) -> str:
@@ -108,3 +109,9 @@ def generate_artifacts(
         generate_globally_expanded_report(
             report_to_write, artifacts.globally_expanded_report, path
         )
+
+    if artifacts.timing_report is not None:
+        # Timing report
+        path = os.path.join(output_path, "timing")
+        logger.info(f"Writing timing report to {path}")
+        generate_timing_report(redacted_report, artifacts.timing_report, path)

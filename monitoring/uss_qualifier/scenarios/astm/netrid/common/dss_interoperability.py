@@ -8,7 +8,6 @@ from urllib.parse import urlparse
 
 import s2sphere
 
-from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch.rid import ISA
 from monitoring.monitorlib.geo import get_latlngrect_vertices, make_latlng_rect
 from monitoring.uss_qualifier.resources import PlanningAreaResource
@@ -566,7 +565,7 @@ class DSSInteroperability(GenericTestScenario):
         """Expired ISA automatically removed, ISA modifications
         accessible from all non-primary DSSs"""
 
-        sleep(
+        self.sleep(
             SHORT_WAIT_SEC,
             "ISA_1 needs to expire so we can check it is automatically removed",
         )
@@ -662,7 +661,7 @@ class DSSInteroperability(GenericTestScenario):
     def step12(self):
         """Expired Subscriptions don’t trigger subscription notification requests"""
 
-        sleep(
+        self.sleep(
             SHORT_WAIT_SEC,
             "Subscriptions needs to expire so we can check they don't trigger notifications",
         )

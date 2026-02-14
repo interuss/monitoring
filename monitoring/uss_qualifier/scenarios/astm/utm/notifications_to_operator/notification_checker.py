@@ -15,7 +15,6 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     Conflict,
     UserNotification,
 )
-from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch import Query
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
@@ -58,6 +57,24 @@ class NotificationChecker(GenericTestScenario, ABC):
                         query_timestamps=[query.request.timestamp],
                     )
                     continue
+
+                if any(
+                    [
+                        notification.observed_at.datetime
+                        > arrow.now() + NOTIFICATIONS_MAX_CLOCK_SKEW
+                        for notification in resp.user_notifications
+                    ]
+                ):
+                    notifications[client.participant_id] = Notifications(
+                        notifications=None, query=query
+                    )
+                    check.record_failed(
+                        summary="Error while trying to retrieve notifications",
+                        details=f"Response from {client.participant_id} returned notifications in the future.",
+                        query_timestamps=[query.request.timestamp],
+                    )
+                    continue
+
                 notifications[client.participant_id] = Notifications(
                     notifications=resp.user_notifications, query=query
                 )
@@ -105,6 +122,23 @@ class NotificationChecker(GenericTestScenario, ABC):
                         )
                         continue
 
+                    if any(
+                        [
+                            notification.observed_at.datetime
+                            > arrow.now() + NOTIFICATIONS_MAX_CLOCK_SKEW
+                            for notification in resp.user_notifications
+                        ]
+                    ):
+                        notifications[client.participant_id] = Notifications(
+                            notifications=None, query=query
+                        )
+                        check.record_failed(
+                            summary="Error while trying to retrieve notifications",
+                            details=f"Response from {client.participant_id} returned notifications in the future.",
+                            query_timestamps=[query.request.timestamp],
+                        )
+                        continue
+
                 # If there was at least one qualifying notification, use the response obtained for this participant
                 previously_observed = {
                     n.observed_at
@@ -130,7 +164,7 @@ class NotificationChecker(GenericTestScenario, ABC):
                 if client.participant_id not in notifications
             ]
             if len(remaining_participants) > 0:
-                sleep(
+                self.sleep(
                     2,
                     f"user notifications have not yet appeared in {', '.join(remaining_participants)}",
                 )

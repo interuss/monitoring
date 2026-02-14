@@ -45,7 +45,7 @@ When certain circumstances occur, USSs must notify UAS personnel or the operator
 
 If 95% of the USS's notifications regarding conflicts caused by the operator's flight do not appear in the USS's list of user notifications within `ConflictingOIMaxUserNotificationTime` (5 seconds) of completing the planning operation, this check will fail per **[astm.f3548.v21.SCD0090](../../../requirements/astm/f3548/v21.md)**.
 
-To find the notifications considered, review the reports for "Nominal planning: conflict with higher priority" scenarios.
+To find the notifications considered, review the reports for "Nominal planning: conflict with higher priority" scenarios -- this is where the raw data evaluated by this scenario is gathered.
 
 ### Notifications for observing conflicts test step
 
@@ -53,4 +53,4 @@ To find the notifications considered, review the reports for "Nominal planning: 
 
 If 95% of the USS's notifications regarding conflicts affecting the operator's flight do not appear in the USS's list of user notifications within `ConflictingOIMaxUserNotificationTime` (5 seconds) of completing the planning operation, this check will fail per **[astm.f3548.v21.SCD0095](../../../requirements/astm/f3548/v21.md)**.
 
-To find the notifications considered, review the reports for "Nominal planning: conflict with higher priority" scenarios.
+To find the notifications considered, review the reports for "Nominal planning: conflict with higher priority" scenarios -- this is where the raw data evaluated by this scenario is gathered.

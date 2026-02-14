@@ -1,8 +1,9 @@
 import inspect
+import time as pytime
 import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import TypeVar
 
@@ -543,7 +544,6 @@ class GenericTestScenario(ABC):
     def end_test_scenario(self) -> None:
         self._expect_phase(ScenarioPhase.ReadyForTestCase)
         assert self._scenario_report is not None
-        self._scenario_report.end_time = StringBasedDateTime(datetime.now(UTC))
         self._phase = ScenarioPhase.ReadyForCleanup
 
     def go_to_cleanup(self) -> None:
@@ -587,7 +587,6 @@ class GenericTestScenario(ABC):
     def end_cleanup(self) -> None:
         self._expect_phase(ScenarioPhase.CleaningUp)
         assert self._step_report is not None
-        self._step_report.end_time = StringBasedDateTime(datetime.now(UTC))
         self._phase = ScenarioPhase.Complete
 
     def ensure_cleanup_ended(self) -> None:
@@ -598,7 +597,6 @@ class GenericTestScenario(ABC):
         self._expect_phase({ScenarioPhase.CleaningUp, ScenarioPhase.Complete})
         if self._phase == ScenarioPhase.CleaningUp:
             assert self._step_report is not None
-            self._step_report.end_time = StringBasedDateTime(datetime.now(UTC))
             self._phase = ScenarioPhase.Complete
 
     def record_execution_error(self, e: Exception) -> None:
@@ -622,6 +620,13 @@ class GenericTestScenario(ABC):
                 self._expect_phase(ScenarioPhase.Complete)
             except RuntimeError as e:
                 self.record_execution_error(e)
+        if (
+            "end_time" not in self._scenario_report
+            or self._scenario_report.end_time is None
+        ):
+            self._scenario_report.end_time = StringBasedDateTime(
+                arrow.utcnow().datetime
+            )
 
         # Evaluate success
         self._scenario_report.successful = (
@@ -641,6 +646,26 @@ class GenericTestScenario(ABC):
                     self._scenario_report.successful = False
 
         return self._scenario_report
+
+    def sleep(self, duration: float | timedelta, reason: str) -> None:
+        """Sleep for the specified amount of time, logging the fact that the delay is occurring (when appropriate).
+
+        Args:
+            duration: Amount of time to sleep for; interpreted as seconds if float.
+            reason: Reason the delay is happening (to be printed to console/log if appropriate).
+        """
+        MAX_SILENT_DELAY_S = 0.4
+        """Number of seconds to delay above which a reasoning message should be displayed."""
+
+        if isinstance(duration, timedelta):
+            duration = duration.total_seconds()
+        if duration <= 0:
+            # No need to delay
+            return
+
+        if duration > MAX_SILENT_DELAY_S:
+            logger.debug(f"Delaying {duration:.1f} seconds because {reason}")
+        pytime.sleep(duration)
 
 
 class TestScenario(GenericTestScenario):

@@ -1,7 +1,3 @@
-import yaml
-from implicitdict import StringBasedDateTime
-from yaml.representer import Representer
-
 from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.config import KEY_AUTH_SPEC, KEY_DSS_URL
 from monitoring.mock_uss.tracer.config import (
@@ -16,9 +12,6 @@ from monitoring.monitorlib.auth import make_auth_adapter
 from monitoring.monitorlib.fetch import scd
 from monitoring.monitorlib.infrastructure import AuthAdapter, AuthSpec, UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
-
-yaml.add_representer(StringBasedDateTime, Representer.represent_str)
-
 
 scd_cache: dict[ObservationAreaID, dict[str, scd.FetchedEntity]] = {}
 
