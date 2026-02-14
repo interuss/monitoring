@@ -109,7 +109,7 @@ class Validation(TestScenario):
         for flight_intent_template in self.invalid_flight_intents:
             flight_intent = self.resolve_flight(flight_intent_template)
 
-            resp, _ = submit_flight(
+            submit_flight(
                 scenario=self,
                 success_check="Incorrectly planned",
                 expected_results={
@@ -127,11 +127,12 @@ class Validation(TestScenario):
     def _plan_valid_flight(self) -> bool:
         valid_flight_intent = self.resolve_flight(self.valid_flight_intent)
 
-        resp, _ = plan_flight(
+        resp, _, as_planned = plan_flight(
             self,
             self.ussp,
             valid_flight_intent,
         )
+        # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
         if resp is None:
             return False
 

@@ -90,6 +90,10 @@ All flight intent data provided is correct and the USS should have either succes
 properly the planning if it decided to be more conservative with such conflicts.
 If the USS rejects the planning, this check will produce a low severity finding per **[astm.f3548.v21.SCD0005](../../../../requirements/astm/f3548/v21.md)**.
 
+#### 🛑 Injection fidelity check
+
+The requested flight should have been planned essentially as requested.  The system may adapt requested parameters as necessary, but may not change the test-critical attributes of the flight when fulfilling the planning request per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
+
 #### 🛑 Failure check
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
 to reject or accept Flight 1. If the USS indicates that the injection attempt failed, this check will fail per

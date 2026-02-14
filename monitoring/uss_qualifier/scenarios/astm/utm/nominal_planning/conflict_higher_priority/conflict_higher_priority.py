@@ -216,11 +216,13 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             self.dss,
             flight2_planned,
         ) as validator:
-            _, self.flight2_id = plan_flight(
+            _, self.flight2_id, as_planned = plan_flight(
                 self,
                 self.control_uss,
                 flight2_planned,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight2_planned = as_planned
             validator.expect_shared(flight2_planned)
         self.end_test_step()
 
@@ -258,11 +260,14 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             self.dss,
             flight1_planned,
         ) as validator:
-            _, self.flight1_id = plan_flight(
+            _, self.flight1_id, as_planned = plan_flight(
                 self,
                 self.tested_uss,
                 flight1_planned,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            assert as_planned is not None
+            flight1_planned = as_planned
             flight_1_oi_ref = validator.expect_shared(flight1_planned)
         self.end_test_step()
 
@@ -279,11 +284,14 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             flight2_planned,
         ) as validator:
             earliest_creation_time = arrow.utcnow().datetime
-            _, self.flight2_id = plan_flight(
+            _, self.flight2_id, as_planned = plan_flight(
                 self,
                 self.control_uss,
                 flight2_planned,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            assert as_planned is not None
+            flight2_planned = as_planned
             latest_creation_time = arrow.utcnow().datetime
             validator.expect_shared(flight2_planned)
         self.end_test_step()
@@ -367,12 +375,15 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             flight1_activated,
             flight_1_oi_ref,
         ) as validator:
-            activate_flight(
+            _, _, as_planned = activate_flight(
                 self,
                 self.tested_uss,
                 flight1_activated,
                 self.flight1_id,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            assert as_planned is not None
+            flight1_activated = as_planned
             flight_1_oi_ref = validator.expect_shared(flight1_activated)
         self.end_test_step()
 
@@ -385,11 +396,13 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             self.dss,
             flight2_planned,
         ) as validator:
-            _, self.flight2_id = plan_flight(
+            _, self.flight2_id, as_planned = plan_flight(
                 self,
                 self.control_uss,
                 flight2_planned,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight2_planned = as_planned
             flight_2_oi_ref = validator.expect_shared(flight2_planned)
         self.end_test_step()
 
@@ -407,12 +420,14 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             flight_2_oi_ref,
         ) as validator:
             earliest_activation_time = arrow.utcnow().datetime
-            activate_flight(
+            _, _, as_planned = activate_flight(
                 self,
                 self.control_uss,
                 flight2_activated,
                 self.flight2_id,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight2_activated = as_planned
             latest_activation_time = arrow.utcnow().datetime
             flight_2_oi_ref = validator.expect_shared(flight2_activated)
         self.end_test_step()
@@ -439,13 +454,15 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             [flight1_activated, flight1m_activated],
             flight_1_oi_ref,
         ) as validator:
-            resp = modify_activated_flight(
+            resp, as_planned = modify_activated_flight(
                 self,
                 self.tested_uss,
                 flight1m_activated,
                 self.flight1_id,
                 preexisting_conflict=True,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight1m_activated = as_planned
 
             if resp.activity_result == PlanningActivityResult.Completed:
                 flight_1_oi_ref = validator.expect_shared(flight1m_activated)
@@ -474,12 +491,14 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             flight2m_activated,
             flight_2_oi_ref,
         ) as validator:
-            resp = modify_activated_flight(
+            resp, as_planned = modify_activated_flight(
                 self,
                 self.control_uss,
                 flight2m_activated,
                 self.flight2_id,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight2m_activated = as_planned
             if resp.activity_result == PlanningActivityResult.Completed:
                 validator.expect_shared(flight2m_activated)
         self.end_test_step()

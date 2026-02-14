@@ -31,6 +31,8 @@ from monitoring.uss_qualifier.scenarios.astm.utm.evaluation import (
     validate_op_intent_details,
 )
 from monitoring.uss_qualifier.scenarios.scenario import (
+    ScenarioDidNotStopError,
+    ScenarioLogicError,
     TestRunCannotContinueError,
     TestScenarioType,
 )
@@ -201,7 +203,7 @@ class OpIntentValidator:
 
     def expect_shared(
         self,
-        flight_info: FlightInfo,
+        flight_info: FlightInfo | None,
         skip_if_not_found: bool = False,
     ) -> OperationalIntentReference | None:
         """Validate that operational intent information was correctly shared for a flight intent.
@@ -215,6 +217,10 @@ class OpIntentValidator:
         """
         self._begin_step_fragment()
         oi_ref = self._operational_intent_shared_check(flight_info, skip_if_not_found)
+        if flight_info is None:
+            raise ScenarioLogicError(
+                "Scenario should have stopped with missing flight_info during self._operational_intent_shared_check"
+            )
         if oi_ref is None:
             return None
 
@@ -234,7 +240,7 @@ class OpIntentValidator:
 
     def expect_shared_with_invalid_data(
         self,
-        flight_info: FlightInfo,
+        flight_info: FlightInfo | None,
         validation_failure_type: OpIntentValidationFailureType,
         invalid_fields: list | None = None,
         skip_if_not_found: bool = False,
@@ -244,6 +250,7 @@ class OpIntentValidator:
 
         This function implements the test step described in validate_sharing_operational_intent_but_with_invalid_interuss_data.
 
+        :param flight_info: the flight intent that was supposed to have been shared.
         :param skip_if_not_found: set to True to skip the execution of the checks if the operational intent was not found while it should have been modified.
         :param validation_failure_type: specific type of validation failure expected
         :param invalid_fields: Optional list of invalid fields to expect when validation_failure_type is OI_DATA_FORMAT
@@ -296,12 +303,19 @@ class OpIntentValidator:
 
     def _operational_intent_shared_check(
         self,
-        flight_intent: FlightInfo,
+        flight_intent: FlightInfo | None,
         skip_if_not_found: bool,
     ) -> OperationalIntentReference | None:
         with self._scenario.check(
             "Operational intent shared correctly", [self._flight_planner.participant_id]
         ) as check:
+            if flight_intent is None:
+                check.record_failed(
+                    summary="Flight not eligible to be shared as planned",
+                    details=f"USS {self._flight_planner.participant_id} was supposed to have planned a flight that would be shared with the DSS, but instead indicated that the flight planning activity did not result in a flight plan that would be shared with the DSS",
+                    query_timestamps=[],  # TODO: Identify the flight planning query that resulted in no flight info as planned
+                )
+                raise ScenarioDidNotStopError(check)
             if self._orig_oi_ref is None:
                 # We expect a new op intent to have been created. Exception made if skip_if_not_found=True: step is
                 # skipped.

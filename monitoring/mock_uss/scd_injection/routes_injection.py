@@ -1,4 +1,5 @@
 import os
+import uuid
 from datetime import UTC, datetime, timedelta
 
 import arrow
@@ -32,6 +33,7 @@ from monitoring.mock_uss.f3548v21.flight_planning import (
 )
 from monitoring.mock_uss.flights.database import FlightRecord, db
 from monitoring.mock_uss.flights.planning import (
+    adjust_flight_info,
     delete_flight_record,
     lock_flight,
     release_flight_lock,
@@ -55,6 +57,7 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResult,
 )
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
+    MockUssFlightBehavior,
     MockUSSInjectFlightRequest,
 )
 from monitoring.monitorlib.errors import stacktrace_string
@@ -73,7 +76,7 @@ DEADLOCK_TIMEOUT = timedelta(seconds=5)
 
 @webapp.route("/scdsc/v1/status", methods=["GET"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
-def scdsc_injection_status() -> tuple[str, int]:
+def scdsc_injection_status() -> tuple[str | flask.Response, int]:
     """Implements USS status in SCD automated testing injection API."""
     json, code = injection_status()
     return flask.jsonify(json), code
@@ -88,7 +91,7 @@ def injection_status() -> tuple[dict, int]:
 
 @webapp.route("/scdsc/v1/capabilities", methods=["GET"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
-def scdsc_scd_capabilities() -> tuple[str, int]:
+def scdsc_scd_capabilities() -> tuple[str | flask.Response, int]:
     """Implements USS capabilities in SCD automated testing injection API."""
     json, code = scd_capabilities()
     return flask.jsonify(json), code
@@ -110,7 +113,7 @@ def scd_capabilities() -> tuple[dict, int]:
 @webapp.route("/scdsc/v1/flights/<flight_id>", methods=["PUT"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 @idempotent_request()
-def scdsc_inject_flight(flight_id: str) -> tuple[str, int]:
+def scdsc_inject_flight(flight_id: str) -> tuple[str | flask.Response, int]:
     """Implements flight injection in SCD automated testing injection API."""
 
     def log(msg):
@@ -129,23 +132,28 @@ def scdsc_inject_flight(flight_id: str) -> tuple[str, int]:
 
     # Construct potential new flight
     flight_info = FlightInfo.from_scd_inject_flight_request(req_body)
-    op_intent = op_intent_from_flightinfo(flight_info, flight_id)
-    new_flight = FlightRecord(
-        flight_info=flight_info,
-        op_intent=op_intent,
-        mod_op_sharing_behavior=req_body.behavior if "behavior" in req_body else None,
-    )
 
     try:
-        resp = inject_flight(flight_id, new_flight, existing_flight)
+        resp = inject_flight(
+            flight_id,
+            flight_info,
+            req_body.behavior if "behavior" in req_body else None,
+            existing_flight,
+        )
     finally:
         release_flight_lock(flight_id, log)
-    return flask.jsonify(resp.to_inject_flight_response()), 200
+    api_response = resp.to_inject_flight_response()
+    if "as_planned" in resp and resp.as_planned:
+        # Append as_planned as an additional field formatted according to flight_planning API to ease continuing support
+        # of legacy scd injection API
+        api_response["as_planned"] = resp.as_planned.to_flight_plan()
+    return flask.jsonify(api_response), 200
 
 
 def inject_flight(
     flight_id: str,
-    new_flight: FlightRecord,
+    flight_info: FlightInfo,
+    mod_op_sharing_behavior: MockUssFlightBehavior | None,
     existing_flight: FlightRecord | None,
 ) -> PlanningActivityResponse:
     pid = os.getpid()
@@ -159,7 +167,7 @@ def inject_flight(
     )
 
     def unsuccessful(
-        result: PlanningActivityResult, msg: str, has_conflict=None
+        result: PlanningActivityResult, msg: str
     ) -> PlanningActivityResponse:
         return PlanningActivityResponse(
             flight_id=flight_id,
@@ -167,8 +175,19 @@ def inject_flight(
             activity_result=result,
             flight_plan_status=old_status,
             notes=msg,
-            has_conflict=has_conflict,
         )
+
+    try:
+        flight_info = adjust_flight_info(flight_info)
+    except ValueError as e:
+        return unsuccessful(PlanningActivityResult.Rejected, str(e))
+
+    op_intent = op_intent_from_flightinfo(flight_info, str(uuid.uuid4()))
+    new_flight = FlightRecord(
+        flight_info=flight_info,
+        op_intent=op_intent,
+        mod_op_sharing_behavior=mod_op_sharing_behavior,
+    )
 
     # Validate request
     try:
@@ -234,6 +253,7 @@ def inject_flight(
             queries=[],  # TODO: Add queries used
             activity_result=PlanningActivityResult.Completed,
             flight_plan_status=FlightPlanStatus.from_flightinfo(record.flight_info),
+            as_planned=flight_info,
             notes=notes,
         )
     except (ValueError, ConnectionError) as e:
@@ -256,7 +276,7 @@ def inject_flight(
 
 @webapp.route("/scdsc/v1/flights/<flight_id>", methods=["DELETE"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
-def scdsc_delete_flight(flight_id: str) -> tuple[str, int]:
+def scdsc_delete_flight(flight_id: str) -> tuple[str | flask.Response, int]:
     """Implements flight deletion in SCD automated testing injection API."""
     del_resp, status_code = delete_flight(flight_id)
 
@@ -359,7 +379,7 @@ def delete_flight(flight_id) -> tuple[PlanningActivityResponse, int]:
 @webapp.route("/scdsc/v1/clear_area_requests", methods=["POST"])
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 @idempotent_request()
-def scdsc_clear_area() -> tuple[str, int]:
+def scdsc_clear_area() -> tuple[str | flask.Response, int]:
     try:
         json = flask.request.json
         if json is None:

@@ -89,6 +89,13 @@ class PlanningActivityResponse(ImplicitDict):
     flight_plan_status: FlightPlanStatus
     """Status of the flight plan following the flight planning activity."""
 
+    as_planned: Optional[FlightInfo]
+    """The flight information, as it was actually planned (after any adjustments or adaptations).
+    
+    If the flight was planned or modified successfully but this field is not populated, the flight information was
+    accepted exactly as provided.
+    """
+
     notes: Optional[str]
     """Any human-readable notes regarding the activity."""
 
