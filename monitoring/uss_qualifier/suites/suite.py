@@ -636,13 +636,13 @@ class ExecutionContext:
             and self.config.scenarios_filter
             and self.current_frame.action.test_scenario
         ):
-            if not re.match(
-                self.config.scenarios_filter,
-                self.current_frame.action.test_scenario.__class__.__name__,
-            ):
+            scenario_type = (
+                self.current_frame.action.test_scenario.declaration.scenario_type
+            )
+            if not re.search(self.config.scenarios_filter, scenario_type):
                 return SkippedActionReport(
                     timestamp=StringBasedDateTime(arrow.utcnow()),
-                    reason="Filtered scenario",
+                    reason=f"Scenario type '{scenario_type}' did not match against scenarios_filter regex `{self.config.scenarios_filter}`",
                     declaration=self.current_frame.action.declaration,
                 )
 
