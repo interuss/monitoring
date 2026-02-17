@@ -116,24 +116,31 @@ def check_and_generate_slow_update_notification(
         if not rates:
             continue
 
-        # Check in a moving windows of 10s, that NetMinUasLocRefreshPercentage
+        # Check in a moving window of 10s, that NetMinUasLocRefreshPercentage
         # samples are >= NetMinUasLocRefreshFrequency
-        if len(rates) < 10:
+        MOVING_WINDOW_DURATION: int = 10
+
+        if len(rates) < MOVING_WINDOW_DURATION:
             continue
 
-        for wpos in range(0, len(rates) - 10):
+        for wpos in range(0, len(rates) - MOVING_WINDOW_DURATION):
             count_ok = sum(
                 [
                     1 if rate >= constants.NetMinUasLocRefreshFrequencyHz else 0
-                    for rate in rates[wpos : wpos + 10]
+                    for rate in rates[wpos : wpos + MOVING_WINDOW_DURATION]
                 ]
             )
 
-            if count_ok < constants.NetMinUasLocRefreshPercentage / 100.0 * 10:
+            if (
+                count_ok
+                < constants.NetMinUasLocRefreshPercentage
+                / 100.0
+                * MOVING_WINDOW_DURATION
+            ):
                 operator_slow_update_notifications.append(
                     f_start
                     + datetime.timedelta(
-                        seconds=wpos + 2 + 10
+                        seconds=wpos + 2 + MOVING_WINDOW_DURATION
                     )  # get_update_rates is skipping the first 2 seconds (moving average of 3)
                 )
     return operator_slow_update_notifications
