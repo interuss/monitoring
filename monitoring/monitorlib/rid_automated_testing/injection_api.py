@@ -249,14 +249,14 @@ class TestFlight(injection.TestFlight):
 
         rates = []
 
-        current = start + datetime.timedelta(seconds=2)
+        last_bucket = int((end - start).total_seconds())
+        bucket = 2
 
-        while current < end:
-            bucket = int((current - start).total_seconds())
+        while bucket <= last_bucket:
             rates.append(
                 (buckets[bucket] + buckets[bucket - 1] + buckets[bucket - 2]) / 3.0
             )
-            current += datetime.timedelta(seconds=1)
+            bucket += 1
 
         return rates
 
