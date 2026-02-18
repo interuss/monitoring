@@ -1,4 +1,5 @@
 import datetime
+from collections import defaultdict
 
 import arrow
 import s2sphere
@@ -226,10 +227,9 @@ class TestFlight(injection.TestFlight):
             ]
         )
 
-    def get_mean_update_rate_hz(self) -> float | None:
-        """
-        Calculate the mean update rate of the telemetry in Hz
-        """
+    def get_update_rates(self) -> list[int] | None:
+        """Return the update rate for every second, relative to the start of the flight, with a moving windows of 3 seconds."""
+
         if not self.telemetry or len(self.telemetry) == 1:
             return None
         # TODO check if required or not (may have been called earlier?)
@@ -239,7 +239,26 @@ class TestFlight(injection.TestFlight):
             return
         start = self.telemetry[0].timestamp.datetime
         end = self.telemetry[-1].timestamp.datetime
-        return (len(self.telemetry) - 1) / (end - start).seconds
+
+        buckets = defaultdict(int)
+
+        for frame in self.telemetry:
+            if frame.timestamp is not None:
+                bucket = int((frame.timestamp.datetime - start).total_seconds())
+                buckets[bucket] += 1
+
+        rates = []
+
+        last_bucket = int((end - start).total_seconds())
+        bucket = 2
+
+        while bucket <= last_bucket:
+            rates.append(
+                (buckets[bucket] + buckets[bucket - 1] + buckets[bucket - 2]) / 3.0
+            )
+            bucket += 1
+
+        return rates
 
 
 class CreateTestParameters(injection.CreateTestParameters):
