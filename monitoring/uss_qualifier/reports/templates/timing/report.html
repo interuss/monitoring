@@ -73,6 +73,14 @@
           font-style: italic;
           font-size: 10px;
         }
+        .server_name_container {
+          text-align: center;
+        }
+        .server_name {
+          writing-mode: vertical-rl;
+          transform: rotate(180deg);
+          white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -133,18 +141,21 @@
             {% for row in scenario_breakdown %}
             <tr>
                 <td>{{ row.scenario }}</td>
-                <td>{{ format_time(row.total_time) }}</td>
-                <td>{{ format_time(row.average_time) }}</td>
-                <td>{{ round(row.query_fraction * 100, 1) }}%
+                <td style="background-color: #{{ color_of(row.total_time.total_seconds() / max_total_seconds_scenario) }};">{{ format_time(row.total_time) }}</td>
+                <td style="background-color: #{{ color_of(row.average_time.total_seconds() / max_average_seconds_scenario) }};">{{ format_time(row.average_time) }}</td>
+                <td style="background-color: #{{ color_of(1 - row.query_fraction) }};">{{ round(row.query_fraction * 100, 1) }}%
                 {% if row.query_fraction > 1 %} (concurrent queries){% endif %}
                 </td>
-                <td>{{ round(row.delay_fraction * 100, 1) }}%</td>
+                <td style="background-color: #{{ color_of(row.delay_fraction) }};">{{ round(row.delay_fraction * 100, 1) }}%</td>
             </tr>
             {% endfor %}
         </table>
     </div>
     <div>
         <h2>Breakdown by query</h2>
+        <div class="minor_note">
+            Note that differing performance between servers may be due to differing queries sent to the servers (and/or conditions at the times of those queries) in addition to, or instead of, fundamental server performance differences.
+        </div>
         <table>
             <tr>
                 <th rowspan="2">Query type</th>
@@ -154,16 +165,24 @@
             <tr>
                 <th>Overall</th>
                 {% for server in servers %}
-                <th>{{ server }}</th>
+                <th class="server_name_container"><span class="server_name">{{ server }}</span></th>
                 {% endfor %}
             </tr>
             {% for row in query_breakdown %}
             <tr>
                 <td>{{ row.query_type }}</td>
-                <td>{{ format_time(row.total_time) }}</td>
-                <td>{{ format_time(row.average_time) }}</td>
+                <td style="background-color: #{{ color_of(row.total_time.total_seconds() / max_total_seconds_query) }};">{{ format_time(row.total_time) }}</td>
+                <td style="background-color: #{{ color_of(row.average_time.total_seconds() / max_average_seconds_query) }};">{{ format_time(row.average_time) }}</td>
+                {% set max_seconds = row.max_average_server_time().total_seconds() %}
                 {% for server in servers %}
-                <td>{% if server in row.times_per_server %}{{ format_time(sum(row.times_per_server[server]) / len(row.times_per_server[server])) }}{% endif %}</td>
+                    {% if server in row.times_per_server %}
+                        {% set server_time = sum(row.times_per_server[server]) / len(row.times_per_server[server]) %}
+                        <td style="background-color:#{{ color_of(server_time.total_seconds() / max_seconds) }};">
+                            {{ format_time(server_time) }}
+                        </td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
                 {% endfor %}
             </tr>
             {% endfor %}
@@ -182,8 +201,8 @@
             <tr>
                 <td>{{ row.scenario_type }}</td>
                 <td>{{ row.reason }}</td>
-                <td>{{ format_time(row.total_time) }}</td>
-                <td>{{ format_time(row.average_time) }}</td>
+                <td style="background-color: #{{ color_of(row.total_time.total_seconds() / max_total_seconds_delay) }};">{{ format_time(row.total_time) }}</td>
+                <td style="background-color: #{{ color_of(row.average_time.total_seconds() / max_average_seconds_delay) }};">{{ format_time(row.average_time) }}</td>
             </tr>
             {% endfor %}
         </table>

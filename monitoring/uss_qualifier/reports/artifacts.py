@@ -37,7 +37,10 @@ def generate_artifacts(
     disallow_unredacted: bool,
 ):
     logger.debug(f"Writing artifacts to {os.path.abspath(output_path)}")
-    os.makedirs(output_path, exist_ok=True)
+    try:
+        os.makedirs(output_path, exist_ok=True)
+    except PermissionError:
+        pass  # This may be ok if writing directly to a single specific output folder provided to a container
 
     def _should_redact(cfg) -> bool:
         result = "redact_access_tokens" in cfg and cfg.redact_access_tokens

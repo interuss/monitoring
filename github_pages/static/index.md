@@ -10,6 +10,7 @@ These reports were generated during continuous integration for the most recent P
 
 * [Sequence view](./artifacts/uss_qualifier/reports/uspace/sequence)
 * [Tested requirements](./artifacts/uss_qualifier/reports/uspace/requirements)
+* [Timing report](./artifacts/uss_qualifier/reports/uspace/timing)
 * [Demonstrated capabilities](./artifacts/uss_qualifier/reports/uspace/capabilities.html)
 * [Raw report](./artifacts/uss_qualifier/reports/uspace/report.json) (large)
 
@@ -18,27 +19,32 @@ These reports were generated during continuous integration for the most recent P
 * [Raw report](./artifacts/uss_qualifier/reports/noop/report.json) (indented to be human-readable)
 * [Interactive report](./artifacts/uss_qualifier/reports/noop/report.html)
 * [Sequence view](./artifacts/uss_qualifier/reports/noop/sequence)
+* [Timing report](./artifacts/uss_qualifier/reports/noop/timing)
 
 ### [ASTM F3548-21 test configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/f3548_self_contained.yaml)
 
 * [Sequence view](./artifacts/uss_qualifier/reports/f3548_self_contained/sequence)
 * [Tested requirements](./artifacts/uss_qualifier/reports/f3548_self_contained/gate3)
 * [Globally-expanded report](./artifacts/uss_qualifier/reports/f3548_self_contained/globally_expanded/report.html)
+* [Timing report](./artifacts/uss_qualifier/reports/f3548_self_contained/timing)
 
 ### [US UTM Implementation test configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/utm_implementation_us/environments/local/test_1.jsonnet)
 
 * [Sequence view](./artifacts/uss_qualifier/reports/test_1/sequence)
 * [Tested requirements](./artifacts/uss_qualifier/reports/test_1/scd)
+* [Timing report](./artifacts/uss_qualifier/reports/test_1/timing)
 
 ### [ASTM F3411-22a test configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/netrid_v22a.yaml)
 
 * [Sequence view](./artifacts/uss_qualifier/reports/netrid_v22a/sequence)
 * [Tested requirements](./artifacts/uss_qualifier/reports/netrid_v22a/requirements)
+* [Timing report](./artifacts/uss_qualifier/reports/netrid_v22a/timing)
 
 ### [DSS integration test configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/dss_probing.yaml)
 
 * [Sequence view](./artifacts/uss_qualifier/reports/dss_probing/sequence)
 * [Tested requirements](./artifacts/uss_qualifier/reports/dss_probing/requirements)
+* [Timing report](./artifacts/uss_qualifier/reports/dss_probing/timing)
 
 ### [General flight authorization configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/general_flight_auth.yaml)
 
