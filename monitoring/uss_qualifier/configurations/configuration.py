@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.dicts import JSONAddress
@@ -129,6 +131,9 @@ class ExecutionConfiguration(ImplicitDict):
     stop_fast: Optional[bool] = False
     """If true, escalate the Severity of any failed check to Critical in order to end the test run early."""
 
+    do_not_stop_fast_for_acceptable_findings: Optional[bool]
+    """If true, make an exception for stop_fast above when the failed check is identified as an acceptable_finding in one of the tested_requirements artifact descriptions."""
+
     stop_when_resource_not_created: Optional[bool] = False
     """If true, stop test execution if one of the resources cannot be created.  Otherwise, resources that cannot be created due to missing prerequisites are simply treated as omitted."""
 
@@ -152,6 +157,31 @@ class TestConfiguration(ImplicitDict):
 
 TestedRequirementsCollectionIdentifier = str
 """Identifier for a requirements collection, local to a TestedRequirementsConfiguration artifact configuration."""
+
+
+class FullyQualifiedCheck(ImplicitDict):
+    scenario_type: TestScenarioTypeName
+    """Scenario in which the check occurs."""
+
+    test_case_name: str
+    """Test case in which the check occurs."""
+
+    test_step_name: str
+    """Test step in which the check occurs."""
+
+    check_name: str
+    """Name of the check."""
+
+    def contained_in(self, collection: Iterable[FullyQualifiedCheck]) -> bool:
+        for other in collection:
+            if (
+                self.scenario_type == other.scenario_type
+                and self.test_case_name == other.test_case_name
+                and self.test_step_name == other.test_step_name
+                and self.check_name == other.check_name
+            ):
+                return True
+        return False
 
 
 class TestedRequirementsConfiguration(ImplicitDict):
@@ -178,6 +208,9 @@ class TestedRequirementsConfiguration(ImplicitDict):
 
     If a participant is not listed, no report will be generated for them.
     """
+
+    acceptable_findings: Optional[list[FullyQualifiedCheck]]
+    """If any check identified in this field fails, ignore the failure when determining Tested Requirements outcomes."""
 
 
 class SequenceViewConfiguration(ImplicitDict):
@@ -247,6 +280,18 @@ class ArtifactsConfiguration(ImplicitDict):
 
     timing_report: Optional[TimingReportConfiguration] = None
     """If specified, configuration describing a desired report describing where and how time was spent during the test."""
+
+    @property
+    def acceptable_findings(self) -> Iterable[FullyQualifiedCheck]:
+        """Iterates through checks where findings are acceptable in at least one tested_requirements artifact."""
+        if "tested_requirements" not in self or not self.tested_requirements:
+            return
+        for tested_requirements in self.tested_requirements:
+            if (
+                "acceptable_findings" in tested_requirements
+                and tested_requirements.acceptable_findings
+            ):
+                yield from tested_requirements.acceptable_findings
 
 
 class USSQualifierConfigurationV1(ImplicitDict):
