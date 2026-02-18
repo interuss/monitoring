@@ -327,33 +327,33 @@ def submit_flight(
                 query_timestamps=[query.request.timestamp],
             )
 
-        if resp.flight_plan_status in {
+        if resp.flight_plan_status not in {
             FlightPlanStatus.Planned,
             FlightPlanStatus.OkToFly,
             FlightPlanStatus.OffNominal,
         }:
-            if "as_planned" in resp and resp.as_planned:
-                with scenario.check(
-                    "Injection fidelity", flight_planner.participant_id
-                ) as fidelity_check:
-                    # TODO(#1326): Relax/remove this global fidelity check when each individual scenario validates that
-                    #  the flight, as injected, will satisfy the needs of the scenario.
-                    require_compatible_values(
-                        flight_info,
-                        resp.as_planned,
-                        fidelity_check,
-                        default_compatibility=values_exactly_equal,
-                        compatibility={
-                            JSONPath(
-                                "$.basic_information.area[*].time_start"
-                            ): times_not_later_than_specified_or_now
-                        },
-                    )
-                as_planned = resp.as_planned
-            else:
-                as_planned = flight_info
+            return resp, flight_id, None
+
+        if "as_planned" in resp and resp.as_planned:
+            with scenario.check(
+                "Injection fidelity", flight_planner.participant_id
+            ) as fidelity_check:
+                # TODO(#1326): Relax/remove this global fidelity check when each individual scenario validates that
+                #  the flight, as injected, will satisfy the needs of the scenario.
+                require_compatible_values(
+                    flight_info,
+                    resp.as_planned,
+                    fidelity_check,
+                    default_compatibility=values_exactly_equal,
+                    compatibility={
+                        JSONPath(
+                            "$.basic_information.area[*].time_start"
+                        ): times_not_later_than_specified_or_now
+                    },
+                )
+            as_planned = resp.as_planned
         else:
-            as_planned = None
+            as_planned = flight_info
 
     return resp, flight_id, as_planned
 

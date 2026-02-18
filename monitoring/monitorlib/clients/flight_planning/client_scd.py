@@ -3,6 +3,7 @@ import uuid
 
 import arrow
 from implicitdict import ImplicitDict, StringBasedDateTime
+from loguru import logger
 from uas_standards.interuss.automated_testing.flight_planning.v1.api import FlightPlan
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 from uas_standards.interuss.automated_testing.scd.v1 import (
@@ -167,6 +168,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 )
             except ValueError:
                 # Best effort failed so it's ok to ignore additional `as_planned` field
+                logger.warning("SCD API response contained unparseable `as_planned` supplemental field")
                 pass
 
         self._plan_statuses[flight_id] = response.flight_plan_status

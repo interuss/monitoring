@@ -22,8 +22,8 @@ CompatibilityEvaluator = Callable[[Any, Any, JSONAddress, PendingCheck], None]
 
 
 def values_exactly_equal(
-    as_requested: str | Number | StringBasedDateTime,
-    as_planned: str | Number | StringBasedDateTime,
+    as_requested: str | Number | StringBasedDateTime | None,
+    as_planned: str | Number | StringBasedDateTime | None,
     address: JSONAddress,
     check: PendingCheck,
 ):
@@ -89,7 +89,7 @@ def times_not_later_than_specified_or_now(
 def _resolve_addresses(
     paths: Iterable[JSONPath] | JSONPath, content: dict[str, Any]
 ) -> Iterable[JSONAddress]:
-    if isinstance(paths, str):
+    if isinstance(paths, JSONPath):
         paths = [paths]
     for path in paths:
         for match in bc_jsonpath_ng.parser.parse(path).find(content):
