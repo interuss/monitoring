@@ -87,6 +87,23 @@ class IntentionalDelay(ImplicitDict):
     """Reason given for this delay"""
 
 
+class _TimestampAccumulator:
+    result: datetime | None
+    _f_accum: Callable[[datetime, datetime], datetime]
+
+    def __init__(self, f_accum: Callable[[datetime, datetime], datetime]):
+        self.result = None
+        self._f_accum = f_accum
+
+    def accumulate(self, new_timestamp: datetime | None) -> None:
+        if new_timestamp is None:
+            return
+        if self.result is None:
+            self.result = new_timestamp
+        else:
+            self.result = self._f_accum(self.result, new_timestamp)
+
+
 class TestStepReport(ImplicitDict):
     name: str
     """Name of this test step"""
@@ -157,6 +174,25 @@ class TestStepReport(ImplicitDict):
             ids.update(fc.participants)
         return ids
 
+    @property
+    def latest_timestamp(self) -> datetime | None:
+        timestamp = _TimestampAccumulator(max)
+        if "end_time" in self and self.end_time:
+            timestamp.accumulate(self.end_time.datetime)
+        if "queries" in self and self.queries:
+            for query in self.queries:
+                timestamp.accumulate(query.response.reported.datetime)
+        if "delays" in self and self.delays:
+            for delay in self.delays:
+                timestamp.accumulate(
+                    delay.start_time.datetime + delay.duration.timedelta
+                )
+        for check in self.failed_checks:
+            timestamp.accumulate(check.timestamp.datetime)
+        for check in self.passed_checks:
+            timestamp.accumulate(check.timestamp.datetime)
+        return timestamp.result
+
 
 class TestCaseReport(ImplicitDict):
     name: str
@@ -202,6 +238,16 @@ class TestCaseReport(ImplicitDict):
         for step in self.steps:
             ids.update(step.participant_ids())
         return ids
+
+    @property
+    def latest_timestamp(self) -> datetime | None:
+        timestamp = _TimestampAccumulator(max)
+        if "end_time" in self and self.end_time:
+            timestamp.accumulate(self.end_time.datetime)
+        if "steps" in self and self.steps:
+            for step in self.steps:
+                timestamp.accumulate(step.latest_timestamp)
+        return timestamp.result
 
 
 class ErrorReport(ImplicitDict):
@@ -328,6 +374,28 @@ class TestScenarioReport(ImplicitDict):
             ids.update(self.cleanup.participant_ids())
         return ids
 
+    @property
+    def latest_timestamp(self) -> datetime | None:
+        timestamp = _TimestampAccumulator(max)
+        if "end_time" in self and self.end_time:
+            timestamp.accumulate(self.end_time.datetime)
+        if "notes" in self and self.notes:
+            for note in self.notes.values():
+                timestamp.accumulate(note.timestamp.datetime)
+        if "delays" in self and self.delays:
+            for delay in self.delays:
+                timestamp.accumulate(
+                    delay.start_time.datetime + delay.duration.timedelta
+                )
+        if "cases" in self and self.cases:
+            for case in self.cases:
+                timestamp.accumulate(case.latest_timestamp)
+        if "cleanup" in self and self.cleanup:
+            timestamp.accumulate(self.cleanup.latest_timestamp)
+        if "execution_error" in self and self.execution_error:
+            timestamp.accumulate(self.execution_error.timestamp.datetime)
+        return timestamp.result
+
 
 class ActionGeneratorReport(ImplicitDict):
     generator_type: GeneratorTypeName
@@ -379,6 +447,15 @@ class ActionGeneratorReport(ImplicitDict):
         for action in self.actions:
             ids.update(action.participant_ids())
         return ids
+
+    @property
+    def latest_timestamp(self) -> datetime | None:
+        timestamp = _TimestampAccumulator(max)
+        if "end_time" in self and self.end_time:
+            timestamp.accumulate(self.end_time.datetime)
+        for action in self.actions:
+            timestamp.accumulate(action.latest_timestamp)
+        return timestamp.result
 
 
 class TestSuiteActionReport(ImplicitDict):
@@ -525,6 +602,10 @@ class TestSuiteActionReport(ImplicitDict):
         return self._conditional(
             lambda report: report.end_time if "end_time" in report else None
         )
+
+    @property
+    def latest_timestamp(self) -> datetime | None:
+        return self._conditional(lambda report: report.latest_time)
 
 
 class AllConditionsEvaluationReport(ImplicitDict):

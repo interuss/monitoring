@@ -1,5 +1,4 @@
 import os
-import uuid
 from datetime import timedelta
 
 import arrow
@@ -12,8 +11,7 @@ from uas_standards.interuss.automated_testing.flight_planning.v1.constants impor
 from monitoring.mock_uss.app import require_config_value, webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.config import KEY_BASE_URL
-from monitoring.mock_uss.f3548v21.flight_planning import op_intent_from_flightinfo
-from monitoring.mock_uss.flights.database import FlightRecord, db
+from monitoring.mock_uss.flights.database import db
 from monitoring.mock_uss.scd_injection.routes_injection import (
     clear_area,
     delete_flight,
@@ -54,7 +52,9 @@ def injection_status() -> tuple[dict, int]:
 @webapp.route("/flight_planning/v1/flight_plans/<flight_plan_id>", methods=["PUT"])
 @requires_scope(Scope.Plan)
 @idempotent_request()
-def flight_planning_v1_upsert_flight_plan(flight_plan_id: str) -> tuple[str, int]:
+def flight_planning_v1_upsert_flight_plan(
+    flight_plan_id: str,
+) -> tuple[str | flask.Response, int]:
     def log(msg: str) -> None:
         logger.debug(f"[upsert_plan/{os.getpid()}:{flight_plan_id}] {msg}")
 
@@ -73,18 +73,12 @@ def flight_planning_v1_upsert_flight_plan(flight_plan_id: str) -> tuple[str, int
     existing_flight = lock_flight(flight_plan_id, log)
     try:
         info = FlightInfo.from_flight_plan(req_body.flight_plan)
-        op_intent = op_intent_from_flightinfo(info, str(uuid.uuid4()))
-        new_flight = FlightRecord(
-            flight_info=info,
-            op_intent=op_intent,
-            mod_op_sharing_behavior=(
-                req_body.behavior
-                if "behavior" in req_body and req_body.behavior
-                else None
-            ),
+        inject_resp = inject_flight(
+            flight_plan_id,
+            info,
+            req_body.behavior if "behavior" in req_body and req_body.behavior else None,
+            existing_flight,
         )
-
-        inject_resp = inject_flight(flight_plan_id, new_flight, existing_flight)
 
     finally:
         release_flight_lock(flight_plan_id, log)
@@ -93,8 +87,10 @@ def flight_planning_v1_upsert_flight_plan(flight_plan_id: str) -> tuple[str, int
         planning_result=api.PlanningActivityResult(inject_resp.activity_result),
         flight_plan_status=api.FlightPlanStatus(inject_resp.flight_plan_status),
     )
+    if "as_planned" in inject_resp and inject_resp.as_planned:
+        resp.as_planned = inject_resp.as_planned.to_flight_plan()
     for k, v in inject_resp.items():
-        if k not in {"planning_result", "flight_plan_status", "has_conflict"}:
+        if k not in {"planning_result", "flight_plan_status", "as_planned"}:
             resp[k] = v
     return flask.jsonify(resp), 200
 

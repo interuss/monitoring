@@ -1,4 +1,5 @@
 import os
+from colorsys import hsv_to_rgb
 from dataclasses import dataclass
 from datetime import timedelta
 
@@ -36,9 +37,17 @@ def generate_timing_report(
     try:
         if report.report.start_time is None:
             raise _GenerationError("start_time is missing")
-        if report.report.end_time is None:
+        if report.report.end_time:
+            duration = (
+                report.report.end_time.datetime - report.report.start_time.datetime
+            )
+        elif report.report.latest_timestamp:
+            duration = (
+                report.report.latest_timestamp - report.report.start_time.datetime
+            )
+        else:
             raise _GenerationError("end_time is missing")
-        duration = report.report.end_time.datetime - report.report.start_time.datetime
+
         scenario_summaries, query_summaries, delays_summary = _summarize(report.report)
         scenario_breakdown = _make_scenario_breakdown(
             report, scenario_summaries, config
@@ -62,13 +71,40 @@ def generate_timing_report(
                 duration=duration,
                 codebase_version=get_code_version(),
                 scenario_breakdown=scenario_breakdown,
+                max_total_seconds_scenario=max(
+                    r.total_time.total_seconds() for r in scenario_breakdown
+                ),
+                max_average_seconds_scenario=max(
+                    r.average_time.total_seconds() for r in scenario_breakdown
+                ),
                 servers=servers,
                 query_breakdown=query_breakdown,
+                max_total_seconds_query=max(
+                    r.total_time.total_seconds() for r in query_breakdown
+                )
+                if query_breakdown
+                else 0,
+                max_average_seconds_query=max(
+                    r.average_time.total_seconds() for r in query_breakdown
+                )
+                if query_breakdown
+                else 0,
                 delays_breakdown=delays_breakdown,
+                max_total_seconds_delay=max(
+                    r.total_time.total_seconds() for r in delays_breakdown
+                )
+                if delays_breakdown
+                else 0,
+                max_average_seconds_delay=max(
+                    r.average_time.total_seconds() for r in delays_breakdown
+                )
+                if delays_breakdown
+                else 0,
                 round=round,
                 len=len,
                 sum=_sum,
                 format_time=_format_time,
+                color_of=_color_of,
             )
         )
 
@@ -89,6 +125,12 @@ def _format_time(dt: timedelta) -> str:
         return f"{seconds:.2f}s"
     else:
         return f"{seconds:.3f}s"
+
+
+def _color_of(f: float) -> str:
+    hue = 0.58 * (1 - min(max(f, 0), 1))
+    rgb = hsv_to_rgb(hue, 0.4, 1)
+    return f"{int(rgb[0] * 255.99):02x}{int(rgb[1] * 255.99):02x}{int(rgb[2] * 255.99):02x}"
 
 
 def _sum(items):
@@ -195,7 +237,11 @@ def _summarize(
             raise _GenerationError(
                 f"test scenario {scenario.scenario_type} is missing start_time"
             )
-        if "end_time" not in scenario or not scenario.end_time:
+        if "end_time" in scenario and scenario.end_time:
+            duration = scenario.end_time.datetime - scenario.start_time.datetime
+        elif scenario.latest_timestamp:
+            duration = scenario.latest_timestamp - scenario.start_time.datetime
+        else:
             raise _GenerationError(
                 f"test scenario {scenario.scenario_type} started at {scenario.start_time} is missing end_time"
             )
@@ -254,8 +300,7 @@ def _summarize(
             {
                 scenario.scenario_type: _ScenarioSummary(
                     instances=1,
-                    total_time=scenario.end_time.datetime
-                    - scenario.start_time.datetime,
+                    total_time=duration,
                     query_time=query_time,
                     delay_time=delay_time,
                 )
@@ -383,6 +428,14 @@ class _QueryBreakdownRow:
             total += server_dts
             n += len(dts)
         return total / n
+
+    def max_average_server_time(self) -> timedelta | None:
+        if not self.times_per_server:
+            return None
+        return max(
+            (_sum(values) or timedelta(seconds=0)) / len(values)
+            for values in self.times_per_server.values()
+        )
 
 
 def _make_query_breakdown(
