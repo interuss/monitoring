@@ -11,3 +11,7 @@ All flight intent data provided is correct and valid and free of conflict in spa
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
 to reject or accept the flight. If the USS indicates that the injection attempt failed, this check will fail per
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../requirements/interuss/automated_testing/flight_planning.md)**.
+
+## 🛑 Injection fidelity check
+
+The requested flight should have been planned essentially as requested.  The system may adapt requested parameters as necessary, but may not change the test-critical attributes of the flight when fulfilling the planning request per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../requirements/interuss/automated_testing/flight_planning.md)**.

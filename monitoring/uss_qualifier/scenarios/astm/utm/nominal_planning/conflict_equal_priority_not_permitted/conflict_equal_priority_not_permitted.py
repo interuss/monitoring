@@ -234,11 +234,13 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self.dss,
             flight2_planned,
         ) as validator:
-            _, self.flight2_id = plan_flight(
+            _, self.flight2_id, as_planned = plan_flight(
                 self,
                 self.control_uss,
                 flight2_planned,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight2_planned = as_planned
             flight_2_oi_ref = validator.expect_shared(flight2_planned)
         self.end_test_step()
 
@@ -252,12 +254,14 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             flight2_activated,
             flight_2_oi_ref,
         ) as validator:
-            activate_flight(
+            _, _, as_planned = activate_flight(
                 self,
                 self.control_uss,
                 flight2_activated,
                 self.flight2_id,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight2_activated = as_planned
             validator.expect_shared(flight2_activated)
         self.end_test_step()
 
@@ -309,12 +313,15 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self.dss,
             flight1c_planned,
         ) as validator:
-            _, self.flight1_id = plan_flight(
+            _, self.flight1_id, as_planned = plan_flight(
                 self,
                 self.tested_uss,
                 flight1c_planned,
                 nearby_potential_conflict=True,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            assert as_planned is not None
+            flight1c_planned = as_planned
             flight_1_oi_ref = validator.expect_shared(flight1c_planned)
         self.end_test_step()
 
@@ -354,12 +361,15 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             flight1c_activated,
             flight_1_oi_ref,
         ) as validator:
-            activate_flight(
+            _, _, as_planned = activate_flight(
                 self,
                 self.tested_uss,
                 flight1c_activated,
                 self.flight1_id,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            assert as_planned is not None
+            flight1c_activated = as_planned
             flight_1_oi_ref = validator.expect_shared(flight1c_activated)
         self.end_test_step()
 
@@ -413,12 +423,15 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             flight1_activated,
             flight_1_oi_ref,
         ) as validator:
-            _, self.flight1_id = activate_flight(
+            _, self.flight1_id, as_planned = activate_flight(
                 self,
                 self.tested_uss,
                 flight1_activated,
                 self.flight1_id,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            assert as_planned is not None
+            flight1_activated = as_planned
             flight_1_oi_ref = validator.expect_shared(flight1_activated)
         self.end_test_step()
 
@@ -431,11 +444,14 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             self.dss,
             flight2m_planned,
         ) as validator:
-            _, self.flight2_id = plan_flight(
+            _, self.flight2_id, as_planned = plan_flight(
                 self,
                 self.control_uss,
                 flight2m_planned,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            assert as_planned is not None
+            flight2m_planned = as_planned
             flight_2_oi_ref = validator.expect_shared(flight2m_planned)
         self.end_test_step()
 
@@ -449,7 +465,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             [flight2m_planned, flight2_nonconforming],
             flight_2_oi_ref,
         ) as validator:
-            resp_flight_2, _ = submit_flight(
+            resp_flight_2, _, as_planned = submit_flight(
                 scenario=self,
                 success_check="Successful transition to non-conforming state",
                 expected_results={
@@ -461,6 +477,8 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 flight_info=flight2_nonconforming,
                 flight_id=self.flight2_id,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight2_nonconforming = as_planned
 
             if resp_flight_2.activity_result == PlanningActivityResult.NotSupported:
                 msg = f"{self.control_uss.participant_id} does not support the transition to a Nonconforming state; execution of the scenario was stopped without failure"
@@ -482,7 +500,7 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
             [flight1_activated, flight1m_activated],
             flight_1_oi_ref,
         ) as validator:
-            resp_flight_1, _ = submit_flight(
+            resp_flight_1, _, as_planned = submit_flight(
                 scenario=self,
                 success_check="Successful flight intent handling",
                 expected_results={
@@ -495,6 +513,8 @@ class ConflictEqualPriorityNotPermitted(TestScenario):
                 flight_info=flight1m_activated,
                 flight_id=self.flight1_id,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight1m_activated = as_planned
 
             if resp_flight_1.activity_result == PlanningActivityResult.Completed:
                 validator.expect_shared(flight1m_activated)

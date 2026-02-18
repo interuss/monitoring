@@ -83,6 +83,7 @@ Otherwise, the FlightIntentsResource must provide the following flight intents:
   </tr>
 </table>
 
+
 Because the scenario involves activation of intents, the start times of all activated intents must be during the time
 the test scenario is executed (not before). Additionally, their end times must leave sufficient time for the execution
 of the test scenario.
@@ -96,7 +97,6 @@ CMSA role in order to transition to the `Nonconforming` state in order to create
 
 ### dss
 DSSInstanceResource that provides access to a DSS instance where flight creation/sharing can be verified.
-
 
 ## Prerequisites check test case
 
@@ -233,6 +233,10 @@ transitioned to non-conforming state by the USS
 per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 If the USS rejects the transition, this check will fail.
 If the USS indicates that the operation is not supported, the USS does not support the CMSA role, and as such the scenario execution will stop without failing.
+
+#### 🛑 Injection fidelity check
+
+The requested flight should have been updated essentially as requested.  The system may adapt requested parameters as necessary, but may not change the test-critical attributes of the flight when fulfilling the planning request per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
 #### 🛑 Failure check
 All flight intent data provided was complete and correct. It should have been processed successfully, allowing the USS
