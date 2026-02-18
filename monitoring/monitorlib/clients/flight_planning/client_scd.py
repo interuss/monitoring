@@ -168,7 +168,9 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 )
             except ValueError:
                 # Best effort failed so it's ok to ignore additional `as_planned` field
-                logger.warning("SCD API response contained unparseable `as_planned` supplemental field")
+                logger.warning(
+                    "SCD API response contained unparseable `as_planned` supplemental field"
+                )
                 pass
 
         self._plan_statuses[flight_id] = response.flight_plan_status
