@@ -17,4 +17,4 @@ cd monitoring || exit 1
 make image
 )
 
-./monitoring/mock_uss/run_locally.sh up --wait --wait-timeout 60 -d
+./monitoring/mock_uss/run_locally.sh up --wait --wait-timeout 90 -d
