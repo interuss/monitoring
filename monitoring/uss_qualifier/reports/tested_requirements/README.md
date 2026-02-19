@@ -18,7 +18,7 @@ requirement that the set of scenarios run may have been capable of measuring.
 
 ### Requirement summaries
 
-Each requirement is summarized (see [`TestedRequirement.classname`](./data_types.py)) for a participant in the following way:
+Each requirement is summarized (see [`TestedRequirement.status`](./data_types.py)) for a participant in the following way:
 
 <table>
   <thead>
@@ -33,9 +33,9 @@ Each requirement is summarized (see [`TestedRequirement.classname`](./data_types
       <th colspan="3">Fail</th>
     </tr>
     <tr>
-      <th>Medium+ severity, not in `acceptable_findings`</th>
-      <th>Low severity, not in `acceptable_findings`</th>
-      <th>In `acceptable_findings`</th>
+      <th>Medium+ severity, not in <code>acceptable_&#8203;findings</code></th>
+      <th>Low severity, not in <code>acceptable_&#8203;findings</code></th>
+      <th>In <code>acceptable_&#8203;findings</code></th>
     </tr>
   </thead>
   <tbody>
