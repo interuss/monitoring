@@ -111,7 +111,14 @@ def generate_tested_requirements(
             matching_participants = config.aggregate_participants[participant_id]
         else:
             matching_participants = [participant_id]
-        participant_breakdown = make_breakdown(report, req_set, matching_participants)
+        participant_breakdown = make_breakdown(
+            report,
+            list(config.acceptable_findings)
+            if "acceptable_findings" in config and config.acceptable_findings
+            else [],
+            req_set,
+            matching_participants,
+        )
         overall_status = compute_overall_status(participant_breakdown)
         system_version = get_system_version(
             find_participant_system_versions(report.report, matching_participants)

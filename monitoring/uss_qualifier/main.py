@@ -118,6 +118,7 @@ def execute_test_run(
     whole_config: USSQualifierConfiguration,
     description: TestDefinitionDescription,
 ):
+    assert whole_config.v1
     config = whole_config.v1.test_run
 
     if not config:
@@ -137,7 +138,13 @@ def execute_test_run(
     )
 
     logger.info("Instantiating top-level test suite action")
-    context = ExecutionContext(config.execution if "execution" in config else None)
+    if "artifacts" in whole_config.v1 and whole_config.v1.artifacts:
+        acceptable_findings = list(whole_config.v1.artifacts.acceptable_findings)
+    else:
+        acceptable_findings = []
+    context = ExecutionContext(
+        config.execution if "execution" in config else None, acceptable_findings
+    )
     action = TestSuiteAction(config.action, resources)
     logger.info("Running top-level test suite action")
     report = action.run(context)

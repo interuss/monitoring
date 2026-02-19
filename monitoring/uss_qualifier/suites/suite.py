@@ -23,6 +23,7 @@ from monitoring.uss_qualifier.action_generators.action_generator import (
 )
 from monitoring.uss_qualifier.configurations.configuration import (
     ExecutionConfiguration,
+    FullyQualifiedCheck,
     TestSuiteActionSelectionCondition,
 )
 from monitoring.uss_qualifier.fileio import resolve_filename
@@ -411,11 +412,17 @@ class ActionStackFrame:
 class ExecutionContext:
     start_time: datetime
     config: ExecutionConfiguration | None
+    acceptable_findings: list[FullyQualifiedCheck]
     top_frame: ActionStackFrame | None
     current_frame: ActionStackFrame | None
 
-    def __init__(self, config: ExecutionConfiguration | None):
+    def __init__(
+        self,
+        config: ExecutionConfiguration | None,
+        acceptable_findings: list[FullyQualifiedCheck],
+    ):
         self.config = config
+        self.acceptable_findings = acceptable_findings
         self.top_frame = None
         self.current_frame = None
         self.start_time = arrow.utcnow().datetime
@@ -455,14 +462,29 @@ class ExecutionContext:
         for child in frame.children:
             yield from self.test_scenario_reports(child)
 
-    @property
-    def stop_fast(self) -> bool:
+    def stop_fast(
+        self, test_case_name: str, test_step_name: str, check_name: str
+    ) -> bool:
         if (
             self.config is not None
             and "stop_fast" in self.config
-            and self.config.stop_fast is not None
+            and self.config.stop_fast
         ):
-            return self.config.stop_fast
+            if (
+                "do_not_stop_fast_for_acceptable_findings" in self.config
+                and self.config.do_not_stop_fast_for_acceptable_findings
+            ):
+                # See if there is an exception for the particular check being considered
+                if self.current_frame and self.current_frame.action.test_scenario:
+                    current_check = FullyQualifiedCheck(
+                        scenario_type=self.current_frame.action.test_scenario.declaration.scenario_type,
+                        test_case_name=test_case_name,
+                        test_step_name=test_step_name,
+                        check_name=check_name,
+                    )
+                    if current_check.contained_in(self.acceptable_findings):
+                        return False
+            return True
         return False
 
     def _compute_n_of(
