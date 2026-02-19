@@ -151,7 +151,11 @@ class TestConfiguration(ImplicitDict):
 
 
 TestedRequirementsCollectionIdentifier = str
-"""Identifier for a requirements collection, local to a TestedRequirementsConfiguration artifact configuration."""
+"""Identifier for a requirements collection, local to a TestedRequirementsConfiguration artifact configuration.
+
+This value will be displayed as RC-<VALUE> in the artifact.  To avoid confusion, no spaces are recommended in values of
+this type; e.g., 'SCD_with_DSS' rather than 'SCD with DSS' or 'ServerProviderAndDisplayProvider' versus 'Service Provider
+and Display Provider'.  Succinct names are recommended over lengthy ones."""
 
 
 class TestedRequirementsConfiguration(ImplicitDict):
