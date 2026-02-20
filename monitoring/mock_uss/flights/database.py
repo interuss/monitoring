@@ -15,10 +15,11 @@ DEADLOCK_TIMEOUT = timedelta(seconds=5)
 
 
 class FlightRecord(ImplicitDict):
-    """Representation of a flight in a USS"""
+    """Representation of a flight in mock_uss"""
 
+    # TODO(mock_uss_flight_id): Add flight ID that is independent of op_intent
     flight_info: FlightInfo
-    op_intent: OperationalIntent
+    op_intent: Optional[OperationalIntent] = None
     mod_op_sharing_behavior: Optional[MockUssFlightBehavior] = None
     locked: bool = False
 
