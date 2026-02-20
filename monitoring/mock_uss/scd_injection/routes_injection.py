@@ -31,7 +31,7 @@ from monitoring.mock_uss.f3548v21.flight_planning import (
     share_op_intent,
     validate_request,
 )
-from monitoring.mock_uss.flights.database import FlightRecord, db
+from monitoring.mock_uss.flights.database import FlightRecord, MockUSSFlightID, db
 from monitoring.mock_uss.flights.planning import (
     adjust_flight_info,
     delete_flight_record,
@@ -128,20 +128,21 @@ def scdsc_inject_flight(flight_id: str) -> tuple[str | flask.Response, int]:
     except ValueError as e:
         msg = f"Create flight {flight_id} unable to parse JSON: {e}"
         return msg, 400
-    existing_flight = lock_flight(flight_id, log)
+    mock_uss_flight_id = MockUSSFlightID(flight_id)
+    existing_flight = lock_flight(mock_uss_flight_id, log)
 
     # Construct potential new flight
     flight_info = FlightInfo.from_scd_inject_flight_request(req_body)
 
     try:
         resp = inject_flight(
-            flight_id,
+            mock_uss_flight_id,
             flight_info,
             req_body.behavior if "behavior" in req_body else None,
             existing_flight,
         )
     finally:
-        release_flight_lock(flight_id, log)
+        release_flight_lock(mock_uss_flight_id, log)
     api_response = resp.to_inject_flight_response()
     if "as_planned" in resp and resp.as_planned:
         # Append as_planned as an additional field formatted according to flight_planning API to ease continuing support
@@ -151,7 +152,7 @@ def scdsc_inject_flight(flight_id: str) -> tuple[str | flask.Response, int]:
 
 
 def inject_flight(
-    flight_id: str,
+    flight_id: MockUSSFlightID,
     flight_info: FlightInfo,
     mod_op_sharing_behavior: MockUssFlightBehavior | None,
     existing_flight: FlightRecord | None,
@@ -170,7 +171,7 @@ def inject_flight(
         result: PlanningActivityResult, msg: str
     ) -> PlanningActivityResponse:
         return PlanningActivityResponse(
-            flight_id=flight_id,
+            flight_id=FlightID(flight_id),
             queries=[],
             activity_result=result,
             flight_plan_status=old_status,
@@ -249,7 +250,7 @@ def inject_flight(
         log("Complete.")
 
         return PlanningActivityResponse(
-            flight_id=flight_id,
+            flight_id=FlightID(flight_id),
             queries=[],  # TODO: Add queries used
             activity_result=PlanningActivityResult.Completed,
             flight_plan_status=FlightPlanStatus.from_flightinfo(record.flight_info),
@@ -278,7 +279,8 @@ def inject_flight(
 @requires_scope(SCOPE_SCD_QUALIFIER_INJECT)
 def scdsc_delete_flight(flight_id: str) -> tuple[str | flask.Response, int]:
     """Implements flight deletion in SCD automated testing injection API."""
-    del_resp, status_code = delete_flight(flight_id)
+    mock_uss_flight_id = MockUSSFlightID(flight_id)
+    del_resp, status_code = delete_flight(mock_uss_flight_id)
 
     if del_resp.activity_result == PlanningActivityResult.Completed:
         if del_resp.flight_plan_status != FlightPlanStatus.Closed:
@@ -301,7 +303,7 @@ def scdsc_delete_flight(flight_id: str) -> tuple[str | flask.Response, int]:
     return flask.jsonify(resp), status_code
 
 
-def delete_flight(flight_id) -> tuple[PlanningActivityResponse, int]:
+def delete_flight(flight_id: MockUSSFlightID) -> tuple[PlanningActivityResponse, int]:
     pid = os.getpid()
 
     def log(msg: str):
@@ -316,7 +318,7 @@ def delete_flight(flight_id) -> tuple[PlanningActivityResponse, int]:
 
     def unsuccessful(msg: str) -> PlanningActivityResponse:
         return PlanningActivityResponse(
-            flight_id=flight_id,
+            flight_id=FlightID(flight_id),
             queries=[],
             activity_result=PlanningActivityResult.Failed,
             flight_plan_status=old_status,
@@ -366,7 +368,7 @@ def delete_flight(flight_id) -> tuple[PlanningActivityResponse, int]:
     log("Complete.")
     return (
         PlanningActivityResponse(
-            flight_id=flight_id,
+            flight_id=FlightID(flight_id),
             queries=[],
             activity_result=PlanningActivityResult.Completed,
             flight_plan_status=FlightPlanStatus.Closed,
@@ -406,8 +408,8 @@ def scdsc_clear_area() -> tuple[str | flask.Response, int]:
 def clear_area(extent: Volume4D) -> ClearAreaResponse:
     flights_deleted: list[FlightID] = []
     flight_deletion_errors: dict[FlightID, dict] = {}
-    op_intents_removed: list[f3548v21.EntityOVN] = []
-    op_intent_removal_errors: dict[f3548v21.EntityOVN, dict] = {}
+    op_intents_removed: list[f3548v21.EntityID] = []
+    op_intent_removal_errors: dict[f3548v21.EntityID, dict] = {}
 
     def make_result(error: dict | None = None) -> ClearAreaResponse:
         resp = ClearAreaResponse(
@@ -456,13 +458,13 @@ def clear_area(extent: Volume4D) -> ClearAreaResponse:
                 del_resp.activity_result == PlanningActivityResult.Completed
                 and del_resp.flight_plan_status == FlightPlanStatus.Closed
             ):
-                flights_deleted.append(flight_id)
+                flights_deleted.append(FlightID(flight_id))
                 op_intents_removed.append(flight.op_intent.reference.id)
             else:
                 notes = f"Deleting known flight {flight_id} {del_resp.activity_result} with `flight_plan_status`={del_resp.flight_plan_status}"
                 if "notes" in del_resp and del_resp.notes:
                     notes += ": " + del_resp.notes
-                flight_deletion_errors[flight_id] = {"notes": notes}
+                flight_deletion_errors[FlightID(flight_id)] = {"notes": notes}
 
         # Try to delete every remaining operational intent that we manage
         self_sub = utm_client.auth_adapter.get_sub()
