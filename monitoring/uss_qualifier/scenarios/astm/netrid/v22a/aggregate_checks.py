@@ -15,9 +15,9 @@ class AggregateChecks(TestScenario, CommonAggregateChecks):
     def __init__(
         self,
         service_providers: NetRIDServiceProviders,
-        observers: NetRIDObserversResource,
         dss_instances: DSSInstancesResource,
+        observers: NetRIDObserversResource | None = None,
         test_exclusions: TestExclusionsResource | None = None,
     ):
-        super().__init__(service_providers, observers, dss_instances, test_exclusions)
+        super().__init__(service_providers, dss_instances, observers, test_exclusions)
         self._rid_version = RIDVersion.f3411_22a
