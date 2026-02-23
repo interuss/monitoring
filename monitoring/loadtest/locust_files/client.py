@@ -31,6 +31,8 @@ class USS(HttpUser):
             f3411_scope.Read,
             f3411_scope.Write,
             f3548_scope.StrategicCoordination,
+            "rid.display_provider",
+            "rid.service_provider",
         ]
         oauth_adapter = auth.make_auth_adapter(auth_spec)
 
