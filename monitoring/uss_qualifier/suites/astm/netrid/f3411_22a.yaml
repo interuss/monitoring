@@ -2,7 +2,7 @@ name: ASTM F3411-22a
 resources:
   flights_data: resources.netrid.FlightDataResource
   service_providers: resources.netrid.NetRIDServiceProviders?
-  observers: resources.netrid.NetRIDObserversResource
+  observers: resources.netrid.NetRIDObserversResource?
   mock_uss_dp: resources.interuss.mock_uss.client.MockUSSResource?
   mock_uss_sp: resources.interuss.mock_uss.client.MockUSSResource?
   evaluation_configuration: resources.netrid.EvaluationConfigurationResource
@@ -92,7 +92,7 @@ actions:
       resources:
         flights_data: flights_data
         service_providers: service_providers
-        observers: observers
+        observers: observers?
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances?
     on_failure: Continue
@@ -101,7 +101,6 @@ actions:
       resources:
         flights_data: flights_data
         service_providers: service_providers
-        observers: observers
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances
       on_failure: Continue
@@ -109,7 +108,7 @@ actions:
       scenario_type: scenarios.astm.netrid.v22a.AggregateChecks
       resources:
         service_providers: service_providers
-        observers: observers
+        observers: observers?
         dss_instances: dss_instances
         test_exclusions: test_exclusions?
 participant_verifiable_capabilities:

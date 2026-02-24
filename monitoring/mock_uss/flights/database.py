@@ -1,6 +1,7 @@
 import json
 from datetime import timedelta
 
+import arrow
 from implicitdict import ImplicitDict, Optional
 from uas_standards.astm.f3548.v21.api import OperationalIntent
 
@@ -12,6 +13,7 @@ from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 
 DEADLOCK_TIMEOUT = timedelta(seconds=5)
+NOTIFICATIONS_LIMIT = timedelta(hours=1)
 
 
 class FlightRecord(ImplicitDict):
@@ -32,6 +34,14 @@ class Database(ImplicitDict):
 
     flight_planning_notifications: list[UserNotification] = []
     """List of notifications sent during flight planning operations"""
+
+    def cleanup_notifications(self):
+        self.flight_planning_notifications = [
+            notif
+            for notif in self.flight_planning_notifications
+            if notif.observed_at.datetime + NOTIFICATIONS_LIMIT
+            > arrow.utcnow().datetime
+        ]
 
 
 db = SynchronizedValue[Database](

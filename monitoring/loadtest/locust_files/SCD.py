@@ -1,14 +1,9 @@
-"""Loaded by default by the Locust testing framework."""
-
 import argparse
-import datetime
-import random
 import uuid
 
 import client
-import geo_utils
 import locust
-import shapely
+from geo_utils import create_random_flight_path_volume
 
 
 @locust.events.init_command_line_parser.add_listener
@@ -18,7 +13,7 @@ def init_parser(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--uss-base-url",
         type=str,
-        help="Base URL of the Token Exchanger from which to request JWTs",
+        help="Base URL of the USS",
         required=True,
     )
     parser.add_argument(
@@ -47,64 +42,6 @@ def init_parser(parser: argparse.ArgumentParser):
     )
 
 
-def _format_time(time: datetime.datetime) -> str:
-    return time.astimezone(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-
-def _create_volume(
-    polygon: shapely.Polygon,
-    altitude_lower: float,
-    altitude_upper: float,
-    time_start: datetime.datetime,
-    time_end: datetime.datetime,
-):
-    return {
-        "volume": {
-            "outline_polygon": {
-                "vertices": [
-                    {"lat": v[1], "lng": v[0]} for v in polygon.exterior.coords[:-1]
-                ]
-            },
-            "altitude_lower": {
-                "value": altitude_lower,
-                "reference": "W84",
-                "units": "M",
-            },
-            "altitude_upper": {
-                "value": altitude_upper,
-                "reference": "W84",
-                "units": "M",
-            },
-        },
-        "time_start": {
-            "value": _format_time(time_start),
-            "format": "RFC3339",
-        },
-        "time_end": {
-            "value": _format_time(time_end),
-            "format": "RFC3339",
-        },
-    }
-
-
-def _create_random_flight_path(
-    lat: float, lng: float, radius: int, max_flight_distance_meters: int
-):
-    altitude_lower = random.randint(0, 10000)
-    altitude_upper = altitude_lower + 1
-
-    start_time = datetime.datetime.now()
-    end_time = start_time + datetime.timedelta(seconds=10)
-
-    rects = geo_utils.create_random_flight_path(
-        lat, lng, radius, max_flight_distance_meters
-    )
-    return [
-        _create_volume(r, altitude_lower, altitude_upper, start_time, end_time)
-        for r in rects.geoms
-    ]
-
-
 class SCD(client.USS):
     wait_time = locust.between(0.01, 0.1)
 
@@ -125,7 +62,7 @@ class SCD(client.USS):
             "new_subscription": {
                 "uss_base_url": self.uss_base_url,
             },
-            "extents": _create_random_flight_path(
+            "extents": create_random_flight_path_volume(
                 self.lat, self.lng, self.radius, self.max_flight_distance
             ),
         }

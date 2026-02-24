@@ -35,13 +35,13 @@ class AggregateChecks(GenericTestScenario):
     def __init__(
         self,
         service_providers: NetRIDServiceProviders,
-        observers: NetRIDObserversResource,
         dss_instances: DSSInstancesResource,
+        observers: NetRIDObserversResource | None = None,
         test_exclusions: TestExclusionsResource | None = None,
     ):
         super().__init__()
         self._service_providers = service_providers.service_providers
-        self._observers = observers.observers
+        self._observers = observers.observers if observers else []
         self._dss_instances = dss_instances.dss_instances
 
         # identify SPs and observers by their base URL

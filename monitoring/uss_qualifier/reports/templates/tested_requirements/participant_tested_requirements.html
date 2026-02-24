@@ -52,6 +52,10 @@
       <td>TE-{{ test_run.environment[0:7] }}</td>
     </tr>
     <tr>
+      <td>Requirements identifier</td>
+      <td>RC-{{ req_set_name }}</td>
+    </tr>
+    <tr>
       <td>Requirement verification status</td>
       <td class="{{ overall_status.get_class() }}">{{ overall_status.get_text() }}</td>
     </tr>
@@ -76,7 +80,6 @@
 {% endif %}
 <div>
   <h2>Tested requirements</h2>
-  <div class="minor_note">Requirements: {{ req_set_name }}</div>
   <table>
     <tr class="header_row">
       <th>Package</th>
