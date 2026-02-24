@@ -6,7 +6,6 @@ import arrow
 from implicitdict import StringBasedDateTime
 from loguru import logger
 
-from monitoring.deployment_manager.infrastructure import Context
 from monitoring.monitorlib.fetch import (
     Query,
     QueryType,
@@ -158,14 +157,17 @@ class HideLogOutput:
         logger.enable("monitoring.uss_qualifier.scenarios.scenario")
 
 
-def build_context(stop_fast: bool = False) -> Context:
+def build_context(stop_fast: bool = False):
     """Return a context that can be used with TestScenarios"""
 
     class DummyContext:
-        stop_fast = False
+        stop_fast_result = False
+
+        def stop_fast(self, case_name: str, step_name: str, check_name: str) -> bool:
+            return self.stop_fast_result
 
     dc = DummyContext()
-    dc.stop_fast = stop_fast
+    dc.stop_fast_result = stop_fast
 
     return dc
 

@@ -25,7 +25,7 @@ class UnitTestScenario(GenericTestScenario):
         self.end_test_scenario()
 
     def execute_unit_test(self):
-        context = ExecutionContext(None)
+        context = ExecutionContext(None, [])
         self.run(context)
         self.cleanup()
         return self

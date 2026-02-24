@@ -40,7 +40,7 @@ def compute_overall_status(
             if req.classname == FAIL_CLASS:
                 return ParticipantVerificationStatus.Fail
             elif req.classname == NOT_TESTED_CLASS:
-                overall_status = ParticipantVerificationStatus.Incomplete
+                overall_status = ParticipantVerificationStatus.NotFullyVerified
             elif req.classname == FINDINGS_CLASS:
                 if overall_status == ParticipantVerificationStatus.Pass:
                     overall_status = ParticipantVerificationStatus.PassWithFindings
