@@ -69,8 +69,33 @@ jobs:
       uses: ./.github/actions/load-image
     - name: Automated hygiene verification
       run: make check-hygiene
-    - name: Unit tests
-      run: make unit-test
+
+  unit-tests:
+    name: Unit tests
+    needs:
+      - build-monitoring-image
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Job information
+        run: |
+          echo "Job information"
+          echo "Trigger: ${{ github.event_name }}"
+          echo "Host: ${{ runner.os }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref }}"
+          docker images
+          docker version
+          docker compose version
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+      - name: Load monitoring image
+        uses: ./.github/actions/load-image
+      - name: Unit tests
+        run: make unit-test
 
   mock_uss-test:
     name: mock_uss tests
