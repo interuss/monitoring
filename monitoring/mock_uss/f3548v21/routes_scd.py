@@ -139,7 +139,6 @@ def scdsc_notify_operational_intent_details_changed():
                         conflicts=Conflict.Single,  # TODO: detect multiple conflicts
                     )
                 )
-            tx.value.cleanup_notifications()
 
     # Do nothing else because this USS is unsophisticated and polls the DSS for
     # every change in its operational intents
