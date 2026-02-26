@@ -246,8 +246,6 @@ def inject_flight(
                     )
                 )
 
-            tx.value.cleanup_notifications()
-
         step_name = "returning final successful result"
         log("Complete.")
 
