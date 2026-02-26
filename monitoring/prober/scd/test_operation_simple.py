@@ -128,7 +128,6 @@ def test_create_op_missing_time_end(ids, scd_api, scd_session):
     assert resp.status_code == 400, resp.content
 
 
-@for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 @depends_on(test_ensure_clean_workspace)
 def test_create_op_expired(ids, scd_api, scd_session):
@@ -138,6 +137,18 @@ def test_create_op_expired(ids, scd_api, scd_session):
     req["extents"][0] = Volume4D.from_values(
         time_start, time_end, 0, 120, Circle.from_meters(-56, 178, 50)
     ).to_f3548v21()
+    resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
+    assert resp.status_code == 400, resp.content
+
+
+@default_scope(SCOPE_SC)
+@depends_on(test_ensure_clean_workspace)
+def test_create_op_time_start_after_time_end(ids, scd_api, scd_session):
+    req = _make_op1_request()
+    e = req["extents"][0]
+    time_end = e["time_end"]
+    e["time_end"] = e["time_start"]
+    e["time_start"] = time_end
     resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
     assert resp.status_code == 400, resp.content
 
