@@ -10,7 +10,10 @@ from monitoring.uss_qualifier.action_generators.documentation.documentation impo
     list_potential_actions_for_action_generator_definition,
 )
 from monitoring.uss_qualifier.common_data_definitions import Severity
-from monitoring.uss_qualifier.configurations.configuration import ParticipantID
+from monitoring.uss_qualifier.configurations.configuration import (
+    FullyQualifiedCheck,
+    ParticipantID,
+)
 from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.report import (
     FailedCheck,
@@ -44,6 +47,7 @@ from monitoring.uss_qualifier.suites.definitions import (
 
 def make_breakdown(
     report: TestRunReport,
+    acceptable_findings: list[FullyQualifiedCheck],
     participant_reqs: set[RequirementID] | None,
     participant_ids: Iterable[ParticipantID],
 ) -> TestedBreakdown:
@@ -51,6 +55,7 @@ def make_breakdown(
 
     Args:
         report: Report to break down.
+        acceptable_findings: Checks where failure is acceptable, according to the configuration.
         participant_reqs: Set of requirements to report for these participants.  If None, defaults to everything.
         participant_ids: IDs of participants for which the breakdown is being computed.
 
@@ -58,10 +63,19 @@ def make_breakdown(
     """
     participant_breakdown = TestedBreakdown(packages=[])
     _populate_breakdown_with_action_report(
-        participant_breakdown, report.report, participant_ids, participant_reqs
+        participant_breakdown,
+        report.report,
+        acceptable_findings,
+        participant_ids,
+        participant_reqs,
     )
+    assert report.configuration.v1
+    assert report.configuration.v1.test_run
     _populate_breakdown_with_action_declaration(
-        participant_breakdown, report.configuration.v1.test_run.action, participant_reqs
+        participant_breakdown,
+        report.configuration.v1.test_run.action,
+        acceptable_findings,
+        participant_reqs,
     )
     if participant_reqs is not None:
         _populate_breakdown_with_req_set(participant_breakdown, participant_reqs)
@@ -96,23 +110,29 @@ def _populate_breakdown_with_req_set(
 def _populate_breakdown_with_action_report(
     breakdown: TestedBreakdown,
     action: TestSuiteActionReport,
+    acceptable_findings: list[FullyQualifiedCheck],
     participant_ids: Iterable[ParticipantID],
     req_set: set[RequirementID] | None,
 ) -> None:
     test_suite, test_scenario, action_generator = action.get_applicable_report()
     if test_scenario:
+        assert action.test_scenario
         return _populate_breakdown_with_scenario_report(
-            breakdown, action.test_scenario, participant_ids, req_set
+            breakdown,
+            action.test_scenario,
+            acceptable_findings,
+            participant_ids,
+            req_set,
         )
     elif test_suite:
         for subaction in action.test_suite.actions:
             _populate_breakdown_with_action_report(
-                breakdown, subaction, participant_ids, req_set
+                breakdown, subaction, acceptable_findings, participant_ids, req_set
             )
     elif action_generator:
         for subaction in action.action_generator.actions:
             _populate_breakdown_with_action_report(
-                breakdown, subaction, participant_ids, req_set
+                breakdown, subaction, acceptable_findings, participant_ids, req_set
             )
     else:
         pass  # Skipped action
@@ -121,6 +141,7 @@ def _populate_breakdown_with_action_report(
 def _populate_breakdown_with_scenario_report(
     breakdown: TestedBreakdown,
     scenario_report: TestScenarioReport,
+    acceptable_findings: list[FullyQualifiedCheck],
     participant_ids: Iterable[ParticipantID],
     req_set: set[RequirementID] | None,
 ) -> None:
@@ -206,8 +227,19 @@ def _populate_breakdown_with_scenario_report(
                 if matches:
                     tested_check = matches[0]
                 else:
+                    current_check = FullyQualifiedCheck(
+                        scenario_type=scenario_type_name,
+                        test_case_name=case_name,
+                        test_step_name=step.name,
+                        check_name=check.name,
+                    )
                     tested_check = TestedCheck(
-                        name=check.name, url="", has_todo=False
+                        name=check.name,
+                        url="",
+                        has_todo=False,
+                        is_finding_acceptable=current_check.contained_in(
+                            acceptable_findings
+                        ),
                     )  # TODO: Consider populating has_todo with documentation instead
                     if isinstance(check, FailedCheck):
                         tested_check.url = check.documentation_url
@@ -226,12 +258,13 @@ def _populate_breakdown_with_scenario_report(
 def _populate_breakdown_with_action_declaration(
     breakdown: TestedBreakdown,
     action: TestSuiteActionDeclaration | PotentialGeneratedAction,
+    acceptable_findings: list[FullyQualifiedCheck],
     req_set: set[RequirementID] | None,
 ) -> None:
     action_type = action.get_action_type()
     if action_type == ActionType.TestScenario:
         _populate_breakdown_with_scenario(
-            breakdown, action.test_scenario.scenario_type, req_set
+            breakdown, action.test_scenario.scenario_type, acceptable_findings, req_set
         )
     elif action_type == ActionType.TestSuite:
         if "suite_type" in action.test_suite and action.test_suite.suite_type:
@@ -240,13 +273,17 @@ def _populate_breakdown_with_action_declaration(
                 TestSuiteDefinition,
             )
             for a in suite_def.actions:
-                _populate_breakdown_with_action_declaration(breakdown, a, req_set)
+                _populate_breakdown_with_action_declaration(
+                    breakdown, a, acceptable_findings, req_set
+                )
         elif (
             "suite_definition" in action.test_suite
             and action.test_suite.suite_definition
         ):
             for a in action.test_suite.suite_definition.actions:
-                _populate_breakdown_with_action_declaration(breakdown, a, req_set)
+                _populate_breakdown_with_action_declaration(
+                    breakdown, a, acceptable_findings, req_set
+                )
         else:
             raise ValueError("Test suite action missing suite type or definition")
     elif action_type == ActionType.ActionGenerator:
@@ -254,7 +291,9 @@ def _populate_breakdown_with_action_declaration(
             action.action_generator
         )
         for a in potential_actions:
-            _populate_breakdown_with_action_declaration(breakdown, a, req_set)
+            _populate_breakdown_with_action_declaration(
+                breakdown, a, acceptable_findings, req_set
+            )
     else:
         raise NotImplementedError(f"Unsupported test suite action type: {action_type}")
 
@@ -262,6 +301,7 @@ def _populate_breakdown_with_action_declaration(
 def _populate_breakdown_with_scenario(
     breakdown: TestedBreakdown,
     scenario_type_name: TestScenarioTypeName,
+    acceptable_findings: list[FullyQualifiedCheck],
     req_set: set[RequirementID] | None,
 ) -> None:
     scenario_type = get_scenario_type_by_name(scenario_type_name)
@@ -333,8 +373,19 @@ def _populate_breakdown_with_scenario(
                     if matches:
                         tested_check = matches[0]
                     else:
+                        current_check = FullyQualifiedCheck(
+                            scenario_type=scenario_type_name,
+                            test_case_name=case.name,
+                            test_step_name=step.name,
+                            check_name=check.name,
+                        )
                         tested_check = TestedCheck(
-                            name=check.name, url=check.url, has_todo=check.has_todo
+                            name=check.name,
+                            url=check.url,
+                            has_todo=check.has_todo,
+                            is_finding_acceptable=current_check.contained_in(
+                                acceptable_findings
+                            ),
                         )
                         tested_step.checks.append(tested_check)
                     if not tested_check.url:
