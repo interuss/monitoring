@@ -63,7 +63,7 @@ from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geo import Polygon
-from monitoring.monitorlib.geotemporal import Volume4D
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from monitoring.monitorlib.idempotency import idempotent_request
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
@@ -452,7 +452,9 @@ def clear_area(extent: Volume4D) -> ClearAreaResponse:
                 # Flight is locked in the process of being created
                 continue
 
-            if not flight.flight_info.basic_information.area.intersects_vol4s(extent):
+            if not flight.flight_info.basic_information.area.intersects_vol4s(
+                Volume4DCollection([extent])
+            ):
                 # Flight is not in the area being cleared
                 continue
 

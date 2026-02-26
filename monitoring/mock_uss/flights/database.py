@@ -73,6 +73,7 @@ class Database(ImplicitDict):
             if (
                 flight
                 and not flight.locked
+                and flight.op_intent
                 and flight.op_intent.reference.time_end.value.datetime + FLIGHTS_LIMIT
                 < arrow.utcnow().datetime
             ):
