@@ -14,10 +14,18 @@ from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 
 DEADLOCK_TIMEOUT = timedelta(seconds=5)
+
 NOTIFICATIONS_LIMIT = timedelta(hours=1)
+"""Automatically remove notifications after this long beyond their observation time."""
+
 DB_CLEANUP_INTERVAL = timedelta(hours=1)
+"""Clean database this often."""
+
 FLIGHTS_LIMIT = timedelta(hours=1)
+"""Automatically remove flights we manage after this long beyond their end time."""
+
 OPERATIONAL_INTENTS_LIMIT = timedelta(hours=1)
+"""Automatically remove cached operational intents obtained from others after this long beyond their end time."""
 
 
 class MockUSSFlightID(str):
@@ -27,10 +35,11 @@ class MockUSSFlightID(str):
 
 
 class FlightRecord(ImplicitDict):
-    """Representation of a flight in a USS"""
+    """Representation of a flight in mock_uss"""
 
+    # TODO(mock_uss_flight_id): Add flight ID that is independent of op_intent
     flight_info: FlightInfo
-    op_intent: OperationalIntent
+    op_intent: Optional[OperationalIntent] = None
     mod_op_sharing_behavior: Optional[MockUssFlightBehavior] = None
     locked: bool = False
 
@@ -64,6 +73,7 @@ class Database(ImplicitDict):
             if (
                 flight
                 and not flight.locked
+                and flight.op_intent
                 and flight.op_intent.reference.time_end.value.datetime + FLIGHTS_LIMIT
                 < arrow.utcnow().datetime
             ):
@@ -77,7 +87,7 @@ class Database(ImplicitDict):
 
         for op_id, op_intent in self.cached_operations.items():
             if (
-                op_intent.reference.time_end.value.datetime + FLIGHTS_LIMIT
+                op_intent.reference.time_end.value.datetime + OPERATIONAL_INTENTS_LIMIT
                 < arrow.utcnow().datetime
             ):
                 to_cleanup.append(op_id)

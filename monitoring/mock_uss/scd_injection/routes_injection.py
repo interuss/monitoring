@@ -63,7 +63,7 @@ from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geo import Polygon
-from monitoring.monitorlib.geotemporal import Volume4D
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from monitoring.monitorlib.idempotency import idempotent_request
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
@@ -189,6 +189,7 @@ def inject_flight(
         op_intent=op_intent,
         mod_op_sharing_behavior=mod_op_sharing_behavior,
     )
+    assert new_flight.op_intent
 
     # Validate request
     try:
@@ -328,42 +329,44 @@ def delete_flight(flight_id: MockUSSFlightID) -> tuple[PlanningActivityResponse,
     if flight is None:
         return unsuccessful(f"Flight {flight_id} does not exist"), 404
 
-    # Delete operational intent from DSS
-    step_name = "performing unknown operation"
     notes: str | None = None
-    try:
-        step_name = f"deleting operational intent {flight.op_intent.reference.id} with OVN {flight.op_intent.reference.ovn} from DSS"
-        log(step_name)
-        notif_errors = delete_op_intent(flight.op_intent.reference, log)
-        if notif_errors:
-            notif_errors_messages = [
-                f"{url}: {str(err)}" for url, err in notif_errors.items()
-            ]
-            notes = f"Deletion succeeded, but notification to some subscribers failed: {'; '.join(notif_errors_messages)}"
-            log(notes)
+    if flight.op_intent:
+        # Delete operational intent from DSS
+        step_name = "performing unknown operation"
+        try:
+            step_name = f"deleting operational intent {flight.op_intent.reference.id} with OVN {flight.op_intent.reference.ovn} from DSS"
+            log(step_name)
+            notif_errors = delete_op_intent(flight.op_intent.reference, log)
+            if notif_errors:
+                notif_errors_messages = [
+                    f"{url}: {str(err)}" for url, err in notif_errors.items()
+                ]
+                notes = f"Deletion succeeded, but notification to some subscribers failed: {'; '.join(notif_errors_messages)}"
+                log(notes)
 
-    except (ValueError, ConnectionError) as e:
-        notes = (
-            f"{e.__class__.__name__} while {step_name} for flight {flight_id}: {str(e)}"
-        )
-        log(notes)
-        # Activity result is Failed, but we executed the activity successfully
-        return unsuccessful(notes), 200
-    except requests.exceptions.ConnectionError as e:
-        notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
-        log(notes)
-        response = unsuccessful(notes)
-        response["stacktrace"] = stacktrace_string(e)
-        # Activity result is Failed, but we executed the activity successfully
-        return response, 200
-    except QueryError as e:
-        notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
-        log(notes)
-        response = unsuccessful(notes)
-        response["queries"] = e.queries
-        response["stacktrace"] = e.stacktrace
-        # Activity result is Failed, but we executed the activity successfully
-        return response, 200
+        except (ValueError, ConnectionError) as e:
+            notes = f"{e.__class__.__name__} while {step_name} for flight {flight_id}: {str(e)}"
+            log(notes)
+            # Activity result is Failed, but we executed the activity successfully
+            return unsuccessful(notes), 200
+        except requests.exceptions.ConnectionError as e:
+            if e.request:
+                notes = f"Connection error to {e.request.method} {e.request.url} while {step_name} for flight {flight_id}: {str(e)}"
+            else:
+                notes = f"Connection error missing .request while {step_name} for flight {flight_id}: {str(e)}"
+            log(notes)
+            response = unsuccessful(notes)
+            response["stacktrace"] = stacktrace_string(e)
+            # Activity result is Failed, but we executed the activity successfully
+            return response, 200
+        except QueryError as e:
+            notes = f"Unexpected response from remote server while {step_name} for flight {flight_id}: {str(e)}"
+            log(notes)
+            response = unsuccessful(notes)
+            response["queries"] = e.queries
+            response["stacktrace"] = e.stacktrace
+            # Activity result is Failed, but we executed the activity successfully
+            return response, 200
 
     log("Complete.")
     return (
@@ -442,15 +445,17 @@ def clear_area(extent: Volume4D) -> ClearAreaResponse:
         op_intent_refs = scd_client.query_operational_intent_references(
             utm_client, vol4
         )
-        op_intent_ids = {oi.id for oi in op_intent_refs}
 
         # Try to remove all relevant flights normally
         for flight_id, flight in db.value.flights.items():
             if flight is None:
+                # Flight is locked in the process of being created
                 continue
 
-            # TODO: Check for intersection with flight's area rather than just relying on DSS query
-            if flight.op_intent.reference.id not in op_intent_ids:
+            if not flight.flight_info.basic_information.area.intersects_vol4s(
+                Volume4DCollection([extent])
+            ):
+                # Flight is not in the area being cleared
                 continue
 
             del_resp, _status_code = delete_flight(flight_id)
@@ -459,14 +464,15 @@ def clear_area(extent: Volume4D) -> ClearAreaResponse:
                 and del_resp.flight_plan_status == FlightPlanStatus.Closed
             ):
                 flights_deleted.append(FlightID(flight_id))
-                op_intents_removed.append(flight.op_intent.reference.id)
+                if flight.op_intent:
+                    op_intents_removed.append(flight.op_intent.reference.id)
             else:
                 notes = f"Deleting known flight {flight_id} {del_resp.activity_result} with `flight_plan_status`={del_resp.flight_plan_status}"
                 if "notes" in del_resp and del_resp.notes:
                     notes += ": " + del_resp.notes
                 flight_deletion_errors[FlightID(flight_id)] = {"notes": notes}
 
-        # Try to delete every remaining operational intent that we manage
+        # Try to delete every remaining operational intent that we manage in the area
         self_sub = utm_client.auth_adapter.get_sub()
         op_intent_refs = [
             oi

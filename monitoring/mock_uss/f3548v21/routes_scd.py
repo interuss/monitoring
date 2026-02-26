@@ -37,12 +37,12 @@ def scdsc_get_operational_intent_details(entityid: str):
     tx = db.value
     flight = None
     for f in tx.flights.values():
-        if f and f.op_intent.reference.id == entityid:
+        if f and f.op_intent and f.op_intent.reference.id == entityid:
             flight = f
             break
 
     # If requested operational intent doesn't exist, return 404
-    if flight is None:
+    if flight is None or flight.op_intent is None:
         return (
             flask.jsonify(
                 ErrorResponse(
@@ -70,7 +70,7 @@ def scdsc_get_operational_intent_telemetry(entityid: str):
     tx = db.value
     flight: FlightRecord | None = None
     for f in tx.flights.values():
-        if f and f.op_intent.reference.id == entityid:
+        if f and f.op_intent and f.op_intent.reference.id == entityid:
             flight = f
             break
 
@@ -85,7 +85,7 @@ def scdsc_get_operational_intent_telemetry(entityid: str):
             404,
         )
 
-    elif flight.op_intent.reference.state not in {
+    elif flight.op_intent and flight.op_intent.reference.state not in {
         OperationalIntentState.Contingent,
         OperationalIntentState.Nonconforming,
     }:
