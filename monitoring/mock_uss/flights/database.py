@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import arrow
 from implicitdict import ImplicitDict, Optional
-from uas_standards.astm.f3548.v21.api import OperationalIntent
+from uas_standards.astm.f3548.v21.api import EntityID, OperationalIntent
 
 from monitoring.mock_uss.user_interactions.notifications import UserNotification
 from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
@@ -14,6 +14,12 @@ from monitoring.monitorlib.multiprocessing import SynchronizedValue
 
 DEADLOCK_TIMEOUT = timedelta(seconds=5)
 NOTIFICATIONS_LIMIT = timedelta(hours=1)
+
+
+class MockUSSFlightID(str):
+    """The identity of a flight, as tracked/managed by mock_uss"""
+
+    pass
 
 
 class FlightRecord(ImplicitDict):
@@ -28,8 +34,13 @@ class FlightRecord(ImplicitDict):
 class Database(ImplicitDict):
     """Simple in-memory pseudo-database tracking the state of the mock system"""
 
-    flights: dict[str, FlightRecord | None] = {}
-    cached_operations: dict[str, OperationalIntent] = {}
+    flights: dict[MockUSSFlightID, FlightRecord | None] = {}
+    """Collection of flights managed by mock_uss, referenced by flight ID.
+    
+    When the value is None, this indicates that the flight of the specified ID is currently in the process of being
+    created and should be treated as locked."""
+
+    cached_operations: dict[EntityID, OperationalIntent] = {}
 
     flight_planning_notifications: list[UserNotification] = []
     """List of notifications sent during flight planning operations"""
