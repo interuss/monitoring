@@ -449,6 +449,11 @@ def clear_area(extent: Volume4D) -> ClearAreaResponse:
         # Try to remove all relevant flights normally
         for flight_id, flight in db.value.flights.items():
             if flight is None:
+                # Flight is locked in the process of being created
+                continue
+
+            if not flight.flight_info.basic_information.area.intersects_vol4s(extent):
+                # Flight is not in the area being cleared
                 continue
 
             del_resp, _status_code = delete_flight(flight_id)
@@ -465,7 +470,7 @@ def clear_area(extent: Volume4D) -> ClearAreaResponse:
                     notes += ": " + del_resp.notes
                 flight_deletion_errors[FlightID(flight_id)] = {"notes": notes}
 
-        # Try to delete every remaining operational intent that we manage
+        # Try to delete every remaining operational intent that we manage in the area
         self_sub = utm_client.auth_adapter.get_sub()
         op_intent_refs = [
             oi
