@@ -1,6 +1,6 @@
 # USS Availability Read test step fragment
 
-This fragment contains the steps for the USS Availability synchronization scenario
+This fragment contains the steps for the USS Availability scenario
 where we confirm that a USS availability can be correctly read from a DSS instance
 
 ## 🛑 USS Availability can be requested check
