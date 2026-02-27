@@ -71,24 +71,33 @@ However, since:
 - the virtual USS is declared as down at the DSS,
 - it does not respond for operational intent details, and
 - the conflicting operational intent is in the 'Accepted' state,
-The tested USS should evaluate the conflicting operational intent as having the lowest bound priority status, i.e. a priority strictly lower than the lowest priority allowed by the local regulation.
+
+the tested USS should evaluate the conflicting operational intent as having the lowest bound priority status, i.e. a priority strictly lower than the lowest priority allowed by the local regulation.
 
 As such, the tested USS may either:
 - Successfully plan Flight 1 over the conflicting operational intent, or
 - Decide to be more conservative and reject the planning of Flight 1.
 
 #### 🛑 Successful planning check
-All flight intent data provided is correct and the USS should have either successfully planned Flight 1 per **[astm.f3548.v21.SCD0005](../../../../requirements/astm/f3548/v21.md)**,
-or rejected properly the planning if it decided to be more conservative with such conflicts.
-If the USS indicates that the injection attempt failed, this check will fail.
+All flight intent data provided is correct and **[astm.f3548.v21.SCD0005](../../../../requirements/astm/f3548/v21.md)** allows the USS to plan an operational
+intent in conflict with the pre-existing operational intent managed by a down USS by applying the lowest-bound priority
+to that operational intent.  If the USS indicates that the injection attempt failed, this check will fail.
 
-Do take note that if the USS rejects the planning, this check will not fail, but the following *Rejected planning check*
-will. Refer to this check for more information.
+If the USS rejects the requested flight, this check will not fail, but the following *Rejected planning check* will.
+Refer to this check for more information.
 
 #### ℹ️ Rejected planning check
-All flight intent data provided is correct and the USS should have either successfully planned Flight 1 or rejected
-properly the planning if it decided to be more conservative with such conflicts.
-If the USS rejects the planning, this check will produce a low severity finding per **[astm.f3548.v21.SCD0005](../../../../requirements/astm/f3548/v21.md)**.
+ASTM F3548-21 does not require USSs to accept flight requests in all circumstances not prohibited by F3548-21.  USSs may
+(generally) apply any number of additional rules to determine whether or not a flight planning action is accepted by the
+USS.  For instance, a USS may say, "even though we're allowed to plan over unactivated op intents managed by down USSs,
+we choose not to in order to avoid the small risk the USS may not realize it is down and start that flight any way."
+
+For this reason, a USS may reject the planning request above while still complying with SCD0005 by applying the correct
+priority to the pre-existing operational intent.  Therefore, a rejection of the planning request does not indicate
+non-compliance with SCD0005.  However, because InterUSS uses successful planning as a means to measure whether a USS is
+in compliance with SCD0005, rejecting the planning attempt means that the primary mechanism for inferring compliance
+with **[astm.f3548.v21.SCD0005](../../../../requirements/astm/f3548/v21.md)** is not available.  In this case, this check will produce a low-severity finding
+to note InterUSS's inability to use this primary mechanism for SCD0005 compliance verification.
 
 #### 🛑 Injection fidelity check
 

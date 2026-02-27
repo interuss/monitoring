@@ -41,7 +41,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights,
     submit_flight,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.scenarios.scenario import ScenarioLogicError, TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
@@ -250,22 +250,29 @@ class DownUSS(TestScenario):
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight1_planned = as_planned
 
-            if resp.activity_result == PlanningActivityResult.Completed:
-                validator.expect_shared(flight1_planned)
-            elif resp.activity_result == PlanningActivityResult.Rejected:
-                with self.check(
-                    "Rejected planning", [self.tested_uss.participant_id]
-                ) as check:
+            with self.check(
+                "Rejected planning", [self.tested_uss.participant_id]
+            ) as check:
+                if resp.activity_result == PlanningActivityResult.Rejected:
                     msg = f"{self.tested_uss.participant_id} indicated {resp.activity_result}"
                     if "notes" in resp and resp.notes:
                         msg += f' with notes "{resp.notes}"'
                     else:
                         msg += " with no notes"
                     check.record_failed(
-                        summary="Warning (not a failure): planning got rejected, USS may have been more conservative",
+                        summary="Warning (not a failure): flight was rejected, USS may have been more conservative",
                         details=msg,
                     )
+
+            if resp.activity_result == PlanningActivityResult.Completed:
+                validator.expect_shared(flight1_planned)
+            elif resp.activity_result == PlanningActivityResult.Rejected:
                 validator.expect_not_shared()
+            else:
+                raise ScenarioLogicError(
+                    f"OpIntentValidator should have ensured that resp.activity_result was Completed or Rejected, but instead it was {resp.activity_result}"
+                )
+
         self.end_test_step()
 
     def _clear_op_intents(self):
