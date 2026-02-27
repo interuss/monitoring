@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>s62 - ASTM F3548 UTM aggregate checks</title>
+<style>
+  body {
+    margin: 0;
+    color: #24292f;
+    background-color: #ffffff;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+    font-size: 16px;
+    line-height: 1.5;
+    word-wrap: break-word;
+  }
+  table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    width: max-content;
+    max-width: 100%;
+    overflow: auto;
+  }
+  tr {
+    border-top: 1px solid hsla(210,18%,87%,1);
+  }
+  table tr:nth-child(2n) {
+    background-color: #f6f8fa;
+  }
+  td {
+    padding: 6px 6px;
+    vertical-align: top;
+    border: 1px solid #d0d7de;
+  }
+  th {
+    padding: 6px 6px;
+    text-align: left;
+    background-color: rgb(230, 230, 230);
+    border: 1px solid #d0d7de;
+    height: 40px;
+    box-sizing: border-box;
+  }
+  a {
+    background-color: transparent;
+    color: #0969da;
+    text-decoration: none;
+  }
+  h2 {
+    margin-block-end: 0.1em;
+  }
+  p {
+    margin-top: 0.1em;
+    margin-bottom: 0.1em;
+  }
+  .header_row {
+    position: sticky;
+    top: -1px;
+    z-index: 100;
+  }
+  .sticky_cell_value {
+    position: sticky;
+    top: 40px;
+    z-index: 0;
+  }
+  .pass_result {
+    background-color: rgb(192, 255, 192);
+  }
+  .fail_result {
+    background-color: rgb(255, 192, 192);
+  }
+  .info_result {
+    background-color: rgb(255, 255, 192);
+  }
+  .not_tested {
+    background-color: rgb(192, 192, 192);
+  }
+  .skipped_explanation {
+    font-style: italic;
+  }
+  .failed_check_summary {
+    font-style: italic;
+  }
+  .minor_note {
+    font-style: italic;
+    font-size: 10px;
+  }
+</style>
+    <style>
+    ul, ul ul, ul li {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+    }
+    ul ul { padding-left: 0.3em; }
+    ul li {
+      padding-left: 14px;
+    }
+    li div {
+      display: inline;
+    }
+    .collapseable>.node_key:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .collapsed>.node_key {
+      color: blue;
+    }
+    .node_key {
+      font-weight: bold;
+    }
+  </style>
+
+</head>
+<body>
+<div>
+    <h2><a href="https://github.com/interuss/monitoring/blob/159950ba7c1af5f127454914480fcf82d2878c16/monitoring/uss_qualifier/scenarios/astm/utm/aggregate_checks.md">ASTM F3548 UTM aggregate checks</a></h2>
+  <h3>scenarios.astm.utm.AggregateChecks</h3>
+  <div id="resources_configuration_section" class="collapseable">
+    <div class="node_key" onclick="showHide(document.getElementById('resources_configuration_section'))"><h4>Resources</h4></div>
+    <div class="node_value">
+      <ul id="resource_origin_list">
+          <li><a href="https://github.com/interuss/monitoring/blob/159950ba7c1af5f127454914480fcf82d2878c16/monitoring/uss_qualifier/scenarios/astm/utm/aggregate_checks.md#flight_planners"><code>flight_planners</code></a> provided by <a href="./index.html#resources-configuration">flight_planners in top-level resource pool</a></li>
+      </ul>
+    </div>
+  </div>
+    <h4>
+      <a href="./s62.kml">KML visualization</a>
+    </h4>
+  <table>
+    <tr class="header_row">
+      <th>Case</th>
+      <th>Step</th>
+      <th colspan="3">Event</th>
+        <th>
+            uss1_core
+        </th>
+        <th>
+            uss2_core
+        </th>
+    </tr>
+
+          <tr id="e1">
+              <td rowspan="3" colspan="2"></td>
+            <td><a href="#e1">1</a></td>
+            <td>&#x1F4D3;</td>
+            <td colspan="3">
+              <code>all_queries</code>: 1838
+            </td>
+          </tr>
+          <tr id="e2">
+            <td><a href="#e2">2</a></td>
+            <td>&#x1F4D3;</td>
+            <td colspan="3">
+              <code>uss1_core/attributed_queries</code>: interuss.automated_testing.versioning.GetVersion: 3, interuss.automated_testing.flight_planning.v1.GetStatus: 2, interuss.automated_testing.flight_planning.v1.ClearArea: 8, interuss.automated_testing.flight_planning.v1.UpsertFlightPlan: 57, astm.f3548.v21.uss.getOperationalIntentDetails: 39, interuss.automated_testing.flight_planning.v1.DeleteFlightPlan: 19, interuss.automated_testing.flight_planning.v1.QueryUserNotifications: 14, astm.f3548.v21.uss.makeUssReport: 1
+            </td>
+          </tr>
+          <tr id="e3">
+            <td><a href="#e3">3</a></td>
+            <td>&#x1F4D3;</td>
+            <td colspan="3">
+              <code>uss2_core/attributed_queries</code>: interuss.automated_testing.versioning.GetVersion: 3, interuss.automated_testing.flight_planning.v1.GetStatus: 2, interuss.automated_testing.flight_planning.v1.ClearArea: 8, interuss.automated_testing.flight_planning.v1.UpsertFlightPlan: 57, astm.f3548.v21.uss.getOperationalIntentDetails: 39, interuss.automated_testing.flight_planning.v1.DeleteFlightPlan: 19, interuss.automated_testing.flight_planning.v1.QueryUserNotifications: 14, astm.f3548.v21.uss.makeUssReport: 1
+            </td>
+          </tr>
+            <tr id="e6">
+                <td rowspan="4"><span class="sticky_cell_value">
+                    <a href="https://github.com/interuss/monitoring/blob/159950ba7c1af5f127454914480fcf82d2878c16/monitoring/uss_qualifier/scenarios/astm/utm/aggregate_checks.md#performance-of-scd-requests-to-uss-test-case">Performance of SCD requests to USS</a>
+                </span></td>
+                <td rowspan="4"><span class="sticky_cell_value">
+                    <a href="https://github.com/interuss/monitoring/blob/159950ba7c1af5f127454914480fcf82d2878c16/monitoring/uss_qualifier/scenarios/astm/utm/aggregate_checks.md#performance-of-successful-operational-intent-details-requests-test-step">Performance of successful operational intent details requests</a>
+                </span></td>
+              <td><a href="#e6">6</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Operational intent details requests take no more than [MaxRespondToOIDetailsRequest] second 95% of the time
+                </td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+            </tr>
+            <tr id="e7">
+              <td><a href="#e7">7</a></td>
+                <td>&#x1F4D3;</td>
+                <td colspan="3">
+                  <code>uss1_core/astm.f3548.v21.uss.getOperationalIntentDetails</code>: checked performances on 39 queries, 95th percentile: 0.0266s
+                </td>
+            </tr>
+            <tr id="e8">
+              <td><a href="#e8">8</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Operational intent details requests take no more than [MaxRespondToOIDetailsRequest] second 95% of the time
+                </td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+            </tr>
+            <tr id="e9">
+              <td><a href="#e9">9</a></td>
+                <td>&#x1F4D3;</td>
+                <td colspan="3">
+                  <code>uss2_core/astm.f3548.v21.uss.getOperationalIntentDetails</code>: checked performances on 39 queries, 95th percentile: 0.047s
+                </td>
+            </tr>
+            <tr id="e12">
+                <td rowspan="4"><span class="sticky_cell_value">
+                    <a href="https://github.com/interuss/monitoring/blob/159950ba7c1af5f127454914480fcf82d2878c16/monitoring/uss_qualifier/scenarios/astm/utm/aggregate_checks.md#interoperability-test-instance-is-available-test-case">Interoperability test instance is available</a>
+                </span></td>
+                <td rowspan="4"><span class="sticky_cell_value">
+                    <a href="https://github.com/interuss/monitoring/blob/159950ba7c1af5f127454914480fcf82d2878c16/monitoring/uss_qualifier/scenarios/astm/utm/aggregate_checks.md#interoperability-test-instance-is-available-test-step">Interoperability test instance is available</a>
+                </span></td>
+              <td><a href="#e12">12</a></td>
+                <td>&#x1F4D3;</td>
+                <td colspan="3">
+                  <code>test_interop_interactions</code>: Found 86 interactions with interoperability test instance for uss1_core
+                </td>
+            </tr>
+            <tr id="e13">
+              <td><a href="#e13">13</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Interoperability test instance is available
+                </td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+            </tr>
+            <tr id="e14">
+              <td><a href="#e14">14</a></td>
+                <td>&#x1F4D3;</td>
+                <td colspan="3">
+                  <code>test_interop_interactions_1</code>: Found 86 interactions with interoperability test instance for uss2_core
+                </td>
+            </tr>
+            <tr id="e15">
+              <td><a href="#e15">15</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Interoperability test instance is available
+                </td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+            </tr>
+            <tr id="e18">
+                <td rowspan="8"><span class="sticky_cell_value">
+                    <a href="https://github.com/interuss/monitoring/blob/159950ba7c1af5f127454914480fcf82d2878c16/monitoring/uss_qualifier/scenarios/astm/utm/aggregate_checks.md#notifications-to-operator-test-case">Notifications to operator</a>
+                </span></td>
+                <td rowspan="4"><span class="sticky_cell_value">
+                    <a href="https://github.com/interuss/monitoring/blob/159950ba7c1af5f127454914480fcf82d2878c16/monitoring/uss_qualifier/scenarios/astm/utm/aggregate_checks.md#notifications-for-causing-conflicts-test-step">Notifications for causing conflicts</a>
+                </span></td>
+              <td><a href="#e18">18</a></td>
+                <td>&#x1F4D3;</td>
+                <td colspan="3">
+                  <code>uss1_core/scd0090_notification</code>: Median latency &gt;0.00s, max &gt;0.0s, min &gt;0.0s
+                </td>
+            </tr>
+            <tr id="e19">
+              <td><a href="#e19">19</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Notifications for causing conflicts
+                </td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+            </tr>
+            <tr id="e20">
+              <td><a href="#e20">20</a></td>
+                <td>&#x1F4D3;</td>
+                <td colspan="3">
+                  <code>uss2_core/scd0090_notification</code>: Median latency &gt;0.00s, max &gt;0.0s, min &gt;0.0s
+                </td>
+            </tr>
+            <tr id="e21">
+              <td><a href="#e21">21</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Notifications for causing conflicts
+                </td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+            </tr>
+            <tr id="e24">
+                <td rowspan="4"><span class="sticky_cell_value">
+                    <a href="https://github.com/interuss/monitoring/blob/159950ba7c1af5f127454914480fcf82d2878c16/monitoring/uss_qualifier/scenarios/astm/utm/aggregate_checks.md#notifications-for-observing-conflicts-test-step">Notifications for observing conflicts</a>
+                </span></td>
+              <td><a href="#e24">24</a></td>
+                <td>&#x1F4D3;</td>
+                <td colspan="3">
+                  <code>uss1_core/scd0095_notification</code>: Median latency &gt;0.00s, max &gt;0.0s, min &gt;0.0s
+                </td>
+            </tr>
+            <tr id="e25">
+              <td><a href="#e25">25</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Notifications for observing conflicts
+                </td>
+                    <td class="pass_result">&#x2705;</td>
+                    <td></td>
+            </tr>
+            <tr id="e26">
+              <td><a href="#e26">26</a></td>
+                <td>&#x1F4D3;</td>
+                <td colspan="3">
+                  <code>uss2_core/scd0095_notification</code>: Median latency &gt;0.00s, max &gt;0.0s, min &gt;0.0s
+                </td>
+            </tr>
+            <tr id="e27">
+              <td><a href="#e27">27</a></td>
+                <td>&#x2705;</td>
+                <td class="pass_result">
+                  Notifications for observing conflicts
+                </td>
+                    <td></td>
+                    <td class="pass_result">&#x2705;</td>
+            </tr>
+  </table>
+</div>
+  <script>
+    function showHide(node) {
+      var value = node.querySelector(".node_value");
+      if (node.classList.contains("collapsed")) {
+        node.classList.remove("collapsed");
+        for (var i = 0; i < value.children.length; i++) {
+          value.children[i].style.display = "block";
+        }
+      } else {
+        node.classList.add("collapsed");
+        for (var i = 0; i < value.children.length; i++) {
+          value.children[i].style.display = "none";
+        }
+      }
+    }
+
+    function addShowHide(node) {
+      if (node.classList.contains("collapseable")) {
+        let key = node.querySelector(".node_key");
+        key.addEventListener("click", function () { showHide(node); });
+        let values = node.querySelector(".node_value ul");
+        if (values.children.length > 3) {
+          showHide(node);
+        }
+      }
+      for (var i = 0; i < node.children.length; i++) {
+        addShowHide(node.children[i]);
+      }
+    }
+
+      addShowHide(document.getElementById("resource_origin_list"));
+  </script>
+
+</body>
+</html>

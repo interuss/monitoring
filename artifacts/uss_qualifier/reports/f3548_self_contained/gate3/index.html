@@ -1,0 +1,110 @@
+<html>
+<head>
+<style>
+    body {
+      margin: 1em;
+      color: #24292f;
+      background-color: #ffffff;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+      font-size: 16px;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+    table {
+      border-spacing: 0;
+      border-collapse: collapse;
+      width: max-content;
+      max-width: 100%;
+      overflow: auto;
+    }
+    tr {
+      border-top: 1px solid hsla(210,18%,87%,1);
+    }
+    table tr:nth-child(2n) {
+      background-color: #f6f8fa;
+    }
+    td {
+      padding: 6px 6px;
+      vertical-align: top;
+      border: 1px solid #d0d7de;
+    }
+    th {
+      padding: 6px 6px;
+      text-align: left;
+      background-color: rgb(230, 230, 230);
+      border: 1px solid #d0d7de;
+      height: 40px;
+      box-sizing: border-box;
+    }
+    a {
+      background-color: transparent;
+      color: #0969da;
+      text-decoration: none;
+    }
+    h2 {
+      margin-block-end: 0.1em;
+    }
+    .header_row {
+      position: sticky;
+      top: -1px;
+      z-index: 100;
+    }
+    .sticky_cell_value {
+      position: sticky;
+      top: 40px;
+      z-index: 0;
+    }
+    .pass_result {
+      background-color: rgb(192, 255, 192);
+    }
+    .findings_result {
+      background-color: rgb(255, 255, 192);
+    }
+    .accepted_findings_result {
+      background-color: rgb(178, 125, 209);
+    }
+    .fail_result {
+      background-color: rgb(255, 192, 192);
+    }
+    .not_tested {
+      background-color: rgb(192, 192, 192);
+    }
+    .has_todo {
+      background-color: rgb(255, 255, 192);
+    }
+    .minor_note {
+      font-style: italic;
+      font-size: 10px;
+    }
+</style></head>
+<body>
+<div>
+  <h2>Participants</h2>
+  <table>
+    <tr>
+      <th>Participant</th>
+      <th>Verification status</th>
+      <th>System version</th>
+    </tr>
+    <tr>
+      <td><a href="./uss1.html">uss1</a></td>
+      <td class="not_tested">
+        <a href="./uss1.html">Not fully verified</a>
+      </td>
+      <td>interuss/monitoring/v0.25.0-159950b</td>
+    </tr>
+    <tr>
+      <td><a href="./uss2.html">uss2</a></td>
+      <td class="pass_result">
+        <a href="./uss2.html">Pass</a>
+      </td>
+      <td>interuss/monitoring/v0.25.0-159950b</td>
+    </tr>
+  </table>
+</div>
+<div>
+  <h2>Programmatic verification statuses</h2>
+  <a href="status.json">status.json</a>
+</div>
+</body>
+</html>
