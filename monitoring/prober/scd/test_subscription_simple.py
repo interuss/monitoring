@@ -97,6 +97,18 @@ def test_sub_does_not_exist_query(ids, scd_api, scd_session):
 
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
+def test_create_sub_time_start_after_time_end(ids, scd_api, scd_session):
+    req = _make_sub1_req(scd_api)
+    e = req["extents"]
+    time_end = e["time_end"]
+    e["time_end"] = e["time_start"]
+    e["time_start"] = time_end
+    resp = scd_session.put(f"/subscriptions/{ids(SUB_TYPE)}", json=req)
+    assert resp.status_code == 400, resp.content
+
+
+@for_api_versions(scd.API_0_3_17)
+@default_scope(SCOPE_SC)
 def test_create_sub(ids, scd_api, scd_session):
     if scd_session is None:
         return
