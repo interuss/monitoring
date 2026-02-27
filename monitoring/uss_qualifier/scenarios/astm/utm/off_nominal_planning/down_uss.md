@@ -95,7 +95,7 @@ we choose not to in order to avoid the small risk the USS may not realize it is 
 For this reason, a USS may reject the planning request above while still complying with SCD0005 by applying the correct
 priority to the pre-existing operational intent.  Therefore, a rejection of the planning request does not indicate
 non-compliance with SCD0005.  However, because InterUSS uses successful planning as a means to measure whether a USS is
-in compliance wiht SCD0005, rejecting the planning attempt means that the primary mechanism for inferring compliance
+in compliance with SCD0005, rejecting the planning attempt means that the primary mechanism for inferring compliance
 with **[astm.f3548.v21.SCD0005](../../../../requirements/astm/f3548/v21.md)** is not available.  In this case, this check will produce a low-severity finding
 to note InterUSS's inability to use this primary mechanism for SCD0005 compliance verification.
 
