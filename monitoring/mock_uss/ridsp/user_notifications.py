@@ -17,6 +17,8 @@ from monitoring.monitorlib.rid_automated_testing.injection_api import (
 
 from . import database
 
+NOTIFICATIONS_LIMIT = datetime.timedelta(hours=1)
+
 
 class ServiceProviderUserNotifications(ImplicitDict):
     user_notifications: list[UserNotification] = []
@@ -45,6 +47,15 @@ class ServiceProviderUserNotifications(ImplicitDict):
             record.flights
         ):
             self.record_notification(message=notif_str, observed_at=notif_date)
+
+        self.cleanup()
+
+    def cleanup(self):
+        self.user_notifications = [
+            notif
+            for notif in self.user_notifications
+            if notif.observed_at + NOTIFICATIONS_LIMIT > arrow.utcnow().datetime
+        ]
 
 
 def check_and_generate_missing_fields_notifications(
