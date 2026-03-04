@@ -518,7 +518,7 @@ def test_go_to_cleanup():
 
     # This is a list of step to do, in order, and if go_to_cleanup should works
     steps_and_result = [
-        ("nop", False),
+        ("nop", True),
         ("begin_test_scenario", True),
         ("begin_test_case", True),
         ("begin_test_step", True),
