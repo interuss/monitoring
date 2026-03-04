@@ -12,8 +12,13 @@ from .behavior import ServiceProviderBehavior
 from .user_notifications import ServiceProviderUserNotifications
 
 DB_CLEANUP_INTERVAL = timedelta(hours=1)
+"""Clean database this often."""
+
 FLIGHTS_LIMIT = timedelta(hours=1)
+"""Automatically remove flights we manage after this long beyond their end time."""
+
 NOTIFICATIONS_LIMIT = timedelta(hours=1)
+"""Automatically remove notifications after this long beyond their observation time."""
 
 
 class TestRecord(ImplicitDict):
