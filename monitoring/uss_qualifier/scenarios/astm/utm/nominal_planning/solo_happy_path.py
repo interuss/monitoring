@@ -6,4 +6,5 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 class SoloHappyPath(TestScenario):
     @deprecated(deprecated_in="0.26.0")
     def run(self, context):
-        pass
+        self.begin_test_scenario(context)
+        self.end_test_scenario()

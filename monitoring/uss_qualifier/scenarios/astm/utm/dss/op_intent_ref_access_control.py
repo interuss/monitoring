@@ -139,6 +139,7 @@ class OpIntentReferenceAccessControl(TestScenario):
                 "clean_workspace",
                 "Could not clean up workspace, skipping scenario",
             )
+            self.end_test_case()
 
         self.end_test_scenario()
 
