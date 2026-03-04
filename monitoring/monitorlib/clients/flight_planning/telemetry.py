@@ -55,6 +55,7 @@ class OperationalStatus(str, Enum):
     * `Ground`: The aircraft is reporting status but is not airborne.
     * `Airborne`: The aircraft is, or should be considered as, being airborne.
     * `Emergency`: The aircraft is reporting an emergency.
+    * `SystemFailure`: Some aspect of the reporting/telemetry system has failed, but the aircraft is not in emergency.
     * `Unknown`: The system supports acquisition of knowledge about the status of the aircraft, but the status cannot currently be determined.
     """
 
@@ -62,6 +63,7 @@ class OperationalStatus(str, Enum):
     Ground = "Ground"
     Airborne = "Airborne"
     Emergency = "Emergency"
+    SystemFailure = "SystemFailure"
     Unknown = "Unknown"
 
 
