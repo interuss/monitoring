@@ -13,7 +13,7 @@ def init_parser(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--uss-base-url",
         type=str,
-        help="Base URL of the Token Exchanger from which to request JWTs",
+        help="Base URL of the USS",
         required=True,
     )
     parser.add_argument(

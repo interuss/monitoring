@@ -7,6 +7,16 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
+    "acceptable_findings": {
+      "description": "If any check identified in this field fails, ignore the failure when determining Tested Requirements outcomes.",
+      "items": {
+        "$ref": "FullyQualifiedCheck.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
     "aggregate_participants": {
       "additionalProperties": {
         "items": {

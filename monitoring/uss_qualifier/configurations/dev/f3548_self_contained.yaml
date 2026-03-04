@@ -30,7 +30,6 @@ v1:
           second_utm_auth: second_utm_auth
           planning_area: planning_area
           problematically_big_area: problematically_big_area
-          test_exclusions: test_exclusions
 
     # When a test run is executed, a "baseline signature" is computed uniquely identifying the "baseline" of the test,
     # usually excluding exactly what systems are participating in the test (the "environment").  This is a list of
@@ -167,15 +166,6 @@ v1:
         # ========== Environment ==========
         # =================================
 
-        # Controls tests behavior
-        test_exclusions:
-          $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-          resource_type: resources.dev.TestExclusionsResource
-          specification:
-            # Tests should allow private addresses that are not publicly addressable since this configuration runs locally
-            allow_private_addresses: true
-            allow_cleartext_queries: true
-
         # Means by which uss_qualifier can discover which subscription ('sub' claim of its tokes) it is described by
         utm_client_identity:
           resource_type: resources.communications.ClientIdentityResource
@@ -287,9 +277,12 @@ v1:
 
     # How to execute a test run using this configuration
     execution:
-      # Since we expect no failed checks and want to stop execution immediately if there are any failed checks, we set
-      # this parameter to true.
+      # Since we want to stop execution immediately if there are any unexpected failed checks, we set this parameter to
+      # true.
       stop_fast: true
+
+      # But, don't stop_fast for findings that are acceptable according to any of the tested_requirements.
+      do_not_stop_fast_for_acceptable_findings: true
 
   # This block defines artifacts related to the test run.  Note that all paths are
   # relative to where uss_qualifier is executed from, and are located inside the
@@ -422,6 +415,14 @@ v1:
           uss1: scd_and_dss
           uss2: scd_no_dss
 
+        # It is acceptable for the checks listed below to fail (in terms of determining the status of tested requirements in this artifact)
+        acceptable_findings:
+          - scenario_type: scenarios.astm.utm.dss.DSSInteroperability
+            test_case_name: "Prerequisites"
+            test_step_name: "Test environment requirements"
+            check_name: "DSS instance is publicly addressable"
+            # Rationale: tests should allow private addresses that are not publicly addressable since this configuration runs locally
+
     # Write out a human-readable report showing the sequence of events of the test
     sequence_view: {}
 
@@ -452,6 +453,7 @@ v1:
         pass_condition:
           # When considering all of the applicable elements...
           elements:
-            # ...the number of applicable elements should be zero.
+            # ...the number of applicable elements should be 4...
             count:
-              equal_to: 0
+              # ...specifically, the 4x "DSS instance is publicly accessible" checks we deem acceptable
+              equal_to: 4

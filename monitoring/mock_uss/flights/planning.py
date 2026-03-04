@@ -5,7 +5,12 @@ from datetime import UTC, datetime
 import arrow
 from implicitdict import ImplicitDict
 
-from monitoring.mock_uss.flights.database import DEADLOCK_TIMEOUT, FlightRecord, db
+from monitoring.mock_uss.flights.database import (
+    DEADLOCK_TIMEOUT,
+    FlightRecord,
+    MockUSSFlightID,
+    db,
+)
 from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.temporal import Time
@@ -41,7 +46,7 @@ def adjust_flight_info(info: FlightInfo) -> FlightInfo:
     return result
 
 
-def lock_flight(flight_id: str, log: Callable[[str], None]) -> FlightRecord:
+def lock_flight(flight_id: MockUSSFlightID, log: Callable[[str], None]) -> FlightRecord:
     # If this is a change to an existing flight, acquire lock to that flight
     log(f"Acquiring lock for flight {flight_id}")
     deadline = datetime.now(UTC) + DEADLOCK_TIMEOUT
@@ -70,7 +75,7 @@ def lock_flight(flight_id: str, log: Callable[[str], None]) -> FlightRecord:
     return existing_flight
 
 
-def release_flight_lock(flight_id: str, log: Callable[[str], None]) -> None:
+def release_flight_lock(flight_id: MockUSSFlightID, log: Callable[[str], None]) -> None:
     with db.transact() as tx:
         if flight_id in tx.value.flights:
             flight = tx.value.flights[flight_id]
@@ -84,7 +89,7 @@ def release_flight_lock(flight_id: str, log: Callable[[str], None]) -> None:
                 del tx.value.flights[flight_id]
 
 
-def delete_flight_record(flight_id: str) -> FlightRecord | None:
+def delete_flight_record(flight_id: MockUSSFlightID) -> FlightRecord | None:
     deadline = datetime.now(UTC) + DEADLOCK_TIMEOUT
     while True:
         with db.transact() as tx:

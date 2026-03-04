@@ -520,7 +520,11 @@ class GenericTestScenario(ABC):
             documentation=check_documentation,
             participants=[] if participants is None else participants,
             step_report=self._step_report,
-            stop_fast=self.context.stop_fast,
+            stop_fast=self.context.stop_fast(
+                self._current_case.name if self._current_case else None,
+                self._current_step.name if self._current_step else None,
+                name,
+            ),
             on_failed_check=self.on_failed_check,
         )
 

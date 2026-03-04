@@ -142,10 +142,10 @@ class ClearAreaResponse(ImplicitDict):
     flight_deletion_errors: dict[FlightID, dict]
     """When an error was encountered deleting a particular flight, information about that error."""
 
-    op_intents_removed: list[f3548v21.EntityOVN]
+    op_intents_removed: list[f3548v21.EntityID]
     """List of IDs of ASTM F3548-21 operational intent references that were removed during this area clearing operation."""
 
-    op_intent_removal_errors: dict[f3548v21.EntityOVN, dict]
+    op_intent_removal_errors: dict[f3548v21.EntityID, dict]
     """When an error was encountered removing a particular operational intent reference, information about that error."""
 
     error: Optional[dict] = None

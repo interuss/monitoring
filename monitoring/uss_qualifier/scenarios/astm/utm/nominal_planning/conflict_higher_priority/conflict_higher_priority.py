@@ -103,6 +103,7 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
                 "flight1m_planned",
                 "Flight 1m",
                 must_conflict_with=["Flight 2"],
+                must_not_conflict_with=["Flight 2m"],
                 usage_state=AirspaceUsageState.Planned,
                 uas_state=UasState.Nominal,
             ),
@@ -110,6 +111,7 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
                 "flight1m_activated",
                 "Flight 1m",
                 must_conflict_with=["Flight 2"],
+                must_not_conflict_with=["Flight 2m"],
                 usage_state=AirspaceUsageState.InUse,
                 uas_state=UasState.Nominal,
             ),
@@ -198,7 +200,7 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
         ) = self._modify_activated_flight_conflict_preexisting(flight_1_oi_ref)
         self.end_test_case()
 
-        self.begin_test_case("Attempt to modify activated flight in conflict")
+        self.begin_test_case("Attempt to modify activated flight into conflict")
         self._attempt_modify_activated_flight_conflict(
             flight_1_intent, flight_1_oi_ref, flight_2_oi_ref
         )
@@ -510,7 +512,7 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             )
             return
 
-        self.begin_test_step("Attempt to modify activated Flight 1 in conflict")
+        self.begin_test_step("Attempt to modify activated Flight 1 into conflict")
         flight1c_activated = self.resolve_flight(self.flight1c_activated)
 
         with OpIntentValidator(

@@ -1,18 +1,28 @@
-#!env/bin/python3
+import argparse
 import datetime
 import random
 import threading
 import uuid
 
 import client
-from locust import between, task
+import locust
+from utils import format_time
 
-from monitoring.monitorlib import rid_v1
-from monitoring.monitorlib.testing import make_fake_url
+
+@locust.events.init_command_line_parser.add_listener
+def init_parser(parser: argparse.ArgumentParser):
+    """Setup config params, populated by locust.conf."""
+
+    parser.add_argument(
+        "--uss-base-url",
+        type=str,
+        help="Base URL of the USS",
+        required=True,
+    )
 
 
 class Sub(client.USS):
-    wait_time = between(0.01, 1)
+    wait_time = locust.between(0.01, 1)
     lock = threading.Lock()
 
     def gen_vertices(self):
@@ -25,47 +35,61 @@ class Sub(client.USS):
             {"lng": base_lng + 0.6466, "lat": base_lat + 0.6407},
         ]
 
-    @task(100)
+    @locust.task(100)
     def create_sub(self):
         time_start = datetime.datetime.now(datetime.UTC)
         time_end = time_start + datetime.timedelta(minutes=60)
         sub_uuid = str(uuid.uuid4())
 
         resp = self.client.put(
-            f"/subscriptions/{sub_uuid}",
+            f"/rid/v2/dss/subscriptions/{sub_uuid}",
             json={
                 "extents": {
-                    "spatial_volume": {
-                        "footprint": {
+                    "volume": {
+                        "outline_polygon": {
                             "vertices": self.gen_vertices(),
                         },
-                        "altitude_lo": 20,
-                        "altitude_hi": 400,
+                        "altitude_lower": {
+                            "value": 20,
+                            "reference": "W84",
+                            "units": "M",
+                        },
+                        "altitude_upper": {
+                            "value": 400,
+                            "reference": "W84",
+                            "units": "M",
+                        },
                     },
-                    "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
-                    "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
+                    "time_start": {
+                        "value": format_time(time_start),
+                        "format": "RFC3339",
+                    },
+                    "time_end": {
+                        "value": format_time(time_end),
+                        "format": "RFC3339",
+                    },
                 },
-                "callbacks": {"identification_service_area_url": make_fake_url()},
+                "uss_base_url": self.uss_base_url,
             },
             name="/subscriptions/[sub_uuid]",
         )
         if resp.status_code == 200:
-            self.sub_dict[sub_uuid] = resp.json()["subscription"]["version"]
+            with self.lock:
+                self.sub_dict[sub_uuid] = resp.json()["subscription"]["version"]
 
-    @task(20)
+    @locust.task(20)
     def get_sub(self):
-        target_sub = (
-            random.choice(list(self.sub_dict.keys())) if self.sub_dict else None
-        )
-        if not target_sub:
-            print("Nothing to pick from sub_dict for GET")
-            return
+        with self.lock:
+            if not self.sub_dict:
+                print("Nothing to pick from sub_dict for GET")
+                return
+            target_sub = random.choice(list(self.sub_dict.keys()))
         self.client.get(
-            f"/subscriptions/{target_sub}",
+            f"/rid/v2/dss/subscriptions/{target_sub}",
             name="/subscriptions/[target_sub]",
         )
 
-    @task(50)
+    @locust.task(50)
     def update_sub(self):
         target_sub, target_version = self.checkout_sub()
         if not target_sub:
@@ -75,49 +99,65 @@ class Sub(client.USS):
         time_start = datetime.datetime.now(datetime.UTC)
         time_end = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=2)
         resp = self.client.put(
-            f"/subscriptions/{target_sub}/{target_version}",
+            f"/rid/v2/dss/subscriptions/{target_sub}/{target_version}",
             json={
                 "extents": {
-                    "spatial_volume": {
-                        "footprint": {
+                    "volume": {
+                        "outline_polygon": {
                             "vertices": self.gen_vertices(),
                         },
-                        "altitude_lo": 20,
-                        "altitude_hi": 400,
+                        "altitude_lower": {
+                            "value": 20,
+                            "reference": "W84",
+                            "units": "M",
+                        },
+                        "altitude_upper": {
+                            "value": 400,
+                            "reference": "W84",
+                            "units": "M",
+                        },
                     },
-                    "time_start": time_start.strftime(rid_v1.DATE_FORMAT),
-                    "time_end": time_end.strftime(rid_v1.DATE_FORMAT),
+                    "time_start": {
+                        "value": format_time(time_start),
+                        "format": "RFC3339",
+                    },
+                    "time_end": {
+                        "value": format_time(time_end),
+                        "format": "RFC3339",
+                    },
                 },
-                "callbacks": {"identification_service_area_url": make_fake_url()},
+                "uss_base_url": self.uss_base_url,
             },
             name="/subscriptions/[target_sub]/[target_version]",
         )
         if resp.status_code == 200:
-            self.sub_dict[target_sub] = resp.json()["subscription"]["version"]
+            with self.lock:
+                self.sub_dict[target_sub] = resp.json()["subscription"]["version"]
 
-    @task(5)
+    @locust.task(5)
     def delete_sub(self):
         target_sub, target_version = self.checkout_sub()
         if not target_sub:
             print("Nothing to pick from sub_dict for DELETE")
             return
         self.client.delete(
-            f"/subscriptions/{target_sub}/{target_version}",
+            f"/rid/v2/dss/subscriptions/{target_sub}/{target_version}",
             name="/subscriptions/[target_sub]/[target_version]",
         )
 
     def checkout_sub(self):
-        self.lock.acquire()
-        target_sub = (
-            random.choice(list(self.sub_dict.keys())) if self.sub_dict else None
-        )
-        target_version = self.sub_dict.pop(target_sub, None)
-        self.lock.release()
+        with self.lock:
+            if not self.sub_dict:
+                return None, None
+            target_sub = random.choice(list(self.sub_dict.keys()))
+            target_version = self.sub_dict.pop(target_sub, None)
         return target_sub, target_version
 
     def on_start(self):
+        self.uss_base_url = self.environment.parsed_options.uss_base_url
         # Insert atleast 1 Sub for update to not fail
         self.create_sub()
 
     def on_stop(self):
-        self.sub_dict = {}
+        while self.sub_dict:  # Drain subscriptions
+            self.delete_sub()
