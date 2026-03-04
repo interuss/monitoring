@@ -554,6 +554,7 @@ class GenericTestScenario(ABC):
     def go_to_cleanup(self) -> None:
         self._expect_phase(
             {
+                ScenarioPhase.NotStarted,
                 ScenarioPhase.ReadyForTestCase,
                 ScenarioPhase.ReadyForTestStep,
                 ScenarioPhase.RunningTestStep,
