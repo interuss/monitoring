@@ -17,8 +17,6 @@ from monitoring.monitorlib.rid_automated_testing.injection_api import (
 
 from . import database
 
-NOTIFICATIONS_LIMIT = datetime.timedelta(hours=1)
-
 
 class ServiceProviderUserNotifications(ImplicitDict):
     user_notifications: list[UserNotification] = []
@@ -48,13 +46,11 @@ class ServiceProviderUserNotifications(ImplicitDict):
         ):
             self.record_notification(message=notif_str, observed_at=notif_date)
 
-        self.cleanup()
-
-    def cleanup(self):
+    def cleanup(self, limit):
         self.user_notifications = [
             notif
             for notif in self.user_notifications
-            if notif.observed_at + NOTIFICATIONS_LIMIT > arrow.utcnow().datetime
+            if notif.observed_at.value.datetime + limit > arrow.utcnow().datetime
         ]
 
 
