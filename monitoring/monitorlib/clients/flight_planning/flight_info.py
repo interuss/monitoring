@@ -9,6 +9,8 @@ from uas_standards.en4709_02 import OperatorRegistrationNumber
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api as fp_api
 from uas_standards.interuss.automated_testing.scd.v1 import api as scd_api
 
+from monitoring.monitorlib.clients.flight_planning.telemetry import FlightTelemetry
+from monitoring.monitorlib.geo import Altitude, LatLngPoint
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 
 # ===== ASTM F3548-21 =====
@@ -250,10 +252,106 @@ class BasicFlightPlanInformation(ImplicitDict):
         return state
 
 
+class UAType(str, Enum):
+    """The UA Type can help infer performance, speed, and duration of flights, for example, a
+    "fixed wing" can generally fly in a forward direction only (as compared to a multi-rotor).
+
+    `HybridLift` is a fixed wing aircraft that can take off vertically.  `Helicopter` includes multirotor.
+
+    `VTOL` is equivalent to HybridLift.
+    """
+
+    NotDeclared = "NotDeclared"
+    Aeroplane = "Aeroplane"
+    Helicopter = "Helicopter"
+    Gyroplane = "Gyroplane"
+    VTOL = "VTOL"
+    HybridLift = "HybridLift"
+    Ornithopter = "Ornithopter"
+    Glider = "Glider"
+    Kite = "Kite"
+    FreeBalloon = "FreeBalloon"
+    CaptiveBalloon = "CaptiveBalloon"
+    Airship = "Airship"
+    FreeFallOrParachute = "FreeFallOrParachute"
+    Rocket = "Rocket"
+    TetheredPoweredAircraft = "TetheredPoweredAircraft"
+    GroundObstacle = "GroundObstacle"
+    Other = "Other"
+
+
+class UASRegistrationNumber(ImplicitDict):
+    """Number provided by CAA or authorized representative for registering and/or identifying UAS."""
+
+    authority: str | None = ""
+    """Authority providing this registration number.  If authority represents a country, the ICAO nationality
+    mark is recommended.
+    """
+
+    identifier: str
+    """Authority-assigned number or identifier."""
+
+
+class UAClassificationEUCategory(str, Enum):
+    EUCategoryUndefined = "EUCategoryUndefined"
+    Open = "Open"
+    Specific = "Specific"
+    Certified = "Certified"
+
+
+class UAClassificationEUClass(str, Enum):
+    EUClassUndefined = "EUClassUndefined"
+    Class0 = "Class0"
+    Class1 = "Class1"
+    Class2 = "Class2"
+    Class3 = "Class3"
+    Class4 = "Class4"
+    Class5 = "Class5"
+    Class6 = "Class6"
+
+
+UAClassificationEU = dict[UAClassificationEUCategory, UAClassificationEUClass]
+
+
+class UASInformation(ImplicitDict):
+    """Information about a UAS that may be provided in flight planning scenarios."""
+
+    aircraft_type: UAType | None
+    """Aircraft type of the injected test flight."""
+
+    serial_number: str | None = ""
+    """This is generally expressed in the CTA-2063-A Serial Number format."""
+
+    registration_numbers: list[UASRegistrationNumber] | None = []
+    """For each relevant authority with which this UAS is registered, the number/identifier assigned to this UAS."""
+
+    eu_classification: UAClassificationEU | None
+    """EU classification of aircraft."""
+
+
+class OperatorInformation(ImplicitDict):
+    """Information about the operator that may be provided in flight planning scenarios."""
+
+    registration_numbers: list[OperatorRegistrationNumber] | None
+    """Registration numbers for the remote pilot or operator."""
+
+    location: LatLngPoint | None
+    """Location of operator."""
+
+    altitude: Altitude | None
+    """Altitude of operator."""
+
+
 class FlightInfo(ImplicitDict):
     """Details of user's intent to create or modify a flight plan."""
 
     basic_information: BasicFlightPlanInformation
+
+    uas: UASInformation | None
+
+    operator: OperatorInformation | None
+
+    telemetry: FlightTelemetry | None
 
     astm_f3548_21: Optional[ASTMF354821OpIntentInformation]
 
@@ -266,44 +364,64 @@ class FlightInfo(ImplicitDict):
 
     @staticmethod
     def from_flight_plan(plan: fp_api.FlightPlan) -> FlightInfo:
-        kwargs = {
-            "basic_information": BasicFlightPlanInformation.from_flight_planning_api(
+        result = FlightInfo(
+            basic_information=BasicFlightPlanInformation.from_flight_planning_api(
                 plan.basic_information
             )
-        }
+        )
+        if "uas" in plan and plan.uas:
+            result.uas = ImplicitDict.parse(plan.uas, UASInformation)
+        if "operator" in plan and plan.operator:
+            result.operator = ImplicitDict.parse(plan.operator, OperatorInformation)
+        if "telemetry" in plan and plan.telemetry:
+            result.telemetry = ImplicitDict.parse(plan.telemetry, FlightTelemetry)
         if "astm_f3548_21" in plan and plan.astm_f3548_21:
-            kwargs["astm_f3548_21"] = ImplicitDict.parse(
+            result.astm_f3548_21 = ImplicitDict.parse(
                 plan.astm_f3548_21, ASTMF354821OpIntentInformation
             )
         if "uspace_flight_authorisation" in plan and plan.uspace_flight_authorisation:
-            kwargs["uspace_flight_authorisation"] = ImplicitDict.parse(
+            result.uspace_flight_authorisation = ImplicitDict.parse(
                 plan.uspace_flight_authorisation, FlightAuthorisationData
             )
         if "rpas_operating_rules_2_6" in plan and plan.rpas_operating_rules_2_6:
-            kwargs["rpas_operating_rules_2_6"] = ImplicitDict.parse(
+            result.rpas_operating_rules_2_6 = ImplicitDict.parse(
                 plan.rpas_operating_rules_2_6, RPAS26FlightDetails
             )
         if "additional_information" in plan and plan.additional_information:
-            kwargs["additional_information"] = plan.additional_information
-        return FlightInfo(**kwargs)
+            result.additional_information = plan.additional_information
+        return result
 
     def to_flight_plan(self) -> fp_api.FlightPlan:
-        kwargs = {"basic_information": self.basic_information.to_flight_planning_api()}
+        result = fp_api.FlightPlan(
+            basic_information=self.basic_information.to_flight_planning_api()
+        )
+        if "uas" in self and self.uas:
+            result.uas = ImplicitDict.parse(self.uas, fp_api.UASInformation)
+        if "operator" in self and self.operator:
+            result.operator = ImplicitDict.parse(
+                self.operator, fp_api.OperatorInformation
+            )
+        if "telemetry" in self and self.telemetry:
+            result.telemetry = ImplicitDict.parse(
+                self.telemetry, fp_api.FlightTelemetry
+            )
         if "astm_f3548_21" in self and self.astm_f3548_21:
-            kwargs["astm_f3548_21"] = ImplicitDict.parse(
+            result.astm_f3548_21 = ImplicitDict.parse(
                 self.astm_f3548_21, fp_api.ASTMF354821OpIntentInformation
             )
         if "uspace_flight_authorisation" in self and self.uspace_flight_authorisation:
-            kwargs["uspace_flight_authorisation"] = ImplicitDict.parse(
+            result.uspace_flight_authorisation = ImplicitDict.parse(
                 self.uspace_flight_authorisation, fp_api.FlightAuthorisationData
             )
         if "rpas_operating_rules_2_6" in self and self.rpas_operating_rules_2_6:
-            kwargs["rpas_operating_rules_2_6"] = ImplicitDict.parse(
+            result.rpas_operating_rules_2_6 = ImplicitDict.parse(
                 self.rpas_operating_rules_2_6, fp_api.RPAS26FlightDetails
             )
         if "additional_information" in self and self.additional_information:
-            kwargs["additional_information"] = self.additional_information
-        return fp_api.FlightPlan(**kwargs)
+            result.additional_information = fp_api.FlightPlanAdditionalInformation()
+            for k, v in self.additional_information.items():
+                result.additional_information[k] = v
+        return result
 
     @staticmethod
     def from_scd_inject_flight_request(
