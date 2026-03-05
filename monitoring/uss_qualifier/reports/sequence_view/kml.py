@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from typing import Protocol, get_type_hints
 
 from implicitdict import ImplicitDict
-from loguru import logger
 from lxml import etree
 from pykml.factory import KML_ElementMaker as kml
 from pykml.util import format_xml_with_cdata
+from uas_standards.astm.f3411.v22a import api as f3411v22a
 from uas_standards.astm.f3548.v21.api import (
     GetOperationalIntentDetailsResponse,
     QueryOperationalIntentReferenceParameters,
@@ -15,6 +15,7 @@ from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     UpsertFlightPlanRequest,
     UpsertFlightPlanResponse,
 )
+from uas_standards.interuss.automated_testing.rid.v1 import injection as rid_injection
 
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.fetch import Query, QueryType
@@ -28,6 +29,7 @@ from monitoring.monitorlib.kml.flight_planning import (
     upsert_flight_plan,
 )
 from monitoring.monitorlib.kml.generation import query_styles
+from monitoring.monitorlib.kml.rid import create_test, get_flights_v22a, rid_styles
 from monitoring.uss_qualifier.reports.sequence_view.summary_types import TestedScenario
 
 
@@ -125,7 +127,6 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                         )
                     except ValueError as e:
                         msg = f"Error parsing request into {render_info.request_type.__name__}"
-                        logger.warning(msg)
                         query_folder.append(
                             kml.Folder(
                                 kml.name(msg),
@@ -144,7 +145,6 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                         )
                     except ValueError as e:
                         msg = f"Error parsing response into {render_info.response_type.__name__}"
-                        logger.warning(msg)
                         query_folder.append(
                             kml.Folder(
                                 kml.name(msg),
@@ -164,7 +164,11 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                     )
     doc = kml.kml(
         kml.Document(
-            *query_styles(), *f3548v21_styles(), *flight_planning_styles(), top_folder
+            *query_styles(),
+            *f3548v21_styles(),
+            *flight_planning_styles(),
+            *rid_styles(),
+            top_folder,
         )
     )
     return etree.tostring(format_xml_with_cdata(doc), pretty_print=True).decode("utf-8")
@@ -188,3 +192,15 @@ def render_flight_planning_upsert_flight_plan(
     req: UpsertFlightPlanRequest, resp: UpsertFlightPlanResponse
 ):
     return [upsert_flight_plan(req, resp)]
+
+
+@query_kml_renderer(QueryType.InterussRIDAutomatedTestingV1CreateTest)
+def render_rid_injection_create_test(
+    req: rid_injection.CreateTestParameters, resp: rid_injection.ChangeTestResponse
+):
+    return create_test(req, resp)
+
+
+@query_kml_renderer(QueryType.F3411v22aUSSSearchFlights)
+def render_f3411_22a_search_flights(query: Query, resp: f3411v22a.GetFlightsResponse):
+    return get_flights_v22a(query.request.url, resp)

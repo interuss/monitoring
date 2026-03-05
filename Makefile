@@ -17,6 +17,10 @@ format: image
 	cd monitoring && make format
 	cd schemas && make format
 
+.PHONY: set-baseline
+set-baseline: image
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring-dev uv run basedpyright --writebaseline
+
 .PHONY: lint
 lint: shell-lint python-lint
 	cd monitoring && make lint

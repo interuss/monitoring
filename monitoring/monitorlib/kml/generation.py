@@ -1,4 +1,5 @@
 import math
+from datetime import datetime
 
 import s2sphere
 from pykml.factory import KML_ElementMaker as kml
@@ -48,6 +49,37 @@ def _distance_value_of(distance: Altitude | Radius) -> float:
         raise NotImplementedError(f"Distance units {distance.units} not yet supported")
 
 
+def make_basic_placemark(
+    name: str | None = None,
+    style_url: str | None = None,
+    description: str | None = None,
+    time_start: datetime | None = None,
+    time_end: datetime | None = None,
+):
+    # Create placemark
+    args = []
+    if name is not None:
+        args.append(kml.name(name))
+    if style_url is not None:
+        args.append(kml.styleUrl(style_url))
+    placemark = kml.Placemark(*args)
+    if description:
+        placemark.append(kml.description(description))
+
+    # Set time range
+    timespan = None
+    if time_start:
+        timespan = kml.TimeSpan(kml.begin(time_start.isoformat()))
+    if time_end:
+        if timespan is None:
+            timespan = kml.TimeSpan()
+        timespan.append(kml.end(time_end.isoformat()))
+    if timespan is not None:
+        placemark.append(timespan)
+
+    return placemark
+
+
 def make_placemark_from_volume(
     v4: Volume4D,
     name: str | None = None,
@@ -74,25 +106,15 @@ def make_placemark_from_volume(
         raise NotImplementedError("No vertices found")
 
     # Create placemark
-    args = []
-    if name is not None:
-        args.append(kml.name(name))
-    if style_url is not None:
-        args.append(kml.styleUrl(style_url))
-    placemark = kml.Placemark(*args)
-    if description:
-        placemark.append(kml.description(description))
-
-    # Set time range
-    timespan = None
-    if "time_start" in v4 and v4.time_start:
-        timespan = kml.TimeSpan(kml.begin(v4.time_start.datetime.isoformat()))
-    if "time_end" in v4 and v4.time_end:
-        if timespan is None:
-            timespan = kml.TimeSpan()
-        timespan.append(kml.end(v4.time_end.datetime.isoformat()))
-    if timespan is not None:
-        placemark.append(timespan)
+    placemark = make_basic_placemark(
+        name=name,
+        style_url=style_url,
+        description=description,
+        time_start=v4.time_start.datetime
+        if "time_start" in v4 and v4.time_start
+        else None,
+        time_end=v4.time_end.datetime if "time_end" in v4 and v4.time_end else None,
+    )
 
     # Create top and bottom of the volume
     avg = s2sphere.LatLng.from_degrees(
@@ -190,6 +212,23 @@ def make_placemark_from_volume(
 
     placemark.append(geo)
     return placemark
+
+
+def add_point(
+    placemark,
+    lat_degrees: float,
+    lng_degrees: float,
+) -> None:
+    placemark.append(kml.Point(kml.coordinates(f"{lng_degrees},{lat_degrees},0")))
+
+
+def add_linestring(
+    placemark,
+    lng_lat_alt: list[tuple[float, float, float]],
+):
+    # Create the point
+    coord_string = " ".join(f"{lng},{lat},{alt}" for (lng, lat, alt) in lng_lat_alt)
+    placemark.append(kml.LineString(kml.tessellate(1), kml.coordinates(coord_string)))
 
 
 def query_styles() -> list:
