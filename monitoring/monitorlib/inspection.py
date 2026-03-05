@@ -2,6 +2,8 @@ import importlib
 import inspect
 import pkgutil
 
+_modules_imported = set()
+
 
 def import_submodules(module) -> None:
     """Ensure that all descendant modules of a module are loaded.
@@ -10,10 +12,13 @@ def import_submodules(module) -> None:
 
     :param module: Parent module from which to start explicitly importing modules.
     """
+    if module in _modules_imported:
+        return
     for loader, module_name, is_pkg in pkgutil.walk_packages(
         module.__path__, module.__name__ + "."
     ):
         importlib.import_module(module_name)
+    _modules_imported.add(module)
 
 
 def get_module_object_by_name(parent_module, object_name: str):

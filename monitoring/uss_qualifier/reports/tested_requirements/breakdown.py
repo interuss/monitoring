@@ -37,7 +37,11 @@ from monitoring.uss_qualifier.reports.tested_requirements.sorting import sort_br
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 from monitoring.uss_qualifier.scenarios.documentation.parsing import get_documentation
-from monitoring.uss_qualifier.scenarios.scenario import get_scenario_type_by_name
+from monitoring.uss_qualifier.scenarios.scenario import (
+    are_scenario_types_equal,
+    fully_qualified_check_in_collection,
+    get_scenario_type_by_name,
+)
 from monitoring.uss_qualifier.suites.definitions import (
     ActionType,
     TestSuiteActionDeclaration,
@@ -188,7 +192,7 @@ def _populate_breakdown_with_scenario_report(
                 matches = [
                     s
                     for s in tested_requirement.scenarios
-                    if s.type == scenario_type_name
+                    if are_scenario_types_equal(s.type, scenario_type_name)
                 ]
                 if matches:
                     tested_scenario = matches[0]
@@ -237,8 +241,8 @@ def _populate_breakdown_with_scenario_report(
                         name=check.name,
                         url="",
                         has_todo=False,
-                        is_finding_acceptable=current_check.contained_in(
-                            acceptable_findings
+                        is_finding_acceptable=fully_qualified_check_in_collection(
+                            current_check, acceptable_findings
                         ),
                     )  # TODO: Consider populating has_todo with documentation instead
                     if isinstance(check, FailedCheck):
@@ -340,7 +344,7 @@ def _populate_breakdown_with_scenario(
                     matches = [
                         s
                         for s in tested_requirement.scenarios
-                        if s.type == scenario_type_name
+                        if are_scenario_types_equal(s.type, scenario_type_name)
                     ]
                     if matches:
                         tested_scenario = matches[0]
@@ -383,8 +387,8 @@ def _populate_breakdown_with_scenario(
                             name=check.name,
                             url=check.url,
                             has_todo=check.has_todo,
-                            is_finding_acceptable=current_check.contained_in(
-                                acceptable_findings
+                            is_finding_acceptable=fully_qualified_check_in_collection(
+                                current_check, acceptable_findings
                             ),
                         )
                         tested_step.checks.append(tested_check)
