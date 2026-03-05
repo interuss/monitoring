@@ -33,7 +33,6 @@ class UssAvailabilityMutation(TestScenario):
         """
         Args:
             dss: dss to test
-            id_generator: will let us generate specific identifiers
             client_identity: tells us the identity we should expect as an entity's manager
         """
         super().__init__()
