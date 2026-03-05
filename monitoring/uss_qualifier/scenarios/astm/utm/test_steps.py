@@ -29,6 +29,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss.test_step_fragments import 
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.evaluation import (
     validate_op_intent_details,
+    validate_op_intent_reference,
 )
 from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioDidNotStopError,
@@ -420,6 +421,7 @@ class OpIntentValidator:
                     details=f"Received status code {oi_full_query.status_code} from {self._flight_planner.participant_id} when querying for details of operational intent {oi_ref.id}; {e}",
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
+                return
 
         validation_failures = self._evaluate_op_intent_validation(oi_full_query)
         with self._scenario.check(
@@ -441,6 +443,21 @@ class OpIntentValidator:
                     + "\n".join(
                         f"At {e.json_path} in the response: {e.message}" for e in errors
                     ),
+                    query_timestamps=[oi_full_query.request.timestamp],
+                )
+
+        with self._scenario.check(
+            "Operational intent reference reported by USS match the one published to the DSS",
+            [self._flight_planner.participant_id],
+        ) as check:
+            error_text = validate_op_intent_reference(
+                oi_full.reference,
+                oi_ref,
+            )
+            if error_text:
+                check.record_failed(
+                    summary="Operational intent reference reported by USS does not match the one published to the DSS",
+                    details=error_text,
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
 
