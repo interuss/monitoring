@@ -21,6 +21,7 @@ class UssAvailabilityMutation(TestScenario):
     """
 
     _dss: DSSInstance
+    _pid: list[str]
 
     _uss_id: str
 
@@ -92,7 +93,7 @@ class UssAvailabilityMutation(TestScenario):
             except QueryError as qe:
                 self.record_queries(qe.queries)
                 if qe.cause_status_code == 409:
-                    # The spec explicitly requests a 409 response code for incorrect OVNs.
+                    # The spec explicitly requests a 409 response code for incorrect versions.
                     pass
                 else:
                     check.record_failed(
@@ -124,7 +125,7 @@ class UssAvailabilityMutation(TestScenario):
             except QueryError as qe:
                 self.record_queries(qe.queries)
                 if qe.cause_status_code == 409:
-                    # The spec explicitly requests a 409 response code for incorrect OVNs.
+                    # The spec explicitly requests a 409 response code for incorrect versions.
                     pass
                 else:
                     check.record_failed(
