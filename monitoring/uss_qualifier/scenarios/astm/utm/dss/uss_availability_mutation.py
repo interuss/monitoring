@@ -15,7 +15,7 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
-class UssAvailabilitySimple(TestScenario):
+class UssAvailabilityMutation(TestScenario):
     """
     A scenario that verifies that USS availability status cannot be updated with the incorrect version.
     """

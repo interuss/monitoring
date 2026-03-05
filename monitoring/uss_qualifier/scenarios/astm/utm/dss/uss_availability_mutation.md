@@ -1,4 +1,4 @@
-# ASTM Availability DSS: USS Availability Simple test scenario
+# ASTM Availability DSS: USS Availability Mutation test scenario
 
 ## Overview
 
