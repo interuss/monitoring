@@ -20,3 +20,6 @@ from .subscription_interactions_deletion import (
 )
 from .subscription_simple import SubscriptionSimple as SubscriptionSimple
 from .subscription_validation import SubscriptionValidation as SubscriptionValidation
+from .uss_availability_mutation import (
+    UssAvailabilityMutation as UssAvailabilityMutation,
+)
