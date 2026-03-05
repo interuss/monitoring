@@ -37,7 +37,9 @@ def create_test(req: CreateTestParameters, resp: ChangeTestResponse) -> list:
                     if (
                         "position" in rt
                         and rt.position
+                        and "lat" in rt.position
                         and rt.position.lat == telemetry.position.lat
+                        and "lng" in rt.position
                         and rt.position.lng == telemetry.position.lng
                     ):
                         style_url = "#unmodifiedtelemetry"
