@@ -41,4 +41,4 @@ This step verifies that an existing OIR cannot be mutated with an incorrect vers
 #### 🛑 Request to update USS availability status with incorrect version fails check
 
 If the DSS under test allows the qualifier to update the USS availability status with a request that provided an incorrect version,
-it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**
+it is in violation of **[astm.f3548.v21.DSS0100,1](../../../../requirements/astm/f3548/v21.md)**
