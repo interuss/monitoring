@@ -92,10 +92,7 @@ class UssAvailabilityMutation(TestScenario):
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code == 409:
-                    # The spec explicitly requests a 409 response code for incorrect versions.
-                    pass
-                else:
+                if qe.cause_status_code != 409:
                     check.record_failed(
                         summary="Set USS availability with missing version failed for unexpected reason",
                         details=f"Was expecting an HTTP 409 response because of an missing version, but got {qe.cause_status_code} instead",
@@ -124,10 +121,7 @@ class UssAvailabilityMutation(TestScenario):
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code == 409:
-                    # The spec explicitly requests a 409 response code for incorrect versions.
-                    pass
-                else:
+                if qe.cause_status_code != 409:
                     check.record_failed(
                         summary="Set USS availability with incorrect version failed for unexpected reason",
                         details=f"Was expecting an HTTP 409 response because of an incorrect version, but got {qe.cause_status_code} instead",
