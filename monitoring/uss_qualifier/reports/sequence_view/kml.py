@@ -194,13 +194,13 @@ def render_flight_planning_upsert_flight_plan(
     return [upsert_flight_plan(req, resp)]
 
 
-@query_kml_renderer(QueryType.InterussRIDAutomatedTestingV1CreateTest)
+@query_kml_renderer(QueryType.InterussRIDAutomatedTestingV1CreateTest)  # pyright: ignore[reportArgumentType]
 def render_rid_injection_create_test(
     req: rid_injection.CreateTestParameters, resp: rid_injection.ChangeTestResponse
 ):
     return create_test(req, resp)
 
 
-@query_kml_renderer(QueryType.F3411v22aUSSSearchFlights)
+@query_kml_renderer(QueryType.F3411v22aUSSSearchFlights)  # pyright: ignore[reportArgumentType]
 def render_f3411_22a_search_flights(query: Query, resp: f3411v22a.GetFlightsResponse):
     return get_flights_v22a(query.request.url, resp)
