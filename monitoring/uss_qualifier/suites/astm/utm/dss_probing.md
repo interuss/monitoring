@@ -24,6 +24,7 @@
 18. Scenario: [ASTM UTM DSS: Direct datastore access](../../../scenarios/astm/utm/dss/datastore_access.md) ([`scenarios.astm.utm.dss.DatastoreAccess`](../../../scenarios/astm/utm/dss/datastore_access.py))
 19. Scenario: [OVN Request Optional Extension to ASTM F3548-21](../../../scenarios/interuss/ovn_request/dss_ovn_request.md) ([`scenarios.interuss.ovn_request.DSSOVNRequest`](../../../scenarios/interuss/ovn_request/dss_ovn_request.py))
 20. Scenario: [ASTM SCD DSS: Report](../../../scenarios/astm/utm/dss/report.md) ([`scenarios.astm.utm.dss.Report`](../../../scenarios/astm/utm/dss/report.py))
+21. Scenario: [ASTM Availability DSS: USS Availability Mutation](../../../scenarios/astm/utm/dss/uss_availability_mutation.md) ([`scenarios.astm.utm.dss.UssAvailabilityMutation`](../../../scenarios/astm/utm/dss/uss_availability_mutation.py))
 
 ## [Checked requirements](../../README.md#checked-requirements)
 
@@ -73,7 +74,7 @@
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0100,1</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/authentication/authentication_validation.md">ASTM SCD DSS: Interfaces authentication</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/uss_availability_mutation.md">ASTM Availability DSS: USS Availability Mutation</a><br><a href="../../../scenarios/astm/utm/dss/authentication/authentication_validation.md">ASTM SCD DSS: Interfaces authentication</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0100,2</a></td>

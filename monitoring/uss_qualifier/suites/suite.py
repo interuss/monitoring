@@ -51,6 +51,8 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioCannotContinueError,
     TestRunCannotContinueError,
     TestScenario,
+    are_scenario_types_equal,
+    fully_qualified_check_in_collection,
     get_scenario_type_by_name,
 )
 from monitoring.uss_qualifier.suites.definitions import (
@@ -482,7 +484,9 @@ class ExecutionContext:
                         test_step_name=test_step_name,
                         check_name=check_name,
                     )
-                    if current_check.contained_in(self.acceptable_findings):
+                    if fully_qualified_check_in_collection(
+                        current_check, self.acceptable_findings
+                    ):
                         return False
             return True
         return False
@@ -569,10 +573,15 @@ class ExecutionContext:
                     "types" in f.is_test_scenario
                     and f.is_test_scenario.types is not None
                 ):
-                    if (
-                        action.test_scenario.declaration.scenario_type
-                        not in f.is_test_scenario.types
-                    ):
+                    matches_scenario_type = False
+                    for scenario_type in f.is_test_scenario.types:
+                        if are_scenario_types_equal(
+                            scenario_type,
+                            action.test_scenario.declaration.scenario_type,
+                        ):
+                            matches_scenario_type = True
+                            break
+                    if not matches_scenario_type:
                         return False
                 result = True
             else:

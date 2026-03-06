@@ -168,24 +168,13 @@ class FullyQualifiedCheck(ImplicitDict):
     """Scenario in which the check occurs."""
 
     test_case_name: str
-    """Test case in which the check occurs."""
+    """Test case in which the check occurs, omitting the ' test case' suffix.  Must be an exact match to documentation; sensitive to case and spacing."""
 
     test_step_name: str
-    """Test step in which the check occurs."""
+    """Test step in which the check occurs, omitting the ' test step' suffix.  Must be an exact match to documentation; sensitive to case and spacing."""
 
     check_name: str
-    """Name of the check."""
-
-    def contained_in(self, collection: Iterable[FullyQualifiedCheck]) -> bool:
-        for other in collection:
-            if (
-                self.scenario_type == other.scenario_type
-                and self.test_case_name == other.test_case_name
-                and self.test_step_name == other.test_step_name
-                and self.check_name == other.check_name
-            ):
-                return True
-        return False
+    """Name of the check, omitting the ' check' suffix.  Must be an exact match to documentation; sensitive to case and spacing."""
 
 
 class TestedRequirementsConfiguration(ImplicitDict):

@@ -2,7 +2,7 @@ import inspect
 import time as pytime
 import traceback
 from abc import ABC, abstractmethod
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import TypeVar
@@ -19,6 +19,7 @@ from monitoring.monitorlib.inspection import fullname
 from monitoring.monitorlib.temporal import TestTimeContext
 from monitoring.uss_qualifier import scenarios as scenarios_module
 from monitoring.uss_qualifier.common_data_definitions import Severity
+from monitoring.uss_qualifier.configurations.configuration import FullyQualifiedCheck
 from monitoring.uss_qualifier.reports.report import (
     ErrorReport,
     FailedCheck,
@@ -220,6 +221,29 @@ def get_scenario_type_by_name(scenario_type_name: TestScenarioTypeName) -> type:
             f"Scenario type {scenario_type.__name__} is not a subclass of the TestScenario base class"
         )
     return scenario_type
+
+
+def are_scenario_types_equal(
+    scenario_type_name_1: TestScenarioTypeName,
+    scenario_type_name_2: TestScenarioTypeName,
+) -> bool:
+    scenario_type_1 = get_scenario_type_by_name(scenario_type_name_1)
+    scenario_type_2 = get_scenario_type_by_name(scenario_type_name_2)
+    return scenario_type_1 == scenario_type_2
+
+
+def fully_qualified_check_in_collection(
+    check: FullyQualifiedCheck, collection: Iterable[FullyQualifiedCheck]
+) -> bool:
+    for other in collection:
+        if (
+            are_scenario_types_equal(check.scenario_type, other.scenario_type)
+            and check.test_case_name == other.test_case_name
+            and check.test_step_name == other.test_step_name
+            and check.check_name == other.check_name
+        ):
+            return True
+    return False
 
 
 class GenericTestScenario(ABC):
