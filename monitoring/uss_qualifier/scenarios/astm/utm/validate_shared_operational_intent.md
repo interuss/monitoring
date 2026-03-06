@@ -33,6 +33,10 @@ If the operational intent details response does not validate against [the GetOpe
 
 If the operational intent details reported by the USS do not match the user's flight intent, this check will fail per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../requirements/interuss/automated_testing/flight_planning.md)** and **[astm.f3548.v21.OPIN0025](../../../requirements/astm/f3548/v21.md)**.
 
+## 🛑 Details 4D extents are within reference extents check
+
+If the 4D extents (start time, end time, and altitude if specified) of any of the detailed operational intent volumes are not fully contained within the 4D extents of the operational intent reference, this check will fail per **[astm.f3548.v21.USS0105,1](../../../requirements/astm/f3548/v21.md)**.
+
 ## ⚠️ Off-nominal volumes check
 
 **[astm.f3548.v21.OPIN0015](../../../requirements/astm/f3548/v21.md)** specifies that nominal operational intents (Accepted and Activated) must not include any off-nominal 4D volumes, so this check will fail if an Accepted or Activated operational intent includes off-nominal volumes.
