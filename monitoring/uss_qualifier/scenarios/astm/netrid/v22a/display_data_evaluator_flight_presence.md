@@ -10,9 +10,9 @@ The timestamps of the injected telemetry usually start in the future.  If a flig
 
 **[astm.f3411.v22a.NET0610](../../../../requirements/astm/f3411/v22a.md)** requires that SPs make all UAS operations discoverable over the duration of the flight plus *NetMaxNearRealTimeDataPeriod*, so each injected flight should be observable during this time.  If a flight is not observed during its appropriate time period, this check will fail.
 
-**[astm.f3411.v22a.NET0710,1](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0340](../../../../requirements/astm/f3411/v22a.md) require a Service Provider to implement the GET flights endpoint.  This check will also fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
+**[astm.f3411.v22a.NET0710,1](../../../../requirements/astm/f3411/v22a.md)** and **[astm.f3411.v22a.NET0340](../../../../requirements/astm/f3411/v22a.md)** require a Service Provider to implement the GET flights endpoint.  This check will also fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
 
-The identity of flights is determined by precisely matching the known injected positions.  If the flight can be found, the USS may not have met **[astm.f3411.v22a.NET0260,Table1,10](../../../../requirements/astm/f3411/v22a.md)** or **[astm.f3411.v22a.NET0260,Table1,11](../../../../requirements/astm/f3411/v22a.md)** prescribing provision of position data consistent with the common data dictionary.
+The identity of flights is determined by precisely matching the known injected positions.  If the flight cannot be found, the USS may not have met **[astm.f3411.v22a.NET0260,Table1,10](../../../../requirements/astm/f3411/v22a.md)** or **[astm.f3411.v22a.NET0260,Table1,11](../../../../requirements/astm/f3411/v22a.md)** prescribing provision of position data consistent with the common data dictionary.
 
 ## ⚠️ Lingering flight check
 
