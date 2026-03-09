@@ -1,12 +1,24 @@
 import json
+from datetime import timedelta
 
+import arrow
 from implicitdict import ImplicitDict, Optional
 
+from monitoring.mock_uss.app import webapp
 from monitoring.monitorlib.multiprocessing import SynchronizedValue
 from monitoring.monitorlib.rid_automated_testing import injection_api
 
 from .behavior import ServiceProviderBehavior
 from .user_notifications import ServiceProviderUserNotifications
+
+DB_CLEANUP_INTERVAL = timedelta(hours=1)
+"""Clean database this often."""
+
+FLIGHTS_LIMIT = timedelta(hours=1)
+"""Automatically remove flights we manage after this long beyond their end time."""
+
+NOTIFICATIONS_LIMIT = timedelta(hours=1)
+"""Automatically remove notifications after this long beyond their observation time."""
 
 
 class TestRecord(ImplicitDict):
@@ -25,6 +37,14 @@ class TestRecord(ImplicitDict):
 
         super().__init__(**kwargs)
 
+    def cleanup_flights(self):
+        self.flights = [
+            flight
+            for flight in self.flights
+            if (end_time := flight.get_span()[1])
+            and end_time + FLIGHTS_LIMIT > arrow.utcnow().datetime
+        ]
+
 
 class Database(ImplicitDict):
     """Simple pseudo-database structure tracking the state of the mock system"""
@@ -33,8 +53,36 @@ class Database(ImplicitDict):
     behavior: ServiceProviderBehavior = ServiceProviderBehavior()
     notifications: ServiceProviderUserNotifications = ServiceProviderUserNotifications()
 
+    def cleanup_notifications(self):
+        self.notifications.cleanup(NOTIFICATIONS_LIMIT)
+
+    def cleanup_flights(self):
+        to_cleanup = []
+
+        for test_id, test in self.tests.items():
+            if test.flights:
+                test.cleanup_flights()
+
+                if not test.flights:
+                    to_cleanup.append(test_id)
+
+        for test_id in to_cleanup:
+            del self.tests[test_id]
+
 
 db = SynchronizedValue[Database](
     Database(),
     decoder=lambda b: ImplicitDict.parse(json.loads(b.decode("utf-8")), Database),
 )
+
+TASK_DATABASE_CLEANUP = "ridsp database cleanup"
+
+
+@webapp.periodic_task(TASK_DATABASE_CLEANUP)
+def database_cleanup() -> None:
+    with db.transact() as tx:
+        tx.value.cleanup_notifications()
+        tx.value.cleanup_flights()
+
+
+webapp.set_task_period(TASK_DATABASE_CLEANUP, DB_CLEANUP_INTERVAL)
