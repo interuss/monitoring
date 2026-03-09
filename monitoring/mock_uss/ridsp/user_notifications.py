@@ -46,6 +46,13 @@ class ServiceProviderUserNotifications(ImplicitDict):
         ):
             self.record_notification(message=notif_str, observed_at=notif_date)
 
+    def cleanup(self, limit: datetime.timedelta):
+        self.user_notifications = [
+            notif
+            for notif in self.user_notifications
+            if notif.observed_at.value.datetime + limit > arrow.utcnow().datetime
+        ]
+
 
 def check_and_generate_missing_fields_notifications(
     injected_flights: list[TestFlight],
