@@ -29,9 +29,9 @@ If the operational intent details for the flight cannot be retrieved from the US
 
 If the operational intent details response does not validate against [the GetOperationalIntentDetailsResponse schema of the OpenAPI specification](https://github.com/astm-utm/Protocol/blob/v1.0.0/utm.yaml#L1120), this check fill fail per **[astm.f3548.v21.USS0105,1](../../../requirements/astm/f3548/v21.md)**.
 
-## 🛑 Operational intent reference reported by USS match the one published to the DSS check
+## 🛑 Operational intent reference reported by USS matches the one published to the DSS check
 
-If the operational intent reference reported by the USS do not match the operational intent reference published to the DSS, save for the OVN, this check will fail per  **[astm.f3548.v21.USS0005](../../../requirements/astm/f3548/v21.md)**.
+If any of the values in the operational intent reference reported by the USS do not match those values in the operational intent reference published to (and known by) the DSS, save for the OVN, this check will fail per  **[astm.f3548.v21.USS0005](../../../requirements/astm/f3548/v21.md)** since the values reported by the USS were not made discoverable via the DSS.
 
 ## 🛑 Correct operational intent details check
 

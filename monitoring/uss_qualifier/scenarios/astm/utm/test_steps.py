@@ -447,7 +447,7 @@ class OpIntentValidator:
                 )
 
         with self._scenario.check(
-            "Operational intent reference reported by USS match the one published to the DSS",
+            "Operational intent reference reported by USS matches the one published to the DSS",
             [self._flight_planner.participant_id],
         ) as check:
             error_text = validate_op_intent_reference(
