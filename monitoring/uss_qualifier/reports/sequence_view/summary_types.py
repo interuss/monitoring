@@ -66,7 +66,7 @@ class Event(ImplicitDict):
 
     def get_query_links(self) -> str:
         links = []
-        for e in self.query_events:
+        for e in self.query_events or []:
             if isinstance(e, str):
                 links.append(e)
             else:
