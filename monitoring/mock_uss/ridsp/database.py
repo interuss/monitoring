@@ -41,8 +41,8 @@ class TestRecord(ImplicitDict):
         self.flights = [
             flight
             for flight in self.flights
-            if flight.get_span()[1]
-            and flight.get_span()[1] + FLIGHTS_LIMIT > arrow.utcnow().datetime  # pyright: ignore[reportOptionalOperand]
+            if (end_time := flight.get_span()[1])
+            and end_time + FLIGHTS_LIMIT > arrow.utcnow().datetime
         ]
 
 
