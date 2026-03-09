@@ -30,14 +30,14 @@ def validate_op_intent_reference(
 
     if uss_oi.version != dss_oi.version:
         append_err("Version", str(uss_oi.version), str(dss_oi.version))
+    if uss_oi.state != dss_oi.state:
+        append_err("State", uss_oi.state, dss_oi.state)
 
     # use str.lower() to tolerate case mismatch for string values
     if uss_oi.id.lower() != dss_oi.id.lower():
         append_err("ID", uss_oi.id, dss_oi.id)
     if uss_oi.manager.lower() != dss_oi.manager.lower():
         append_err("Manager", uss_oi.manager, dss_oi.manager)
-    if uss_oi.state.lower() != dss_oi.state.lower():
-        append_err("State", uss_oi.state, dss_oi.state)
     if uss_oi.subscription_id.lower() != dss_oi.subscription_id.lower():
         append_err("Subscription ID", uss_oi.subscription_id, dss_oi.subscription_id)
     if uss_oi.uss_availability.lower() != dss_oi.uss_availability.lower():
@@ -61,14 +61,11 @@ def validate_op_intent_reference(
         ):
             append_err("USS base URL", uss_oi.uss_base_url, dss_oi.uss_base_url)
 
-    # tolerate USS starting later than published on DSS
-    if uss_oi.time_start.value.datetime < dss_oi.time_start.value.datetime - timedelta(
-        seconds=NUMERIC_PRECISION
-    ):
+    if abs(
+        uss_oi.time_start.value.datetime - dss_oi.time_start.value.datetime
+    ) > timedelta(seconds=NUMERIC_PRECISION):
         append_err("Start time", uss_oi.time_start.value, dss_oi.time_start.value)
-
-    # tolerate USS ending sooner than published on DSS
-    if uss_oi.time_end.value.datetime > dss_oi.time_end.value.datetime + timedelta(
+    if abs(uss_oi.time_end.value.datetime - dss_oi.time_end.value.datetime) > timedelta(
         seconds=NUMERIC_PRECISION
     ):
         append_err("End time", uss_oi.time_start.value, dss_oi.time_start.value)
