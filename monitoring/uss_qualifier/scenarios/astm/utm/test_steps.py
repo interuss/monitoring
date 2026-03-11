@@ -6,6 +6,7 @@ from implicitdict import ImplicitDict, Optional
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
     GetOperationalIntentDetailsResponse,
+    OperationalIntentDetails,
     OperationalIntentReference,
     OperationalIntentState,
     UssAvailabilityState,
@@ -28,6 +29,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss.test_step_fragments import 
     set_uss_availability,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.evaluation import (
+    validate_equivalent_op_intent_details,
     validate_op_intent_details,
     validate_op_intent_reference,
 )
@@ -460,6 +462,28 @@ class OpIntentValidator:
                     details=error_text,
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
+
+        with self._scenario.check(
+            "Operational intent details have not changed without publishing a new version to the DSS",
+            [self._flight_planner.participant_id],
+        ) as check:
+            cache_key = (
+                f"op_intent_details:{oi_full.reference.version}:{oi_full.reference.ovn}"
+            )
+            old_details = OperationalIntentDetails(self._scenario.cache.get(cache_key))
+            if not old_details:
+                self._scenario.cache[cache_key] = oi_full.details
+            else:
+                error_text = validate_equivalent_op_intent_details(
+                    old_details,
+                    oi_full.details,
+                )
+                if error_text:
+                    check.record_failed(
+                        summary="Operational intent details have changed without the change being published to the DSS",
+                        details=error_text,
+                        query_timestamps=[oi_full_query.request.timestamp],
+                    )
 
         with self._scenario.check(
             "Correct operational intent details", [self._flight_planner.participant_id]

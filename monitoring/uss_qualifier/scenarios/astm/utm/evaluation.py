@@ -121,3 +121,42 @@ def validate_op_intent_details(
         )
 
     return "; ".join(errors_text) if len(errors_text) > 0 else None
+
+
+def validate_equivalent_op_intent_details(
+    old_oi: OperationalIntentDetails,
+    new_oi: OperationalIntentDetails,
+) -> str | None:
+    # this function assumes all fields required by the OpenAPI definition are present as the format validation
+    # should have been performed by OpIntentValidator._evaluate_op_intent_validation before
+    errors_text: list[str] = []
+
+    def append_err(name: str):
+        errors_text.append(
+            f"{name} reported by USS does not match the one published to the DSS"
+        )
+        return
+
+    if "priority" in old_oi and "priority" in new_oi:
+        if old_oi.priority != new_oi.priority:
+            append_err("Priority")
+    elif "priority" in old_oi or "priority" in new_oi:
+        append_err("Priority")
+
+    if (old_oi.volumes is None) != (new_oi.volumes is None):
+        append_err("Volumes")
+    elif old_oi.volumes and new_oi.volumes:
+        if not Volume4DCollection.from_f3548v21(old_oi.volumes).is_equivalent(
+            Volume4DCollection.from_f3548v21(new_oi.volumes)
+        ):
+            append_err("Volumes")
+
+    if (old_oi.off_nominal_volumes is None) != (new_oi.off_nominal_volumes is None):
+        append_err("Off-nominal volumes")
+    elif old_oi.off_nominal_volumes and new_oi.off_nominal_volumes:
+        if not Volume4DCollection.from_f3548v21(
+            old_oi.off_nominal_volumes
+        ).is_equivalent(Volume4DCollection.from_f3548v21(new_oi.off_nominal_volumes)):
+            append_err("Off-nominal volumes")
+
+    return "; ".join(errors_text) if errors_text else None

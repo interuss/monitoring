@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from datetime import UTC, datetime, timedelta
 from enum import Enum
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import arrow
 from implicitdict import StringBasedDateTime, StringBasedTimeDelta
@@ -257,6 +257,9 @@ class GenericTestScenario(ABC):
     on_failed_check: Callable[[FailedCheck], None] | None = None
     time_context: TestTimeContext
 
+    cache: dict[str, Any]
+    """Cached data scoped to the lifetime of the scenario."""
+
     resource_origins: dict[ResourceID, str]
     """Map between local resource name (as defined in test scenario) to where that resource originated."""
 
@@ -277,6 +280,7 @@ class GenericTestScenario(ABC):
         self.documentation = get_documentation(self.__class__)
         self._phase = ScenarioPhase.NotStarted
         self.time_context = TestTimeContext()
+        self.cache = {}
 
     @staticmethod
     def make_test_scenario(
