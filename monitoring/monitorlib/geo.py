@@ -208,7 +208,7 @@ class Altitude(ImplicitDict):
             units=fp_api.AltitudeUnits.M,
         )
 
-    def to_w84_m(self):
+    def to_w84_m(self) -> float:
         """This altitude expressed in WGS84 meters, if possible to convert to it."""
         if self.reference != AltitudeDatum.W84:
             raise NotImplementedError(

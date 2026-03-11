@@ -37,9 +37,9 @@ If any of the values in the operational intent reference reported by the USS do 
 
 If the operational intent details reported by the USS do not match the user's flight intent, this check will fail per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../requirements/interuss/automated_testing/flight_planning.md)** and **[astm.f3548.v21.OPIN0025](../../../requirements/astm/f3548/v21.md)**.
 
-## 🛑 Details 4D extents are within reference extents check
+## 🛑 Operational intent details extents are contained within reference extents check
 
-If the 4D extents (start time, end time, and altitude if specified) of any of the detailed operational intent volumes are not fully contained within the 4D extents of the operational intent reference, this check will fail per **[astm.f3548.v21.USS0105,1](../../../requirements/astm/f3548/v21.md)**.
+If the 4D extents (start time, end time, and altitude if specified) of any of the operational intent detail volumes are not fully contained within the 4D extents of the operational intent reference, this check will fail per **[astm.f3548.v21.USS0105,1](../../../requirements/astm/f3548/v21.md)**.
 
 ## ⚠️ Off-nominal volumes check
 

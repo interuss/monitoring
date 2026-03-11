@@ -481,100 +481,95 @@ class OpIntentValidator:
                 )
 
         with self._scenario.check(
-            "Details 4D extents are within reference extents",
+            "Operational intent details extents are contained within reference extents",
             [self._flight_planner.participant_id],
         ) as check:
-            all_volumes = oi_full.details.get("volumes", []) + oi_full.details.get(
-                "off_nominal_volumes", []
+            all_volumes = Volume4DCollection.from_f3548v21(
+                oi_full.details.get("volumes", [])
+                + oi_full.details.get("off_nominal_volumes", [])
             )
-            for v in all_volumes:
-                # Time start check
-                v_time_start = v.get("time_start")
-                ref_time_start = oi_ref.get("time_start")
-                if not v_time_start:
-                    if ref_time_start:
-                        check.record_failed(
-                            summary="Details volume starts before reference",
-                            details="A volume in the operational intent details has no start time (infinite past), but the operational intent reference specifies a start time.",
-                            query_timestamps=[oi_full_query.request.timestamp],
-                        )
-                elif ref_time_start:
-                    if (
-                        v_time_start.value.datetime
-                        < ref_time_start.value.datetime - NUMERIC_PRECISION_TIME
-                    ):
-                        check.record_failed(
-                            summary="Details volume starts before reference",
-                            details=f"A volume in the operational intent details starts at {v_time_start.value.datetime}, which is before the operational intent reference start time {ref_time_start.value.datetime}.",
-                            query_timestamps=[oi_full_query.request.timestamp],
-                        )
-                # Time end check
-                v_time_end = v.get("time_end")
-                ref_time_end = oi_ref.get("time_end")
-                if not v_time_end:
-                    if ref_time_end:
-                        check.record_failed(
-                            summary="Details volume ends after reference",
-                            details="A volume in the operational intent details has no end time (infinite future), but the operational intent reference specifies an end time.",
-                            query_timestamps=[oi_full_query.request.timestamp],
-                        )
-                elif ref_time_end:
-                    if (
-                        v_time_end.value.datetime
-                        > ref_time_end.value.datetime + NUMERIC_PRECISION_TIME
-                    ):
-                        check.record_failed(
-                            summary="Details volume ends after reference",
-                            details=f"A volume in the operational intent details ends at {v_time_end.value.datetime}, which is after the operational intent reference end time {ref_time_end.value.datetime}.",
-                            query_timestamps=[oi_full_query.request.timestamp],
-                        )
-                # Altitude check (if reference specifies altitude, which it typically doesn't in F3548, but implemented defensively just in case)
-                v_altitude_lower = (
-                    v.get("volume", {}).get("altitude_lower")
-                    if v.get("volume")
-                    else None
-                )
-                ref_altitude_lower = oi_ref.get("altitude_lower")
-                if not v_altitude_lower:
-                    if ref_altitude_lower:
-                        check.record_failed(
-                            summary="Details volume lower altitude below reference",
-                            details="A volume in the operational intent details has no lower altitude bound (infinite downward), but the operational intent reference specifies a lower altitude.",
-                            query_timestamps=[oi_full_query.request.timestamp],
-                        )
-                elif ref_altitude_lower:
-                    if (
-                        v_altitude_lower.value
-                        < ref_altitude_lower.value - NUMERIC_PRECISION_DISTANCE
-                    ):
-                        check.record_failed(
-                            summary="Details volume lower altitude below reference",
-                            details=f"A volume in the operational intent details has lower altitude {v_altitude_lower.value}, which is below the operational intent reference lower altitude {ref_altitude_lower.value}.",
-                            query_timestamps=[oi_full_query.request.timestamp],
-                        )
-                v_altitude_upper = (
-                    v.get("volume", {}).get("altitude_upper")
-                    if v.get("volume")
-                    else None
-                )
-                ref_altitude_upper = oi_ref.get("altitude_upper")
-                if not v_altitude_upper:
-                    if ref_altitude_upper:
-                        check.record_failed(
-                            summary="Details volume upper altitude above reference",
-                            details="A volume in the operational intent details has no upper altitude bound (infinite upward), but the operational intent reference specifies an upper altitude.",
-                            query_timestamps=[oi_full_query.request.timestamp],
-                        )
-                elif ref_altitude_upper:
-                    if (
-                        v_altitude_upper.value
-                        > ref_altitude_upper.value + NUMERIC_PRECISION_DISTANCE
-                    ):
-                        check.record_failed(
-                            summary="Details volume upper altitude above reference",
-                            details=f"A volume in the operational intent details has upper altitude {v_altitude_upper.value}, which is above the operational intent reference upper altitude {ref_altitude_upper.value}.",
-                            query_timestamps=[oi_full_query.request.timestamp],
-                        )
+
+            # Time start check
+            v_time_start = all_volumes.time_start
+            ref_time_start = oi_ref.get("time_start")
+            if not v_time_start:
+                if ref_time_start:
+                    check.record_failed(
+                        summary="Details volume starts before reference",
+                        details="A volume in the operational intent details has no start time (infinite past), but the operational intent reference specifies a start time.",
+                        query_timestamps=[oi_full_query.request.timestamp],
+                    )
+            elif ref_time_start:
+                if (
+                    v_time_start.datetime
+                    < ref_time_start.value.datetime - NUMERIC_PRECISION_TIME
+                ):
+                    check.record_failed(
+                        summary="Details volume starts before reference",
+                        details=f"A volume in the operational intent details starts at {v_time_start}, which is before the operational intent reference start time {ref_time_start.value.datetime}.",
+                        query_timestamps=[oi_full_query.request.timestamp],
+                    )
+
+            # Time end check
+            v_time_end = all_volumes.time_end
+            ref_time_end = oi_ref.get("time_end")
+            if not v_time_end:
+                if ref_time_end:
+                    check.record_failed(
+                        summary="Details volume ends after reference",
+                        details="A volume in the operational intent details has no end time (infinite future), but the operational intent reference specifies an end time.",
+                        query_timestamps=[oi_full_query.request.timestamp],
+                    )
+            elif ref_time_end:
+                if (
+                    v_time_end.datetime
+                    > ref_time_end.value.datetime + NUMERIC_PRECISION_TIME
+                ):
+                    check.record_failed(
+                        summary="Details volume ends after reference",
+                        details=f"A volume in the operational intent details ends at {v_time_end.datetime}, which is after the operational intent reference end time {ref_time_end.value.datetime}.",
+                        query_timestamps=[oi_full_query.request.timestamp],
+                    )
+
+            # Altitude check (if reference specifies altitude, which it typically doesn't in F3548, but implemented defensively just in case)
+            v_altitude_lower = all_volumes.altitude_lower
+            ref_altitude_lower = oi_ref.get("altitude_lower")
+            if not v_altitude_lower:
+                if ref_altitude_lower:
+                    check.record_failed(
+                        summary="Details volume lower altitude below reference",
+                        details="A volume in the operational intent details has no lower altitude bound (infinite downward), but the operational intent reference specifies a lower altitude.",
+                        query_timestamps=[oi_full_query.request.timestamp],
+                    )
+            elif ref_altitude_lower:
+                if (
+                    v_altitude_lower.value
+                    < ref_altitude_lower.value - NUMERIC_PRECISION_DISTANCE
+                ):
+                    check.record_failed(
+                        summary="Details volume lower altitude below reference",
+                        details=f"A volume in the operational intent details has lower altitude {v_altitude_lower.value}, which is below the operational intent reference lower altitude {ref_altitude_lower.value}.",
+                        query_timestamps=[oi_full_query.request.timestamp],
+                    )
+            v_altitude_upper = all_volumes.altitude_upper
+            ref_altitude_upper = oi_ref.get("altitude_upper")
+            if not v_altitude_upper:
+                if ref_altitude_upper:
+                    check.record_failed(
+                        summary="Details volume upper altitude above reference",
+                        details="A volume in the operational intent details has no upper altitude bound (infinite upward), but the operational intent reference specifies an upper altitude.",
+                        query_timestamps=[oi_full_query.request.timestamp],
+                    )
+            elif ref_altitude_upper:
+                if (
+                    v_altitude_upper.value
+                    > ref_altitude_upper.value + NUMERIC_PRECISION_DISTANCE
+                ):
+                    check.record_failed(
+                        summary="Details volume upper altitude above reference",
+                        details=f"A volume in the operational intent details has upper altitude {v_altitude_upper.value}, which is above the operational intent reference upper altitude {ref_altitude_upper.value}.",
+                        query_timestamps=[oi_full_query.request.timestamp],
+                    )
 
         with self._scenario.check(
             "Off-nominal volumes", [self._flight_planner.participant_id]
