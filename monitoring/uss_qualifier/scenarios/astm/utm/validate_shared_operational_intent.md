@@ -33,6 +33,14 @@ If the operational intent details response does not validate against [the GetOpe
 
 If any of the values in the operational intent reference reported by the USS do not match those values in the operational intent reference published to (and known by) the DSS, save for the OVN, this check will fail per  **[astm.f3548.v21.USS0005](../../../requirements/astm/f3548/v21.md)** since the values reported by the USS were not made discoverable via the DSS.
 
+## 🛑 Operational intent details have not changed without publishing a new version to the DSS check
+
+If the operational intent details exposed by the USS have changed without the USS having updated the operational intent reference in the DSS, this check will fail per:
+- **[astm.f3548.v21.USS0105,1](../../../requirements/astm/f3548/v21.md)**  because the USS did not implement the operation _getOperationalIntentDetails_ correctly; and
+- **[astm.f3548.v21.USS0005](../../../requirements/astm/f3548/v21.md)** because the USS did not make the operational intent correctly discoverable by the DSS.
+
+Out of clarity, this check specifically targets cases where the USS changes details of the operational intent (volumes or priority) without a version or OVN change.
+
 ## 🛑 Correct operational intent details check
 
 If the operational intent details reported by the USS do not match the user's flight intent, this check will fail per **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../requirements/interuss/automated_testing/flight_planning.md)** and **[astm.f3548.v21.OPIN0025](../../../requirements/astm/f3548/v21.md)**.

@@ -158,6 +158,28 @@ class Polygon(ImplicitDict):
             vertices=[ImplicitDict.parse(p, LatLngPoint) for p in vol.vertices]
         )
 
+    def is_equivalent(self, other: Polygon) -> bool:
+        if "vertices" not in self and "vertices" not in other:
+            return True
+        elif "vertices" not in self or "vertices" not in other:
+            return False
+
+        if self.vertices == other.vertices:
+            # covers both None and exact equality
+            return True
+        elif not self.vertices or not other.vertices:
+            # covers one being None
+            return False
+        elif len(self.vertices) != len(other.vertices):
+            return False
+
+        return all(
+            [
+                vertices[0].match(vertices[1])
+                for vertices in zip(self.vertices, other.vertices)
+            ]
+        )
+
 
 class Circle(ImplicitDict):
     center: LatLngPoint
@@ -179,6 +201,15 @@ class Circle(ImplicitDict):
         return Circle(
             center=ImplicitDict.parse(vol.center, LatLngPoint),
             radius=ImplicitDict.parse(vol.radius, Radius),
+        )
+
+    def is_equivalent(self, other: Circle) -> bool:
+        if not self.center.match(other.center):
+            return False
+
+        return (
+            abs(self.radius.in_meters() - other.radius.in_meters())
+            <= DISTANCE_TOLERANCE_M
         )
 
 
@@ -223,6 +254,14 @@ class Altitude(ImplicitDict):
     @staticmethod
     def from_f3548v21(vol: f3548v21.Altitude | dict) -> Altitude:
         return ImplicitDict.parse(vol, Altitude)
+
+    def is_equivalent(self, other: Altitude) -> bool:
+        if self.reference != other.reference:
+            return False
+        return (
+            abs(self.units.in_meters(self.value) - other.units.in_meters(other.value))
+            <= DISTANCE_TOLERANCE_M
+        )
 
 
 class Volume3D(ImplicitDict):
@@ -446,6 +485,38 @@ class Volume3D(ImplicitDict):
             return [v.as_s2sphere() for v in self.outline_polygon.vertices]
         else:
             return get_latlngrect_vertices(make_latlng_rect(self))
+
+    def is_equivalent(
+        self,
+        other: Volume3D,
+    ) -> bool:
+        if self.altitude_lower and other.altitude_lower:
+            if not self.altitude_lower.is_equivalent(other.altitude_lower):
+                return False
+        elif self.altitude_lower or other.altitude_lower:
+            return False
+
+        if self.altitude_upper and other.altitude_upper:
+            if not self.altitude_upper.is_equivalent(other.altitude_upper):
+                return False
+        elif self.altitude_upper or other.altitude_upper:
+            return False
+
+        if self.outline_polygon and other.outline_polygon:
+            if not self.outline_polygon.is_equivalent(other.outline_polygon):
+                return False
+        elif self.outline_circle and other.outline_circle:
+            if not self.outline_circle.is_equivalent(other.outline_circle):
+                return False
+        elif (
+            self.outline_circle
+            or self.outline_polygon
+            or other.outline_circle
+            or other.outline_polygon
+        ):
+            return False
+
+        return True
 
 
 def make_latlng_rect(area) -> s2sphere.LatLngRect:
