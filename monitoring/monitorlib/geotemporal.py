@@ -13,7 +13,15 @@ from uas_standards.interuss.automated_testing.geospatial_map.v1 import (
 from uas_standards.interuss.automated_testing.scd.v1 import api as interuss_scd_api
 
 from monitoring.monitorlib import geo
-from monitoring.monitorlib.geo import Altitude, Circle, LatLngPoint, Polygon, Volume3D
+from monitoring.monitorlib.geo import (
+    Altitude,
+    AltitudeDatum,
+    Circle,
+    DistanceUnits,
+    LatLngPoint,
+    Polygon,
+    Volume3D,
+)
 from monitoring.monitorlib.temporal import (
     TestTime,
     TestTimeContext,
@@ -302,6 +310,26 @@ class Volume4DCollection(list[Volume4D]):
             Time(max(v.time_end.datetime for v in self))
             if all("time_end" in v and v.time_end for v in self)
             else None
+        )
+
+    @property
+    def altitude_lower(self) -> Altitude | None:
+        return Altitude(
+            value=min(v.volume.altitude_lower_wgs84_m() for v in self)
+            if all(v.volume.altitude_lower_wgs84_m() is not None for v in self)
+            else None,
+            reference=AltitudeDatum.W84,
+            units=DistanceUnits.M,
+        )
+
+    @property
+    def altitude_upper(self) -> Altitude | None:
+        return Altitude(
+            value=min(v.volume.altitude_upper_wgs84_m() for v in self)
+            if all(v.volume.altitude_upper_wgs84_m() is not None for v in self)
+            else None,
+            reference=AltitudeDatum.W84,
+            units=DistanceUnits.M,
         )
 
     def offset_times(self, dt: timedelta) -> Volume4DCollection:
