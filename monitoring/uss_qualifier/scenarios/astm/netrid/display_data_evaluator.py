@@ -284,14 +284,29 @@ class RIDObservationEvaluator:
                 dss_participant_id=self._dss.participant_id,
             )
 
+            for q in sp_observation.queries:
+                self._test_scenario.record_query(q)
+
+            with self._test_scenario.check(
+                "ISA query", [self._dss.participant_id]
+            ) as check:
+                if not sp_observation.success and not self._is_area_too_large(rect):
+                    check.record_failed(
+                        summary="Could not query ISAs from DSS",
+                        details=f"Query to {self._dss.participant_id}'s DSS at failed: {', '.join(sp_observation.errors)}",
+                        query_timestamps=[
+                            query.request.initiated_at.datetime
+                            for query in sp_observation.queries
+                            if query.request.initiated_at
+                        ],
+                    )
+
             # map observed flights to injected flight and attribute participant ID
             mapping_by_injection_id = map_fetched_to_injected_flights(
                 self._injected_flights,
                 list(sp_observation.uss_flight_queries.values()),
                 self._query_cache,
             )
-            for q in sp_observation.queries:
-                self._test_scenario.record_query(q)
 
             # Evaluate observations
             self._evaluate_sp_observation(rect, sp_observation, mapping_by_injection_id)
@@ -325,6 +340,9 @@ class RIDObservationEvaluator:
                 # TODO: If bounding rect is smaller than area-too-large threshold, expand slightly above area-too-large threshold and re-observe
             self._test_scenario.end_test_step()
 
+    def _is_area_too_large(self, rect: s2sphere.LatLngRect) -> bool:
+        return geo.get_latlngrect_diagonal_km(rect) > self._rid_version.max_diagonal_km
+
     def _evaluate_observation(
         self,
         observer: RIDSystemObserver,
@@ -333,10 +351,8 @@ class RIDObservationEvaluator:
         query: fetch.Query,
         verified_sps: set[str],
     ) -> None:
-        diagonal_km = (
-            rect.lo().get_distance(rect.hi()).degrees * geo.EARTH_CIRCUMFERENCE_KM / 360
-        )
-        if diagonal_km > self._rid_version.max_diagonal_km:
+        diagonal_km = geo.get_latlngrect_diagonal_km(rect)
+        if self._is_area_too_large(rect):
             self._evaluate_area_too_large_observation(
                 observer, rect, diagonal_km, query
             )
@@ -1070,14 +1086,29 @@ class DisconnectedUASObservationEvaluator:
             dss_participant_id=self._dss.participant_id,
         )
 
+        for q in sp_observation.queries:
+            self._test_scenario.record_query(q)
+
+        with self._test_scenario.check(
+            "ISA query", [self._dss.participant_id]
+        ) as check:
+            if not sp_observation.success:
+                check.record_failed(
+                    summary="Could not query ISAs from DSS",
+                    details=f"Query to {self._dss.participant_id}'s DSS at failed: {', '.join(sp_observation.errors)}",
+                    query_timestamps=[
+                        query.request.initiated_at.datetime
+                        for query in sp_observation.queries
+                        if query.request.initiated_at
+                    ],
+                )
+
         # map observed flights to injected flight and attribute participant ID
         mapping_by_injection_id = map_fetched_to_injected_flights(
             self._injected_flights,
             list(sp_observation.uss_flight_queries.values()),
             self._query_cache,
         )
-        for q in sp_observation.queries:
-            self._test_scenario.record_query(q)
 
         # Evaluate observations
         self._evaluate_sp_observation(sp_observation, mapping_by_injection_id)
