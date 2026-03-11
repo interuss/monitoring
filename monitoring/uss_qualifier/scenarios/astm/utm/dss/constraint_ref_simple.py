@@ -123,19 +123,17 @@ class CRSimple(TestScenario):
                 # We don't expect the reach this point:
                 check.record_failed(
                     summary="CR Deletion with empty OVN was not expected to succeed",
-                    details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {q.status_code} instead",
+                    details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {q.status_code}",
                     query_timestamps=[q.request.timestamp],
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code in [400, 404, 409]:
-                    # An empty OVN can be seen as:
-                    # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
-                    pass
-                else:
+                # An empty OVN can be seen as:
+                # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
+                if qe.cause_status_code not in [400, 404, 409]:
                     check.record_failed(
                         summary="CR Deletion with empty OVN failed for unexpected reason",
-                        details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {qe.cause_status_code} instead",
+                        details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {qe.cause_status_code}: {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
 
@@ -155,18 +153,16 @@ class CRSimple(TestScenario):
                 # We don't expect the reach this point:
                 check.record_failed(
                     summary="CR Deletion with incorrect OVN was not expected to succeed",
-                    details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {q.status_code} instead",
+                    details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {q.status_code}",
                     query_timestamps=[q.request.timestamp],
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code == 409:
-                    # The spec explicitly requests a 409 response code for incorrect OVNs.
-                    pass
-                else:
+                # The spec explicitly requests a 409 response code for incorrect OVNs.
+                if qe.cause_status_code != 409:
                     check.record_failed(
                         summary="CR Deletion with incorrect OVN failed for unexpected reason",
-                        details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {qe.cause_status_code} instead",
+                        details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {qe.cause_status_code}: {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
 
@@ -193,19 +189,17 @@ class CRSimple(TestScenario):
                 # We don't expect the reach this point:
                 check.record_failed(
                     summary="CR mutation with empty OVN was not expected to succeed",
-                    details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {q.status_code} instead",
+                    details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {q.status_code}",
                     query_timestamps=[q.request.timestamp],
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code in [400, 404, 409]:
-                    # An empty OVN can be seen as:
-                    # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
-                    pass
-                else:
+                # An empty OVN can be seen as:
+                # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
+                if qe.cause_status_code not in [400, 404, 409]:
                     check.record_failed(
                         summary="CR mutation with empty OVN failed for unexpected reason",
-                        details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {qe.cause_status_code} instead",
+                        details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {qe.cause_status_code}: {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
 
@@ -232,19 +226,16 @@ class CRSimple(TestScenario):
                 # We don't expect the reach this point:
                 check.record_failed(
                     summary="CR mutation with incorrect OVN was not expected to succeed",
-                    details=f"Was expecting an HTTP 400 or 409 response because of an incorrect OVN, but got {q.status_code} instead",
+                    details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {q.status_code}",
                     query_timestamps=[q.request.timestamp],
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code in [400, 409]:
-                    # An empty OVN cen be seen as both an incorrect parameter as well as a conflict
-                    # because the value is incorrect: we accept both a 400 and 409 return code here.
-                    pass
-                else:
+                # The spec explicitly requests a 409 response code for incorrect OVNs.
+                if qe.cause_status_code != 409:
                     check.record_failed(
                         summary="CR mutation with incorrect OVN failed for unexpected reason",
-                        details=f"Was expecting an HTTP 400 or 409 response because of an incorrect OVN, but got {qe.cause_status_code} instead",
+                        details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {qe.cause_status_code}: {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
         self.end_test_step()
