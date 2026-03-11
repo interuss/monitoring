@@ -36,7 +36,7 @@ from monitoring.uss_qualifier.reports.sequence_view.summary_types import TestedS
 class QueryKMLRenderer(Protocol):
     def __call__(
         self, query: Query, req: ImplicitDict, resp: ImplicitDict
-    ) -> list[kml.Element]:
+    ) -> list[kml.Element]:  # pyright: ignore[reportInvalidTypeForm, reportReturnType]
         """Function that renders the provided query information into KML elements.
 
         Args:
@@ -99,7 +99,11 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
             step_folder = kml.Folder(kml.name(step.name))
             case_folder.append(step_folder)
             for event in step.events:
-                if not event.query or "query_type" not in event.query:
+                if (
+                    not event.query
+                    or "query_type" not in event.query
+                    or not event.query.query_type
+                ):
                     continue  # Only visualize queries of known types
                 if event.query.query_type not in _query_kml_renderers:
                     continue  # Only visualize queries with renderers
@@ -116,13 +120,13 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                 )
                 step_folder.append(query_folder)
 
-                kwargs = {}
+                kwargs: dict[str, ImplicitDict | Query] = {}
                 if render_info.include_query:
                     kwargs["query"] = event.query
                 if render_info.request_type:
                     try:
                         kwargs["req"] = ImplicitDict.parse(
-                            event.query.request.json,
+                            event.query.request.json,  # pyright: ignore[reportArgumentType]
                             render_info.request_type,
                         )
                     except ValueError as e:
@@ -140,7 +144,7 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                 ):
                     try:
                         kwargs["resp"] = ImplicitDict.parse(
-                            event.query.response.json,
+                            event.query.response.json,  # pyright: ignore[reportArgumentType]
                             render_info.response_type,
                         )
                     except ValueError as e:
@@ -153,9 +157,9 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                         )
                         continue
                 try:
-                    query_folder.extend(render_info.renderer(**kwargs))
+                    query_folder.extend(render_info.renderer(**kwargs))  # pyright: ignore[reportArgumentType]
                 except (TypeError, KeyError, ValueError) as e:
-                    msg = f"Error rendering {render_info.renderer.__name__}"
+                    msg = f"Error rendering {render_info.renderer.__name__}"  # pyright: ignore[reportAttributeAccessIssue]
                     query_folder.append(
                         kml.Folder(
                             kml.name(msg),
@@ -174,7 +178,7 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
     return etree.tostring(format_xml_with_cdata(doc), pretty_print=True).decode("utf-8")
 
 
-@query_kml_renderer(QueryType.F3548v21DSSQueryOperationalIntentReferences)
+@query_kml_renderer(QueryType.F3548v21DSSQueryOperationalIntentReferences)  # pyright: ignore[reportArgumentType]
 def render_query_op_intent_references(
     req: QueryOperationalIntentReferenceParameters,
     resp: QueryOperationalIntentReferenceResponse,
@@ -182,12 +186,12 @@ def render_query_op_intent_references(
     return [op_intent_refs_query(req, resp)]
 
 
-@query_kml_renderer(QueryType.F3548v21USSGetOperationalIntentDetails)
+@query_kml_renderer(QueryType.F3548v21USSGetOperationalIntentDetails)  # pyright: ignore[reportArgumentType]
 def render_get_op_intent_details(resp: GetOperationalIntentDetailsResponse):
     return [full_op_intent(resp.operational_intent)]
 
 
-@query_kml_renderer(QueryType.InterUSSFlightPlanningV1UpsertFlightPlan)
+@query_kml_renderer(QueryType.InterUSSFlightPlanningV1UpsertFlightPlan)  # pyright: ignore[reportArgumentType]
 def render_flight_planning_upsert_flight_plan(
     req: UpsertFlightPlanRequest, resp: UpsertFlightPlanResponse
 ):
