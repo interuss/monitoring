@@ -29,6 +29,8 @@ from monitoring.monitorlib.temporal import (
 )
 from monitoring.monitorlib.transformations import Transformation
 
+TIME_TOLERANCE = timedelta(milliseconds=10)
+
 
 class Volume4DTemplate(ImplicitDict):
     outline_polygon: Optional[Polygon] = None
@@ -128,6 +130,30 @@ class Volume4D(ImplicitDict):
     volume: Volume3D
     time_start: Optional[Time] = None
     time_end: Optional[Time] = None
+
+    def is_equivalent(
+        self,
+        other: Volume4D,
+    ) -> bool:
+        if not self.volume.is_equivalent(other.volume):
+            return False
+
+        if (self.time_start is None) != (other.time_start is None):
+            return False
+        if self.time_start and other.time_start:
+            if (
+                abs(self.time_start.datetime - other.time_start.datetime)
+                > TIME_TOLERANCE
+            ):
+                return False
+
+        if (self.time_end is None) != (other.time_end is None):
+            return False
+        if self.time_end and other.time_end:
+            if abs(self.time_end.datetime - other.time_end.datetime) > TIME_TOLERANCE:
+                return False
+
+        return True
 
     def offset_time(self, dt: timedelta) -> Volume4D:
         kwargs = {"volume": self.volume}
@@ -295,6 +321,26 @@ class Volume4DCollection(list[Volume4D]):
             raise NotImplementedError(
                 f"Cannot iadd {type(other).__name__} to {type(self).__name__}"
             )
+
+    def is_equivalent(
+        self,
+        other: Volume4DCollection,
+    ) -> bool:
+        if len(self) != len(other):
+            return False
+
+        # different order is acceptable
+        other_copy = list(other)
+        for vol in self:
+            found = False
+            for i, other_vol in enumerate(other_copy):
+                if vol.is_equivalent(other_vol):
+                    other_copy.pop(i)
+                    found = True
+                    break
+            if not found:
+                return False
+        return True
 
     @property
     def time_start(self) -> Time | None:
