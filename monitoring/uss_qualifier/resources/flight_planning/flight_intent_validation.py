@@ -22,8 +22,11 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
 
 FlightIntentName = str
 
-MAX_TEST_RUN_DURATION = timedelta(minutes=45)
-"""The longest a test run might take (to estimate flight intent timestamps prior to scenario execution)"""
+MAX_SCENARIO_EXEC_DURATION = timedelta(minutes=45)
+"""The longest a scenario run might take (to estimate flight intent timestamps prior to scenario execution)"""
+
+MAX_TEST_RUN_DURATION = timedelta(hours=6)
+"""The longest a test run might take (to estimate flight intent timestamps prior to test run)"""
 
 
 @dataclass
@@ -43,31 +46,68 @@ class ExpectedFlightIntent:
     valid_uspace_flight_auth: bool | None = None
 
 
+def estimate_scenario_execution_max_extents(
+    scenario_time_context: TestTimeContext,
+    templates: dict[FlightIntentID, FlightInfoTemplate],
+) -> Volume4D:
+    extents = Volume4DCollection([])
+
+    scenario_start = TestTimeContext(
+        {
+            TimeDuringTest.StartOfTestRun: scenario_time_context[
+                TimeDuringTest.StartOfTestRun
+            ],
+            TimeDuringTest.StartOfScenario: scenario_time_context[
+                TimeDuringTest.StartOfScenario
+            ],
+            TimeDuringTest.TimeOfEvaluation: scenario_time_context[
+                TimeDuringTest.StartOfScenario
+            ],
+        }
+    )
+    flight_intents = {k: v.resolve(scenario_start) for k, v in templates.items()}
+    for flight_intent in flight_intents.values():
+        extents.extend(flight_intent.basic_information.area)
+
+    scenario_estimated_end = TestTimeContext(
+        {
+            TimeDuringTest.StartOfTestRun: scenario_time_context[
+                TimeDuringTest.StartOfTestRun
+            ],
+            TimeDuringTest.StartOfScenario: scenario_time_context[
+                TimeDuringTest.StartOfScenario
+            ],
+            TimeDuringTest.TimeOfEvaluation: Time(
+                scenario_time_context[TimeDuringTest.StartOfScenario].datetime
+                + MAX_SCENARIO_EXEC_DURATION
+            ),
+        }
+    )
+    flight_intents = {
+        k: v.resolve(scenario_estimated_end) for k, v in templates.items()
+    }
+    for flight_intent in flight_intents.values():
+        extents.extend(flight_intent.basic_information.area)
+
+    return extents.bounding_volume
+
+
 def validate_flight_intent_templates(
     templates: dict[FlightIntentID, FlightInfoTemplate],
     expected_intents: list[ExpectedFlightIntent],
-) -> Volume4D:
-    """
-    Returns: the bounding extents of the flight intent templates
-    """
-    extents = Volume4DCollection([])
+):
+    """Validate that all intents templates meet the criteria from `expected_intents` over the estimated maximum duration of the test run."""
 
     now = Time(arrow.utcnow().datetime)
     context = TestTimeContext.all_times_are(now)
     flight_intents = {k: v.resolve(context) for k, v in templates.items()}
-    for flight_intent in flight_intents.values():
-        extents.extend(flight_intent.basic_information.area)
     validate_flight_intents(flight_intents, expected_intents, now)
 
     later = Time(now.datetime + MAX_TEST_RUN_DURATION)
     context = TestTimeContext.all_times_are(later)
     context[TimeDuringTest.StartOfTestRun] = now
     flight_intents = {k: v.resolve(context) for k, v in templates.items()}
-    for flight_intent in flight_intents.values():
-        extents.extend(flight_intent.basic_information.area)
     validate_flight_intents(flight_intents, expected_intents, later)
-
-    return extents.bounding_volume
 
 
 def validate_flight_intents(
