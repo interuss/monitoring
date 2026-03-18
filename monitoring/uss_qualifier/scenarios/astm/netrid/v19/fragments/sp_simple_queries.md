@@ -1,6 +1,6 @@
-# Service provider polling queries test step fragment
+# Service provider queries test step fragment
 
-uss_qualifier acts as a Display Provider to query Service Providers under test in this step.
+uss_qualifier acts as a Display Provider to query Service Providers under test in this step, without fetching details.
 
 ## ⚠️ Successful ISA query check
 
@@ -9,7 +9,3 @@ uss_qualifier acts as a Display Provider to query Service Providers under test i
 ## ⚠️ Successful flight query check
 
 **[astm.f3411.v19.NET0710,1](../../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../../requirements/astm/f3411/v19.md) require a Service Provider to implement the GET flight endpoint. This check will fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
-
-## ⚠️ Successful flight details query check
-
-**[astm.f3411.v19.NET0710,2](../../../../../requirements/astm/f3411/v19.md)** and **[astm.f3411.v19.NET0340](../../../../../requirements/astm/f3411/v19.md) require a Service Provider to implement the GET flight details endpoint.  This check will fail if uss_qualifier cannot query that endpoint (specified in the ISA present in the DSS) successfully.
