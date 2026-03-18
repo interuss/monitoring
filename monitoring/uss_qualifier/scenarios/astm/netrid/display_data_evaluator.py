@@ -16,6 +16,7 @@ from monitoring.monitorlib import fetch, geo, schema_validation
 from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.fetch.rid import (
     FetchedFlights,
+    FetchedUSSFlightDetails,
     FetchedUSSFlights,
     Position,
     all_flights,
@@ -41,7 +42,10 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFli
 from monitoring.uss_qualifier.scenarios.astm.netrid.virtual_observer import (
     VirtualObserver,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.scenarios.scenario import (
+    GenericTestScenario,
+    TestScenario,
+)
 
 SPEED_PRECISION = 0.05
 HEIGHT_PRECISION_M = 1
@@ -102,8 +106,10 @@ class FetchedToInjectedCache:
     mappings: dict[str, ParticipantID] = field(default_factory=dict)
     """Mapping is a map of URL -> ParticipantID that we found until now"""
 
-    unmapped: list[FetchedUSSFlights] = field(default_factory=list)
-    """Unmapped is the list of flights we didn't attributed yet"""
+    unmapped: list[FetchedUSSFlights | FetchedUSSFlightDetails] = field(
+        default_factory=list
+    )
+    """Unmapped is the list of flights or flight details we didn't attributed yet"""
 
 
 def map_observations_to_injected_flights(
@@ -173,9 +179,60 @@ def map_observations_to_injected_flights(
     return mapping
 
 
+def check_fetched_flights(
+    fetched_flights: FetchedFlights,
+    scenario: GenericTestScenario,
+    dss_participant_id: str,
+    area_too_large: bool,
+):
+    """Perform checks on a FetchedFlights result from 'rid.all_flights' helper"""
+
+    with scenario.check("Successful ISA query", [dss_participant_id]) as check:
+        if not fetched_flights.dss_isa_query.success:
+            check.record_failed(
+                summary="Could not query ISAs from DSS",
+                details=f"Query to {dss_participant_id}'s DSS at failed: {', '.join(fetched_flights.dss_isa_query.errors)}",
+                query_timestamps=[
+                    fetched_flights.dss_isa_query.request.initiated_at.datetime
+                ],
+            )
+
+    if area_too_large:  # Don't perform flight queries checks as they should fail
+        return
+
+    for flight_query in fetched_flights.uss_flight_queries.values():
+        with scenario.check(
+            "Successful flight query", flight_query.participant_id
+        ) as check:
+            if not flight_query.success:
+                check.record_failed(
+                    summary="Flight query not successful",
+                    details=f"Query to {flight_query.query.request.url} failed: {', '.join(flight_query.errors)}",
+                    query_timestamps=[flight_query.query.request.initiated_at.datetime]
+                    if flight_query.query.request.initiated_at
+                    else [],
+                )
+
+    for flight_details_query in fetched_flights.uss_flight_details_queries.values():
+        with scenario.check(
+            "Successful flight details query", flight_details_query.participant_id
+        ) as check:
+            if not flight_details_query.success:
+                check.record_failed(
+                    summary="Flight details query not successful",
+                    details=f"Query to {flight_details_query.query.request.url} failed: {', '.join(flight_details_query.errors)}",
+                    query_timestamps=[
+                        flight_details_query.query.request.initiated_at.datetime
+                    ]
+                    if flight_details_query.query.request.initiated_at
+                    else [],
+                )
+
+
 def map_fetched_to_injected_flights(
     injected_flights: list[InjectedFlight],
     fetched_flights: list[FetchedUSSFlights],
+    fetched_flights_details: list[FetchedUSSFlightDetails],
     query_cache: FetchedToInjectedCache,
 ) -> dict[str, TelemetryMapping]:
     """Identify which of the fetched flights (if any) matches to each of the injected flights.
@@ -185,6 +242,7 @@ def map_fetched_to_injected_flights(
 
     :param injected_flights: Flights injected into RID Service Providers under test.
     :param fetched_flights: Flight observed from an RID Display Provider under test.
+    :param fetched_flights_details: Flight details observed from an RID Display Provider under test.
     :param query_cache: A FetchedToInjectedCache, used to maintain participant_id in various queries
     :return: Mapping between InjectedFlight and observed Flight, indexed by injection_id.
     """
@@ -205,7 +263,7 @@ def map_fetched_to_injected_flights(
             )
 
     # Add to the todo list queries to map
-    for uss_query in fetched_flights:
+    for uss_query in fetched_flights + fetched_flights_details:
         if not uss_query.has_field_with_value("participant_id"):
             query_cache.unmapped.append(uss_query)
 
@@ -284,14 +342,23 @@ class RIDObservationEvaluator:
                 dss_participant_id=self._dss.participant_id,
             )
 
+            for q in sp_observation.queries:
+                self._test_scenario.record_query(q)
+
             # map observed flights to injected flight and attribute participant ID
             mapping_by_injection_id = map_fetched_to_injected_flights(
                 self._injected_flights,
                 list(sp_observation.uss_flight_queries.values()),
+                list(sp_observation.uss_flight_details_queries.values()),
                 self._query_cache,
             )
-            for q in sp_observation.queries:
-                self._test_scenario.record_query(q)
+
+            check_fetched_flights(
+                sp_observation,
+                self._test_scenario,
+                self._dss.participant_id,
+                self._is_area_too_large(rect),
+            )
 
             # Evaluate observations
             self._evaluate_sp_observation(rect, sp_observation, mapping_by_injection_id)
@@ -325,6 +392,9 @@ class RIDObservationEvaluator:
                 # TODO: If bounding rect is smaller than area-too-large threshold, expand slightly above area-too-large threshold and re-observe
             self._test_scenario.end_test_step()
 
+    def _is_area_too_large(self, rect: s2sphere.LatLngRect) -> bool:
+        return geo.get_latlngrect_diagonal_km(rect) > self._rid_version.max_diagonal_km
+
     def _evaluate_observation(
         self,
         observer: RIDSystemObserver,
@@ -333,10 +403,8 @@ class RIDObservationEvaluator:
         query: fetch.Query,
         verified_sps: set[str],
     ) -> None:
-        diagonal_km = (
-            rect.lo().get_distance(rect.hi()).degrees * geo.EARTH_CIRCUMFERENCE_KM / 360
-        )
-        if diagonal_km > self._rid_version.max_diagonal_km:
+        diagonal_km = geo.get_latlngrect_diagonal_km(rect)
+        if self._is_area_too_large(rect):
             self._evaluate_area_too_large_observation(
                 observer, rect, diagonal_km, query
             )
@@ -755,19 +823,6 @@ class RIDObservationEvaluator:
         # endpoints (and therefore cannot provide a callback/base URL), calling the one-time query endpoint
         # is currently much cleaner.  If this test is applied to a DSS that does not implement the one-time
         # ISA query endpoint, this check can be adapted.
-        with self._test_scenario.check(
-            "ISA query", [self._dss.participant_id]
-        ) as check:
-            if not sp_observation.dss_isa_query.success:
-                check.record_failed(
-                    summary="Could not query ISAs from DSS",
-                    details=f"Query to {self._dss.participant_id}'s DSS at {sp_observation.dss_isa_query.query.request.url} failed {sp_observation.dss_isa_query.query.status_code}",
-                    query_timestamps=[
-                        sp_observation.dss_isa_query.query.request.initiated_at.datetime
-                    ],
-                )
-                return
-
         diagonal_km = (
             requested_area.lo().get_distance(requested_area.hi()).degrees
             * geo.EARTH_CIRCUMFERENCE_KM
@@ -1070,14 +1125,23 @@ class DisconnectedUASObservationEvaluator:
             dss_participant_id=self._dss.participant_id,
         )
 
+        for q in sp_observation.queries:
+            self._test_scenario.record_query(q)
+
         # map observed flights to injected flight and attribute participant ID
         mapping_by_injection_id = map_fetched_to_injected_flights(
             self._injected_flights,
             list(sp_observation.uss_flight_queries.values()),
+            list(sp_observation.uss_flight_details_queries.values()),
             self._query_cache,
         )
-        for q in sp_observation.queries:
-            self._test_scenario.record_query(q)
+
+        check_fetched_flights(
+            sp_observation,
+            self._test_scenario,
+            self._dss.participant_id,
+            False,
+        )
 
         # Evaluate observations
         self._evaluate_sp_observation(sp_observation, mapping_by_injection_id)
@@ -1097,19 +1161,6 @@ class DisconnectedUASObservationEvaluator:
         # endpoints (and therefore cannot provide a callback/base URL), calling the one-time query endpoint
         # is currently much cleaner.  If this test is applied to a DSS that does not implement the one-time
         # ISA query endpoint, this check can be adapted.
-        with self._test_scenario.check(
-            "ISA query", [self._dss.participant_id]
-        ) as check:
-            if not sp_observation.dss_isa_query.success:
-                check.record_failed(
-                    summary="Could not query ISAs from DSS",
-                    details=f"Query to {self._dss.participant_id}'s DSS at {sp_observation.dss_isa_query.query.request.url} failed {sp_observation.dss_isa_query.query.status_code}",
-                    query_timestamps=[
-                        sp_observation.dss_isa_query.query.request.initiated_at.datetime
-                    ],
-                )
-                return
-
         self._evaluate_sp_observation_of_disconnected_flights(sp_observation, mappings)
 
     def _evaluate_sp_observation_of_disconnected_flights(

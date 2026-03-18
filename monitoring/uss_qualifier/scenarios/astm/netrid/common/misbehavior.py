@@ -178,10 +178,12 @@ class Misbehavior(GenericTestScenario):
             poll_func,
         )
 
+    def _is_area_too_large(self, rect: s2sphere.LatLngRect) -> bool:
+        return geo.get_latlngrect_diagonal_km(rect) > self._rid_version.max_diagonal_km
+
     def _fetch_flights_from_dss(self, rect: LatLngRect) -> dict[str, TelemetryMapping]:
         # We grab all flights from the SPs (which we know how to reach by first querying the DSS).
         # This is authenticated and is expected to succeed
-        # TODO: Add the following requests to the documentation. Possibly split it as a test step.
         sp_observation = rid.all_flights(
             rect,
             include_recent_positions=True,
@@ -191,14 +193,23 @@ class Misbehavior(GenericTestScenario):
             dss_participant_id=self._dss.participant_id,
         )
 
+        self.record_queries(sp_observation.queries)
+
         mapping_by_injection_id = (
             display_data_evaluator.map_fetched_to_injected_flights(
                 self._injected_flights,
                 list(sp_observation.uss_flight_queries.values()),
+                list(sp_observation.uss_flight_details_queries.values()),
                 self._query_cache,
             )
         )
-        self.record_queries(sp_observation.queries)
+
+        display_data_evaluator.check_fetched_flights(
+            sp_observation,
+            self,
+            self._dss.participant_id,
+            self._is_area_too_large(rect),
+        )
 
         return mapping_by_injection_id
 
