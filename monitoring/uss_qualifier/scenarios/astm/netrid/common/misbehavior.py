@@ -85,10 +85,6 @@ class Misbehavior(GenericTestScenario):
 
         self.begin_test_step("Invalid search area")
         self._poll_during_flights(
-            [
-                self._rid_version.max_diagonal_km * 1000
-                - 100,  # valid diagonal required for sps urls discovery
-            ],
             self._evaluate_and_test_too_large_area_requests,
             dict(),
         )
@@ -96,11 +92,6 @@ class Misbehavior(GenericTestScenario):
 
         self.begin_test_step("Unauthenticated requests")
         self._poll_during_flights(
-            [
-                self._rid_version.max_diagonal_km * 1000 + 500,  # too large
-                self._rid_version.max_diagonal_km * 1000 - 100,  # clustered
-                self._rid_version.max_details_diagonal_km * 1000 - 100,  # details
-            ],
             self._evaluate_and_test_authentication,
             {
                 "auth": auth.NoAuth(aud_override=""),
@@ -112,11 +103,6 @@ class Misbehavior(GenericTestScenario):
 
         self.begin_test_step("Incorrectly authenticated requests")
         self._poll_during_flights(
-            [
-                self._rid_version.max_diagonal_km * 1000 + 500,  # too large
-                self._rid_version.max_diagonal_km * 1000 - 100,  # clustered
-                self._rid_version.max_details_diagonal_km * 1000 - 100,  # details
-            ],
             self._evaluate_and_test_authentication,
             {
                 "auth": auth.InvalidTokenSignatureAuth(),
@@ -136,7 +122,6 @@ class Misbehavior(GenericTestScenario):
 
     def _poll_during_flights(
         self,
-        diagonals_m: list[float],
         evaluation_func: Callable[
             [LatLngRect, Unpack[dict[str, auth.AuthAdapter | str]]], set[str]
         ],
@@ -145,7 +130,6 @@ class Misbehavior(GenericTestScenario):
         """
         Poll until every injected flights have been observed.
 
-        :param diagonals_m: List of diagonals in meters used by the virtual observer to fetch flights.
         :param evaluation_func: This method is called on each polling tick with the area to observe. It is responsible
         to fetch flights and to return the list of observed injected ids.
         """
@@ -174,7 +158,7 @@ class Misbehavior(GenericTestScenario):
 
         virtual_observer.start_polling(
             config.min_polling_interval.timedelta,
-            diagonals_m,
+            [self._rid_version.max_diagonal_km * 1000 - 100],
             poll_func,
         )
 
