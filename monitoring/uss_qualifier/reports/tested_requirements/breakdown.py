@@ -129,11 +129,13 @@ def _populate_breakdown_with_action_report(
             req_set,
         )
     elif test_suite:
+        assert action.test_suite
         for subaction in action.test_suite.actions:
             _populate_breakdown_with_action_report(
                 breakdown, subaction, acceptable_findings, participant_ids, req_set
             )
     elif action_generator:
+        assert action.action_generator
         for subaction in action.action_generator.actions:
             _populate_breakdown_with_action_report(
                 breakdown, subaction, acceptable_findings, participant_ids, req_set
@@ -267,10 +269,12 @@ def _populate_breakdown_with_action_declaration(
 ) -> None:
     action_type = action.get_action_type()
     if action_type == ActionType.TestScenario:
+        assert action.test_scenario
         _populate_breakdown_with_scenario(
             breakdown, action.test_scenario.scenario_type, acceptable_findings, req_set
         )
     elif action_type == ActionType.TestSuite:
+        assert action.test_suite
         if "suite_type" in action.test_suite and action.test_suite.suite_type:
             suite_def: TestSuiteDefinition = ImplicitDict.parse(
                 load_dict_with_references(action.test_suite.suite_type),
@@ -291,6 +295,7 @@ def _populate_breakdown_with_action_declaration(
         else:
             raise ValueError("Test suite action missing suite type or definition")
     elif action_type == ActionType.ActionGenerator:
+        assert action.action_generator
         potential_actions = list_potential_actions_for_action_generator_definition(
             action.action_generator
         )
@@ -392,5 +397,5 @@ def _populate_breakdown_with_scenario(
                             ),
                         )
                         tested_step.checks.append(tested_check)
-                    if not tested_check.url:
+                    if not tested_check.url and check.url:
                         tested_check.url = check.url

@@ -357,12 +357,13 @@ class TestScenarioReport(ImplicitDict):
         for case in self.cases:
             for step in case.steps:
                 if step.has_field_with_value("queries"):
+                    assert step.queries
                     queries.extend(step.queries)
 
-        if self.has_field_with_value("cleanup") and self.cleanup.has_field_with_value(
+        if self.has_field_with_value("cleanup") and self.cleanup.has_field_with_value(  # pyright: ignore[reportOptionalMemberAccess]
             "queries"
         ):
-            queries.extend(self.cleanup.queries)
+            queries.extend(self.cleanup.queries)  # pyright: ignore[reportOptionalMemberAccess,reportArgumentType]
 
         return queries
 

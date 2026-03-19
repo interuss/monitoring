@@ -31,8 +31,6 @@ from monitoring.uss_qualifier.reports.sequence_view.kml import make_scenario_kml
 from monitoring.uss_qualifier.reports.sequence_view.summary_types import (
     ActionNode,
     ActionNodeType,
-    EpochType,
-    EventType,
     Indexer,
     OverviewRow,
     SkippedAction,
@@ -51,6 +49,7 @@ UNATTRIBUTED_PARTICIPANT = "unattributed"
 
 def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
     if report.declaration.get_action_type() == ActionType.TestSuite:
+        assert report.declaration.test_suite
         if (
             "suite_type" in report.declaration.test_suite
             and report.declaration.test_suite.suite_type
@@ -76,6 +75,7 @@ def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
             )
         name = "All actions in test suite"
     elif report.declaration.get_action_type() == ActionType.TestScenario:
+        assert report.declaration.test_scenario
         docs = get_documentation_by_name(report.declaration.test_scenario.scenario_type)
         return ActionNode(
             name=docs.name,
@@ -84,6 +84,7 @@ def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
             skipped_action=SkippedAction(reason=report.reason),
         )
     elif report.declaration.get_action_type() == ActionType.ActionGenerator:
+        assert report.declaration.action_generator
         generator_type = action_generator_type_from_name(
             report.declaration.action_generator.generator_type
         )
@@ -123,6 +124,7 @@ def compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Acti
         is_action_generator,
     ) = report.get_applicable_report()
     if is_test_scenario:
+        assert report.test_scenario
         return ActionNode(
             name=report.test_scenario.name,
             node_type=ActionNodeType.Scenario,
@@ -130,6 +132,7 @@ def compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Acti
             scenario=compute_tested_scenario(report.test_scenario, indexer),
         )
     elif is_test_suite:
+        assert report.test_suite
         children = [compute_action_node(a, indexer) for a in report.test_suite.actions]
         return ActionNode(
             name=report.test_suite.name,
@@ -137,6 +140,7 @@ def compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Acti
             children=children,
         )
     elif is_action_generator:
+        assert report.action_generator
         generator_type = action_generator_type_from_name(
             report.action_generator.generator_type
         )
@@ -148,6 +152,7 @@ def compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Acti
             ],
         )
     else:
+        assert report.skipped_action
         return _skipped_action_of(report.skipped_action)
 
 
@@ -177,9 +182,13 @@ def _align_overview_rows(rows: list[OverviewRow]) -> None:
             row.filled = True
             to_fill -= 1
         elif len(row.suite_cells) < max_suite_cols:
-            if row.suite_cells[-1].first_row and all(
-                c.node_type == ActionNodeType.Scenario
-                for c in row.suite_cells[-1].node.children
+            if (
+                row.suite_cells[-1].first_row
+                and row.suite_cells[-1].node is not None
+                and all(
+                    c.node_type == ActionNodeType.Scenario
+                    for c in row.suite_cells[-1].node.children
+                )
             ):
                 row.suite_cells[-1].colspan += max_suite_cols - len(row.suite_cells)
                 row.filled = True
@@ -212,6 +221,7 @@ def _align_overview_rows(rows: list[OverviewRow]) -> None:
 
 def _enumerate_all_participants(node: ActionNode) -> list[ParticipantID]:
     if node.node_type == ActionNodeType.Scenario:
+        assert node.scenario
         return list(node.scenario.participants)
     else:
         result = set()
@@ -225,6 +235,7 @@ def _generate_scenario_pages(
     node: ActionNode, config: SequenceViewConfiguration, output_path: str
 ) -> None:
     if node.node_type == ActionNodeType.Scenario:
+        assert node.scenario
         all_participants = list(node.scenario.participants)
         all_participants.sort()
         if UNATTRIBUTED_PARTICIPANT in all_participants:
@@ -241,8 +252,6 @@ def _generate_scenario_pages(
                     test_scenario=node.scenario,
                     all_participants=all_participants,
                     kml_file=kml_file if config.render_kml else None,
-                    EpochType=EpochType,
-                    EventType=EventType,
                     UNATTRIBUTED_PARTICIPANT=UNATTRIBUTED_PARTICIPANT,
                     len=len,
                     str=str,
@@ -308,6 +317,7 @@ def generate_sequence_view(
 ) -> None:
     node = compute_action_node(report.report, Indexer())
 
+    assert report.configuration.v1 and report.configuration.v1.test_run
     resources_config = make_resources_config(report.configuration.v1.test_run)
 
     os.makedirs(output_path, exist_ok=True)
