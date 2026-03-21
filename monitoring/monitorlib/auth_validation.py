@@ -11,7 +11,7 @@ import requests
 class Authorization(NamedTuple):
     client_id: str
     scopes: list[str]
-    issuer: str
+    issuer: str | None
 
 
 class InvalidScopeError(Exception):
@@ -99,6 +99,7 @@ def requires_scope_decorator(public_key: str, audience: str):
                         client_id = (
                             r["client_id"] if "client_id" in r else r.get("sub", None)
                         )
+                        assert isinstance(client_id, str)
                     except jwt.ImmatureSignatureError:
                         raise InvalidAccessTokenError("Access token is immature.")
                     except jwt.ExpiredSignatureError:
@@ -114,6 +115,7 @@ def requires_scope_decorator(public_key: str, audience: str):
                             f"Unexpected InvalidTokenError: {str(e)}"
                         )
                     issuer = r.get("iss", None)
+                    assert isinstance(issuer, str) or issuer is None
                     flask.request.jwt = Authorization(
                         client_id, provided_scopes, issuer
                     )
