@@ -11,7 +11,6 @@ import requests
 class Authorization(NamedTuple):
     client_id: str
     scopes: list[str]
-    issuer: str | None
 
 
 class InvalidScopeError(Exception):
@@ -114,11 +113,7 @@ def requires_scope_decorator(public_key: str, audience: str):
                         raise InvalidAccessTokenError(
                             f"Unexpected InvalidTokenError: {str(e)}"
                         )
-                    issuer = r.get("iss", None)
-                    assert isinstance(issuer, str) or issuer is None
-                    flask.request.jwt = Authorization(
-                        client_id, provided_scopes, issuer
-                    )
+                    flask.request.jwt = Authorization(client_id, provided_scopes)
 
                 return fn(*args, **kwargs)
 
