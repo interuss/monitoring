@@ -18,12 +18,17 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResult,
 )
 from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
+    FlightIntentID,
+)
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
     ExpectedFlightIntent,
+    estimate_scenario_execution_max_extents,
     validate_flight_intent_templates,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
@@ -49,10 +54,13 @@ class DownUSS(TestScenario):
     flight1_planned: FlightInfoTemplate
 
     uss_qualifier_sub: str
+    scenario_execution_max_extents: Volume4D | None = None
+    """Actual bounding extent of the flight intents created by the USS qualifier acting as a virtual USS during the scenario execution."""
 
     tested_uss: FlightPlannerClient
     dss_resource: DSSInstanceResource
     dss: DSSInstance
+    flight_intents_templates: dict[FlightIntentID, FlightInfoTemplate]
 
     def __init__(
         self,
@@ -65,10 +73,10 @@ class DownUSS(TestScenario):
         self.tested_uss = tested_uss.client
         self.dss = dss.get_instance(self._dss_req_scopes)
 
-        templates = flight_intents.get_flight_intents()
+        self.flight_intents_templates = flight_intents.get_flight_intents()
         try:
-            self._intents_extent = validate_flight_intent_templates(
-                templates, self._expected_flight_intents
+            validate_flight_intent_templates(
+                self.flight_intents_templates, self._expected_flight_intents
             )
         except ValueError as e:
             raise ValueError(
@@ -76,7 +84,7 @@ class DownUSS(TestScenario):
             )
 
         for efi in self._expected_flight_intents:
-            setattr(self, efi.intent_id, templates[efi.intent_id])
+            setattr(self, efi.intent_id, self.flight_intents_templates[efi.intent_id])
 
     @property
     def _dss_req_scopes(self) -> dict[str, str]:
@@ -97,7 +105,15 @@ class DownUSS(TestScenario):
         ]
 
     def resolve_flight(self, flight_template: FlightInfoTemplate) -> FlightInfo:
-        return flight_template.resolve(self.time_context.evaluate_now())
+        flight = flight_template.resolve(self.time_context.evaluate_now())
+
+        extents = Volume4DCollection([])
+        if self.scenario_execution_max_extents is not None:
+            extents.append(self.scenario_execution_max_extents)
+        extents.extend(flight.basic_information.area)
+        self.scenario_execution_max_extents = extents.bounding_volume
+
+        return flight
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
@@ -120,11 +136,15 @@ class DownUSS(TestScenario):
         self.end_test_scenario()
 
     def _setup(self):
+        estimated_max_extents = estimate_scenario_execution_max_extents(
+            self.time_context, self.flight_intents_templates
+        )
+
         self.begin_test_step("Resolve USS ID of virtual USS")
         with self.check("Successful dummy query", [self.dss.participant_id]) as check:
             try:
                 _, dummy_query = self.dss.find_op_intent(
-                    self._intents_extent.to_f3548v21()
+                    estimated_max_extents.to_f3548v21()
                 )
                 self.record_query(dummy_query)
             except QueryError as e:
@@ -154,8 +174,8 @@ class DownUSS(TestScenario):
         validate_clear_area(
             self,
             self.dss,
-            [self._intents_extent],
-            ignore_self=True,
+            [estimated_max_extents],
+            ignore_self=False,
         )
         self.end_test_step()
 
@@ -279,16 +299,19 @@ class DownUSS(TestScenario):
         with self.check(
             "Successful operational intents cleanup", [self.dss.participant_id]
         ) as check:
+            if self.scenario_execution_max_extents is None:
+                return
+
             try:
                 oi_refs, find_query = self.dss.find_op_intent(
-                    self._intents_extent.to_f3548v21()
+                    self.scenario_execution_max_extents.to_f3548v21()
                 )
                 self.record_query(find_query)
             except QueryError as e:
                 self.record_queries(e.queries)
                 find_query = e.queries[0]
                 check.record_failed(
-                    summary=f"Failed to query operational intent references from DSS in {self._intents_extent} for cleanup",
+                    summary=f"Failed to query operational intent references from DSS in {self.scenario_execution_max_extents} for cleanup",
                     details=f"DSS responded code {find_query.status_code}; {e}",
                     query_timestamps=[find_query.request.timestamp],
                 )
