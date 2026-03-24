@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import datetime
+from dataclasses import dataclass
 from enum import Enum
 
-from implicitdict import ImplicitDict, Optional
+from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from uas_standards.astm.f3548.v21.api import (
     EntityID,
     GetOperationalIntentDetailsResponse,
+    OperationalIntent,
     OperationalIntentReference,
     OperationalIntentState,
     UssAvailabilityState,
@@ -29,6 +31,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.dss.test_step_fragments import 
     set_uss_availability,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.evaluation import (
+    errors_for_nonequivalent_op_intent_details,
     validate_op_intent_details,
     validate_op_intent_reference,
 )
@@ -41,6 +44,12 @@ from monitoring.uss_qualifier.scenarios.scenario import (
 
 NUMERIC_PRECISION_TIME = datetime.timedelta(milliseconds=1)
 NUMERIC_PRECISION_DISTANCE = 0.001  # meters
+
+
+@dataclass
+class CachedOpIntent:
+    query_timestamp: StringBasedDateTime
+    op_intent: OperationalIntent
 
 
 class OpIntentValidator:
@@ -464,6 +473,36 @@ class OpIntentValidator:
                     details=error_text,
                     query_timestamps=[oi_full_query.request.timestamp],
                 )
+
+        with self._scenario.check(
+            "Operational intent details have not changed without publishing a new version to the DSS",
+            [self._flight_planner.participant_id],
+        ) as check:
+            cache_key = (
+                f"full_op_intent:{oi_full.reference.id}:{oi_full.reference.version}"
+            )
+            old_oi: CachedOpIntent | None = self._scenario.cache.get(cache_key)
+            if not old_oi:
+                self._scenario.cache[cache_key] = CachedOpIntent(
+                    op_intent=oi_full,
+                    query_timestamp=StringBasedDateTime(
+                        oi_full_query.request.timestamp
+                    ),
+                )
+            else:
+                error_text = errors_for_nonequivalent_op_intent_details(
+                    old_oi.op_intent,
+                    oi_full,
+                )
+                if error_text:
+                    check.record_failed(
+                        summary="Operational intent details have changed without the change being published to the DSS",
+                        details=error_text,
+                        query_timestamps=[
+                            old_oi.query_timestamp,
+                            oi_full_query.request.timestamp,
+                        ],
+                    )
 
         with self._scenario.check(
             "Correct operational intent details", [self._flight_planner.participant_id]

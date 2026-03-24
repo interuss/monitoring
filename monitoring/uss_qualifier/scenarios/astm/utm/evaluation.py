@@ -2,6 +2,7 @@ from datetime import timedelta
 from urllib.parse import urlparse
 
 from uas_standards.astm.f3548.v21.api import (
+    OperationalIntent,
     OperationalIntentDetails,
     OperationalIntentReference,
     UssAvailabilityState,
@@ -121,3 +122,58 @@ def validate_op_intent_details(
         )
 
     return "; ".join(errors_text) if len(errors_text) > 0 else None
+
+
+def errors_for_nonequivalent_op_intent_details(
+    old_oi: OperationalIntent,
+    new_oi: OperationalIntent,
+) -> str | None:
+    errors_text: list[str] = []
+    old_ref = old_oi.reference
+    new_ref = new_oi.reference
+    old_details = old_oi.details
+    new_details = new_oi.details
+
+    def append_ovn_err():
+        errors_text.append(
+            f"The OVN {new_ref.ovn} reported by USS for operational intent {new_ref.id} at version {new_ref.version} does not match the value {old_ref.ovn} previously indicated by the USS for the same operational intent with the same version"
+        )
+
+    def append_err(field_name: str):
+        errors_text.append(
+            f"The value {getattr(new_details, field_name)} for `{field_name}` reported by USS for details of operational intent {new_ref.id} at version {new_ref.version} (OVN {new_ref.ovn if 'ovn' in new_ref else 'empty'}) does not match the value {getattr(old_details, field_name)} previously indicated by the USS for the same operational intent with the same version"
+        )
+
+    if "ovn" in old_ref and "ovn" in new_ref:
+        if old_ref.ovn != new_ref.ovn:
+            append_ovn_err()
+    elif "ovn" in old_ref or "ovn" in new_ref:
+        append_ovn_err()
+
+    if "priority" in old_details and "priority" in new_details:
+        if old_details.priority != new_details.priority:
+            append_err("priority")
+    elif "priority" in old_details or "priority" in new_details:
+        append_err("priority")
+
+    if (old_details.volumes is None) != (new_details.volumes is None):
+        append_err("volumes")
+    elif old_details.volumes and new_details.volumes:
+        if not Volume4DCollection.from_f3548v21(old_details.volumes).is_equivalent(
+            Volume4DCollection.from_f3548v21(new_details.volumes)
+        ):
+            append_err("volumes")
+
+    if (old_details.off_nominal_volumes is None) != (
+        new_details.off_nominal_volumes is None
+    ):
+        append_err("off_nominal_volumes")
+    elif old_details.off_nominal_volumes and new_details.off_nominal_volumes:
+        if not Volume4DCollection.from_f3548v21(
+            old_details.off_nominal_volumes
+        ).is_equivalent(
+            Volume4DCollection.from_f3548v21(new_details.off_nominal_volumes)
+        ):
+            append_err("off_nominal_volumes")
+
+    return "; ".join(errors_text) if errors_text else None
