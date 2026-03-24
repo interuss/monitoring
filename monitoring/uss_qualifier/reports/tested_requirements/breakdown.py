@@ -202,7 +202,7 @@ def _populate_breakdown_with_timeout_skip(
         )
     tested_requirement = _tested_requirement_for(REQ_RUN_TO_COMPLETION, breakdown)
     tested_scenario = _tested_scenario_for(default_scenario, tested_requirement)
-    # Assume each TestedScenario for the the TestedRequirement for this requirement should only ever have 1 case with 1 step with 1 check
+    # Assume each TestedScenario for the TestedRequirement for this requirement should only ever have 1 case with 1 step with 1 check
     if not tested_scenario.cases:
         tested_scenario.cases.append(
             TestedCase(
@@ -226,6 +226,10 @@ def _populate_breakdown_with_timeout_skip(
             )
         )
     else:
+        if len(tested_scenario.cases) > 1:
+            raise ValueError(
+                f"TestedScenario {tested_scenario.name} ({tested_scenario.type}) for requirement {tested_requirement.id} was expected to only have one N/A case, but instead had {len(tested_scenario.cases)} cases: {', '.join(c.name for c in tested_scenario.cases)}"
+            )
         tested_scenario.cases[0].steps[0].checks[0].failures += 1
 
 
