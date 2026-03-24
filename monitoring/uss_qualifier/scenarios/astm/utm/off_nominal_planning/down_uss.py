@@ -166,6 +166,10 @@ class DownUSS(TestScenario):
         set_uss_available(self, self.dss, self.uss_qualifier_sub)
         self.end_test_step()
 
+        self.begin_test_step("Clear operational intents created by virtual USS")
+        self._clear_op_intents()
+        self.end_test_step()
+
         self.begin_test_step("Verify area is clear")
         validate_clear_area(
             self,

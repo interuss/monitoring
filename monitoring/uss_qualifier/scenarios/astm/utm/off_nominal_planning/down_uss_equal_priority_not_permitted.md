@@ -46,6 +46,12 @@ Make a dummy request to the DSS in order to resolve the USS ID of the virtual US
 
 ### [Restore virtual USS availability test step](../set_uss_available.md)
 
+### Clear operational intents created by virtual USS test step
+Delete any leftover operational intents created at DSS by virtual USS.
+
+#### 🛑 Successful operational intents cleanup check
+If the search for operational intent references or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**, respectively.
+
 ### [Verify area is clear test step](../clear_area_validation.md)
 
 This scenario requires the area to have been cleared of operational intents. If it has not, this test step will raise a failed check.
