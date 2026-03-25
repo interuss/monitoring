@@ -68,18 +68,6 @@ class ReactionToFailure(str, Enum):
     """If the test suite action fails, do not execute any more actions in that test suite"""
 
 
-class ActionType(str, Enum):
-    TestScenario = "test_scenario"
-    TestSuite = "test_suite"
-    ActionGenerator = "action_generator"
-
-    @staticmethod
-    def build_invalid_action_declaration() -> Exception:
-        return ValueError(
-            f"Exactly one of ({', '.join(a for a in ActionType)}) must be specified in a TestSuiteActionDeclaration"
-        )
-
-
 class TestSuiteActionDeclaration(ImplicitDict):
     """Defines a step in the sequence of things to do for a test suite.
 
@@ -98,33 +86,41 @@ class TestSuiteActionDeclaration(ImplicitDict):
     on_failure: ReactionToFailure = ReactionToFailure.Continue
     """What to do if this action fails"""
 
-    def get_action_type(self) -> ActionType:
-        matches = [v for v in ActionType if v in self and self[v]]
-        if len(matches) != 1:
-            raise ActionType.build_invalid_action_declaration()
-        return ActionType(matches[0])
+    @property
+    def invalid_type_error(self):
+        return ValueError(
+            "Invalid TestSuiteActionDeclaration: test_scenario, test_suite or action_generator must be specified"
+        )
 
     def get_resource_links(self) -> dict[ResourceID, ResourceID]:
-        action_type = self.get_action_type()
-        if action_type == ActionType.TestScenario and self.test_scenario:
+        if "test_scenario" in self and self.test_scenario:
             return self.test_scenario.resources or {}
-        elif action_type == ActionType.TestSuite and self.test_suite:
+        elif "test_suite" in self and self.test_suite:
             return self.test_suite.resources or {}
-        elif action_type == ActionType.ActionGenerator and self.action_generator:
+        elif "action_generator" in self and self.action_generator:
             return self.action_generator.resources
         else:
-            raise ActionType.build_invalid_action_declaration()
+            raise self.invalid_type_error
 
     def get_child_type(self) -> str:
-        action_type = self.get_action_type()
-        if action_type == ActionType.TestScenario and self.test_scenario:
+        if "test_scenario" in self and self.test_scenario:
             return self.test_scenario.scenario_type
-        elif action_type == ActionType.TestSuite and self.test_suite:
+        elif "test_suite" in self and self.test_suite:
             return self.test_suite.type_name
-        elif action_type == ActionType.ActionGenerator and self.action_generator:
+        elif "action_generator" in self and self.action_generator:
             return self.action_generator.generator_type
         else:
-            raise ActionType.build_invalid_action_declaration()
+            raise self.invalid_type_error
+
+    def __str__(self) -> str:
+        if "test_scenario" in self and self.test_scenario:
+            return "TestScenario"
+        elif "test_suite" in self and self.test_suite:
+            return "TestSuite"
+        elif "action_generator" in self and self.action_generator:
+            return "ActionGenerator"
+        else:
+            return "UnknownType"
 
 
 ResourceTypeNameSpecifyingOptional = ResourceTypeName

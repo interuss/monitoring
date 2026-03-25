@@ -176,33 +176,30 @@ def _get_applicable_elements_from_action(
     report: TestSuiteActionReport,
     location: JSONAddress,
 ) -> Iterator[TestReportElement]:
-    test_suite, test_scenario, action_generator = report.get_applicable_report()
-    if test_scenario:
-        assert report.test_scenario is not None
+    if "test_scenario" in report and report.test_scenario:
         return _get_applicable_elements_from_test_scenario(
             applicability,
             report.test_scenario,
             JSONAddress(location + ".test_scenario"),
         )
-    elif test_suite:
-        assert report.test_suite is not None
+    elif "test_suite" in report and report.test_suite:
         return _get_applicable_elements_from_test_suite(
             applicability, report.test_suite, JSONAddress(location + ".test_suite")
         )
-    elif action_generator:
-        assert report.action_generator is not None
+    elif "action_generator" in report and report.action_generator:
         return _get_applicable_elements_from_action_generator(
             applicability,
             report.action_generator,
             JSONAddress(location + ".action_generator"),
         )
-    else:
-        assert report.skipped_action is not None
+    elif "skipped_action" in report and report.skipped_action:
         return _get_applicable_elements_from_skipped_action(
             applicability,
             report.skipped_action,
             JSONAddress(location + ".skipped_action"),
         )
+    else:
+        raise report.invalid_type_error
 
 
 # ===== Evaluation of conditions =====
