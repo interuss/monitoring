@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 from collections.abc import Iterable
 from enum import Enum
 
 from implicitdict import ImplicitDict, Optional
 
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
+from monitoring.uss_qualifier.reports.report import TestScenarioReport
 from monitoring.uss_qualifier.requirements.definitions import PackageID
-from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
 
 PASS_CLASS = "pass_result"
 FINDINGS_CLASS = "findings_result"
@@ -88,7 +90,7 @@ class TestedCase(ImplicitDict):
 
 
 class TestedScenario(ImplicitDict):
-    type: TestScenarioTypeName
+    type: str
     name: str
     url: str
     cases: list[TestedCase]
@@ -96,6 +98,15 @@ class TestedScenario(ImplicitDict):
     @property
     def rows(self) -> int:
         return sum(c.rows for c in self.cases)
+
+    @staticmethod
+    def from_scenario_report(report: TestScenarioReport) -> TestedScenario:
+        return TestedScenario(
+            type=report.scenario_type,
+            name=report.name,
+            url=report.documentation_url,
+            cases=[],
+        )
 
 
 class TestedRequirementStatus(str, Enum):

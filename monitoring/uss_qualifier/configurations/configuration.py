@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from implicitdict import ImplicitDict, Optional
+from implicitdict import ImplicitDict, Optional, StringBasedTimeDelta
 
 from monitoring.monitorlib.dicts import JSONAddress
 from monitoring.uss_qualifier.action_generators.definitions import GeneratorTypeName
@@ -139,6 +139,9 @@ class ExecutionConfiguration(ImplicitDict):
 
     scenarios_filter: str | None
     """Filter test scenarios by scenario type using a regex. If the filter regex does not match within the scenario type, the scenario is skipped. When empty, all scenarios are executed. Useful for targeted debugging. Overridden by --filter"""
+
+    stop_after: Optional[StringBasedTimeDelta]
+    """If specified, stop the test run at the next earliest convenience (generally just after completion of the current test scenario) if it has been running at least this long."""
 
 
 class TestConfiguration(ImplicitDict):

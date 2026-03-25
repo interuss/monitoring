@@ -63,6 +63,8 @@ from monitoring.uss_qualifier.suites.definitions import (
     TestSuiteDefinition,
 )
 
+TEST_RUN_TIMEOUT_SKIP_REASON = "Maximum test run time has been exceeded"
+
 
 def _print_failed_check(failed_check: FailedCheck) -> None:
     yaml_lines = yaml.dump(json.loads(json.dumps(failed_check))).split("\n")
@@ -357,6 +359,15 @@ def _run_actions(
     for a, action in enumerate(actions):
         if isinstance(action, SkippedActionReport):
             action_report = TestSuiteActionReport(skipped_action=action)
+        elif context.should_stop_early_now():
+            assert context.current_frame
+            action_report = TestSuiteActionReport(
+                skipped_action=SkippedActionReport(
+                    timestamp=StringBasedDateTime(arrow.utcnow().datetime),
+                    reason=TEST_RUN_TIMEOUT_SKIP_REASON,
+                    declaration=context.current_frame.action.declaration,
+                )
+            )
         else:
             action_report = action.run(context)
         report.actions.append(action_report)
@@ -490,6 +501,16 @@ class ExecutionContext:
                         return False
             return True
         return False
+
+    def should_stop_early_now(self) -> bool:
+        if (
+            not self.config
+            or "stop_after" not in self.config
+            or not self.config.stop_after
+        ):
+            return False
+        dt = arrow.utcnow() - self.start_time
+        return dt >= self.config.stop_after.timedelta
 
     def _compute_n_of(
         self, target: TestSuiteAction, condition: TestSuiteActionSelectionCondition
