@@ -483,10 +483,13 @@ def cleanup_flights(
                     continue
                 scenario.record_queries(resp.queries)
 
-                if resp.flight_plan_status != FlightPlanStatus.Closed:
+                if resp.flight_plan_status not in [
+                    FlightPlanStatus.Closed,
+                    FlightPlanStatus.NotPlanned,
+                ]:
                     check.record_failed(
                         summary=f"Failed to clean up flight {flight_id} from {flight_planner.participant_id}",
-                        details=f"Deletion of flight {flight_id} returned a status of '{resp.flight_plan_status}' ({FlightPlanStatus.Closed} wanted)",
+                        details=f"Deletion of flight {flight_id} returned a status of '{resp.flight_plan_status}' ({FlightPlanStatus.Closed} or {FlightPlanStatus.NotPlanned} wanted)",
                         query_timestamps=[q.request.timestamp for q in resp.queries],
                     )
 
