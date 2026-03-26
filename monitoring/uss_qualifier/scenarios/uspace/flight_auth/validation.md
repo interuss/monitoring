@@ -66,6 +66,6 @@ uss_qualifier indicates to the flight planner a user intent to create a valid fl
 
 ## Cleanup
 
-### 🛑 Successful flight deletion check
+### ℹ️ Successful flight deletion check
 
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../requirements/interuss/automated_testing/flight_planning.md)**

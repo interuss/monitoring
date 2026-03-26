@@ -277,5 +277,5 @@ This step validates that the response of the USS is consistent with the flight s
 modification, i.e. whether Flight 1 was not modified.
 
 ## Cleanup
-### ⚠️ Successful flight deletion check
+### ℹ️ Successful flight deletion check
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../../requirements/interuss/automated_testing/flight_planning.md)**

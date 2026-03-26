@@ -286,5 +286,5 @@ In addition, Flight 1 should not have been removed, because doing so would leave
 Because the modification attempt was invalid, Flight 1 should not have been modified.
 
 ## Cleanup
-### ⚠️ Successful flight deletion check
+### ℹ️ Successful flight deletion check
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../../requirements/interuss/automated_testing/flight_planning.md)**
