@@ -57,6 +57,9 @@ class DownUSS(TestScenario):
     scenario_execution_max_extents: Volume4D | None = None
     """Actual bounding extent of the flight intents created by the USS qualifier acting as a virtual USS during the scenario execution."""
 
+    estimated_max_extents: Volume4D | None = None
+    """Estimated bounding extent of the flight intents created by the USS qualifier acting as a virtual USS during the scenario execution."""
+
     tested_uss: FlightPlannerClient
     dss_resource: DSSInstanceResource
     dss: DSSInstance
@@ -136,7 +139,7 @@ class DownUSS(TestScenario):
         self.end_test_scenario()
 
     def _setup(self):
-        estimated_max_extents = estimate_scenario_execution_max_extents(
+        self.estimated_max_extents = estimate_scenario_execution_max_extents(
             self.time_context, self.flight_intents_templates
         )
 
@@ -144,7 +147,7 @@ class DownUSS(TestScenario):
         with self.check("Successful dummy query", [self.dss.participant_id]) as check:
             try:
                 _, dummy_query = self.dss.find_op_intent(
-                    estimated_max_extents.to_f3548v21()
+                    self.estimated_max_extents.to_f3548v21()
                 )
                 self.record_query(dummy_query)
             except QueryError as e:
@@ -174,7 +177,7 @@ class DownUSS(TestScenario):
         validate_clear_area(
             self,
             self.dss,
-            [estimated_max_extents],
+            [self.estimated_max_extents],
             ignore_self=False,
         )
         self.end_test_step()
@@ -299,38 +302,39 @@ class DownUSS(TestScenario):
         with self.check(
             "Successful operational intents cleanup", [self.dss.participant_id]
         ) as check:
-            if self.scenario_execution_max_extents is None:
-                return
+            for area in [
+                self.estimated_max_extents,
+                self.scenario_execution_max_extents,
+            ]:
+                if area is None:
+                    continue
 
-            try:
-                oi_refs, find_query = self.dss.find_op_intent(
-                    self.scenario_execution_max_extents.to_f3548v21()
-                )
-                self.record_query(find_query)
-            except QueryError as e:
-                self.record_queries(e.queries)
-                find_query = e.queries[0]
-                check.record_failed(
-                    summary=f"Failed to query operational intent references from DSS in {self.scenario_execution_max_extents} for cleanup",
-                    details=f"DSS responded code {find_query.status_code}; {e}",
-                    query_timestamps=[find_query.request.timestamp],
-                )
+                try:
+                    oi_refs, find_query = self.dss.find_op_intent(area.to_f3548v21())
+                    self.record_query(find_query)
+                except QueryError as e:
+                    self.record_queries(e.queries)
+                    find_query = e.queries[0]
+                    check.record_failed(
+                        summary=f"Failed to query operational intent references from DSS in {area} for cleanup",
+                        details=f"DSS responded code {find_query.status_code}; {e}",
+                        query_timestamps=[find_query.request.timestamp],
+                    )
+                    continue
 
-            for oi_ref in oi_refs:
-                if oi_ref.manager == self.uss_qualifier_sub:
-                    try:
-                        del_oi, _, del_query = self.dss.delete_op_intent(
-                            oi_ref.id, oi_ref.ovn
-                        )
-                        self.record_query(del_query)
-                    except QueryError as e:
-                        self.record_queries(e.queries)
-                        del_query = e.queries[0]
-                        check.record_failed(
-                            summary=f"Failed to delete op intent {oi_ref.id} from DSS",
-                            details=f"DSS responded code {del_query.status_code}; {e}",
-                            query_timestamps=[del_query.request.timestamp],
-                        )
+                for oi_ref in oi_refs:
+                    if oi_ref.manager == self.uss_qualifier_sub and (ovn := oi_ref.ovn):
+                        try:
+                            _, _, del_query = self.dss.delete_op_intent(oi_ref.id, ovn)
+                            self.record_query(del_query)
+                        except QueryError as e:
+                            self.record_queries(e.queries)
+                            del_query = e.queries[0]
+                            check.record_failed(
+                                summary=f"Failed to delete op intent {oi_ref.id} from DSS",
+                                details=f"DSS responded code {del_query.status_code}; {e}",
+                                query_timestamps=[del_query.request.timestamp],
+                            )
 
     def cleanup(self):
         self.begin_cleanup()
