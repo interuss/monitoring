@@ -6,6 +6,7 @@
 
 name: Publish monitoring image to Docker Registry (on new release tag)
 on:
+  pull_request: # All
   push:
     tags:
       # To modify to trigger the job for fork's releases
@@ -21,15 +22,13 @@ jobs:
     name: Build and Push to Docker Hub
     runs-on: ubuntu-latest
     # To modify to enable the job for forked repository
-    if: github.repository == 'interuss/monitoring'
+    # if: github.repository == 'interuss/monitoring'
     permissions:
       id-token: write # needed for signing the images with GitHub OIDC Token
 
     steps:
       - name: Install Cosign
         uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003  # v4.1.1
-        with:
-          cosign-release: 'v2.6.1'
       - name: Job information
         run: |
           echo "Job information"
@@ -46,12 +45,12 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2  # v4.0.0
-        with:
-          registry: docker.io
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      # - name: Log in to Docker Hub
+      #   uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2  # v4.0.0
+      #   with:
+      #     registry: docker.io
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build, push and sign image
         env:

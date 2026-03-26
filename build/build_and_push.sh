@@ -30,6 +30,11 @@ cd "${BASEDIR}"
 VERSION=$(./scripts/git/version.sh monitoring)
 LATEST_TAG="latest"
 
+
+docker run -d -p 5000:5000 --name registry registry:2
+
+DOCKER_URL="localhost:5000"
+
 if [[ -z "${DOCKER_URL}" ]]; then
   echo "DOCKER_URL environment variable is not set; building image to interuss/monitoring..."
   ./monitoring/build.sh
@@ -41,7 +46,7 @@ else
   echo "Building image ${TAG}"
   ./monitoring/build.sh "${TAG}"
 
-  echo "Pushing docker image ${TAG}..."
+  # echo "Pushing docker image ${TAG}..."
   docker image push "${TAG}"
 
   echo "Built and pushed docker image ${TAG}"
@@ -59,13 +64,13 @@ else
 
   fi
 
-  if [[ "${DOCKER_UPDATE_LATEST}" == "true" ]]; then
-    echo "Tagging docker image ${DOCKER_URL}/monitoring:${LATEST_TAG}..."
-    docker tag "${TAG}" "${DOCKER_URL}/monitoring:${LATEST_TAG}"
-
-    echo "Pushing docker image ${DOCKER_URL}/monitoring:${LATEST_TAG}..."
-    docker image push "${DOCKER_URL}/monitoring:${LATEST_TAG}"
-
-    echo "Built and pushed docker image ${DOCKER_URL}/monitoring:${LATEST_TAG}"
-  fi
+  # if [[ "${DOCKER_UPDATE_LATEST}" == "true" ]]; then
+  #   echo "Tagging docker image ${DOCKER_URL}/monitoring:${LATEST_TAG}..."
+  #   docker tag "${TAG}" "${DOCKER_URL}/monitoring:${LATEST_TAG}"
+  #
+  #   echo "Pushing docker image ${DOCKER_URL}/monitoring:${LATEST_TAG}..."
+  #   docker image push "${DOCKER_URL}/monitoring:${LATEST_TAG}"
+  #
+  #   echo "Built and pushed docker image ${DOCKER_URL}/monitoring:${LATEST_TAG}"
+  # fi
 fi
