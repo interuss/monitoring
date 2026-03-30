@@ -57,6 +57,9 @@ class DownUSS(TestScenario):
     scenario_execution_max_extents: Volume4D | None = None
     """Actual bounding extent of the flight intents created by the USS qualifier acting as a virtual USS during the scenario execution."""
 
+    estimated_max_extents: Volume4D | None = None
+    """Estimated bounding extent of the flight intents created by the USS qualifier acting as a virtual USS during the scenario execution."""
+
     tested_uss: FlightPlannerClient
     dss_resource: DSSInstanceResource
     dss: DSSInstance
@@ -167,7 +170,7 @@ class DownUSS(TestScenario):
         self.end_test_step()
 
         self.begin_test_step("Clear operational intents created by virtual USS")
-        self._clear_op_intents()
+        self._clear_op_intents(estimated_max_extents)
         self.end_test_step()
 
         self.begin_test_step("Verify area is clear")
@@ -295,33 +298,28 @@ class DownUSS(TestScenario):
 
         self.end_test_step()
 
-    def _clear_op_intents(self):
+    def _clear_op_intents(self, area):
         with self.check(
             "Successful operational intents cleanup", [self.dss.participant_id]
         ) as check:
-            if self.scenario_execution_max_extents is None:
-                return
+            oi_refs = []
 
             try:
-                oi_refs, find_query = self.dss.find_op_intent(
-                    self.scenario_execution_max_extents.to_f3548v21()
-                )
+                oi_refs, find_query = self.dss.find_op_intent(area.to_f3548v21())
                 self.record_query(find_query)
             except QueryError as e:
                 self.record_queries(e.queries)
                 find_query = e.queries[0]
                 check.record_failed(
-                    summary=f"Failed to query operational intent references from DSS in {self.scenario_execution_max_extents} for cleanup",
+                    summary=f"Failed to query operational intent references from DSS in {area} for cleanup",
                     details=f"DSS responded code {find_query.status_code}; {e}",
                     query_timestamps=[find_query.request.timestamp],
                 )
 
             for oi_ref in oi_refs:
-                if oi_ref.manager == self.uss_qualifier_sub:
+                if oi_ref.manager == self.uss_qualifier_sub and (ovn := oi_ref.ovn):
                     try:
-                        del_oi, _, del_query = self.dss.delete_op_intent(
-                            oi_ref.id, oi_ref.ovn
-                        )
+                        _, _, del_query = self.dss.delete_op_intent(oi_ref.id, ovn)
                         self.record_query(del_query)
                     except QueryError as e:
                         self.record_queries(e.queries)
@@ -336,6 +334,6 @@ class DownUSS(TestScenario):
         self.begin_cleanup()
         set_uss_available(self, self.dss, self.uss_qualifier_sub)
         cleanup_flights(self, [self.tested_uss])
-        self._clear_op_intents()
+        self._clear_op_intents(self.scenario_execution_max_extents)
 
         self.end_cleanup()
