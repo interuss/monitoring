@@ -175,10 +175,10 @@ to reject or accept Flight 2. If the USS indicates that the injection attempt fa
 ## Cleanup
 ### [Restore virtual USS availability test step](../set_uss_available.md)
 
-### 🛑 Successful flight deletion check
+### ⚠️ Successful flight deletion check
 Delete flights injected at USS through the flight planning interface.
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../requirements/interuss/automated_testing/flight_planning.md)**
 
-### 🛑 Successful operational intents cleanup check
+### ⚠️ Successful operational intents cleanup check
 Delete operational intents created at DSS by virtual USS.
 If the search for operational intent references or their deletion fail, this check fails per **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)** or **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**, respectively.
