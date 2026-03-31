@@ -93,10 +93,10 @@ The ability to delete an existing subscription is required in **[astm.f3411.v19.
 
 The cleanup phase of this test scenario will remove any subscription that may have been created during the test and that intersects with the test ISA.
 
-### 🛑 Successful subscription search query check
+### ⚠️ Successful subscription search query check
 
 If the query for subscriptions fails, the "GET Subscriptions" portion of **[astm.f3411.v19.DSS0030,f](../../../../../requirements/astm/f3411/v19.md)** was not met.
 
-### 🛑 Subscription can be deleted check
+### ⚠️ Subscription can be deleted check
 
 If the deletion attempt fails, the "DELETE Subscription" portion of **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)** was not met.
