@@ -57,18 +57,14 @@ def find_participant_system_versions(
 ) -> list[str]:
     if isinstance(participant_ids, ParticipantID):
         participant_ids = [participant_ids]
-    test_suite, test_scenario, action_generator = report.get_applicable_report()
     result = []
-    if test_suite:
-        assert report.test_suite is not None
+    if "test_suite" in report and report.test_suite:
         for action in report.test_suite.actions:
             result.extend(find_participant_system_versions(action, participant_ids))
-    elif action_generator:
-        assert report.action_generator is not None
+    elif "action_generator" in report and report.action_generator:
         for action in report.action_generator.actions:
             result.extend(find_participant_system_versions(action, participant_ids))
-    elif test_scenario:
-        assert report.test_scenario is not None
+    elif "test_scenario" in report and report.test_scenario:
         if (
             report.test_scenario.scenario_type
             in (
