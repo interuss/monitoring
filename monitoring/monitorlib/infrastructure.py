@@ -75,6 +75,9 @@ class AuthAdapter:
         return None
 
 
+_sessions: dict[tuple, "UTMClientSession"] = {}
+
+
 class UTMClientSession(requests.Session):
     """Requests session that enables easy access to ASTM-specified UTM endpoints.
 
@@ -86,12 +89,25 @@ class UTMClientSession(requests.Session):
     DSS).
     """
 
+    def __new__(cls, prefix_url, auth_adapter=None, timeout_seconds=None):
+        """Make the session a singleton based on parameter combinaison"""
+
+        key = (prefix_url, auth_adapter, timeout_seconds)
+        if key not in _sessions:
+            _sessions[key] = super().__new__(cls)
+        return _sessions[key]
+
     def __init__(
         self,
         prefix_url: str,
         auth_adapter: AuthAdapter | None = None,
         timeout_seconds: float | None = None,
     ):
+        if hasattr(
+            self, "_prefix_url"
+        ):  # If set, we have been reused from the singleton pattern, no need to do anything
+            return
+
         super().__init__()
 
         self._prefix_url = prefix_url[0:-1] if prefix_url[-1] == "/" else prefix_url
