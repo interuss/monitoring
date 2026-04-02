@@ -1,6 +1,8 @@
 import asyncio
 import datetime
 import functools
+import threading
+import time
 import urllib.parse
 from enum import Enum
 
@@ -20,6 +22,7 @@ ALL_SCOPES = [
 EPOCH = datetime.datetime.fromtimestamp(0, datetime.UTC)
 TOKEN_REFRESH_MARGIN = datetime.timedelta(seconds=15)
 CLIENT_TIMEOUT = 10  # seconds
+SOCKET_KEEP_ALIVE_LIMIT = 15  # seconds.
 
 
 AuthSpec = str
@@ -98,6 +101,10 @@ class UTMClientSession(requests.Session):
         self.auth_adapter = auth_adapter
         self.default_scopes: list[str] | None = None
         self.timeout_seconds = timeout_seconds or CLIENT_TIMEOUT
+        self._last_used = None
+
+        t = threading.Thread(target=self._idle_watchdog, daemon=True)
+        t.start()
 
     # Overrides method on requests.Session
     def prepare_request(self, request, **kwargs):
@@ -135,6 +142,8 @@ class UTMClientSession(requests.Session):
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(kwargs)
 
+        self._last_used = time.monotonic()
+
         return super().request(method, url, *args, **kwargs)
 
     def get_prefix_url(self):
@@ -145,6 +154,16 @@ class UTMClientSession(requests.Session):
 
     def delete(self, *args, **kwargs):
         return super().delete(*args, **kwargs)
+
+    def _idle_watchdog(self):
+        while True:
+            time.sleep(SOCKET_KEEP_ALIVE_LIMIT)
+            if (
+                self._last_used
+                and time.monotonic() - self._last_used > SOCKET_KEEP_ALIVE_LIMIT
+            ):
+                self.close()
+                self._last_used = None
 
 
 class AsyncUTMTestSession:
