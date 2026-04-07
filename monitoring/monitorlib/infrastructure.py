@@ -84,6 +84,10 @@ class UTMClientSession(requests.Session):
     If the URL starts with '/', then automatically prefix the URL with the
     `prefix_url` specified on construction (this is usually the base URL of the
     DSS).
+
+    When possible, a UTMClientSession should be reused rather than creating a
+    new one because an excessive number of UTMClientSessions can exhaust the
+    number of connections allowed by the system (see #1407).
     """
 
     def __init__(
