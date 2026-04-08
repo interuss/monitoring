@@ -91,7 +91,9 @@ class DSSInstance:
         self.participant_id = participant_id
         self.user_participant_ids = user_participant_ids
         self.base_url = base_url
-        self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
+        self.client = infrastructure.utm_client_session_factory.get_session(
+            base_url, auth_adapter
+        )
         self._scopes_authorized = set(
             s.value if isinstance(s, Enum) else s for s in scopes_authorized
         )

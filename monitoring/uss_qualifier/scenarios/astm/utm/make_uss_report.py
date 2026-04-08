@@ -12,7 +12,11 @@ from uas_standards.astm.f3548.v21.api import (
 )
 
 from monitoring.monitorlib.fetch import Query, QueryError, QueryType, query_and_describe
-from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    AuthAdapter,
+    UTMClientSession,
+    utm_client_session_factory,
+)
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.scenarios.astm.utm import FlightIntentValidation
@@ -112,7 +116,7 @@ class MakeUssReport(TestScenario):
 
     def _call_make_uss_report(self, base_urls: dict[str, ParticipantID]) -> None:
         for base_url, participant_id in base_urls.items():
-            client = UTMClientSession(base_url, self._auth)
+            client = utm_client_session_factory.get_session(base_url, self._auth)
             url = base_url + OPERATIONS[OperationID.MakeUssReport].path
             t = StringBasedDateTime(arrow.utcnow())
             exchange = ExchangeRecord(

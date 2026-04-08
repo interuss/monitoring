@@ -45,7 +45,9 @@ class DSSInstance:
         self.participant_id = participant_id
         self.base_url = base_url
         self.rid_version = rid_version
-        self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
+        self.client = infrastructure.utm_client_session_factory.get_session(
+            base_url, auth_adapter
+        )
 
     def is_same_as(self, other: DSSInstance) -> bool:
         return (

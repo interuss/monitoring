@@ -9,7 +9,7 @@ from monitoring.monitorlib.clients.geospatial_info.client import GeospatialInfoC
 from monitoring.monitorlib.clients.geospatial_info.client_geospatial_map import (
     GeospatialMapClient,
 )
-from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession
+from monitoring.monitorlib.infrastructure import AuthAdapter, utm_client_session_factory
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.resource import Resource
@@ -37,7 +37,7 @@ class GeospatialInfoProviderConfiguration(ImplicitDict):
 
     def to_client(self, auth_adapter: AuthAdapter) -> GeospatialInfoClient:
         if "geospatial_map_v1_base_url" in self and self.geospatial_map_v1_base_url:
-            session = UTMClientSession(
+            session = utm_client_session_factory.get_session(
                 self.geospatial_map_v1_base_url, auth_adapter, self.timeout_seconds
             )
             return GeospatialMapClient(session, self.participant_id)

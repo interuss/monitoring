@@ -8,7 +8,9 @@ from monitoring.monitorlib.fetch import (
     RequestDescription,
     ResponseDescription,
 )
-from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    utm_client_session_factory,
+)
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 
 from .client_interuss import InterUSSVersioningClient, VersionQueryError
@@ -16,7 +18,9 @@ from .client_interuss import InterUSSVersioningClient, VersionQueryError
 
 @pytest.fixture
 def client():
-    return InterUSSVersioningClient(UTMClientSession(prefix_url="/"), ParticipantID())
+    return InterUSSVersioningClient(
+        utm_client_session_factory.get_session(prefix_url="/"), ParticipantID()
+    )
 
 
 def build_query_response(code, data):

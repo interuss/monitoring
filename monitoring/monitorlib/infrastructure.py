@@ -92,6 +92,8 @@ class UTMClientSession(requests.Session):
         auth_adapter: AuthAdapter | None = None,
         timeout_seconds: float | None = None,
     ):
+        """Instances should usually be constructed using a factory to avoid unnecessary duplication."""
+
         super().__init__()
 
         self._prefix_url = prefix_url[0:-1] if prefix_url[-1] == "/" else prefix_url
@@ -145,6 +147,31 @@ class UTMClientSession(requests.Session):
 
     def delete(self, *args, **kwargs):
         return super().delete(*args, **kwargs)
+
+
+class UTMClientSessionFactory:
+    _sessions: dict[tuple, UTMClientSession]
+
+    def __init__(self):
+        self._sessions = {}
+
+    def get_session(
+        self,
+        prefix_url: str,
+        auth_adapter: AuthAdapter | None = None,
+        timeout_seconds: float | None = None,
+    ) -> UTMClientSession:
+        key = (prefix_url, auth_adapter, timeout_seconds)
+        if key not in self._sessions:
+            self._sessions[key] = UTMClientSession(
+                prefix_url=prefix_url,
+                auth_adapter=auth_adapter,
+                timeout_seconds=timeout_seconds,
+            )
+        return self._sessions[key]
+
+
+utm_client_session_factory = UTMClientSessionFactory()
 
 
 class AsyncUTMTestSession:

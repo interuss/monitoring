@@ -2,7 +2,9 @@ from monitoring.mock_uss.app import require_config_value, webapp
 from monitoring.mock_uss.config import KEY_AUTH_SPEC, KEY_DSS_URL
 from monitoring.mock_uss.riddp.config import KEY_RID_VERSION
 from monitoring.monitorlib import auth
-from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    utm_client_session_factory,
+)
 from monitoring.monitorlib.rid import RIDVersion
 
 require_config_value(KEY_DSS_URL)
@@ -18,7 +20,7 @@ else:
         f"Cannot construct DSS base URL using RID version {webapp.config[KEY_RID_VERSION]}"
     )
 
-utm_client = UTMClientSession(
+utm_client = utm_client_session_factory.get_session(
     _dss_base_url,
     auth.make_auth_adapter(webapp.config[KEY_AUTH_SPEC]),
 )
