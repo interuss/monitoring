@@ -56,7 +56,6 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     get_scenario_type_by_name,
 )
 from monitoring.uss_qualifier.suites.definitions import (
-    ActionType,
     ReactionToFailure,
     TestSuiteActionDeclaration,
     TestSuiteDeclaration,
@@ -93,25 +92,24 @@ class TestSuiteAction[T: ActionGenerator]:
         resources_for_child = make_child_resources(
             resources,
             action.get_resource_links(),
-            f"Test suite action to run {action.get_action_type()} {action.get_child_type()}",
+            f"Test suite action to run {action.get_action_type_name()} {action.get_child_type()}",
         )
 
-        action_type = action.get_action_type()
-        if action_type == ActionType.TestScenario and action.test_scenario:
+        if "test_scenario" in action and action.test_scenario:
             self.test_scenario = TestScenario.make_test_scenario(
                 declaration=action.test_scenario, resource_pool=resources_for_child
             )
-        elif action_type == ActionType.TestSuite and action.test_suite:
+        elif "test_suite" in action and action.test_suite:
             self.test_suite = TestSuite(
                 declaration=action.test_suite,
                 resources=resources,
             )
-        elif action_type == ActionType.ActionGenerator and action.action_generator:
+        elif "action_generator" in action and action.action_generator:
             self.action_generator = ActionGenerator.make_from_definition(
                 definition=action.action_generator, resources=resources_for_child
             )
         else:
-            raise ActionType.build_invalid_action_declaration()
+            raise action.invalid_type_error
 
     def get_name(self) -> str:
         if self.test_suite:
@@ -130,7 +128,7 @@ class TestSuiteAction[T: ActionGenerator]:
         skip_report = context.evaluate_skip()
         if skip_report:
             logger.warning(
-                f"Skipping {self.declaration.get_action_type()} '{self.get_name()}' because: {skip_report.reason}"
+                f"Skipping {self.declaration.get_action_type_name()} '{self.get_name()}' because: {skip_report.reason}"
             )
             report = TestSuiteActionReport(skipped_action=skip_report)
         else:
@@ -293,7 +291,7 @@ class TestSuite:
                 )
             except MissingResourceError as e:
                 logger.warning(
-                    f"Skipping action {a} ({action_dec.get_action_type()} {action_dec.get_child_type()}) because {str(e)}"
+                    f"Skipping action {a} ({action_dec.get_action_type_name()} {action_dec.get_child_type()}) because {str(e)}"
                 )
                 actions.append(
                     SkippedActionReport(
@@ -721,7 +719,7 @@ class ExecutionContext:
 
         if self.current_frame.action is not action:
             raise RuntimeError(
-                f"Action {self.current_frame.action.declaration.get_action_type()} {self.current_frame.action.declaration.get_child_type()} was started, but a different action {action.declaration.get_action_type()} {action.declaration.get_child_type()} was ended"
+                f"Action {self.current_frame.action.declaration.get_action_type_name()} {self.current_frame.action.declaration.get_child_type()} was started, but a different action {action.declaration.get_action_type_name()} {action.declaration.get_child_type()} was ended"
             )
         self.current_frame.report = report
         self.current_frame = self.current_frame.parent
