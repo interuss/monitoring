@@ -1,5 +1,7 @@
 import json
 import os
+import time
+from multiprocessing import Process
 
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -54,10 +56,12 @@ def generate_artifacts(
     redacted_report = ImplicitDict.parse(json.loads(json.dumps(report)), TestRunReport)
     redact_access_tokens(redacted_report)
 
-    if artifacts.raw_report:
-        # Raw report
+    def make_raw_report() -> None:
+        if not artifacts.raw_report:
+            return
         path = os.path.join(output_path, "report.json")
         logger.info(f"Writing raw report to {path}")
+        t0 = time.monotonic()
         raw_report = artifacts.raw_report
         report_to_write = redacted_report if _should_redact(raw_report) else report
         with open(path, "w") as f:
@@ -65,45 +69,60 @@ def generate_artifacts(
                 json.dump(report_to_write, f, indent=raw_report.indent)
             else:
                 json.dump(report_to_write, f)
+        logger.info(f"Wrote raw report in {time.monotonic() - t0:.1f}s")
 
-    if artifacts.report_html:
-        # HTML rendering of raw report
+    def make_html_report() -> None:
+        if not artifacts.report_html:
+            return
         path = os.path.join(output_path, "report.html")
         logger.info(f"Writing HTML report to {path}")
+        t0 = time.monotonic()
         report_to_write = (
             redacted_report if _should_redact(artifacts.report_html) else report
         )
         with open(path, "w") as f:
             f.write(make_report_html(report_to_write))
+        logger.info(f"Wrote HTML report in {time.monotonic() - t0:.1f}s")
 
-    if artifacts.templated_reports:
-        # Templated reports
+    def make_templated_reports() -> None:
+        if not artifacts.templated_reports:
+            return
         render_templates(
             output_path,
             artifacts.templated_reports,
             redacted_report,
         )
 
-    if artifacts.tested_requirements:
-        # Tested requirements view
+    def make_tested_requirements() -> None:
+        if not artifacts.tested_requirements:
+            return
         for tested_reqs_config in artifacts.tested_requirements:
             path = os.path.join(output_path, tested_reqs_config.report_name)
             logger.info(f"Writing tested requirements view to {path}")
+            t0 = time.monotonic()
             generate_tested_requirements(redacted_report, tested_reqs_config, path)
+            logger.info(
+                f"Wrote tested requirements view in {time.monotonic() - t0:.1f}s"
+            )
 
-    if artifacts.sequence_view:
-        # Sequence view
+    def make_sequence_view() -> None:
+        if not artifacts.sequence_view:
+            return
         path = os.path.join(output_path, "sequence")
         logger.info(f"Writing sequence view to {path}")
+        t0 = time.monotonic()
         report_to_write = (
             redacted_report if _should_redact(artifacts.sequence_view) else report
         )
         generate_sequence_view(report_to_write, artifacts.sequence_view, path)
+        logger.info(f"Wrote sequence view in {time.monotonic() - t0:.1f}s")
 
-    if artifacts.globally_expanded_report:
-        # Globally-expanded report
+    def make_globally_expanded_report() -> None:
+        if artifacts.globally_expanded_report is None:
+            return
         path = os.path.join(output_path, "globally_expanded")
         logger.info(f"Writing globally-expanded report to {path}")
+        t0 = time.monotonic()
         report_to_write = (
             redacted_report
             if _should_redact(artifacts.globally_expanded_report)
@@ -112,9 +131,28 @@ def generate_artifacts(
         generate_globally_expanded_report(
             report_to_write, artifacts.globally_expanded_report, path
         )
+        logger.info(f"Wrote globally-expanded report in {time.monotonic() - t0:.1f}s")
 
-    if artifacts.timing_report is not None:
-        # Timing report
+    def make_timing_report() -> None:
+        if artifacts.timing_report is None:
+            return
         path = os.path.join(output_path, "timing")
         logger.info(f"Writing timing report to {path}")
+        t0 = time.monotonic()
         generate_timing_report(redacted_report, artifacts.timing_report, path)
+        logger.info(f"Wrote timing report in {time.monotonic() - t0:.1f}s")
+
+    artifact_generators = [
+        make_raw_report,
+        make_html_report,
+        make_templated_reports,
+        make_tested_requirements,
+        make_sequence_view,
+        make_globally_expanded_report,
+        make_timing_report,
+    ]
+    generators = [Process(target=g, daemon=True) for g in artifact_generators]
+    for p in generators:
+        p.start()
+    for p in generators:
+        p.join()

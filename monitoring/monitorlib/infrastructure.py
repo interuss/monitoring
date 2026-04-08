@@ -1,13 +1,18 @@
+from __future__ import annotations
+
 import asyncio
 import datetime
 import functools
+import threading
 import time
 import urllib.parse
+import weakref
 from enum import Enum
 
 import jwt
 import requests
 from aiohttp import ClientSession
+from loguru import logger
 
 ALL_SCOPES = [
     "dss.write.identification_service_areas",
@@ -21,6 +26,7 @@ ALL_SCOPES = [
 EPOCH = datetime.datetime.fromtimestamp(0, datetime.UTC)
 TOKEN_REFRESH_MARGIN = datetime.timedelta(seconds=15)
 CLIENT_TIMEOUT = 10  # seconds
+SOCKET_KEEP_ALIVE_LIMIT = 57  # seconds.
 
 AUTHORIZATION_DT = "authorization_dt"
 """This attribute may be added to a PreparedRequest indicating the timedelta required to obtain authorization"""
@@ -91,7 +97,19 @@ class UTMClientSession(requests.Session):
     If the URL starts with '/', then automatically prefix the URL with the
     `prefix_url` specified on construction (this is usually the base URL of the
     DSS).
+
+    When possible, a UTMClientSession should be reused rather than creating a
+    new one because an excessive number of UTMClientSessions can exhaust the
+    number of connections allowed by the system (see #1407).
     """
+
+    _next_session_id: int = 1
+    _session_id: int
+    _session_id_lock = threading.Lock()
+
+    _closure_timer: threading.Timer | None = None
+    _closure_lock: threading.Lock
+    _last_used: float | None = None
 
     def __init__(
         self,
@@ -101,10 +119,64 @@ class UTMClientSession(requests.Session):
     ):
         super().__init__()
 
+        with UTMClientSession._session_id_lock:
+            self._session_id = UTMClientSession._next_session_id
+            UTMClientSession._next_session_id += 1
+
         self._prefix_url = prefix_url[0:-1] if prefix_url[-1] == "/" else prefix_url
         self.auth_adapter = auth_adapter
         self.default_scopes: list[str] | None = None
         self.timeout_seconds = timeout_seconds or CLIENT_TIMEOUT
+        self._closure_lock = threading.Lock()
+
+        UTMClientSession._start_closure_timer(weakref.ref(self))
+
+    @staticmethod
+    def _start_closure_timer(wref: weakref.ReferenceType[UTMClientSession]) -> None:
+        def wrapper():
+            weak_self_final = wref()
+            if weak_self_final is not None:
+                try:
+                    weak_self_final.close_if_idle()
+                finally:
+                    UTMClientSession._start_closure_timer(wref)
+
+        weak_self_initial = wref()
+        if weak_self_initial:
+            weak_self_initial._closure_timer = threading.Timer(
+                weak_self_initial.seconds_until_idle(), wrapper
+            )
+            weak_self_initial._closure_timer.daemon = True
+            weak_self_initial._closure_timer.start()
+
+    def close_if_idle(self) -> None:
+        with self._closure_lock:
+            if (
+                self._last_used
+                and time.monotonic() - self._last_used > SOCKET_KEEP_ALIVE_LIMIT
+            ):
+                logger.debug(
+                    "Closing idle UTMClientSession {} to {} with default scopes {} last used {} (now {})",
+                    self._session_id,
+                    self._prefix_url,
+                    ", ".join(self.default_scopes) if self.default_scopes else "<none>",
+                    self._last_used,
+                    time.monotonic(),
+                )
+                self.close()
+                self._last_used = None
+
+    def seconds_until_idle(self) -> float:
+        if self._last_used is None:
+            return SOCKET_KEEP_ALIVE_LIMIT
+        else:
+            return max(
+                0.0, SOCKET_KEEP_ALIVE_LIMIT - (time.monotonic() - self._last_used)
+            )
+
+    def __del__(self):
+        if timer := self._closure_timer:
+            timer.cancel()
 
     # Overrides method on requests.Session
     def prepare_request(self, request, **kwargs):
@@ -151,7 +223,10 @@ class UTMClientSession(requests.Session):
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(kwargs)
 
-        return super().request(method, url, *args, **kwargs)
+        with self._closure_lock:
+            result = super().request(method, url, *args, **kwargs)
+            self._last_used = time.monotonic()
+            return result
 
     def get_prefix_url(self):
         return self._prefix_url

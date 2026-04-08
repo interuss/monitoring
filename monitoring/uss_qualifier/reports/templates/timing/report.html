@@ -178,7 +178,7 @@
                     {% if server in row.times_per_server %}
                         {% set server_time = sum(row.times_per_server[server]) / len(row.times_per_server[server]) %}
                         <td style="background-color:#{{ color_of(server_time.total_seconds() / max_seconds) }};">
-                            {{ format_time(server_time) }}
+                            {{ format_time(server_time) }}<br>n={{ len(row.times_per_server[server]) }}
                         </td>
                     {% else %}
                         <td></td>
