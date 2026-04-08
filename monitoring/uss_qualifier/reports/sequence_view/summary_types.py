@@ -23,13 +23,6 @@ class NoteEvent(ImplicitDict):
     timestamp: datetime
 
 
-class EventType(str, Enum):
-    PassedCheck = "PassedCheck"
-    FailedCheck = "FailedCheck"
-    Query = "Query"
-    Note = "Note"
-
-
 class Event(ImplicitDict):
     event_index: int = 0
     passed_check: Optional[PassedCheck] = None
@@ -37,19 +30,6 @@ class Event(ImplicitDict):
     query_events: Optional[list[Event | str]] = None
     query: Optional[Query] = None
     note: Optional[NoteEvent] = None
-
-    @property
-    def type(self) -> EventType:
-        if self.passed_check:
-            return EventType.PassedCheck
-        elif self.failed_check:
-            return EventType.FailedCheck
-        elif self.query:
-            return EventType.Query
-        elif self.note:
-            return EventType.Note
-        else:
-            raise ValueError("Invalid Event type")
 
     @property
     def timestamp(self) -> datetime:
@@ -66,7 +46,7 @@ class Event(ImplicitDict):
 
     def get_query_links(self) -> str:
         links = []
-        for e in self.query_events:
+        for e in self.query_events or []:
             if isinstance(e, str):
                 links.append(e)
             else:
@@ -94,23 +74,9 @@ class TestedCase(ImplicitDict):
         return sum(s.rows for s in self.steps)
 
 
-class EpochType(str, Enum):
-    Case = "Case"
-    Events = "Events"
-
-
 class Epoch(ImplicitDict):
     case: Optional[TestedCase] = None
     events: Optional[list[Event]] = None
-
-    @property
-    def type(self) -> EpochType:
-        if self.case:
-            return EpochType.Case
-        elif self.events:
-            return EpochType.Events
-        else:
-            raise ValueError("Invalid Epoch did not specify case or events")
 
     @property
     def rows(self) -> int:

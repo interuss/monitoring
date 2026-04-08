@@ -41,10 +41,13 @@ from uas_standards.astm.f3548.v21.api import (
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
-from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.fetch import Query, QueryError, QueryType, query_and_describe
 from monitoring.monitorlib.fetch import scd as fetch
 from monitoring.monitorlib.fetch.scd import FetchedSubscription, FetchedSubscriptions
+from monitoring.monitorlib.infrastructure import (
+    UTMClientSession,
+    utm_client_session_factory,
+)
 from monitoring.monitorlib.inspection import calling_function_name, fullname
 from monitoring.monitorlib.mutate import scd as mutate
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
@@ -65,6 +68,9 @@ class DSSInstanceSpecification(ImplicitDict):
     supports_ovn_request: Optional[bool]
     """Whether this DSS instance supports the optional extension not part of the original F3548 standard API allowing a USS to request a specific OVN when creating or updating an operational intent."""
 
+    timeout_seconds: Optional[float]
+    """If specified, number of seconds to allow before timing out requests to this DSS instance."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         try:
@@ -77,7 +83,7 @@ class DSSInstance:
     participant_id: str
     user_participant_ids: list[str]
     base_url: str
-    client: infrastructure.UTMClientSession
+    client: UTMClientSession
     _scopes_authorized: set[str]
 
     def __init__(
@@ -85,15 +91,13 @@ class DSSInstance:
         participant_id: str,
         user_participant_ids: list[str],
         base_url: str,
-        auth_adapter: infrastructure.AuthAdapter,
+        client: UTMClientSession,
         scopes_authorized: list[str],
     ):
         self.participant_id = participant_id
         self.user_participant_ids = user_participant_ids
         self.base_url = base_url
-        self.client = infrastructure.utm_client_session_factory.get_session(
-            base_url, auth_adapter
-        )
+        self.client = client
         self._scopes_authorized = set(
             s.value if isinstance(s, Enum) else s for s in scopes_authorized
         )
@@ -128,7 +132,11 @@ class DSSInstance:
             participant_id=self.participant_id,
             user_participant_ids=self.user_participant_ids,
             base_url=self.base_url,
-            auth_adapter=auth_adapter.adapter,
+            client=utm_client_session_factory.get_session(
+                self.base_url,
+                auth_adapter=auth_adapter.adapter,
+                timeout_seconds=self.client.timeout_seconds,
+            ),
             scopes_authorized=list(scopes_required),
         )
 
@@ -696,6 +704,7 @@ class DSSInstance:
 class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     _specification: DSSInstanceSpecification
     _auth_adapter: AuthAdapterResource
+    _client: UTMClientSession
 
     def __init__(
         self,
@@ -706,6 +715,14 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
         super().__init__(specification, resource_origin)
         self._specification = specification
         self._auth_adapter = auth_adapter
+        timeout_seconds = (
+            specification.timeout_seconds
+            if "timeout_seconds" in specification
+            else None
+        )
+        self._client = utm_client_session_factory.get_session(
+            self._specification.base_url, auth_adapter.adapter, timeout_seconds
+        )
 
     def can_use_scope(self, scope: str) -> bool:
         return scope in self._auth_adapter.scopes
@@ -779,7 +796,7 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
                 else []
             ),
             self._specification.base_url,
-            self._auth_adapter.adapter,
+            self._client,
             list(scopes_required),
         )
 

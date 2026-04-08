@@ -356,11 +356,14 @@ class TestScenarioReport(ImplicitDict):
         queries = list()
         for case in self.cases:
             for step in case.steps:
-                if step.has_field_with_value("queries"):
+                if "queries" in step and step.queries:
                     queries.extend(step.queries)
 
-        if self.has_field_with_value("cleanup") and self.cleanup.has_field_with_value(
-            "queries"
+        if (
+            "cleanup" in self
+            and self.cleanup
+            and "queries" in self.cleanup
+            and self.cleanup.queries
         ):
             queries.extend(self.cleanup.queries)
 
@@ -471,38 +474,11 @@ class TestSuiteActionReport(ImplicitDict):
     skipped_action: Optional[SkippedActionReport]
     """If this action was skipped, this field will hold its report"""
 
-    def get_applicable_report(self) -> tuple[bool, bool, bool]:
-        """Determine which type of report is applicable for this action.
-
-        Note that skipped_action is applicable if none of the other return values are true.
-
-        Returns:
-            * Whether test_suite is applicable
-            * Whether test_scenario is applicable
-            * Whether action_generator is applicable
-        """
-        test_suite = "test_suite" in self and self.test_suite is not None
-        test_scenario = "test_scenario" in self and self.test_scenario is not None
-        action_generator = (
-            "action_generator" in self and self.action_generator is not None
+    @property
+    def invalid_type_error(self):
+        return ValueError(
+            "Invalid TestSuiteActionReport: test_scenario, test_suite, action_generator or skipped_action must be specified"
         )
-        skipped_action = "skipped_action" in self and self.skipped_action is not None
-        if (
-            sum(
-                1 if case else 0
-                for case in [
-                    test_suite,
-                    test_scenario,
-                    action_generator,
-                    skipped_action,
-                ]
-            )
-            != 1
-        ):
-            raise ValueError(
-                "Exactly one of `test_suite`, `test_scenario`, `action_generator`, or `skipped_action` must be populated"
-            )
-        return test_suite, test_scenario, action_generator
 
     def _conditional(
         self,
@@ -511,28 +487,25 @@ class TestSuiteActionReport(ImplicitDict):
         action_generator_func: Callable[[ActionGeneratorReport], Any] | None = None,
         skipped_action_func: Callable[[SkippedActionReport], Any] | None = None,
     ) -> Any:
-        test_suite, test_scenario, action_generator = self.get_applicable_report()
-        if test_suite:
-            assert self.test_suite is not None
+        if "test_suite" in self and self.test_suite:
             return test_suite_func(self.test_suite)
-        if test_scenario:
-            assert self.test_scenario is not None
+        elif "test_scenario" in self and self.test_scenario:
             if test_scenario_func is not None:
                 return test_scenario_func(self.test_scenario)
             else:
                 return test_suite_func(self.test_scenario)
-        if action_generator:
-            assert self.action_generator is not None
+        elif "action_generator" in self and self.action_generator:
             if action_generator_func is not None:
                 return action_generator_func(self.action_generator)
             else:
                 return test_suite_func(self.action_generator)
-
-        assert self.skipped_action is not None
-        if skipped_action_func is not None:
-            return skipped_action_func(self.skipped_action)
+        elif "skipped_action" in self and self.skipped_action:
+            if skipped_action_func is not None:
+                return skipped_action_func(self.skipped_action)
+            else:
+                return test_suite_func(self.skipped_action)
         else:
-            return test_suite_func(self.skipped_action)
+            raise self.invalid_type_error
 
     def successful(self) -> bool:
         return self._conditional(lambda report: report.successful)
@@ -546,20 +519,16 @@ class TestSuiteActionReport(ImplicitDict):
     def query_passed_checks(
         self, participant_id: str | None = None
     ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
-        test_suite, test_scenario, action_generator = self.get_applicable_report()
-        if test_suite:
+        if "test_suite" in self and self.test_suite:
             report = self.test_suite
             prefix = "test_suite"
-        elif test_scenario:
+        elif "test_scenario" in self and self.test_scenario:
             report = self.test_scenario
             prefix = "test_scenario"
-        elif action_generator:
+        elif "action_generator" in self and self.action_generator:
             report = self.action_generator
             prefix = "action_generator"
         else:
-            return
-
-        if report is None:
             return
 
         for path, pc in report.query_passed_checks(participant_id):
@@ -568,20 +537,16 @@ class TestSuiteActionReport(ImplicitDict):
     def query_failed_checks(
         self, participant_id: str | None = None
     ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
-        test_suite, test_scenario, action_generator = self.get_applicable_report()
-        if test_suite:
+        if "test_suite" in self and self.test_suite:
             report = self.test_suite
             prefix = "test_suite"
-        elif test_scenario:
+        elif "test_scenario" in self and self.test_scenario:
             report = self.test_scenario
             prefix = "test_scenario"
-        elif action_generator:
+        elif "action_generator" in self and self.action_generator:
             report = self.action_generator
             prefix = "action_generator"
         else:
-            return
-
-        if report is None:
             return
 
         for path, fc in report.query_failed_checks(participant_id):
@@ -606,6 +571,18 @@ class TestSuiteActionReport(ImplicitDict):
     @property
     def latest_timestamp(self) -> datetime | None:
         return self._conditional(lambda report: report.latest_time)
+
+    def get_action_type_name(self):
+        if "test_suite" in self and self.test_suite:
+            return "test_suite"
+        elif "test_scenario" in self and self.test_scenario:
+            return "test_scenario"
+        elif "action_generator" in self and self.action_generator:
+            return "action_generator"
+        elif "skipped_action" in self and self.skipped_action:
+            return "skipped_action"
+        else:
+            return "unknown"
 
 
 class AllConditionsEvaluationReport(ImplicitDict):

@@ -44,7 +44,6 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     get_scenario_type_by_name,
 )
 from monitoring.uss_qualifier.suites.definitions import (
-    ActionType,
     TestSuiteActionDeclaration,
     TestSuiteDefinition,
 )
@@ -422,12 +421,11 @@ def _populate_breakdown_with_action_declaration(
     acceptable_findings: list[FullyQualifiedCheck],
     req_set: set[RequirementID] | None,
 ) -> None:
-    action_type = action.get_action_type()
-    if action_type == ActionType.TestScenario:
+    if "test_scenario" in action and action.test_scenario:
         _populate_breakdown_with_scenario(
             breakdown, action.test_scenario.scenario_type, acceptable_findings, req_set
         )
-    elif action_type == ActionType.TestSuite:
+    elif "test_suite" in action and action.test_suite:
         if "suite_type" in action.test_suite and action.test_suite.suite_type:
             suite_def: TestSuiteDefinition = ImplicitDict.parse(
                 load_dict_with_references(action.test_suite.suite_type),
@@ -447,7 +445,7 @@ def _populate_breakdown_with_action_declaration(
                 )
         else:
             raise ValueError("Test suite action missing suite type or definition")
-    elif action_type == ActionType.ActionGenerator:
+    elif "action_generator" in action and action.action_generator:
         potential_actions = list_potential_actions_for_action_generator_definition(
             action.action_generator
         )
@@ -456,7 +454,7 @@ def _populate_breakdown_with_action_declaration(
                 breakdown, a, acceptable_findings, req_set
             )
     else:
-        raise NotImplementedError(f"Unsupported test suite action type: {action_type}")
+        raise action.invalid_type_error
 
 
 def _populate_breakdown_with_scenario(
@@ -519,5 +517,5 @@ def _populate_breakdown_with_scenario(
                             ),
                         )
                         tested_step.checks.append(tested_check)
-                    if not tested_check.url:
+                    if not tested_check.url and check.url:
                         tested_check.url = check.url
