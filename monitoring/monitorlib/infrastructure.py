@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import functools
+import time
 import urllib.parse
 from enum import Enum
 
@@ -20,6 +21,12 @@ ALL_SCOPES = [
 EPOCH = datetime.datetime.fromtimestamp(0, datetime.UTC)
 TOKEN_REFRESH_MARGIN = datetime.timedelta(seconds=15)
 CLIENT_TIMEOUT = 10  # seconds
+
+AUTHORIZATION_DT = "authorization_dt"
+"""This attribute may be added to a PreparedRequest indicating the timedelta required to obtain authorization"""
+
+MIN_NONTRIVIAL_AUTH_SECONDS = 0.0005
+"""Only annotate authorization timespans that exceed this number of seconds."""
 
 
 AuthSpec = str
@@ -123,7 +130,15 @@ class UTMClientSession(requests.Session):
                 prepared_request: requests.PreparedRequest,
             ) -> requests.PreparedRequest:
                 if scopes and self.auth_adapter:
+                    t0 = time.monotonic()
                     self.auth_adapter.add_headers(prepared_request, scopes)
+                    dt_s = time.monotonic() - t0
+                    if dt_s > MIN_NONTRIVIAL_AUTH_SECONDS:
+                        setattr(
+                            prepared_request,
+                            AUTHORIZATION_DT,
+                            datetime.timedelta(seconds=dt_s),
+                        )
                 return prepared_request
 
             kwargs["auth"] = auth
@@ -132,6 +147,7 @@ class UTMClientSession(requests.Session):
         return kwargs
 
     def request(self, method, url, *args, **kwargs):
+        self.last_auth_time = None
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(kwargs)
 

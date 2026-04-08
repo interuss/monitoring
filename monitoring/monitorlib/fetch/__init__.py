@@ -7,18 +7,23 @@ import uuid
 from dataclasses import dataclass
 from enum import Enum
 from http.client import RemoteDisconnected
-from typing import Self, TypeVar
+from typing import Optional, Self, TypeVar
 from urllib.parse import urlparse
 
 import flask
 import jwt
 import requests
 import urllib3
-from implicitdict import ImplicitDict, Optional, StringBasedDateTime
+from implicitdict import (
+    ImplicitDict,
+    StringBasedDateTime,
+    StringBasedTimeDelta,
+)
 from loguru import logger
 
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.errors import stacktrace_string
+from monitoring.monitorlib.infrastructure import AUTHORIZATION_DT
 from monitoring.monitorlib.rid import RIDVersion
 
 
@@ -53,6 +58,9 @@ class RequestDescription(ImplicitDict):
 
     initiated_at: Optional[StringBasedDateTime]
     received_at: Optional[StringBasedDateTime]
+
+    auth_dt: Optional[StringBasedTimeDelta]
+    """Amount of time required to obtain authorization before performing the primary query (de minimus or unknown by default)."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -124,6 +132,11 @@ def describe_request(
         "initiated_at": StringBasedDateTime(initiated_at),
         "headers": headers,
     }
+    authorization_dt: datetime.timedelta | None = getattr(req, AUTHORIZATION_DT, None)
+    if authorization_dt:
+        kwargs["auth_dt"] = StringBasedTimeDelta(
+            f"{authorization_dt.total_seconds():.4g}s"
+        )
     body = req.body.decode("utf-8") if req.body else None
     try:
         if body:
