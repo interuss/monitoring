@@ -7,6 +7,7 @@ import threading
 import time
 import urllib.parse
 import weakref
+from dataclasses import dataclass
 from enum import Enum
 
 import jwt
@@ -31,12 +32,15 @@ SOCKET_KEEP_ALIVE_LIMIT = 57  # seconds.
 AUTHORIZATION_DT = "authorization_dt"
 """This attribute may be added to a PreparedRequest indicating the timedelta required to obtain authorization"""
 
-MIN_NONTRIVIAL_AUTH_SECONDS = 0.0005
-"""Only annotate authorization timespans that exceed this number of seconds."""
-
 
 AuthSpec = str
 """Specification for means by which to obtain access tokens."""
+
+
+@dataclass
+class AdditionalHeaders:
+    headers: dict[str, str]
+    token_issueance_seconds: float | None = None
 
 
 class AuthAdapter:
@@ -50,33 +54,48 @@ class AuthAdapter:
 
         raise NotImplementedError()
 
-    def get_headers(self, url: str, scopes: list[str] | None = None) -> dict[str, str]:
+    def get_headers(
+        self, url: str, scopes: list[str] | None = None
+    ) -> AdditionalHeaders:
         if scopes is None:
             scopes = ALL_SCOPES
         scopes = [s.value if isinstance(s, Enum) else s for s in scopes]
         intended_audience = urllib.parse.urlparse(url).hostname
 
         if not intended_audience:
-            return {}
+            return AdditionalHeaders(headers={})
 
         scope_string = " ".join(scopes)
         if intended_audience not in self._tokens:
             self._tokens[intended_audience] = {}
         if scope_string not in self._tokens[intended_audience]:
+            t0 = time.monotonic()
             token = self.issue_token(intended_audience, scopes)
+            dt_s = time.monotonic() - t0
         else:
             token = self._tokens[intended_audience][scope_string]
+            dt_s = None
         payload = jwt.decode(token, options={"verify_signature": False})
         expires = EPOCH + datetime.timedelta(seconds=payload["exp"])
         if datetime.datetime.now(datetime.UTC) > expires - TOKEN_REFRESH_MARGIN:
+            t0 = time.monotonic()
             token = self.issue_token(intended_audience, scopes)
+            dt_s = (dt_s or 0) + (time.monotonic() - t0)
         self._tokens[intended_audience][scope_string] = token
-        return {"Authorization": "Bearer " + token}
+        return AdditionalHeaders(
+            headers={"Authorization": "Bearer " + token}, token_issueance_seconds=dt_s
+        )
 
-    def add_headers(self, request: requests.PreparedRequest, scopes: list[str]):
+    def add_headers(
+        self, request: requests.PreparedRequest, scopes: list[str]
+    ) -> AdditionalHeaders:
         if request.url:
-            for k, v in self.get_headers(request.url, scopes).items():
+            additional_headers = self.get_headers(request.url, scopes)
+            for k, v in additional_headers.headers.items():
                 request.headers[k] = v
+            return additional_headers
+        else:
+            return AdditionalHeaders(headers={})
 
     def get_sub(self) -> str | None:
         """Retrieve `sub` claim from one of the existing tokens"""
@@ -186,6 +205,21 @@ class UTMClientSession(requests.Session):
 
         return super().prepare_request(request, **kwargs)
 
+    def add_auth(
+        self, prepared_request: requests.PreparedRequest, scopes: list[str] | None
+    ) -> requests.PreparedRequest:
+        if scopes and self.auth_adapter:
+            additional_headers = self.auth_adapter.add_headers(prepared_request, scopes)
+            if additional_headers.token_issueance_seconds:
+                setattr(
+                    prepared_request,
+                    AUTHORIZATION_DT,
+                    datetime.timedelta(
+                        seconds=additional_headers.token_issueance_seconds
+                    ),
+                )
+        return prepared_request
+
     def adjust_request_kwargs(self, kwargs):
         if self.auth_adapter:
             scopes = None
@@ -198,28 +232,12 @@ class UTMClientSession(requests.Session):
             if scopes is None:
                 scopes = self.default_scopes
 
-            def auth(
-                prepared_request: requests.PreparedRequest,
-            ) -> requests.PreparedRequest:
-                if scopes and self.auth_adapter:
-                    t0 = time.monotonic()
-                    self.auth_adapter.add_headers(prepared_request, scopes)
-                    dt_s = time.monotonic() - t0
-                    if dt_s > MIN_NONTRIVIAL_AUTH_SECONDS:
-                        setattr(
-                            prepared_request,
-                            AUTHORIZATION_DT,
-                            datetime.timedelta(seconds=dt_s),
-                        )
-                return prepared_request
-
-            kwargs["auth"] = auth
+            kwargs["auth"] = lambda req: self.add_auth(req, scopes)
         if "timeout" not in kwargs:
             kwargs["timeout"] = self.timeout_seconds
         return kwargs
 
     def request(self, method, url, *args, **kwargs):
-        self.last_auth_time = None
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(kwargs)
 
@@ -283,10 +301,8 @@ class AsyncUTMTestSession:
                 raise ValueError(
                     "All tests must specify auth scope for all session requests.  Either specify as an argument for each individual HTTP call, or decorate the test with @default_scope."
                 )
-            headers = {}
-            for k, v in self.auth_adapter.get_headers(url, scopes).items():
-                headers[k] = v
-            kwargs["headers"] = headers
+            additional_headers = self.auth_adapter.get_headers(url, scopes)
+            kwargs["headers"] = additional_headers.headers
             if method == "PUT" and kwargs.get("data"):
                 kwargs["json"] = kwargs["data"]
                 del kwargs["data"]
