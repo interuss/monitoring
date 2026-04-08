@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib import infrastructure
+from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.reports.report import ParticipantID
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
@@ -40,12 +41,12 @@ class DSSInstance:
         participant_id: ParticipantID,
         base_url: str,
         rid_version: RIDVersion,
-        auth_adapter: infrastructure.AuthAdapter,
+        client: UTMClientSession,
     ):
         self.participant_id = participant_id
         self.base_url = base_url
         self.rid_version = rid_version
-        self.client = infrastructure.UTMClientSession(base_url, auth_adapter)
+        self.client = client
 
     def is_same_as(self, other: DSSInstance) -> bool:
         return (
@@ -81,7 +82,9 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
             specification.participant_id,
             specification.base_url,
             specification.rid_version,
-            auth_adapter.adapter,
+            infrastructure.UTMClientSession(
+                specification.base_url, auth_adapter.adapter
+            ),
         )
 
     @classmethod
