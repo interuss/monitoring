@@ -8,7 +8,9 @@ from s2sphere import LatLng, LatLngRect
 from monitoring.monitorlib import auth, geo
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.fetch import rid
-from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    utm_client_session_factory,
+)
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
@@ -270,7 +272,7 @@ class Misbehavior(GenericTestScenario):
             participant_id = mapping.injected_flight.uss_participant_id
             flights_url = mapping.observed_flight.query.flights_url
 
-            invalid_session = UTMClientSession(flights_url, auth)
+            invalid_session = utm_client_session_factory.get_session(flights_url, auth)
 
             self.record_note(
                 f"{participant_id}/{injection_id}/missing_credentials_queries",

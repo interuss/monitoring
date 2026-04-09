@@ -48,12 +48,12 @@ class FlightPlannerConfiguration(ImplicitDict):
         self, auth_adapter: infrastructure.AuthAdapter
     ) -> FlightPlannerClient:
         if "scd_injection_base_url" in self and self.scd_injection_base_url:
-            session = infrastructure.UTMClientSession(
+            session = infrastructure.utm_client_session_factory.get_session(
                 self.scd_injection_base_url, auth_adapter, self.timeout_seconds
             )
             return SCDFlightPlannerClient(session, self.participant_id)
         elif "v1_base_url" in self and self.v1_base_url:
-            session = infrastructure.UTMClientSession(
+            session = infrastructure.utm_client_session_factory.get_session(
                 self.v1_base_url, auth_adapter, self.timeout_seconds
             )
             return V1FlightPlannerClient(session, self.participant_id)
