@@ -206,6 +206,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 "GET",
                 url,
             )
+            # TODO: Do not rely on a prepared request that is not actually used in order to create the Query RequestDescription; instead build it from the request actually made
             prep = self._dss.client.prepare_request(r)
             t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
@@ -242,6 +243,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 url,
                 json=payload,
             )
+            # TODO: Do not rely on a prepared request that is not actually used in order to create the Query RequestDescription; instead build it from the request actually made
             prep = self._dss.client.prepare_request(r)
             t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
@@ -272,6 +274,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 "DELETE",
                 url,
             )
+            # TODO: Do not rely on a prepared request that is not actually used in order to create the Query RequestDescription; instead build it from the request actually made
             prep = self._dss.client.prepare_request(r)
             t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
