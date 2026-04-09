@@ -39,7 +39,9 @@ class Report(TestScenario):
         def gen_record() -> ExchangeRecord:
             op = OPERATIONS[OperationID.GetOperationalIntentReference]
             query = query_and_describe(
-                infrastructure.UTMClientSession(make_fake_url("dss")),
+                infrastructure.utm_client_session_factory.get_session(
+                    make_fake_url("dss")
+                ),
                 op.verb,
                 op.path.format(entityid="dummy_op_intent_id"),
                 QueryType.F3548v21DSSGetOperationalIntentReference,

@@ -82,7 +82,7 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
             specification.participant_id,
             specification.base_url,
             specification.rid_version,
-            infrastructure.UTMClientSession(
+            infrastructure.utm_client_session_factory.get_session(
                 specification.base_url, auth_adapter.adapter
             ),
         )

@@ -44,7 +44,10 @@ from uas_standards.astm.f3548.v21.constants import Scope
 from monitoring.monitorlib.fetch import Query, QueryError, QueryType, query_and_describe
 from monitoring.monitorlib.fetch import scd as fetch
 from monitoring.monitorlib.fetch.scd import FetchedSubscription, FetchedSubscriptions
-from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    UTMClientSession,
+    utm_client_session_factory,
+)
 from monitoring.monitorlib.inspection import calling_function_name, fullname
 from monitoring.monitorlib.mutate import scd as mutate
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
@@ -129,7 +132,7 @@ class DSSInstance:
             participant_id=self.participant_id,
             user_participant_ids=self.user_participant_ids,
             base_url=self.base_url,
-            client=UTMClientSession(
+            client=utm_client_session_factory.get_session(
                 self.base_url,
                 auth_adapter=auth_adapter.adapter,
                 timeout_seconds=self.client.timeout_seconds,
@@ -717,7 +720,7 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
             if "timeout_seconds" in specification
             else None
         )
-        self._client = UTMClientSession(
+        self._client = utm_client_session_factory.get_session(
             self._specification.base_url, auth_adapter.adapter, timeout_seconds
         )
 

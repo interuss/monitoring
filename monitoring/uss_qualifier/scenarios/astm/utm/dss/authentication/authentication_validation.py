@@ -3,7 +3,9 @@ from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.auth import InvalidTokenSignatureAuth
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    utm_client_session_factory,
+)
 from monitoring.monitorlib.inspection import fullname
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -175,12 +177,12 @@ class AuthenticationValidation(TestScenario):
         )
 
         # Session that won't provide a token at all
-        self._no_auth_session = UTMClientSession(
+        self._no_auth_session = utm_client_session_factory.get_session(
             self._scd_dss.base_url, auth_adapter=None
         )
 
         # Session that should provide a well-formed token with a wrong signature
-        self._invalid_token_session = UTMClientSession(
+        self._invalid_token_session = utm_client_session_factory.get_session(
             self._scd_dss.base_url, auth_adapter=InvalidTokenSignatureAuth()
         )
 

@@ -48,12 +48,14 @@ class TokenValidation(GenericTestScenario):
 
         # correctly formed and signed using an unrecognized private key
         # (should cause requests to be rejected)
-        self._unsigned_token_session = infrastructure.UTMClientSession(
-            self._dss.base_url, InvalidTokenSignatureAuth()
+        self._unsigned_token_session = (
+            infrastructure.utm_client_session_factory.get_session(
+                self._dss.base_url, InvalidTokenSignatureAuth()
+            )
         )
         # Session that won't provide a token at all
         # (should cause requests to be rejected)
-        self._no_token_session = infrastructure.UTMClientSession(
+        self._no_token_session = infrastructure.utm_client_session_factory.get_session(
             self._dss.base_url, None
         )
 

@@ -14,7 +14,10 @@ from monitoring.monitorlib.clients.mock_uss.locality import (
     PutLocalityRequest,
 )
 from monitoring.monitorlib.fetch import QueryError, QueryType
-from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    AuthAdapter,
+    utm_client_session_factory,
+)
 from monitoring.monitorlib.locality import LocalityCode
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
@@ -39,11 +42,16 @@ class MockUSSClient:
         timeout_seconds: float | None = None,
     ):
         self.base_url = base_url
-        self.session = UTMClientSession(base_url, auth_adapter, timeout_seconds)
+        self.session = utm_client_session_factory.get_session(
+            base_url, auth_adapter, timeout_seconds
+        )
         self.participant_id = participant_id
         v1_base_url = base_url + "/flight_planning/v1"
         self.flight_planner = V1FlightPlannerClient(
-            UTMClientSession(v1_base_url, auth_adapter, timeout_seconds), participant_id
+            utm_client_session_factory.get_session(
+                v1_base_url, auth_adapter, timeout_seconds
+            ),
+            participant_id,
         )
 
     def get_status(self) -> fetch.Query:

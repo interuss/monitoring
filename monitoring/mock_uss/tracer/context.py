@@ -10,7 +10,12 @@ from monitoring.mock_uss.tracer.tracerlog import DummyLogger, Logger
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.auth import make_auth_adapter
 from monitoring.monitorlib.fetch import scd
-from monitoring.monitorlib.infrastructure import AuthAdapter, AuthSpec, UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    AuthAdapter,
+    AuthSpec,
+    UTMClientSession,
+    utm_client_session_factory,
+)
 from monitoring.monitorlib.rid import RIDVersion
 
 scd_cache: dict[ObservationAreaID, dict[str, scd.FetchedEntity]] = {}
@@ -84,4 +89,4 @@ def resolve_scd_dss_base_url(dss_base_url: str | None) -> str:
 def get_client(auth_spec: AuthSpec, dss_base_url: str) -> UTMClientSession:
     if auth_spec not in _adapters:
         _adapters[auth_spec] = make_auth_adapter(auth_spec)
-    return UTMClientSession(dss_base_url, _adapters[auth_spec])
+    return utm_client_session_factory.get_session(dss_base_url, _adapters[auth_spec])
