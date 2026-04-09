@@ -40,7 +40,7 @@ AuthSpec = str
 @dataclass
 class AdditionalHeaders:
     headers: dict[str, str]
-    token_issueance_seconds: float | None = None
+    token_issuance_seconds: float | None = None
 
 
 class AuthAdapter:
@@ -83,7 +83,7 @@ class AuthAdapter:
             dt_s = (dt_s or 0) + (time.monotonic() - t0)
         self._tokens[intended_audience][scope_string] = token
         return AdditionalHeaders(
-            headers={"Authorization": "Bearer " + token}, token_issueance_seconds=dt_s
+            headers={"Authorization": "Bearer " + token}, token_issuance_seconds=dt_s
         )
 
     def add_headers(
@@ -212,12 +212,12 @@ class UTMClientSession(requests.Session):
     ) -> requests.PreparedRequest:
         if scopes and self.auth_adapter:
             additional_headers = self.auth_adapter.add_headers(prepared_request, scopes)
-            if additional_headers.token_issueance_seconds:
+            if additional_headers.token_issuance_seconds:
                 setattr(
                     prepared_request,
                     AUTHORIZATION_DT,
                     datetime.timedelta(
-                        seconds=additional_headers.token_issueance_seconds
+                        seconds=additional_headers.token_issuance_seconds
                     ),
                 )
         return prepared_request
