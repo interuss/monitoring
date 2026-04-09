@@ -6,7 +6,7 @@ This test scenario obtains and validates information about any InterUSS ASTM F35
 
 ### dss_instances
 
-A [`DSSInstancesResource`](../../resources/astm/f3548/v21/dss.py) containing all instances of interest within a single pool.  Not all instances must be InterUSS implementations, but only instances which are sufficiently-recent InterUSS implementations are likely to produce useful information and validation.
+A [`DSSInstancesResource`](../../../../resources/astm/f3548/v21/dss.py) containing all instances of interest within a single pool.  Not all instances must be InterUSS implementations, but only instances which are sufficiently-recent InterUSS implementations are likely to produce useful information and validation.
 
 The auth adapter for each DSS instance must support uss_qualifier's acquisition of access tokens with the `interuss.pool_status.read` scope.
 
