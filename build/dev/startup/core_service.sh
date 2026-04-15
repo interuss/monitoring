@@ -6,14 +6,15 @@ set -e
 # started by docker-compose.yaml, not on a local system.
 
 DEBUG_ON=${1:-0}
+JWT_AUDIENCES="localhost,host.docker.internal,${JWT_AUDIENCES}"
 
-# POSIX compliant test to check if with-yugabyte profile is enabled.
-if [ "${COMPOSE_PROFILES#*"with-yugabyte"}" != "${COMPOSE_PROFILES}" ]; then
+# POSIX compliant test to check if ybdb profile is enabled.
+if [ "${COMPOSE_PROFILES#*"ybdb"}" != "${COMPOSE_PROFILES}" ]; then
   echo "Using Yugabyte"
-  DATASTORE_CONNECTION="-datastore_host ybdb -datastore_user yugabyte --datastore_port 5433"
+  DATASTORE_CONNECTION="-datastore_host ${DATASTORE_HOST} -datastore_user yugabyte --datastore_port 5433"
 else
   echo "Using CockroachDB"
-  DATASTORE_CONNECTION="-datastore_host crdb.uss1.localutm"
+  DATASTORE_CONNECTION="-datastore_host ${DATASTORE_HOST}"
 fi
 
 if [ "$DEBUG_ON" = "1" ]; then
@@ -27,7 +28,7 @@ if [ "$DEBUG_ON" = "1" ]; then
   -log_format console \
   -dump_requests \
   -addr :80 \
-  -accepted_jwt_audiences localhost,host.docker.internal,dss.uss1.localutm,dss.uss2.localutm \
+  -accepted_jwt_audiences ${JWT_AUDIENCES} \
   -enable_scd \
   -allow_http_base_urls \
   -locality local_dev \
@@ -43,7 +44,7 @@ else
   -log_format console \
   -dump_requests \
   -addr :80 \
-  -accepted_jwt_audiences localhost,host.docker.internal,dss.uss1.localutm,dss.uss2.localutm \
+  -accepted_jwt_audiences ${JWT_AUDIENCES} \
   -enable_scd \
   -allow_http_base_urls \
   -locality local_dev \
