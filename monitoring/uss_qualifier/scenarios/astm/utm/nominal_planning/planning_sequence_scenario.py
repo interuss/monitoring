@@ -51,7 +51,7 @@ class PlanningSequenceScenario(TestScenario, ABC):
         super().__init__()
         self.tested_uss = tested_uss.client
         self.control_uss = control_uss.client
-        self.dss = dss.get_instance({str(k): v for k, v in scopes.items()})
+        self.dss = dss.get_instance({k.value: v for k, v in scopes.items()})
 
         self.flight_intents_templates = flight_intents.get_flight_intents()
         try:
