@@ -764,7 +764,11 @@ def find_test_scenarios(
             for descendant in descendants:
                 if descendant not in test_scenarios:
                     test_scenarios.add(descendant)
-        elif inspect.isclass(member) and member is not TestScenario:
+        elif (
+            inspect.isclass(member)
+            and member is not TestScenario
+            and not inspect.isabstract(member)
+        ):
             if issubclass(member, TestScenario):
                 if member not in test_scenarios:
                     test_scenarios.add(member)

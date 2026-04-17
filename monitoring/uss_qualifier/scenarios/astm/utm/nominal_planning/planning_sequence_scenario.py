@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -88,8 +88,9 @@ class PlanningSequenceScenario(TestScenario, ABC):
     def resolve_flight(self, flight_template: FlightInfoTemplate) -> FlightInfo:
         return flight_template.resolve(self.time_context.evaluate_now())
 
+    @abstractmethod
     def run_planning_sequence(self, context: ExecutionContext):
-        """Run the main planning sequence of the test scenario assuming the test scenario has already begun."""
+        """Run the main planning sequence of the test scenario, assuming the test scenario has already begun."""
         raise NotImplementedError()
 
     def run(self, context: ExecutionContext):
