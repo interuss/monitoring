@@ -4,9 +4,6 @@ from uas_standards.astm.f3548.v21.constants import (
     Scope,
 )
 
-from monitoring.monitorlib.clients.flight_planning.client import (
-    FlightPlannerClient,
-)
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     FlightInfo,
@@ -18,22 +15,16 @@ from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
 from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResult,
 )
-from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
-from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
+from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
-    FlightIntentID,
-)
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
     ExpectedFlightIntent,
-    estimate_scenario_execution_max_extents,
-    validate_flight_intent_templates,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
-from monitoring.uss_qualifier.scenarios.astm.utm.clear_area_validation import (
-    validate_clear_area,
+from monitoring.uss_qualifier.scenarios.astm.utm.nominal_planning.planning_sequence_scenario import (
+    PlanningSequenceScenario,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.notifications_to_operator.notification_checker import (
     NotificationChecker,
@@ -47,16 +38,14 @@ from monitoring.uss_qualifier.scenarios.flight_planning.prioritization_test_step
 )
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     activate_flight,
-    cleanup_flights,
     delete_flight,
     modify_activated_flight,
     plan_flight,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
-class ConflictHigherPriority(TestScenario, NotificationChecker):
+class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
     flight1_id: str | None = None
     flight1_planned: FlightInfoTemplate
     flight1m_planned: FlightInfoTemplate
@@ -69,11 +58,6 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
     flight2_activated: FlightInfoTemplate
     flight2m_activated: FlightInfoTemplate
 
-    tested_uss: FlightPlannerClient
-    control_uss: FlightPlannerClient
-    dss: DSSInstance
-    flight_intents_templates: dict[FlightIntentID, FlightInfoTemplate]
-
     def __init__(
         self,
         flight_intents: FlightIntentsResource,
@@ -81,15 +65,9 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
         control_uss: FlightPlannerResource,
         dss: DSSInstanceResource,
     ):
-        super().__init__()
-        self.tested_uss = tested_uss.client
-        self.control_uss = control_uss.client
-        self.dss = dss.get_instance(
-            {
-                Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities and retrieve operational intent details"
-            }
-        )
-
+        scopes = {
+            Scope.StrategicCoordination: "search for operational intent references to verify outcomes of planning activities and retrieve operational intent details"
+        }
         expected_flight_intents = [
             ExpectedFlightIntent(
                 "flight1_planned",
@@ -157,48 +135,16 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             ),
         ]
 
-        self.flight_intents_templates = flight_intents.get_flight_intents()
-        try:
-            validate_flight_intent_templates(
-                self.flight_intents_templates, expected_flight_intents
-            )
-        except ValueError as e:
-            raise ValueError(
-                f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
-            )
-
-        for efi in expected_flight_intents:
-            setattr(self, efi.intent_id, self.flight_intents_templates[efi.intent_id])
-
-    def resolve_flight(self, flight_template: FlightInfoTemplate) -> FlightInfo:
-        return flight_template.resolve(self.time_context.evaluate_now())
-
-    def run(self, context: ExecutionContext):
-        self.begin_test_scenario(context)
-
-        self.record_note(
-            "Tested USS",
-            f"{self.tested_uss.participant_id}",
-        )
-        self.record_note(
-            "Control USS",
-            f"{self.control_uss.participant_id}",
+        super().__init__(
+            flight_intents=flight_intents,
+            expected_flight_intents=expected_flight_intents,
+            tested_uss=tested_uss,
+            control_uss=control_uss,
+            dss=dss,
+            scopes=scopes,
         )
 
-        self.begin_test_case("Prerequisites check")
-        self.begin_test_step("Verify area is clear")
-        estimated_max_extents = estimate_scenario_execution_max_extents(
-            self.time_context, self.flight_intents_templates
-        )
-        validate_clear_area(
-            self,
-            self.dss,
-            [estimated_max_extents],
-            ignore_self=False,
-        )
-        self.end_test_step()
-        self.end_test_case()
-
+    def run_planning_sequence(self, context: ExecutionContext):
         self.begin_test_case("Attempt to plan flight in conflict")
         self._attempt_plan_flight_conflict()
         self.end_test_case()
@@ -229,8 +175,6 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             flight_1_intent, flight_1_oi_ref, flight_2_oi_ref
         )
         self.end_test_case()
-
-        self.end_test_scenario()
 
     def _attempt_plan_flight_conflict(self):
         self.begin_test_step("Plan Flight 2")
@@ -554,8 +498,3 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             )
             validator.expect_not_shared()
         self.end_test_step()
-
-    def cleanup(self):
-        self.begin_cleanup()
-        cleanup_flights(self, (self.control_uss, self.tested_uss))
-        self.end_cleanup()
