@@ -21,12 +21,19 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
+from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
+    FlightIntentID,
+)
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
     ExpectedFlightIntent,
+    estimate_scenario_execution_max_extents,
     validate_flight_intent_templates,
 )
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
+)
+from monitoring.uss_qualifier.scenarios.astm.utm.clear_area_validation import (
+    validate_clear_area,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.notifications_to_operator.notification_checker import (
     NotificationChecker,
@@ -65,6 +72,7 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
     tested_uss: FlightPlannerClient
     control_uss: FlightPlannerClient
     dss: DSSInstance
+    flight_intents_templates: dict[FlightIntentID, FlightInfoTemplate]
 
     def __init__(
         self,
@@ -149,16 +157,18 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             ),
         ]
 
-        templates = flight_intents.get_flight_intents()
+        self.flight_intents_templates = flight_intents.get_flight_intents()
         try:
-            validate_flight_intent_templates(templates, expected_flight_intents)
+            validate_flight_intent_templates(
+                self.flight_intents_templates, expected_flight_intents
+            )
         except ValueError as e:
             raise ValueError(
                 f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
             )
 
         for efi in expected_flight_intents:
-            setattr(self, efi.intent_id, templates[efi.intent_id])
+            setattr(self, efi.intent_id, self.flight_intents_templates[efi.intent_id])
 
     def resolve_flight(self, flight_template: FlightInfoTemplate) -> FlightInfo:
         return flight_template.resolve(self.time_context.evaluate_now())
@@ -174,6 +184,20 @@ class ConflictHigherPriority(TestScenario, NotificationChecker):
             "Control USS",
             f"{self.control_uss.participant_id}",
         )
+
+        self.begin_test_case("Prerequisites check")
+        self.begin_test_step("Verify area is clear")
+        estimated_max_extents = estimate_scenario_execution_max_extents(
+            self.time_context, self.flight_intents_templates
+        )
+        validate_clear_area(
+            self,
+            self.dss,
+            [estimated_max_extents],
+            ignore_self=False,
+        )
+        self.end_test_step()
+        self.end_test_case()
 
         self.begin_test_case("Attempt to plan flight in conflict")
         self._attempt_plan_flight_conflict()
