@@ -299,6 +299,9 @@ class DownUSS(TestScenario):
         self.end_test_step()
 
     def _clear_op_intents(self, area):
+        if area is None:
+            return
+
         with self.check(
             "Successful operational intents cleanup", [self.dss.participant_id]
         ) as check:
