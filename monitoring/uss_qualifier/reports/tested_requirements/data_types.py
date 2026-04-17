@@ -22,7 +22,7 @@ class TestedCheck(ImplicitDict):
     url: str
     has_todo: bool
     is_finding_acceptable: bool
-    successes: int = 0
+    passes: int = 0
     findings: int = 0
     failures: int = 0
 
@@ -30,11 +30,11 @@ class TestedCheck(ImplicitDict):
     def result(self) -> str:
         if self.failures > 0:
             return "Fail"
-        if self.findings > 0 and self.successes == 0:
+        if self.findings > 0 and self.passes == 0:
             return "Findings"
-        if self.findings == 0 and self.successes > 0:
+        if self.findings == 0 and self.passes > 0:
             return "Pass"
-        if self.findings > 0 and self.successes > 0:
+        if self.findings > 0 and self.passes > 0:
             return "Pass (with findings)"
         return "Not tested"
 
@@ -42,7 +42,7 @@ class TestedCheck(ImplicitDict):
     def check_classname(self) -> str:
         if self.failures > 0:
             return ACCEPTED_FINDINGS_CLASS if self.is_finding_acceptable else FAIL_CLASS
-        if self.successes + self.failures == 0:
+        if self.passes + self.failures == 0:
             if self.has_todo:
                 return HAS_TODO_CLASS
             else:
@@ -53,7 +53,7 @@ class TestedCheck(ImplicitDict):
     @property
     def result_classname(self) -> str:
         if self.is_finding_acceptable:
-            if self.successes > 0:
+            if self.passes > 0:
                 return PASS_CLASS
             elif self.failures > 0 or self.findings > 0:
                 return ACCEPTED_FINDINGS_CLASS
@@ -62,7 +62,7 @@ class TestedCheck(ImplicitDict):
         else:
             if self.failures > 0:
                 return FAIL_CLASS
-            if self.successes + self.failures + self.findings == 0:
+            if self.passes + self.failures + self.findings == 0:
                 return NOT_TESTED_CLASS
             if self.findings > 0:
                 return FINDINGS_CLASS
@@ -139,15 +139,15 @@ class TestedRequirement(ImplicitDict):
     def status(self) -> TestedRequirementStatus:
         if any((c.failures > 0 and not c.is_finding_acceptable) for c in self.checks):
             return TestedRequirementStatus.Fail
-        if all(c.successes == 0 for c in self.checks) and any(
+        if all(c.passes == 0 for c in self.checks) and any(
             c.findings > 0 for c in self.checks
         ):
             return TestedRequirementStatus.Findings
-        if any(c.successes > 0 for c in self.checks) and any(
+        if any(c.passes > 0 for c in self.checks) and any(
             (c.findings > 0 and not c.is_finding_acceptable) for c in self.checks
         ):
             return TestedRequirementStatus.PassWithFindings
-        if any(c.successes > 0 for c in self.checks):
+        if any(c.passes > 0 for c in self.checks):
             return TestedRequirementStatus.Pass
         return TestedRequirementStatus.NotTested
 

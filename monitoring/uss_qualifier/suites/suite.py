@@ -177,15 +177,15 @@ class TestSuiteAction[T: ActionGenerator]:
         except Exception as e:
             scenario.record_execution_error(e)
         report = scenario.get_report()
-        if report.successful:
-            logger.info(f'SUCCESS for "{scenario.documentation.name}" scenario')
+        if "execution_error" in report and report.execution_error:
+            lines = report.execution_error.stacktrace.split("\n")
+            logger.error(
+                'Execution error in scenario "{}":\n{}',
+                scenario.documentation.name,
+                "\n".join("  " + line for line in lines),
+            )
         else:
-            if "execution_error" in report and report.execution_error:
-                lines = report.execution_error.stacktrace.split("\n")
-                logger.error(
-                    "Execution error:\n{}", "\n".join("  " + line for line in lines)
-                )
-            logger.warning(f'FAILURE for "{scenario.documentation.name}" scenario')
+            logger.info(f'"{scenario.documentation.name}" scenario completed')
         return report
 
     def _run_test_suite(self, context: ExecutionContext) -> TestSuiteReport:

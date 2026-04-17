@@ -40,3 +40,5 @@ The release notes should contain at least the following sections:
 ## Optional migration tasks
 
 ## Important information
+
+`successful` attributes in test report objects are deprecated and will be removed in the future (#1428).
