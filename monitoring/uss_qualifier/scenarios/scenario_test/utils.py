@@ -65,7 +65,8 @@ def build_fake_scenarios_module():
             pass
 
     class TestScenarioB(_TestScenario):
-        pass
+        def run(self, context):
+            pass
 
     class NotATestScenarioC:
         pass
