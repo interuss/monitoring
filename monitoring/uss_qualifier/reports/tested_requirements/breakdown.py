@@ -89,7 +89,7 @@ def make_breakdown(
     if participant_reqs is not None:
         _populate_breakdown_with_req_set(participant_breakdown, participant_reqs)
         if REQ_RUN_TO_COMPLETION in participant_reqs:
-            # Add a success to REQ_RUN_TO_COMPLETION if nothing caused it to fail
+            # Add a passing check to REQ_RUN_TO_COMPLETION if nothing caused it to fail
             tested_requirement = _tested_requirement_for(
                 REQ_RUN_TO_COMPLETION, participant_breakdown
             )
@@ -113,7 +113,7 @@ def make_breakdown(
                                                 url="",
                                                 has_todo=False,
                                                 is_finding_acceptable=False,
-                                                successes=1,
+                                                passes=1,
                                             )
                                         ],
                                     )
@@ -405,7 +405,7 @@ def _add_check_to_breakdown_for_req(
             tested_check.url = check.documentation_url
         tested_step.checks.append(tested_check)
     if isinstance(check, PassedCheck):
-        tested_check.successes += 1
+        tested_check.passes += 1
     elif isinstance(check, FailedCheck):
         if check.severity == Severity.Low:
             tested_check.findings += 1

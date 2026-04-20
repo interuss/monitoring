@@ -27,7 +27,7 @@ from monitoring.uss_qualifier.scenarios.documentation.parsing import (
 
 
 class ParticipantRequirementPerformance(ImplicitDict):
-    successes: list[JSONPath]
+    passes: list[JSONPath]
     """List of passed checks involving the requirement"""
 
     failures: list[JSONPath]
@@ -74,7 +74,7 @@ def _add_check(
                 )
             performance = requirement.participant_performance[participant_id]
             if isinstance(check, PassedCheck):
-                performance.successes.append(path)
+                performance.passes.append(path)
             elif isinstance(check, FailedCheck):
                 performance.failures.append(path)
             else:

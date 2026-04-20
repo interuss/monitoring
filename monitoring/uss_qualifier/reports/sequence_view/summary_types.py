@@ -92,7 +92,7 @@ class Epoch(ImplicitDict):
 class TestedParticipant:
     has_failures: bool = False
     has_infos: bool = False
-    has_successes: bool = False
+    has_passes: bool = False
     has_queries: bool = False
 
 

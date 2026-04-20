@@ -83,7 +83,7 @@ def _step_events(
         )
         for pid in participants:
             p = scenario_participants.get(pid, TestedParticipant())
-            p.has_successes = True
+            p.has_passes = True
             scenario_participants[pid] = p
 
     # Create events for this step's queries
