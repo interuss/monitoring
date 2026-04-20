@@ -42,7 +42,7 @@ validate-uss-qualifier-docs:
 
 .PHONY: shell-lint
 shell-lint:
-	find . -name '*.sh' ! -path "./interfaces/*" | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck:v0.11.0
+	find . -name '*.sh' ! -path "./interfaces/*" | git check-ignore --stdin --no-index -n -v --non-matching | grep '^::' | cut -f2 | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck:v0.11.0
 
 .PHONY: unit-test
 unit-test:
