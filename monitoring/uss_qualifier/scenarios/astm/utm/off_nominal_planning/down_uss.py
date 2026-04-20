@@ -298,7 +298,7 @@ class DownUSS(TestScenario):
 
         self.end_test_step()
 
-    def _clear_op_intents(self, area):
+    def _clear_op_intents(self, area: Volume4D):
         with self.check(
             "Successful operational intents cleanup", [self.dss.participant_id]
         ) as check:
@@ -334,6 +334,7 @@ class DownUSS(TestScenario):
         self.begin_cleanup()
         set_uss_available(self, self.dss, self.uss_qualifier_sub)
         cleanup_flights(self, [self.tested_uss])
-        self._clear_op_intents(self.scenario_execution_max_extents)
+        if self.scenario_execution_max_extents:
+            self._clear_op_intents(self.scenario_execution_max_extents)
 
         self.end_cleanup()
