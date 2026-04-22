@@ -70,7 +70,7 @@ def _add_check(
         for participant_id in participants:
             if participant_id not in requirement.participant_performance:
                 requirement.participant_performance[participant_id] = (
-                    ParticipantRequirementPerformance(successes=[], failures=[])
+                    ParticipantRequirementPerformance(passes=[], failures=[])
                 )
             performance = requirement.participant_performance[participant_id]
             if isinstance(check, PassedCheck):
