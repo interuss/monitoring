@@ -4,9 +4,13 @@ services:
 
   crdb:
     image: cockroachdb/cockroach:v24.1.3
-    command: start --insecure --join=db1.uss1.localutm
+    entrypoint: /db-entrypoint.sh
+    command: /cockroach/cockroach.sh start --insecure --join=db1.uss1.localutm
+    volumes:
+      - $PWD/startup/db-entrypoint.sh:/db-entrypoint.sh:ro
     profiles: [crdb]
     restart: always
+    cap_add: [NET_ADMIN]
     hostname: db${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
     networks:
       dss_internal_network:
@@ -14,6 +18,11 @@ services:
     ports:
       - "81${PADDED_NODE_IDX:?}:8080"
       - "262${PADDED_NODE_IDX:?}:26257"
+    environment:
+      - INTRA_USS_SUBNET=172.27.${USS_IDX:?}.0/24
+      - INTER_USS_SUBNET=172.27.0.0/16
+      - INTRA_USS_NETEM_CONF=${INTRA_USS_NETEM_CONF-}
+      - INTER_USS_NETEM_CONF=${INTER_USS_NETEM_CONF-}
     healthcheck:
       test: curl -f 'http://localhost:8080/health?ready=1' || exit 1
       interval: 3m
@@ -22,10 +31,14 @@ services:
 
   ybdb:
     image: interuss/yugabyte:2025.1.2.1-interuss
+    entrypoint: /db-entrypoint.sh
     # ysql_output_buffer_size needs to be increased to allow ysql to retry read restart errors. https://docs.yugabyte.com/preview/reference/configuration/yb-tserver/#ysql-output-buffer-size
     command: sh -c "bin/yugabyted start --background=false --tserver_flags=ysql_output_buffer_size=1048576 --advertise_address=$$YBDB_HOST --join=$$([ "$$YBDB_HOST" = db1.uss1.localutm ] || echo db1.uss1.localutm)"
+    volumes:
+      - $PWD/startup/db-entrypoint.sh:/db-entrypoint.sh:ro
     profiles: [ybdb]
     restart: always
+    cap_add: [ NET_ADMIN ]
     hostname: db${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
     networks:
       dss_internal_network:
@@ -38,6 +51,10 @@ services:
       - "91${PADDED_NODE_IDX:?}:9042"
     environment:
       - YBDB_HOST=db${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
+      - INTRA_USS_SUBNET=172.27.${USS_IDX:?}.0/24
+      - INTER_USS_SUBNET=172.27.0.0/16
+      - INTRA_USS_NETEM_CONF=${INTRA_USS_NETEM_CONF-}
+      - INTER_USS_NETEM_CONF=${INTER_USS_NETEM_CONF-}
     healthcheck:
       test: /home/yugabyte/postgres/bin/pg_isready -h $$YBDB_HOST || exit 1
       interval: 5s
@@ -152,21 +169,18 @@ services:
         required: false
     hostname: dss${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
     networks:
-      dss_internal_network: {}
-      interop_ecosystem_network:
-        aliases:
-          - dss.uss${USS_IDX:?}.localutm
+      - dss_internal_network
+      - interop_ecosystem_network
     ports:
       - "40${PADDED_NODE_IDX:?}:4000"
       - "80${PADDED_NODE_IDX:?}:80"
     environment:
       COMPOSE_PROFILES: ${COMPOSE_PROFILES}
-      JWT_AUDIENCES: dss.uss${USS_IDX:?}.localutm,dss${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
+      JWT_AUDIENCES: dss${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
       DATASTORE_HOST: db${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
     healthcheck:
       test: wget -O - 'http://localhost/healthy' || exit 1
-      interval: 3m
-      start_period: 30s
+      start_period: 120s # yugabyte may be slow to be ready, and the dss service needs the ybdb service live in order to be healthy
       start_interval: 5s
 
   oauth:

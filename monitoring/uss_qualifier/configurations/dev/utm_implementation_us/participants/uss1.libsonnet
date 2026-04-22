@@ -46,7 +46,7 @@
           // Participants using a DSS instance they do not provide should be listed as users of that DSS (so that they can take credit for USS requirements enforced by the DSS)
           'mock_uss',  // mock_uss uses this DSS instance; it does not provide its own instance
         ],
-        base_url: 'http://dss.uss1.localutm',
+        base_url: 'http://dss1.uss1.localutm',
         supports_ovn_request: true
       },
     ]
