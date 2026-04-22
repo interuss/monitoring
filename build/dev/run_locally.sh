@@ -4,11 +4,18 @@ set -eo pipefail
 
 # This script will deploy an interoperability ecosystem consisting of a chosen number of DSS instances and a dummy OAuth
 # server (all accessible on the interop_ecosystem_network) with docker compose using the DSS image from Docker Hub.
-# Run `./run_locally.sh up -d` to start a single DSS instance using CockroachDB.
-# The following environment variables may be used:
-# NUM_USS: number of USSs
-# NUM_NODES: number of nodes per USS
-# DB_TYPE: crdb or ybdb
+# Run `./run_locally.sh up -d` to start two DSS instances using CockroachDB.
+#
+# The following environment variables may be used to simulate different conditions:
+# - NUM_USS: number of USSs (default: 2)
+# - NUM_NODES: number of nodes per USS (default: 1)
+# - DB_TYPE: crdb or ybdb (default: crdb)
+# - INTRA_USS_NETEM_CONF: tc netem configuration to apply to traffic between DB nodes of an USS (default: <none>)
+#   sensible value (low latency/jitter, very low loss (e.g., within same availability DC)):
+#   "delay 250us 25us 25% distribution normal loss 0.0025% 10%"
+# - INTER_USS_NETEM_CONF: tc netem configuration to apply to traffic between DB nodes of different USS (default: <none>)
+#   sensible value (higher latency/jitter, moderate loss (e.g., cross-country)):
+#   "delay 25ms 7.5ms 50% distribution paretonormal loss 0.025% 25%"
 
 if [[ -z $(command -v docker) ]]; then
   echo "docker is required but not installed.  Visit https://docs.docker.com/install/ to install."
@@ -33,11 +40,12 @@ DC_COMMAND=$*
 
 if [[ ! "$DC_COMMAND" ]]; then
   DC_COMMAND="up"
-  DC_OPTIONS="--build"
+  DC_OPTIONS="--build --wait"
 elif [[ "$DC_COMMAND" == "down" ]]; then
   DC_OPTIONS="--volumes --remove-orphans"
 elif [[ "$DC_COMMAND" == "debug" ]]; then
   DC_COMMAND=up
+  DC_OPTIONS="--wait"
   export DEBUG_ON=1
 fi
 
