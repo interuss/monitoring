@@ -106,6 +106,6 @@ Confirm that an OIR can be mutated when the correct OVN is provided.
 
 ## Cleanup
 
-### [Cleanup OIRs test step](./clean_workspace_op_intents.md)
+### [Cleanup OIRs test step](./clean_workspace_op_intents_during_cleanup.md)
 
 Remove any lingering OIRs left by this scenario.

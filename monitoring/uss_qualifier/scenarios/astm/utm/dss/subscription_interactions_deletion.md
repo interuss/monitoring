@@ -125,6 +125,6 @@ If the DSS includes a deleted subscription, it fails to implement **[astm.f3548.
 
 ## Cleanup
 
-### [Clean any straggling OIRs with known test IDs](clean_workspace_op_intents.md)
+### [Clean any straggling OIRs with known test IDs](clean_workspace_op_intents_during_cleanup.md)
 
-### [Clean any straggling subscriptions with known test IDs](clean_workspace_subs.md)
+### [Clean any straggling subscriptions with known test IDs](clean_workspace_subs_during_cleanup.md)

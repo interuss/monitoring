@@ -173,6 +173,6 @@ If the subscription still exists on one of the other DSS instances, one of the i
 
 ## Cleanup
 
-### [Clean any straggling OIRs with known test IDs](clean_workspace_op_intents.md)
+### [Clean any straggling OIRs with known test IDs](clean_workspace_op_intents_during_cleanup.md)
 
-### [Clean any straggling subscriptions with known test IDs](clean_workspace_subs.md)
+### [Clean any straggling subscriptions with known test IDs](clean_workspace_subs_during_cleanup.md)

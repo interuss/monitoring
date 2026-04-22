@@ -71,6 +71,6 @@ The cleanup phase of this test scenario attempts to remove injected data from al
 
 **[interuss.automated_testing.rid.injection.DeleteTestSuccess](../../../../requirements/interuss/automated_testing/rid/injection.md)**
 
-### [Clean Subscriptions](./dss/test_steps/clean_workspace.md)
+### [Clean Subscriptions](./dss/test_steps/clean_workspace_during_cleanup.md)
 
 Remove all created subscriptions from the DSS.
