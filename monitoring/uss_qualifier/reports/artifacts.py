@@ -156,3 +156,7 @@ def generate_artifacts(
         p.start()
     for p in generators:
         p.join()
+
+    failed = [p for p in generators if p.exitcode != 0]
+    if failed:
+        raise RuntimeError(f"{len(failed)} generator(s) failed. Check exception above.")
