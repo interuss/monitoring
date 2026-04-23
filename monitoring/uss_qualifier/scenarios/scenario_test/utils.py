@@ -65,7 +65,8 @@ def build_fake_scenarios_module():
             pass
 
     class TestScenarioB(_TestScenario):
-        pass
+        def run(self, context):
+            pass
 
     class NotATestScenarioC:
         pass
@@ -77,10 +78,12 @@ def build_fake_scenarios_module():
     fake_sub_module = _build_module("test.submodule")
 
     class TestScenarioSubA(_TestScenario):
-        pass
+        def run(self, context):
+            pass
 
     class TestScenarioSubB(_TestScenario):
-        pass
+        def run(self, context):
+            pass
 
     fake_sub_module.TestScenarioSubA = TestScenarioSubA
     fake_sub_module.TestScenarioSubB = TestScenarioSubB
@@ -89,7 +92,8 @@ def build_fake_scenarios_module():
     fake_subsub_module = _build_module("test.submodule.subsubmodule")
 
     class TestScenarioSubSubA(_TestScenario):
-        pass
+        def run(self, context):
+            pass
 
     fake_subsub_module.TestScenarioSubSubA = TestScenarioSubSubA
 
