@@ -52,4 +52,4 @@ or fails to truncate the duration of the subscription to this duration, it is in
 
 ## Cleanup
 
-### [Clean any straggling subscriptions with known test IDs](clean_workspace_subs.md)
+### [Clean any straggling subscriptions with known test IDs](clean_workspace_subs_during_cleanup.md)

@@ -185,4 +185,4 @@ If the DSS returns the deleted subscription in a search that covers the area it 
 
 ## Cleanup
 
-### [Clean any straggling subscriptions with known test IDs](clean_workspace_subs.md)
+### [Clean any straggling subscriptions with known test IDs](clean_workspace_subs_during_cleanup.md)
