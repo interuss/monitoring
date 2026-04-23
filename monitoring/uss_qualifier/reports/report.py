@@ -4,6 +4,7 @@ from collections.abc import Callable, Iterator
 from datetime import UTC, datetime
 from typing import Any
 
+import deprecation
 from implicitdict import (
     ImplicitDict,
     Optional,
@@ -132,6 +133,7 @@ class TestStepReport(ImplicitDict):
     def has_critical_problem(self) -> bool:
         return any(fc.severity == Severity.Critical for fc in self.failed_checks)
 
+    @deprecation.deprecated()
     def successful(self) -> bool:
         return False if self.failed_checks else True
 
@@ -304,7 +306,7 @@ class TestScenarioReport(ImplicitDict):
     """Time at which the test scenario completed or encountered an error"""
 
     successful: bool = False
-    """True iff test scenario completed normally with no failed checks"""
+    """DEPRECATED.  True iff test scenario completed normally with no failed checks."""
 
     cases: list[TestCaseReport]
     """Reports for each of the test cases in this test scenario, in chronological order."""
@@ -414,7 +416,7 @@ class ActionGeneratorReport(ImplicitDict):
     """Time at which the action generator completed or encountered an error"""
 
     successful: bool = False
-    """True iff all actions completed normally with no failed checks"""
+    """DEPRECATED.  True iff all actions completed normally with no failed checks"""
 
     def has_critical_problem(self) -> bool:
         return any(a.has_critical_problem() for a in self.actions)
@@ -507,6 +509,7 @@ class TestSuiteActionReport(ImplicitDict):
         else:
             raise self.invalid_type_error
 
+    @deprecation.deprecated()
     def successful(self) -> bool:
         return self._conditional(lambda report: report.successful)
 
@@ -726,6 +729,7 @@ class SkippedActionReport(ImplicitDict):
     """Full declaration of the action that was skipped."""
 
     @property
+    @deprecation.deprecated()
     def successful(self) -> bool:
         return True
 
@@ -770,7 +774,7 @@ class TestSuiteReport(ImplicitDict):
     """Time at which the test suite completed"""
 
     successful: bool = False
-    """True iff test suite completed normally with no failed checks"""
+    """DEPRECATED.  True iff test suite completed normally with no failed checks"""
 
     capability_evaluations: list[ParticipantCapabilityEvaluationReport]
     """List of capabilities defined in this test suite, evaluated for each participant."""

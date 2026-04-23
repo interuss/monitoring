@@ -115,7 +115,7 @@ If the planning was accepted, Flight 1 should have been shared.
 If the planning was rejected, Flight 1 should not have been shared, thus should not exist.
 
 ## Cleanup
-### [Restore virtual USS availability test step](../set_uss_available.md)
+### [Restore virtual USS availability test step](../set_uss_available_during_cleanup.md)
 
 ### ⚠️ Successful flight deletion check
 Delete flights injected at USS through the flight planning interface.

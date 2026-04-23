@@ -189,13 +189,13 @@ class OIRKeyValidation(TestScenario):
                 self.record_query(q)
                 check.record_failed(
                     summary="Operational intent reference with OVN missing in key was created",
-                    details=f"Was expecting an HTTP 409 response because of a conflict with OIR {conflicting_ids}, but got a successful response ({q.status_code}) instead",
+                    details=f"Was expecting an HTTP 409 response because of a conflict with OIR {conflicting_ids}, but got {q.status_code}",
                     query_timestamps=[q.request.timestamp],
                 )
                 return
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                _expect_conflict_code(check, conflicting_ids, qe.cause)
+                _expect_conflict_code(check, conflicting_ids, qe)
                 conflicting_query = qe.cause
 
         self._validate_conflict_response(conflicting_ids, conflicting_query)
@@ -222,13 +222,13 @@ class OIRKeyValidation(TestScenario):
                 self.record_query(q)
                 check.record_failed(
                     summary="Operational intent reference with OVN missing in key was mutated",
-                    details=f"Was expecting an HTTP 409 response because of a conflict with OIR {conflicting_ids}, but got a successful response ({q.status_code}) instead",
+                    details=f"Was expecting an HTTP 409 response because of a conflict with OIR {conflicting_ids}, but got {q.status_code}",
                     query_timestamps=[q.request.timestamp],
                 )
                 return
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                _expect_conflict_code(check, conflicting_ids, qe.cause)
+                _expect_conflict_code(check, conflicting_ids, qe)
                 conflicting_query = qe.cause
 
         self._validate_conflict_response(conflicting_ids, conflicting_query)
@@ -431,11 +431,11 @@ class OIRKeyValidation(TestScenario):
 
 
 def _expect_conflict_code(
-    check: PendingCheck, conflicting_ids: list[EntityID], query: fetch.Query
+    check: PendingCheck, conflicting_ids: list[EntityID], qe: fetch.QueryError
 ):
-    if query.status_code != 409:
+    if qe.cause_status_code != 409:
         check.record_failed(
             summary="OIR Creation failed for the unexpected reason",
-            details=f"Was expecting an HTTP 409 response because of a conflict with OIR {conflicting_ids}, but got a {query.status_code} instead",
-            query_timestamps=[query.request.timestamp],
+            details=f"Was expecting an HTTP 409 response because of a conflict with OIR {conflicting_ids}, but got {qe.cause_status_code}: {qe.msg}",
+            query_timestamps=qe.query_timestamps,
         )

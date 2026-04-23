@@ -30,10 +30,9 @@ class Severity(str, Enum):
     """
 
     Low = "Low"
-    """The system meets requirements but could be improved.
+    """The system does not fail to meet a requirement, but could be improved.
 
-    Further test steps can be executed without impact.  A test run with only
-    Low-Severity issues will be considered successful.
+    Further test steps can be executed without impact.
     """
 
     def __eq__(self, other):

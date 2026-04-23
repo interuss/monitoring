@@ -112,6 +112,6 @@ If the Display Provider has issued such requests, it is in violation of this req
 
 The cleanup phase of this test scenario attempts to remove injected data from all SPs.
 
-### [Clean ISA](./dss/test_steps/clean_workspace.md)
+### [Clean ISA](./dss/test_steps/clean_workspace_during_cleanup.md)
 
 Remove the created ISA from the DSS.

@@ -148,10 +148,7 @@ def execute_test_run(
     action = TestSuiteAction(config.action, resources)
     logger.info("Running top-level test suite action")
     report = action.run(context)
-    if report.successful():
-        logger.info("Final result: SUCCESS")
-    else:
-        logger.warning("Final result: FAILURE")
+    logger.info("Top-level test suite action complete")
 
     return TestRunReport(
         codebase_version=description.codebase_version,

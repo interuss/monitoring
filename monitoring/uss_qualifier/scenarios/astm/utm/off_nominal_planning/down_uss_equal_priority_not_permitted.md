@@ -173,7 +173,7 @@ to reject or accept Flight 2. If the USS indicates that the injection attempt fa
 
 
 ## Cleanup
-### [Restore virtual USS availability test step](../set_uss_available.md)
+### [Restore virtual USS availability test step](../set_uss_available_during_cleanup.md)
 
 ### ⚠️ Successful flight deletion check
 Delete flights injected at USS through the flight planning interface.
