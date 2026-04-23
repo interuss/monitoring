@@ -53,10 +53,10 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
     flight1c_activated: FlightInfoTemplate
 
     flight2_id: str | None = None
-    flight2m_planned: FlightInfoTemplate
-    flight2_planned: FlightInfoTemplate
-    flight2_activated: FlightInfoTemplate
-    flight2_nonconforming: FlightInfoTemplate
+    equal_prio_flight2m_planned: FlightInfoTemplate
+    equal_prio_flight2_planned: FlightInfoTemplate
+    equal_prio_flight2_activated: FlightInfoTemplate
+    equal_prio_flight2_nonconforming: FlightInfoTemplate
 
     def __init__(
         self,
@@ -175,7 +175,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
 
     def _attempt_plan_flight_conflict(self):
         self.begin_test_step("Plan Flight 2")
-        flight2_planned = self.resolve_flight(self.flight2_planned)
+        flight2_planned = self.resolve_flight(self.equal_prio_flight2_planned)
 
         with OpIntentValidator(
             self,
@@ -194,7 +194,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
         self.end_test_step()
 
         self.begin_test_step("Activate Flight 2")
-        flight2_activated = self.resolve_flight(self.flight2_activated)
+        flight2_activated = self.resolve_flight(self.equal_prio_flight2_activated)
 
         with OpIntentValidator(
             self,
@@ -385,7 +385,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
         self.end_test_step()
 
         self.begin_test_step("Plan Flight 2m")
-        flight2m_planned = self.resolve_flight(self.flight2m_planned)
+        flight2m_planned = self.resolve_flight(self.equal_prio_flight2m_planned)
 
         with OpIntentValidator(
             self,
@@ -405,7 +405,9 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
         self.end_test_step()
 
         self.begin_test_step("Declare Flight 2 non-conforming")
-        flight2_nonconforming = self.resolve_flight(self.flight2_nonconforming)
+        flight2_nonconforming = self.resolve_flight(
+            self.equal_prio_flight2_nonconforming
+        )
 
         with OpIntentValidator(
             self,

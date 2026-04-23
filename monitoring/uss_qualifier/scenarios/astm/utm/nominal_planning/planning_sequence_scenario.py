@@ -34,10 +34,17 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class PlanningSequenceScenario(TestScenario, ABC):
+    """Abstracts a test scenario where a sequence of planning actions are performed.
+
+    The provided flight_intents will be validated against expected_flight_intents and the flight intent templates
+    extracted from flight_intents will be added as attributes to this scenario object according to their intent_ids.
+    """
+
     tested_uss: FlightPlannerClient
     control_uss: FlightPlannerClient
     dss: DSSInstance
     flight_intents_templates: dict[FlightIntentID, FlightInfoTemplate]
+    # Note: FlightInfoTemplate attributes named according to flight_intents' intent_ids will also be present
 
     def __init__(
         self,
@@ -76,13 +83,6 @@ class PlanningSequenceScenario(TestScenario, ABC):
         except ValueError as e:
             raise ValueError(
                 f"`{self.me()}` TestScenario requirements for flight_intents not met: {e}"
-            )
-
-        for efi in expected_flight_intents:
-            setattr(
-                self,
-                efi.intent_id.replace("equal_prio_", ""),
-                self.flight_intents_templates[efi.intent_id],
             )
 
     def resolve_flight(self, flight_template: FlightInfoTemplate) -> FlightInfo:
