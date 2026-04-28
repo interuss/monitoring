@@ -19,11 +19,11 @@ digraph G {
   subgraph cluster_local_infra {
     label=<Local interoperability ecosystem<br/><font color="green" face="Courier" point-size="10">make start-locally</font><br/><font color="red" face="Courier" point-size="10">make down-locally</font>>
     style="dashed"
-    Auth [label=<Dummy OAuth<br/><font color="purple" face="Courier" point-size="10">local_infra-oauth-1</font><br/><font face="Courier" color="gray" point-size="10">port 8085</font>>]
+    Auth [label=<Dummy OAuth<br/><font color="purple" face="Courier" point-size="10">local_infra_1-1-oauth-1</font><br/><font face="Courier" color="gray" point-size="10">port 8085</font>>]
     subgraph cluster_dss {
       label="DSS"
-      CoreService [label=<Core Service<br/><font color="purple" face="Courier" point-size="10">local_infra-dss-1</font><br/><font face="Courier" color="gray" point-size="10">port 8082</font>>]
-      CRDB [label=<Cockroach DB<br/><font color="purple" face="Courier" point-size="10">local_infra-crdb-1</font><br/><font face="Courier" color="gray" point-size="10">web UI on port 8080</font>>]
+      CoreService [label=<Core Service<br/><font color="purple" face="Courier" point-size="10">local_infra_1-1-dss-1</font><br/><font face="Courier" color="gray" point-size="10">port 8001</font>>]
+      CRDB [label=<Cockroach DB<br/><font color="purple" face="Courier" point-size="10">local_infra_1-1-crdb-1</font><br/><font face="Courier" color="gray" point-size="10">web UI on port 8101</font>>]
       CoreService -> CRDB
     }
     Auth -> CoreService [label="Public key",style="dashed",color="gray",fontcolor="gray"]

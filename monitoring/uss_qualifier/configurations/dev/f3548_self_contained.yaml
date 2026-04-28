@@ -134,7 +134,7 @@ v1:
           specification:
             # A USS that hosts a DSS instance is also a participant in the test, even if they don't fulfill any other roles
             participant_id: uss1_dss
-            base_url: http://dss.uss1.localutm
+            base_url: http://dss1.uss1.localutm
             supports_ovn_request: true
 
         dss_instances:
@@ -147,10 +147,10 @@ v1:
                 user_participant_ids:
                   # Participants using a DSS instance they do not provide should be listed as users of that DSS (so that they can take credit for USS requirements enforced by the DSS)
                   - mock_uss  # mock_uss uses this DSS instance; it does not provide its own instance
-                base_url: http://dss.uss1.localutm
+                base_url: http://dss1.uss1.localutm
                 supports_ovn_request: true
               - participant_id: uss2_dss
-                base_url: http://dss.uss2.localutm
+                base_url: http://dss1.uss2.localutm
                 supports_ovn_request: true
 
         # Mock USS that can be used in tests for flight planning, modifying data sharing behavior and recording interactions
