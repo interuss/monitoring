@@ -1,22 +1,19 @@
-# Brings up a local interoperability ecosystem consisting of a DSS instance and dummy OAuth server.
-
-# To bring up this system, run ./run_locally.sh up -d and wait for all containers to succeed or become healthy.
-# If needed, set environment variable `COMPOSE_PROFILES` to `with-yugabyte` to use Yugabyte instead of CockroachDB
+# This Docker Compose file must be used through `./run_locally.sh`.
 
 services:
 
   crdb:
-    hostname: crdb.uss1.localutm
     image: cockroachdb/cockroach:v24.1.3
-    command: start-single-node --insecure
-    expose:
-      - 26257
-    ports:
-      - "8080:8080"
-      - "26257:26257"
+    command: start --insecure --join=db1.uss1.localutm
+    profiles: [crdb]
     restart: always
+    hostname: db${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
     networks:
-      - dss_internal_network
+      dss_internal_network:
+        ipv4_address: 172.27.${USS_IDX:?}.${USS_NODE_IDX:?}
+    ports:
+      - "81${PADDED_NODE_IDX:?}:8080"
+      - "262${PADDED_NODE_IDX:?}:26257"
     healthcheck:
       test: curl -f 'http://localhost:8080/health?ready=1' || exit 1
       interval: 3m
@@ -26,115 +23,146 @@ services:
   ybdb:
     image: interuss/yugabyte:2025.1.2.1-interuss
     # ysql_output_buffer_size needs to be increased to allow ysql to retry read restart errors. https://docs.yugabyte.com/preview/reference/configuration/yb-tserver/#ysql-output-buffer-size
-    command: bin/yugabyted start --background=false --tserver_flags="ysql_output_buffer_size=1048576"
-    ports:
-      - "7000:7000"
-      - "9000:9000"
-      - "15433:15433"
-      - "5433:5433"
-      - "9042:9042"
+    command: sh -c "bin/yugabyted start --background=false --tserver_flags=ysql_output_buffer_size=1048576 --advertise_address=$$YBDB_HOST --join=$$([ "$$YBDB_HOST" = db1.uss1.localutm ] || echo db1.uss1.localutm)"
+    profiles: [ybdb]
     restart: always
+    hostname: db${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
     networks:
-      - dss_internal_network
-    profiles: ["with-yugabyte"]
+      dss_internal_network:
+        ipv4_address: 172.27.${USS_IDX:?}.${USS_NODE_IDX:?}
+    ports:
+      - "70${PADDED_NODE_IDX:?}:7000"
+      - "90${PADDED_NODE_IDX:?}:9000"
+      - "154${PADDED_NODE_IDX:?}:15433"
+      - "54${PADDED_NODE_IDX:?}:5433"
+      - "91${PADDED_NODE_IDX:?}:9042"
+    environment:
+      - YBDB_HOST=db${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
     healthcheck:
-      test: ["CMD", "/home/yugabyte/postgres/bin/pg_isready", "-h", "ybdb"]
+      test: /home/yugabyte/postgres/bin/pg_isready -h $$YBDB_HOST || exit 1
       interval: 5s
       timeout: 5s
       retries: 10
 
+  crdb-init:
+    image: cockroachdb/cockroach:v24.1.3
+    profiles: [bootstrap-crdb]
+    depends_on: [crdb]
+    entrypoint: >
+      sh -c "
+        out=$$(/cockroach/cockroach.sh init --insecure --host=db1.uss1.localutm 2>&1);
+        if [ $$? -eq 0 ]; then
+          echo "$$out";
+          exit 0;
+        fi;
+        echo "$$out";
+        if echo \"$$out\" | grep -q \"already been initialized\"; then
+          exit 0;
+        fi;
+        exit 1;
+      "
+    networks: [dss_internal_network]
+
   rid_bootstrapper:
     image: interuss/dss:v0.21.0-rc1
-    command: /usr/bin/db-manager migrate --schemas_dir=/db-schemas/rid --db_version "latest" --cockroach_host crdb
+    profiles: [bootstrap-crdb]
+    entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/rid --db_version latest --cockroach_host db1.uss1.localutm"
     depends_on:
-      crdb:
-        condition: service_healthy
-    networks:
-      - dss_internal_network
+      crdb-init:
+        condition: service_completed_successfully
+    networks: [dss_internal_network]
+    healthcheck:
+      disable: true
 
   scd_bootstrapper:
     image: interuss/dss:v0.21.0-rc1
-    command: /usr/bin/db-manager migrate --schemas_dir=/db-schemas/scd --db_version "latest" --cockroach_host crdb
+    profiles: [bootstrap-crdb]
+    entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/scd --db_version latest --cockroach_host db1.uss1.localutm"
     depends_on:
-      crdb:
-        condition: service_healthy
-    networks:
-      - dss_internal_network
+      crdb-init:
+        condition: service_completed_successfully
+    networks: [dss_internal_network]
+    healthcheck:
+      disable: true
 
   aux_bootstrapper:
     image: interuss/dss:v0.21.0-rc1
-    command: /usr/bin/db-manager migrate --schemas_dir=/db-schemas/aux_ --db_version "latest" --cockroach_host crdb
+    profiles: [bootstrap-crdb]
+    entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/aux_ --db_version latest --cockroach_host db1.uss1.localutm"
     depends_on:
-      crdb:
-        condition: service_healthy
-    networks:
-      - dss_internal_network
+      crdb-init:
+        condition: service_completed_successfully
+    networks: [dss_internal_network]
+    healthcheck:
+      disable: true
 
   rid_bootstrapper-ybdb:
     image: interuss/dss:v0.21.0-rc1
-    entrypoint: /usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/rid --db_version "latest" --datastore_host ybdb --datastore_user yugabyte --datastore_port 5433
-    depends_on:
-      ybdb:
-        condition: service_healthy
-    networks:
-      - dss_internal_network
-    profiles: ["with-yugabyte"]
+    profiles: [bootstrap-ybdb]
+    entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/rid --db_version latest --datastore_host db1.uss1.localutm --datastore_user yugabyte --datastore_port 5433"
+    restart: on-failure
+    networks: [dss_internal_network]
+    healthcheck:
+      disable: true
 
   scd_bootstrapper-ybdb:
     image: interuss/dss:v0.21.0-rc1
-    entrypoint: /usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/scd --db_version "latest" --datastore_host ybdb --datastore_user yugabyte --datastore_port 5433
-    depends_on:
-      ybdb:
-        condition: service_healthy
-    networks:
-      - dss_internal_network
-    profiles: ["with-yugabyte"]
+    profiles: [bootstrap-ybdb]
+    entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/scd --db_version latest --datastore_host db1.uss1.localutm --datastore_user yugabyte --datastore_port 5433"
+    restart: on-failure
+    networks: [dss_internal_network]
+    healthcheck:
+      disable: true
 
   aux_bootstrapper-ybdb:
     image: interuss/dss:v0.21.0-rc1
-    entrypoint: /usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/aux_ --db_version "latest" --datastore_host ybdb --datastore_user yugabyte --datastore_port 5433
-    depends_on:
-      ybdb:
-        condition: service_healthy
-    networks:
-      - dss_internal_network
-    profiles: ["with-yugabyte"]
+    profiles: [bootstrap-ybdb]
+    entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/aux_ --db_version latest --datastore_host db1.uss1.localutm --datastore_user yugabyte --datastore_port 5433"
+    restart: on-failure
+    networks: [dss_internal_network]
+    healthcheck:
+      disable: true
 
   dss:
-    hostname: dss.uss1.localutm
     image: interuss/dss:v0.21.0-rc1
+    command: /startup/core_service.sh ${DEBUG_ON:-0}
+    profiles: [ crdb, ybdb ]
+    restart: always
     volumes:
       - $PWD/../test-certs:/var/test-certs:ro
       - $PWD/startup/core_service.sh:/startup/core_service.sh:ro
-    command: /startup/core_service.sh ${DEBUG_ON:-0}
-    environment:
-      COMPOSE_PROFILES: ${COMPOSE_PROFILES}
-    expose:
-      - 8082
-    ports:
-      - "4000:4000"
-      - "8082:80"
     depends_on:
       rid_bootstrapper:
         condition: service_completed_successfully
+        required: false
       scd_bootstrapper:
         condition: service_completed_successfully
+        required: false
       aux_bootstrapper:
         condition: service_completed_successfully
+        required: false
       rid_bootstrapper-ybdb:
         condition: service_completed_successfully
         required: false
       scd_bootstrapper-ybdb:
-        required: false
         condition: service_completed_successfully
+        required: false
       aux_bootstrapper-ybdb:
         condition: service_completed_successfully
         required: false
+    hostname: dss${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
     networks:
       dss_internal_network: {}
       interop_ecosystem_network:
         aliases:
-          - dss.uss2.localutm
+          - dss.uss${USS_IDX:?}.localutm
+    ports:
+      - "40${PADDED_NODE_IDX:?}:4000"
+      - "80${PADDED_NODE_IDX:?}:80"
+    environment:
+      COMPOSE_PROFILES: ${COMPOSE_PROFILES}
+      JWT_AUDIENCES: dss.uss${USS_IDX:?}.localutm,dss${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
+      DATASTORE_HOST: db${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
     healthcheck:
       test: wget -O - 'http://localhost/healthy' || exit 1
       interval: 3m
@@ -142,17 +170,18 @@ services:
       start_interval: 5s
 
   oauth:
-    hostname: oauth.authority.localutm
     image: interuss/dummy-oauth
     command: -private_key_file /var/test-certs/auth2.key
     volumes:
       - $PWD/../test-certs:/var/test-certs:ro
+    profiles: [oauth]
+    hostname: oauth.authority.localutm
+    networks:
+      - interop_ecosystem_network
     expose:
       - 8085
     ports:
       - "8085:8085"
-    networks:
-      - interop_ecosystem_network
     healthcheck:
       test: wget -O - 'http://localhost:8085/token?intended_audience=-&scope=-' || exit 1
       interval: 3m
@@ -162,8 +191,10 @@ services:
 networks:
   dss_internal_network:
     name: dss_internal_network
+    external: true
   interop_ecosystem_network:
     name: interop_ecosystem_network
+    external: true
 
 volumes:
   dss_component_coordination:

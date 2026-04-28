@@ -18,8 +18,8 @@ cd monitoring || exit 1
 make image
 )
 
-CORE_SERVICE_CONTAINER="local_infra-dss-1"
-OAUTH_CONTAINER="local_infra-oauth-1"
+CORE_SERVICE_CONTAINER="local_infra_1-1-dss-1"
+OAUTH_CONTAINER="local_infra_1-1-oauth-1"
 declare -a localhost_containers=("$CORE_SERVICE_CONTAINER" "$OAUTH_CONTAINER")
 
 for container_name in "${localhost_containers[@]}"; do
