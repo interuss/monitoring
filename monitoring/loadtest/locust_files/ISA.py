@@ -1,7 +1,6 @@
 import argparse
 import datetime
 import random
-import threading
 import uuid
 
 import client
@@ -30,7 +29,6 @@ def init_parser(parser: argparse.ArgumentParser):
 
 class ISA(client.USS):
     wait_time = locust.between(0.01, 1)
-    lock = threading.Lock()
 
     @locust.task(10)
     def create_isa(self):

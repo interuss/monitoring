@@ -100,13 +100,13 @@ def create_random_flight_path(
 
 
 def create_random_flight_path_volume(
-    lat: float, lng: float, radius: int, max_flight_distance_meters: int
+    lat: float, lng: float, radius: int, max_flight_distance_meters: int, duration_seconds: int = 10
 ):
     altitude_lower = random.randint(0, 10000)
     altitude_upper = altitude_lower + 1
 
-    start_time = datetime.datetime.now()
-    end_time = start_time + datetime.timedelta(seconds=10)
+    start_time = datetime.datetime.now(datetime.UTC)
+    end_time = start_time + datetime.timedelta(seconds=duration_seconds)
 
     rects = create_random_flight_path(lat, lng, radius, max_flight_distance_meters)
     return [

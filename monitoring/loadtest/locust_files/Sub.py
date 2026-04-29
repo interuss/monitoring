@@ -1,7 +1,6 @@
 import argparse
 import datetime
 import random
-import threading
 import uuid
 
 import client
@@ -23,7 +22,6 @@ def init_parser(parser: argparse.ArgumentParser):
 
 class Sub(client.USS):
     wait_time = locust.between(0.01, 1)
-    lock = threading.Lock()
 
     def gen_vertices(self):
         base_lng = random.randint(0, 180)

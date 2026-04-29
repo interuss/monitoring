@@ -1,6 +1,7 @@
 #!env/bin/python3
 
 import os
+import threading
 
 import requests
 from locust import HttpUser
@@ -15,6 +16,9 @@ class USS(HttpUser):
     abstract = True
     isa_dict: dict[str, str] = {}
     sub_dict: dict[str, str] = {}
+    oi_dict: dict[str, str] = {}
+    known_ovns: set[str] = set()
+    lock = threading.Lock()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -28,11 +32,7 @@ class USS(HttpUser):
         # This is a load tester its acceptable to have all the scopes required to operate anything.
         # We are not testing if the scope is incorrect. We are testing if it can handle the load.
         scopes = [
-            f3411_scope.Read,
-            f3411_scope.Write,
             f3548_scope.StrategicCoordination,
-            "rid.display_provider",
-            "rid.service_provider",
         ]
         oauth_adapter = auth.make_auth_adapter(auth_spec)
 

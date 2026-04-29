@@ -7,7 +7,6 @@ import threading
 import time
 import urllib.parse
 import weakref
-from dataclasses import dataclass
 from enum import Enum
 
 import jwt
@@ -16,12 +15,7 @@ from aiohttp import ClientSession
 from loguru import logger
 
 ALL_SCOPES = [
-    "dss.write.identification_service_areas",
-    "dss.read.identification_service_areas",
     "utm.strategic_coordination",
-    "utm.conformance_monitoring_sa",
-    "utm.constraint_management",
-    "utm.constraint_consumption",
 ]
 
 EPOCH = datetime.datetime.fromtimestamp(0, datetime.UTC)
@@ -29,18 +23,9 @@ TOKEN_REFRESH_MARGIN = datetime.timedelta(seconds=15)
 CLIENT_TIMEOUT = 10  # seconds
 SOCKET_KEEP_ALIVE_LIMIT = 57  # seconds.
 
-AUTHORIZATION_DT = "authorization_dt"
-"""This attribute may be added to a PreparedRequest indicating the timedelta required to obtain authorization"""
-
 
 AuthSpec = str
 """Specification for means by which to obtain access tokens."""
-
-
-@dataclass
-class AdditionalHeaders:
-    headers: dict[str, str]
-    token_issuance_seconds: float | None = None
 
 
 class AuthAdapter:
@@ -54,48 +39,33 @@ class AuthAdapter:
 
         raise NotImplementedError()
 
-    def get_headers(
-        self, url: str, scopes: list[str] | None = None
-    ) -> AdditionalHeaders:
+    def get_headers(self, url: str, scopes: list[str] | None = None) -> dict[str, str]:
         if scopes is None:
             scopes = ALL_SCOPES
         scopes = [s.value if isinstance(s, Enum) else s for s in scopes]
         intended_audience = urllib.parse.urlparse(url).hostname
 
         if not intended_audience:
-            return AdditionalHeaders(headers={})
+            return {}
 
         scope_string = " ".join(scopes)
         if intended_audience not in self._tokens:
             self._tokens[intended_audience] = {}
         if scope_string not in self._tokens[intended_audience]:
-            t0 = time.monotonic()
             token = self.issue_token(intended_audience, scopes)
-            dt_s = time.monotonic() - t0
         else:
             token = self._tokens[intended_audience][scope_string]
-            dt_s = None
         payload = jwt.decode(token, options={"verify_signature": False})
         expires = EPOCH + datetime.timedelta(seconds=payload["exp"])
         if datetime.datetime.now(datetime.UTC) > expires - TOKEN_REFRESH_MARGIN:
-            t0 = time.monotonic()
             token = self.issue_token(intended_audience, scopes)
-            dt_s = (dt_s or 0) + (time.monotonic() - t0)
         self._tokens[intended_audience][scope_string] = token
-        return AdditionalHeaders(
-            headers={"Authorization": "Bearer " + token}, token_issuance_seconds=dt_s
-        )
+        return {"Authorization": "Bearer " + token}
 
-    def add_headers(
-        self, request: requests.PreparedRequest, scopes: list[str]
-    ) -> AdditionalHeaders:
+    def add_headers(self, request: requests.PreparedRequest, scopes: list[str]):
         if request.url:
-            additional_headers = self.get_headers(request.url, scopes)
-            for k, v in additional_headers.headers.items():
+            for k, v in self.get_headers(request.url, scopes).items():
                 request.headers[k] = v
-            return additional_headers
-        else:
-            return AdditionalHeaders(headers={})
 
     def get_sub(self) -> str | None:
         """Retrieve `sub` claim from one of the existing tokens"""
@@ -136,8 +106,6 @@ class UTMClientSession(requests.Session):
         auth_adapter: AuthAdapter | None = None,
         timeout_seconds: float | None = None,
     ):
-        """Instances should usually be constructed using a factory to avoid unnecessary duplication."""
-
         super().__init__()
 
         with UTMClientSession._session_id_lock:
@@ -207,21 +175,6 @@ class UTMClientSession(requests.Session):
 
         return super().prepare_request(request, **kwargs)
 
-    def add_auth(
-        self, prepared_request: requests.PreparedRequest, scopes: list[str] | None
-    ) -> requests.PreparedRequest:
-        if scopes and self.auth_adapter:
-            additional_headers = self.auth_adapter.add_headers(prepared_request, scopes)
-            if additional_headers.token_issuance_seconds:
-                setattr(
-                    prepared_request,
-                    AUTHORIZATION_DT,
-                    datetime.timedelta(
-                        seconds=additional_headers.token_issuance_seconds
-                    ),
-                )
-        return prepared_request
-
     def adjust_request_kwargs(self, kwargs):
         if self.auth_adapter:
             scopes = None
@@ -234,7 +187,14 @@ class UTMClientSession(requests.Session):
             if scopes is None:
                 scopes = self.default_scopes
 
-            kwargs["auth"] = lambda req: self.add_auth(req, scopes)
+            def auth(
+                prepared_request: requests.PreparedRequest,
+            ) -> requests.PreparedRequest:
+                if scopes and self.auth_adapter:
+                    self.auth_adapter.add_headers(prepared_request, scopes)
+                return prepared_request
+
+            kwargs["auth"] = auth
         if "timeout" not in kwargs:
             kwargs["timeout"] = self.timeout_seconds
         return kwargs
@@ -256,31 +216,6 @@ class UTMClientSession(requests.Session):
 
     def delete(self, *args, **kwargs):
         return super().delete(*args, **kwargs)
-
-
-class UTMClientSessionFactory:
-    _sessions: dict[tuple, UTMClientSession]
-
-    def __init__(self):
-        self._sessions = {}
-
-    def get_session(
-        self,
-        prefix_url: str,
-        auth_adapter: AuthAdapter | None = None,
-        timeout_seconds: float | None = None,
-    ) -> UTMClientSession:
-        key = (prefix_url, auth_adapter, timeout_seconds)
-        if key not in self._sessions:
-            self._sessions[key] = UTMClientSession(
-                prefix_url=prefix_url,
-                auth_adapter=auth_adapter,
-                timeout_seconds=timeout_seconds,
-            )
-        return self._sessions[key]
-
-
-utm_client_session_factory = UTMClientSessionFactory()
 
 
 class AsyncUTMTestSession:
@@ -328,8 +263,10 @@ class AsyncUTMTestSession:
                 raise ValueError(
                     "All tests must specify auth scope for all session requests.  Either specify as an argument for each individual HTTP call, or decorate the test with @default_scope."
                 )
-            additional_headers = self.auth_adapter.get_headers(url, scopes)
-            kwargs["headers"] = additional_headers.headers
+            headers = {}
+            for k, v in self.auth_adapter.get_headers(url, scopes).items():
+                headers[k] = v
+            kwargs["headers"] = headers
             if method == "PUT" and kwargs.get("data"):
                 kwargs["json"] = kwargs["data"]
                 del kwargs["data"]
