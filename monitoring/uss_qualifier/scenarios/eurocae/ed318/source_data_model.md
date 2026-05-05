@@ -10,10 +10,6 @@ This scenario verifies that a JSON document complies with the ED-318 UAS Geograp
 
 The file or url of the document to be tested.
 
-### source_schema
-
-The file or url of the schema to be tested.
-
 ## ED-318 data model compliance test case
 
 ### Valid source test step
