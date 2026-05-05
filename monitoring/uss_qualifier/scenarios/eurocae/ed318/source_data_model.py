@@ -4,8 +4,6 @@ from jsonschema import validate
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 
-# from uas_standards.eurocae_ed318 import UASZoneVersion
-
 from monitoring.uss_qualifier.resources.eurocae.ed318.source_document import (
     SourceDocument,
 )
