@@ -159,7 +159,7 @@ Attempt to query and search for the deleted constraint reference in various ways
 #### 🛑 Deleted CR cannot be retrieved from all DSS instances check
 
 If a DSS returns an constraint reference that was previously successfully deleted from the primary DSS,
-either one of the primary DSS or the DSS that returned the constraint reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**, **[astm.f3548.v21.DSS0210,A2-7-2,3b](../../../../../requirements/astm/f3548/v21.md)**,
+either one of the primary DSS or the DSS that returned the constraint reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**, **[astm.f3548.v21.DSS0210,A2-7-2,3d](../../../../../requirements/astm/f3548/v21.md)**,
 **[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
 
 #### [CR can be searched for](../fragments/cr/crud/search_query.md)
@@ -167,7 +167,7 @@ either one of the primary DSS or the DSS that returned the constraint reference 
 #### 🛑 Deleted CR cannot be searched for from all DSS instances check
 
 If a DSS returns an constraint reference that was previously successfully deleted from the primary DSS,
-either one of the primary DSS or the DSS that returned the constraint reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**, **[astm.f3548.v21.DSS0210,A2-7-2,3a](../../../../../requirements/astm/f3548/v21.md)**,
+either one of the primary DSS or the DSS that returned the constraint reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**, **[astm.f3548.v21.DSS0210,A2-7-2,3c](../../../../../requirements/astm/f3548/v21.md)**,
 **[astm.f3548.v21.DSS0215](../../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.DSS0020](../../../../../requirements/astm/f3548/v21.md)**.
 
 ## [Cleanup](../clean_workspace_constraints_during_cleanup.md)
