@@ -57,6 +57,12 @@ v1:
                   - astm.f3411.v22a.dss_provider
                   - astm.f3411.v19.dss_provider
                   - astm.f3548.v21.dss_provider
+                exclude:
+                  requirements:
+                    # the following 3 requirements are about the DSS not retaining precise geographical extents, which cannot be tested automatically
+                    - astm.f3411.v19.DSS0040
+                    - astm.f3411.v22a.DSS0040
+                    - astm.f3548.v21.DSS0010
         participant_requirements:
           uss1: all_astm_dss_requirements
           uss2: all_astm_dss_requirements
