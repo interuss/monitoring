@@ -215,7 +215,13 @@ class DSSWrapper:
 
             self.handle_query_result(check, isa, f"Failed to get ISA {isa_id}")
 
-            if isa_id != isa.isa.id:
+            if isa.isa is None:
+                check.record_failed(
+                    summary="DSS did not return an ISA",
+                    details=f"Expected ISA ID {isa_id} but got nothing",
+                    query_timestamps=[isa.query.request.timestamp],
+                )
+            elif isa_id != isa.isa.id:
                 check.record_failed(
                     summary="DSS did not return correct ISA",
                     details=f"Expected ISA ID {isa_id} but got {isa.id}",
@@ -531,7 +537,7 @@ class DSSWrapper:
                 check, isa, f"Failed to get ISA {isa_id}", {404, 200}
             )
 
-            if isa.status_code == 404:
+            if isa.status_code == 404 or isa.isa is None:
                 return None
 
             del_isa = mutate.delete_isa(
@@ -671,7 +677,13 @@ class DSSWrapper:
 
             self.handle_query_result(check, sub, f"Failed to get subscription {sub_id}")
 
-            if sub_id != sub.subscription.id:
+            if sub.subscription is None:
+                check.record_failed(
+                    summary="DSS did not return a subscription",
+                    details=f"Expected Subscription ID {sub_id} but got nothing",
+                    query_timestamps=[sub.query.request.timestamp],
+                )
+            elif sub_id != sub.subscription.id:
                 check.record_failed(
                     summary="DSS did not return correct subscription",
                     details=f"Expected Subscription ID {sub_id} but got {sub.subscription.id}",
@@ -869,7 +881,13 @@ class DSSWrapper:
                 check, del_sub, f"Failed to delete subscription {sub_id}"
             )
 
-            if sub_version != del_sub.subscription.version:
+            if del_sub.subscription is None:
+                check.record_failed(
+                    summary="Deleted subscription not returned",
+                    details="DSS reported not subscription during deletion",
+                    query_timestamps=[del_sub.query.request.timestamp],
+                )
+            elif sub_version != del_sub.subscription.version:
                 check.record_failed(
                     summary="Deleted subscription did not match",
                     details=f"DSS reported deletion of version {sub_version} while expecting {del_sub.subscription.version}",
@@ -929,6 +947,7 @@ class DSSWrapper:
 
         :return: the DSS response if the subscription exists
         """
+        check = None
         try:
             with self._scenario.check(
                 "Subscription can be queried by ID", [self.participant_id]
@@ -944,7 +963,7 @@ class DSSWrapper:
                     check, sub, f"Failed to get subscription {sub_id}", {404, 200}
                 )
 
-            if sub.status_code == 404:
+            if sub.status_code == 404 or sub.subscription is None:
                 return None
 
             with self._scenario.check(
@@ -968,7 +987,8 @@ class DSSWrapper:
             return del_sub
 
         except QueryError as e:
-            self._handle_query_error(check, e)
+            if check:
+                self._handle_query_error(check, e)
         raise RuntimeError(
             "DSS query was not successful, but a High Severity issue didn't interrupt execution"
         )
