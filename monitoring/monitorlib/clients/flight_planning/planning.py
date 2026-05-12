@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from uas_standards.astm.f3548.v21 import api as f3548v21
@@ -18,7 +18,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.fetch import Query
 
 
-class PlanningActivityResult(str, Enum):
+class PlanningActivityResult(StrEnum):
     """The result of the flight planning operation."""
 
     Completed = "Completed"
@@ -34,7 +34,7 @@ class PlanningActivityResult(str, Enum):
     """The USS's implementation does not support the attempted interaction.  For instance, if the request specified a high-priority flight and the USS does not support management of high-priority flights."""
 
 
-class FlightPlanStatus(str, Enum):
+class FlightPlanStatus(StrEnum):
     """Status of a user's flight plan."""
 
     NotPlanned = "NotPlanned"
@@ -63,7 +63,7 @@ class FlightPlanStatus(str, Enum):
         return FlightPlanStatus.Planned
 
 
-class AdvisoryInclusion(str, Enum):
+class AdvisoryInclusion(StrEnum):
     """Indication of whether any advisories or conditions were provided to the user along with the result of a flight planning attempt."""
 
     Unknown = "Unknown"
@@ -160,7 +160,7 @@ class ClearAreaResponse(ImplicitDict):
         )
 
 
-class Conflict(str, Enum):
+class Conflict(StrEnum):
     """Conflict status as indicated in the notification."""
 
     Unknown = "Unknown"

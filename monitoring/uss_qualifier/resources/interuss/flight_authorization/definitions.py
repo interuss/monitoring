@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 
 from implicitdict import ImplicitDict
 
@@ -8,7 +8,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
 )
 
 
-class AcceptanceExpectation(str, Enum):
+class AcceptanceExpectation(StrEnum):
     MustBeRejected = "MustBeRejected"
     """When a flight planner service provider is requested to accept the flight described in this step, the service provider must decline to create the flight.  Accepting the flight successfully will cause a failed check."""
 
@@ -19,7 +19,7 @@ class AcceptanceExpectation(str, Enum):
     """The service provider may choose to accept the flight or not.  Presumably this option would be accompanied by a specific conditions_expectation to ensure that conditions were present (or absent) if the flight were accepted."""
 
 
-class ConditionsExpectation(str, Enum):
+class ConditionsExpectation(StrEnum):
     Irrelevant = "Irrelevant"
     """Whether conditions accompanying the flight planning attempt are present is irrelevant to this feature check."""
 

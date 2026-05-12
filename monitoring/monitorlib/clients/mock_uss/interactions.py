@@ -1,12 +1,12 @@
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.fetch import Query
 
 
-class QueryDirection(str, Enum):
+class QueryDirection(StrEnum):
     Incoming = "Incoming"
     """The query originated from a remote client and was handled by the system reporting the interaction."""
 

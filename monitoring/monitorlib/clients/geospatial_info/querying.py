@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 
 from implicitdict import ImplicitDict, Optional
 from uas_standards.interuss.automated_testing.geospatial_map.v1 import (
@@ -9,7 +9,7 @@ from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.geotemporal import Volume4D
 
 
-class OperationalImpact(str, Enum):
+class OperationalImpact(StrEnum):
     """The specified outcome if a user attempted to plan a flight."""
 
     Block = "Block"
@@ -68,7 +68,7 @@ class GeospatialFeatureCheck(ImplicitDict):
         )
 
 
-class SelectionOutcome(str, Enum):
+class SelectionOutcome(StrEnum):
     """Indication of whether one or more applicable geospatial features were selected."""
 
     Present = "Present"

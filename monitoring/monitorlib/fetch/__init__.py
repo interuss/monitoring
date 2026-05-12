@@ -5,7 +5,7 @@ import os
 import traceback
 import uuid
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from http.client import RemoteDisconnected
 from typing import Optional, Self, TypeVar
 from urllib.parse import urlparse
@@ -230,7 +230,7 @@ def describe_flask_response(resp: flask.Response, elapsed_s: float):
     return ResponseDescription(**kwargs)
 
 
-class QueryType(str, Enum):
+class QueryType(StrEnum):
     Unknown = "unknown"
 
     # ASTM F3411-19 and F3411-22a (RID)

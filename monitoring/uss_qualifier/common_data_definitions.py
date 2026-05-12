@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class Severity(str, Enum):
+class Severity(StrEnum):
     Critical = "Critical"
     """The system under test has a critical problem that justifies the discontinuation of testing.
 

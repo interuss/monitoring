@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from implicitdict import ImplicitDict, Optional
 from uas_standards.ansi_cta_2063_a import SerialNumber
@@ -29,7 +29,7 @@ class ASTMF354821OpIntentInformation(ImplicitDict):
 # ===== U-space =====
 
 
-class FlightAuthorisationDataOperationCategory(str, Enum):
+class FlightAuthorisationDataOperationCategory(StrEnum):
     """Category of UAS operation (‘open’, ‘specific’, ‘certified’) as defined in COMMISSION DELEGATED REGULATION (EU) 2019/945. Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 4."""
 
     Unknown = "Unknown"
@@ -38,7 +38,7 @@ class FlightAuthorisationDataOperationCategory(str, Enum):
     Certified = "Certified"
 
 
-class OperationMode(str, Enum):
+class OperationMode(StrEnum):
     """Specify if the operation is a `VLOS` or `BVLOS` operation. Required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 2."""
 
     Undeclared = "Undeclared"
@@ -46,7 +46,7 @@ class OperationMode(str, Enum):
     Bvlos = "Bvlos"
 
 
-class UASClass(str, Enum):
+class UASClass(StrEnum):
     """Specify the class of the UAS to be flown, the specifition matches EASA class identification label categories. UAS aircraft class as defined in COMMISSION DELEGATED REGULATION (EU) 2019/945 (C0 to C4) and COMMISSION DELEGATED REGULATION (EU) 2020/1058 (C5 and C6). This field is required by ANNEX IV of COMMISSION IMPLEMENTING REGULATION (EU) 2021/664, paragraph 4."""
 
     Other = "Other"
@@ -108,7 +108,7 @@ class FlightAuthorisationData(ImplicitDict):
 # ===== RPAS Operating Rules 2.6 =====
 
 
-class RPAS26FlightDetailsOperatorType(str, Enum):
+class RPAS26FlightDetailsOperatorType(StrEnum):
     """The type of operator."""
 
     Recreational = "Recreational"
@@ -116,7 +116,7 @@ class RPAS26FlightDetailsOperatorType(str, Enum):
     ReOC = "ReOC"
 
 
-class RPAS26FlightDetailsAircraftType(str, Enum):
+class RPAS26FlightDetailsAircraftType(StrEnum):
     """Type of vehicle being used as per ASTM F3411-22a."""
 
     NotDeclared = "NotDeclared"
@@ -137,7 +137,7 @@ class RPAS26FlightDetailsAircraftType(str, Enum):
     Other = "Other"
 
 
-class RPAS26FlightDetailsFlightProfile(str, Enum):
+class RPAS26FlightDetailsFlightProfile(StrEnum):
     """Type of flight profile."""
 
     AutomatedGrid = "AutomatedGrid"
@@ -179,7 +179,7 @@ class RPAS26FlightDetails(ImplicitDict):
 FlightID = str
 
 
-class AirspaceUsageState(str, Enum):
+class AirspaceUsageState(StrEnum):
     """User's current usage of the airspace defined in the flight plan."""
 
     Planned = "Planned"
@@ -189,7 +189,7 @@ class AirspaceUsageState(str, Enum):
     """The user is currently using the defined area with an active UAS."""
 
 
-class UasState(str, Enum):
+class UasState(StrEnum):
     """State of the user's UAS associated with a flight plan."""
 
     Nominal = "Nominal"
@@ -252,7 +252,7 @@ class BasicFlightPlanInformation(ImplicitDict):
         return state
 
 
-class UAType(str, Enum):
+class UAType(StrEnum):
     """The UA Type can help infer performance, speed, and duration of flights, for example, a
     "fixed wing" can generally fly in a forward direction only (as compared to a multi-rotor).
 
@@ -292,14 +292,14 @@ class UASRegistrationNumber(ImplicitDict):
     """Authority-assigned number or identifier."""
 
 
-class UAClassificationEUCategory(str, Enum):
+class UAClassificationEUCategory(StrEnum):
     EUCategoryUndefined = "EUCategoryUndefined"
     Open = "Open"
     Specific = "Specific"
     Certified = "Certified"
 
 
-class UAClassificationEUClass(str, Enum):
+class UAClassificationEUClass(StrEnum):
     EUClassUndefined = "EUClassUndefined"
     Class0 = "Class0"
     Class1 = "Class1"
@@ -555,7 +555,7 @@ class FlightInfo(ImplicitDict):
             )
 
 
-class ExecutionStyle(str, Enum):
+class ExecutionStyle(StrEnum):
     Hypothetical = "Hypothetical"
     """The user does not want the USS to actually perform any action regarding the actual flight plan. Instead, the user would like to know the likely outcome if the action were hypothetically attempted. The response to this request will not refer to an actual flight plan, or an actual state change in an existing flight plan, but rather a hypothetical flight plan or a hypothetical change to an existing flight plan."""
 

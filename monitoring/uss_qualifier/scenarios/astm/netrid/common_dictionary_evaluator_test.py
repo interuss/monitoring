@@ -595,7 +595,7 @@ def _assert_generic_evaluator_result(
     )
 
 
-def _build_generic_evaluator_objects(
+def _build_generic_evaluator_objects[T](
     injected_field_setter: Callable[[Any, T], list[Any]],
     sp_field_setter: Callable[[Any, T], Any],
     dp_field_setter: Callable[[Any, T], Any],
@@ -622,7 +622,7 @@ def _build_generic_evaluator_objects(
     return injected, sp_observed, dp_observed
 
 
-def _assert_generic_evaluator_correct_field_is_used(
+def _assert_generic_evaluator_correct_field_is_used[T](
     *fct_and_setters: list[Any], valid_value: T, valid_value_2: T
 ):
     """
@@ -684,7 +684,7 @@ def _assert_generic_evaluator_valid_value[T](
     )
 
 
-def _assert_generic_evaluator_invalid_value(
+def _assert_generic_evaluator_invalid_value[T](
     *fct_and_setters: list[Any],
     invalid_value: T,
     valid_value: T,
@@ -790,7 +790,7 @@ def _assert_generic_evaluator_defaults[T2, T](
     )
 
 
-def _assert_generic_evaluator_dont_have_default(
+def _assert_generic_evaluator_dont_have_default[T](
     *fct_and_setters: list[Any], valid_value: T, valid_value_2: T
 ):
     """
@@ -844,7 +844,7 @@ def _assert_generic_evaluator_dont_have_default(
     )
 
 
-def _assert_generic_evaluator_equivalent(
+def _assert_generic_evaluator_equivalent[T](
     *fct_and_setters: list[Any], v1: T, v2: T, rid_version: RIDVersion | None = None
 ):
     """
@@ -867,7 +867,7 @@ def _assert_generic_evaluator_equivalent(
     )
 
 
-def _assert_generic_evaluator_not_equivalent(
+def _assert_generic_evaluator_not_equivalent[T](
     *fct_and_setters: list[Any], v1: T, v2: T, rid_version: RIDVersion | None = None
 ):
     """

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from implicitdict import ImplicitDict, Optional
 
@@ -60,7 +60,7 @@ class TestSuiteDeclaration(ImplicitDict):
             return "<in-configuration definition>"
 
 
-class ReactionToFailure(str, Enum):
+class ReactionToFailure(StrEnum):
     Continue = "Continue"
     """If the test suite action fails, continue to the next action in that test suite"""
 

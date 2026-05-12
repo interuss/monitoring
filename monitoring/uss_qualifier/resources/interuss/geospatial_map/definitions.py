@@ -1,11 +1,11 @@
-from enum import Enum
+from enum import StrEnum
 
 from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.geotemporal import Volume4DTemplateCollection
 
 
-class ExpectedFeatureCheckResult(str, Enum):
+class ExpectedFeatureCheckResult(StrEnum):
     Block = "Block"
     """When a service provider being tested as a geospatial map provider is queried for whether any features are present for the specified volumes that would cause the flight described in this feature check to be blocked, the service provider must respond affirmatively; responding negatively will cause a failed check."""
 
