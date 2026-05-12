@@ -81,7 +81,7 @@ services:
     networks: [dss_internal_network]
 
   rid_bootstrapper:
-    image: interuss/dss:v0.21.0-rc1
+    image: interuss/dss:v0.22.0
     profiles: [bootstrap-crdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/rid --db_version latest --cockroach_host db1.uss1.localutm"
     depends_on:
@@ -92,7 +92,7 @@ services:
       disable: true
 
   scd_bootstrapper:
-    image: interuss/dss:v0.21.0-rc1
+    image: interuss/dss:v0.22.0
     profiles: [bootstrap-crdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/scd --db_version latest --cockroach_host db1.uss1.localutm"
     depends_on:
@@ -103,7 +103,7 @@ services:
       disable: true
 
   aux_bootstrapper:
-    image: interuss/dss:v0.21.0-rc1
+    image: interuss/dss:v0.22.0
     profiles: [bootstrap-crdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/aux_ --db_version latest --cockroach_host db1.uss1.localutm"
     depends_on:
@@ -114,7 +114,7 @@ services:
       disable: true
 
   rid_bootstrapper-ybdb:
-    image: interuss/dss:v0.21.0-rc1
+    image: interuss/dss:v0.22.0
     profiles: [bootstrap-ybdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/rid --db_version latest --datastore_host db1.uss1.localutm --datastore_user yugabyte --datastore_port 5433"
     restart: on-failure
@@ -123,7 +123,7 @@ services:
       disable: true
 
   scd_bootstrapper-ybdb:
-    image: interuss/dss:v0.21.0-rc1
+    image: interuss/dss:v0.22.0
     profiles: [bootstrap-ybdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/scd --db_version latest --datastore_host db1.uss1.localutm --datastore_user yugabyte --datastore_port 5433"
     restart: on-failure
@@ -132,7 +132,7 @@ services:
       disable: true
 
   aux_bootstrapper-ybdb:
-    image: interuss/dss:v0.21.0-rc1
+    image: interuss/dss:v0.22.0
     profiles: [bootstrap-ybdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/aux_ --db_version latest --datastore_host db1.uss1.localutm --datastore_user yugabyte --datastore_port 5433"
     restart: on-failure
@@ -141,7 +141,7 @@ services:
       disable: true
 
   dss:
-    image: interuss/dss:v0.21.0-rc1
+    image: interuss/dss:v0.22.0
     command: /startup/core_service.sh ${DEBUG_ON:-0}
     profiles: [ crdb, ybdb ]
     restart: always
