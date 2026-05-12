@@ -33,12 +33,25 @@ def get_folder_details(folder_elem):
         polygons = placemark.xpath(".//kml:Polygon", namespaces=KML_NAMESPACE)
 
         if placemark_name == "operator_location":
-            operator_point = folder_elem.xpath(
-                ".//kml:Placemark/kml:Point/kml:coordinates", namespaces=KML_NAMESPACE
-            )[0]
-            if operator_point:
-                operator_point = str(operator_point).split(",")
-                operator_location = {"lng": operator_point[0], "lat": operator_point[1]}
+            point_elem = placemark.xpath(".//kml:Point", namespaces=KML_NAMESPACE)
+            if point_elem:
+                operator_point = point_elem[0].xpath(
+                    ".//kml:coordinates", namespaces=KML_NAMESPACE
+                )
+                if operator_point:
+                    operator_point = str(operator_point[0]).split(",")
+                    operator_location = {
+                        "lng": operator_point[0],
+                        "lat": operator_point[1],
+                    }
+
+                    # parse the altitude only if it is above MSL
+                    altitude_mode = point_elem[0].xpath(
+                        ".//kml:altitudeMode", namespaces=KML_NAMESPACE
+                    )
+                    if altitude_mode and altitude_mode[0] == "absolute":
+                        operator_location["alt"] = operator_point[2]
+
         if polygons:
             if placemark_name.startswith("alt:"):
                 polygon_coords = get_coordinates_from_kml(

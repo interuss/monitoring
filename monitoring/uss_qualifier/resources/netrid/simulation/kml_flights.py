@@ -12,6 +12,9 @@ from implicitdict import StringBasedDateTime
 from shapely.geometry import LineString, Point, Polygon
 from uas_standards.astm.f3411.v22a import constants
 from uas_standards.interuss.automated_testing.rid.v1 import injection
+from uas_standards.interuss.automated_testing.rid.v1.injection import (
+    OperatorAltitudeAltitudeType,
+)
 
 from monitoring.monitorlib.geo import flatten, unflatten
 from monitoring.monitorlib.kml.parsing import get_kml_content, get_polygon_speed
@@ -265,6 +268,12 @@ def generate_flight_record(
         registration_number=flight_description.get("registration_number"),
         eu_classification=eu_classification,
     )
+
+    if operator_location.get("alt"):
+        rid_details.operator_altitude = injection.OperatorAltitude(
+            altitude=float(operator_location.get("alt")),
+            altitude_type=OperatorAltitudeAltitudeType.Fixed,
+        )
 
     return FullFlightRecord(
         reference_time=StringBasedDateTime(now_isoformat),

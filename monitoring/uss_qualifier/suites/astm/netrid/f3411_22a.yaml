@@ -198,6 +198,32 @@ participant_verifiable_capabilities:
             checked:
               requirement_sets:
                 - "astm.f3411.v22a.service_provider#Operator Position provider"
+  - id: service_provider_operator_altitude_provider
+    name: NetRID Service Provider providing operator altitude data field
+    description: Participant fulfills testable requirements necessary to provide operator altitude data field according to F3411-22a.
+    verification_condition:
+      all_conditions:
+        conditions:
+          - capability_verified:
+              capability_ids:
+                - service_provider
+          - requirements_checked:
+              checked:
+                requirement_sets:
+                  - "astm.f3411.v22a.service_provider#Operator Altitude provider"
+  - id: service_provider_operator_location_type_provider
+    name: NetRID Service Provider providing operator location type data field
+    description: Participant fulfills testable requirements necessary to provide operator location type data field according to F3411-22a.
+    verification_condition:
+      all_conditions:
+        conditions:
+          - capability_verified:
+              capability_ids:
+                - service_provider
+          - requirements_checked:
+              checked:
+                requirement_sets:
+                  - "astm.f3411.v22a.service_provider#Operator Location Type provider"
   - id: service_provider_operational_status_provider
     name: NetRID Service Provider providing operational status data field
     description: Participant fulfills testable requirements necessary to provide operational status data field according to F3411-22a.
