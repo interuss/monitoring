@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from uas_standards.astm.f3548.v21.api import (
@@ -778,7 +778,7 @@ class OpIntentValidator:
         return failure_found
 
 
-class OpIntentValidationFailureType(str, Enum):
+class OpIntentValidationFailureType(StrEnum):
     DataFormat = "DataFormat"
     """The operational intent did not validate against the canonical JSON Schema."""
 

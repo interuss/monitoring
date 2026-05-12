@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import os
-from enum import Enum
+from enum import StrEnum
 
 import numpy as np
 import pyproj
@@ -38,7 +38,7 @@ DISTANCE_TOLERANCE_M = 0.01
 COORD_TOLERANCE_DEG = 360 / EARTH_CIRCUMFERENCE_M * DISTANCE_TOLERANCE_M
 
 
-class DistanceUnits(str, Enum):
+class DistanceUnits(StrEnum):
     M = "M"
     """Meters"""
 
@@ -213,7 +213,7 @@ class Circle(ImplicitDict):
         )
 
 
-class AltitudeDatum(str, Enum):
+class AltitudeDatum(StrEnum):
     W84 = "W84"
     """WGS84 reference ellipsoid"""
 

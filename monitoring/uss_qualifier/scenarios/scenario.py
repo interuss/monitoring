@@ -4,7 +4,7 @@ import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from datetime import UTC, datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 from typing import Any, TypeVar
 
 import arrow
@@ -78,7 +78,7 @@ class TestRunCannotContinueError(Exception):
         super().__init__(msg)
 
 
-class ScenarioPhase(str, Enum):
+class ScenarioPhase(StrEnum):
     Undefined = "Undefined"
     NotStarted = "NotStarted"
     ReadyForTestCase = "ReadyForTestCase"

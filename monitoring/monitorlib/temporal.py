@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 
 import arrow
 from implicitdict import (
@@ -35,7 +35,7 @@ class NextSunPosition(ImplicitDict):
     """Elevation of the center of the sun above horizontal, in degrees."""
 
 
-class DayOfTheWeek(str, Enum):
+class DayOfTheWeek(StrEnum):
     Mo = "Mo"
     """Monday"""
     Tu = "Tu"

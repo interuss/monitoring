@@ -6,7 +6,7 @@ import re
 from abc import abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 from typing import Protocol, TypeVar
 
 import yaml
@@ -45,7 +45,7 @@ class Stopwatch:
             self.elapsed_time += datetime.now(UTC) - self._start_time
 
 
-class VolumeType(str, Enum):
+class VolumeType(StrEnum):
     OperationalIntent = "OperationalIntent"
 
 

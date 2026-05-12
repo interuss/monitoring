@@ -178,9 +178,9 @@ class TestFlight(injection.TestFlight):
     def order_telemetry(self):
         self.telemetry = sorted(
             self.telemetry,
-            key=lambda telemetry: telemetry.timestamp.datetime
-            if telemetry.timestamp
-            else 0,
+            key=lambda telemetry: (
+                telemetry.timestamp.datetime if telemetry.timestamp else 0
+            ),
         )
 
     def select_relevant_states(

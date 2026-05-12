@@ -1,6 +1,6 @@
 import os.path
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 
 import jsonschema.validators
@@ -10,7 +10,7 @@ from implicitdict import ImplicitDict
 from implicitdict.jsonschema import SchemaVars, make_json_schema
 
 
-class F3411_19(str, Enum):
+class F3411_19(StrEnum):
     OpenAPIPath = "interfaces/rid/v1/remoteid/augmented.yaml"
     GetFlightsResponse = "components.schemas.GetFlightsResponse"
     GetFlightDetailsResponse = "components.schemas.GetFlightDetailsResponse"
@@ -28,7 +28,7 @@ class F3411_19(str, Enum):
     )
 
 
-class F3411_22a(str, Enum):
+class F3411_22a(StrEnum):
     OpenAPIPath = "interfaces/rid/v2/remoteid/updated.yaml"
     GetFlightsResponse = "components.schemas.GetFlightsResponse"
     GetFlightDetailsResponse = "components.schemas.GetFlightDetailsResponse"
@@ -46,7 +46,7 @@ class F3411_22a(str, Enum):
     )
 
 
-class F3548_21(str, Enum):
+class F3548_21(StrEnum):
     OpenAPIPath = "interfaces/astm-utm/Protocol/utm.yaml"
     ErrorResponse = "components.schemas.ErrorResponse"
     GetOperationalIntentDetailsResponse = (

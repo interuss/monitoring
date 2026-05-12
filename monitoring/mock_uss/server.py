@@ -4,7 +4,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 from multiprocessing import Process
 
 import arrow
@@ -19,7 +19,7 @@ from .database import PeriodicTaskStatus, TaskError, db
 MAX_PERIODIC_LATENCY = timedelta(seconds=5)
 
 
-class TaskTrigger(str, Enum):
+class TaskTrigger(StrEnum):
     Setup = "Setup"
     Shutdown = "Shutdown"
 

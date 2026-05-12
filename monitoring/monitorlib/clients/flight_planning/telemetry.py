@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 
 from implicitdict import ImplicitDict
 
@@ -6,7 +6,7 @@ from monitoring.monitorlib.geo import Altitude, LatLngPoint
 from monitoring.monitorlib.temporal import Time
 
 
-class HorizontalAccuracy(str, Enum):
+class HorizontalAccuracy(StrEnum):
     """This is the NACp enumeration from ADS-B, plus 1m for a more complete range for UAs."""
 
     HAUnknown = "HAUnknown"
@@ -25,7 +25,7 @@ class HorizontalAccuracy(str, Enum):
     HA1m = "HA1m"
 
 
-class VerticalAccuracy(str, Enum):
+class VerticalAccuracy(StrEnum):
     """This is the GVA enumeration from ADS-B, plus some finer values for UAs."""
 
     VAUnknown = "VAUnknown"
@@ -38,7 +38,7 @@ class VerticalAccuracy(str, Enum):
     VA1m = "VA1m"
 
 
-class SpeedAccuracy(str, Enum):
+class SpeedAccuracy(StrEnum):
     """This is the same enumeration scale and values from ADS-B NACv."""
 
     SAUnknown = "SAUnknown"
@@ -49,7 +49,7 @@ class SpeedAccuracy(str, Enum):
     SA03mps = "SA03mps"
 
 
-class OperationalStatus(str, Enum):
+class OperationalStatus(StrEnum):
     """Indicates operational status of associated aircraft.
     * `Undeclared`: The system does not support acquisition of knowledge about the status of the aircraft.
     * `Ground`: The aircraft is reporting status but is not airborne.
@@ -67,7 +67,7 @@ class OperationalStatus(str, Enum):
     Unknown = "Unknown"
 
 
-class FunctionalState(str, Enum):
+class FunctionalState(StrEnum):
     """Functional state of the user's UAS associated with this flight plan.
 
     - `Nominal`: The user or UAS reports or implies that it is performing nominally, or has not indicated

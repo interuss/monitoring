@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import Enum
+from enum import StrEnum
 
 from implicitdict import ImplicitDict, Optional
 
@@ -109,7 +109,7 @@ class TestedScenario(ImplicitDict):
         )
 
 
-class TestedRequirementStatus(str, Enum):
+class TestedRequirementStatus(StrEnum):
     Pass = "Pass"
     PassWithFindings = "Pass (with findings)"
     Findings = "Findings"
@@ -185,7 +185,7 @@ class TestRunInformation(ImplicitDict):
     environment: str
 
 
-class ParticipantVerificationStatus(str, Enum):
+class ParticipantVerificationStatus(StrEnum):
     Unknown = "Unknown"
     """Participant verification status is not known."""
 

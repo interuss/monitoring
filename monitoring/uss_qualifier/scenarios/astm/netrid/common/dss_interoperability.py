@@ -3,7 +3,7 @@ import ipaddress
 import socket
 import uuid
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from urllib.parse import urlparse
 
 import s2sphere
@@ -28,7 +28,7 @@ DEFAULT_LOWER_ALT_M = 20
 DEFAULT_UPPER_ALT_M = 400
 
 
-class EntityType(str, Enum):
+class EntityType(StrEnum):
     ISA = "ISA"
     Sub = "Sub"
 

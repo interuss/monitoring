@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from implicitdict import ImplicitDict, Optional
 
@@ -118,7 +118,7 @@ class SkippedAction:
     reason: str
 
 
-class ActionNodeType(str, Enum):
+class ActionNodeType(StrEnum):
     Scenario = "Scenario"
     Suite = "Suite"
     ActionGenerator = "ActionGenerator"

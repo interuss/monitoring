@@ -24,7 +24,7 @@ from monitoring.uss_qualifier.reports.report import TestRunReport
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
-class Action(str, enum.Enum):
+class Action(enum.StrEnum):
     Check = "Check"
     Generate = "Generate"
 
