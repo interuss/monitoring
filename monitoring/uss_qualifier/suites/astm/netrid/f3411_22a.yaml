@@ -1,5 +1,7 @@
 name: ASTM F3411-22a
 resources:
+  test_env_version_providers: resources.versioning.VersionProvidersResource?
+  system_identity: resources.versioning.SystemIdentityResource?
   flights_data: resources.netrid.FlightDataResource
   service_providers: resources.netrid.NetRIDServiceProviders?
   observers: resources.netrid.NetRIDObserversResource?
@@ -16,6 +18,12 @@ resources:
   test_exclusions: resources.dev.TestExclusionsResource?
   uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
 actions:
+  - test_scenario:
+      scenario_type: scenarios.versioning.GetSystemVersions
+      resources:
+        version_providers: test_env_version_providers
+        system_identity: system_identity
+      on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.ServiceProviderNotifiesSlowUpdates
       resources:
