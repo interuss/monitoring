@@ -420,7 +420,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0340</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0420</a></td>
@@ -686,5 +686,11 @@
     <td><a href="../../requirements/uspace/article8.md">MSLAltitude</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/uspace/netrid/msl.md">U-space MSL altitude</a></td>
+  </tr>
+  <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/versioning.md">versioning</a></td>
+    <td><a href="../../requirements/versioning.md">ReportSystemVersion</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/versioning/get_system_versions.md">Get system versions</a></td>
   </tr>
 </table>
