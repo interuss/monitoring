@@ -78,7 +78,7 @@ Simply build the Docker container with the Dockerfile from the root directory. A
 ## Use
 1. Navigate to http://127.0.0.1:8089
 1. Start new test with number of Users to spawn and the rate to spawn them.
-1. For the Host, provide the DSS root endpoint used for testing. An example of such url is: http://dss.uss1.localutm/ in case local environment is setup with `make start-locally`
+1. For the Host, provide the DSS root endpoint used for testing. An example of such url is: http://dss1.uss1.localutm/ in case local environment is setup with `make start-locally`
 
 ## Examples to run tests locally
 
@@ -89,16 +89,16 @@ Before running all examples:
 
 ### ISA.py
 
-`docker run -e AUTH_SPEC="DummyOAuth(http://oauth.authority.localutm:8085/token,uss1)" --network="interop_ecosystem_network" -p 8089:8089 -v .:/app/ interuss/monitoring-dev uv run locust -f loadtest/locust_files/ISA.py -H http://dss.uss1.localutm -u 10 --uss-base-url http://dss.uss1.localutm`
+`docker run -e AUTH_SPEC="DummyOAuth(http://oauth.authority.localutm:8085/token,uss1)" --network="interop_ecosystem_network" -p 8089:8089 -v .:/app/ interuss/monitoring-dev uv run locust -f loadtest/locust_files/ISA.py -H http://dss1.uss1.localutm -u 10 --uss-base-url http://dss1.uss1.localutm`
 
 ### Sub.py
 
-`docker run -e AUTH_SPEC="DummyOAuth(http://oauth.authority.localutm:8085/token,uss1)" --network="interop_ecosystem_network" -p 8089:8089 -v .:/app/ interuss/monitoring-dev uv run locust -f loadtest/locust_files/Sub.py -H http://dss.uss1.localutm -u 10 --uss-base-url http://dss.uss1.localutm`
+`docker run -e AUTH_SPEC="DummyOAuth(http://oauth.authority.localutm:8085/token,uss1)" --network="interop_ecosystem_network" -p 8089:8089 -v .:/app/ interuss/monitoring-dev uv run locust -f loadtest/locust_files/Sub.py -H http://dss1.uss1.localutm -u 10 --uss-base-url http://dss1.uss1.localutm`
 
 ### SCD.py
 
-`docker run -e AUTH_SPEC="DummyOAuth(http://oauth.authority.localutm:8085/token,uss1)" --network="interop_ecosystem_network" -p 8089:8089 -v .:/app/ interuss/monitoring-dev uv run locust -f loadtest/locust_files/SCD.py -H http://dss.uss1.localutm -u 10 --area-lat -34.93 --area-lng 138.6 --area-radius 1000 --max-flight-distance 12000 --uss-base-url http://dss.uss1.localutm`
+`docker run -e AUTH_SPEC="DummyOAuth(http://oauth.authority.localutm:8085/token,uss1)" --network="interop_ecosystem_network" -p 8089:8089 -v .:/app/ interuss/monitoring-dev uv run locust -f loadtest/locust_files/SCD.py -H http://dss1.uss1.localutm -u 10 --area-lat -34.93 --area-lng 138.6 --area-radius 1000 --max-flight-distance 12000 --uss-base-url http://dss1.uss1.localutm`
 
 ### FlightsInSub.py
 
-`docker run -e AUTH_SPEC="DummyOAuth(http://oauth.authority.localutm:8085/token,uss1)" --network="interop_ecosystem_network" -p 8089:8089 -v .:/app/ interuss/monitoring-dev uv run locust -f loadtest/locust_files/FlightsInSub.py -H http://dss.uss1.localutm -u 10 --cluster-count 3 --base-lat -34.93 --base-lng 138.6 --area-radius 1000 --max-flight-distance 1000 --uss-base-url http://dss.uss1.localutm`
+`docker run -e AUTH_SPEC="DummyOAuth(http://oauth.authority.localutm:8085/token,uss1)" --network="interop_ecosystem_network" -p 8089:8089 -v .:/app/ interuss/monitoring-dev uv run locust -f loadtest/locust_files/FlightsInSub.py -H http://dss1.uss1.localutm -u 10 --cluster-count 3 --base-lat -34.93 --base-lng 138.6 --area-radius 1000 --max-flight-distance 1000 --uss-base-url http://dss1.uss1.localutm`

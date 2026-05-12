@@ -18,7 +18,7 @@ make image
 )
 
 AUTH="DummyOAuth(http://host.docker.internal:8085/token,uss1)"
-DSS="http://host.docker.internal:8082"
+DSS="http://host.docker.internal:8001"
 PUBLIC_KEY="/var/test-certs/auth2.pem"
 AUD=${MOCK_USS_TOKEN_AUDIENCE:-localhost,host.docker.internal}
 container_name="mock_uss_msgsigning"
