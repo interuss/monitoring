@@ -1,27 +1,27 @@
 from collections.abc import Callable
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import TypeVar
 
-from future.backports.datetime import datetime
-from implicitdict import ImplicitDict
-from requests.exceptions import RequestException
+import arrow
 from s2sphere import LatLngRect
-from uas_standards.astm.f3411.v19 import api as api_v19
-from uas_standards.astm.f3411.v22a import api as api_v22a
 
 from monitoring.monitorlib.clients.mock_uss.interactions import (
     Interaction,
     QueryDirection,
 )
-from monitoring.monitorlib.errors import stacktrace_string
+from monitoring.monitorlib.fetch import Query, QueryType
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.temporal import Time
 from monitoring.prober.infrastructure import register_resource_type
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.interuss import IDGeneratorResource
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
     MockUSSResource,
+)
+from monitoring.uss_qualifier.resources.interuss.uss_identification import (
+    USSIdentificationResource,
 )
 from monitoring.uss_qualifier.resources.netrid import (
     FlightDataResource,
@@ -36,7 +36,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.injection import (
 from monitoring.uss_qualifier.scenarios.interuss.mock_uss.test_steps import (
     direction_filter,
     get_mock_uss_interactions,
-    status_code_filter,
+    query_type_filter,
 )
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -50,6 +50,7 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
     _flights_data: FlightDataResource
     _service_providers: NetRIDServiceProviders
     _mock_uss: MockUSSClient
+    _uss_identification: USSIdentificationResource
 
     _injected_flights: list[InjectedFlight]
     _injected_tests: list[InjectedTest]
@@ -64,11 +65,13 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
         mock_uss: MockUSSResource,
         id_generator: IDGeneratorResource,
         dss_pool: DSSInstancesResource,
+        uss_identification: USSIdentificationResource,
     ):
         super().__init__()
         self._flights_data = flights_data
         self._service_providers = service_providers
         self._mock_uss = mock_uss.mock_uss
+        self._uss_identification = uss_identification
         self._dss_wrapper = DSSWrapper(self, dss_pool.dss_instances[0])
 
         self._injected_tests = []
@@ -98,14 +101,12 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
         self.end_test_step()
 
         self.begin_test_step("Injection")
+        injection_time = arrow.utcnow().datetime
         self._inject_flights()
         self.end_test_step()
 
         self.begin_test_step("Validate Mock USS received notification")
-        # Given that we know when flights are injected, we could narrow down the time window for
-        # which we are looking for notifications to something more precise than scenario start time.
-        # TODO tracked in #1052
-        self._validate_mock_uss_notifications(context.start_time)
+        self._validate_mock_uss_notifications(injection_time)
         self.end_test_step()
 
         self.end_test_case()
@@ -154,42 +155,56 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
             [tf.uss_participant_id for tf in self._injected_flights]
         )
 
-        def post_isa_filter(interaction: Interaction):
-            return (
-                interaction.query.request.method == "POST"
-                and "/uss/identification_service_areas/"
-                in interaction.query.request.url
-            )
+        def due_to_subscription_filter(interaction: Interaction) -> bool:
+            """Select only interactions that are notifications due to subscription we established"""
+            subscriptions = [
+                sub.get("subscription_id", None)
+                for sub in (interaction.query.request.json or {}).get(
+                    "subscriptions", []
+                )
+            ]
+            if self._subscription_id not in subscriptions:
+                return False
+            return True
 
-        def fetch_interactions() -> list[Interaction]:
+        def fetch_interactions() -> tuple[list[Interaction], Query]:
+            if self._rid_version == RIDVersion.f3411_22a:
+                query_type = QueryType.F3411v22aUSSPostIdentificationServiceArea
+            elif self._rid_version == RIDVersion.f3411_19:
+                query_type = QueryType.F3411v19USSPostIdentificationServiceArea
+            else:
+                raise NotImplementedError()
             return get_mock_uss_interactions(
                 self,
                 self._mock_uss,
                 Time(notifications_received_after),
                 direction_filter(QueryDirection.Incoming),
-                status_code_filter(204),
-                post_isa_filter,
-            )[0]
+                query_type_filter(query_type),
+                due_to_subscription_filter,
+            )
 
-        def includes_all_notifications(raw_interactions: list[Interaction]) -> bool:
+        def includes_all_notifications(
+            raw_interactions: tuple[list[Interaction], Query],
+        ) -> bool:
             pids_having_notified = self._relevant_notified_subs(
-                raw_interactions, relevant_participant_ids, notifications_received_after
+                raw_interactions[0], relevant_participant_ids
             )
             # We're done once we have a notification from each SP we injected a flight in
             return len(pids_having_notified) == len(relevant_participant_ids)
 
         # notifications are not immediate: we optimistically try early, and retry until
         # the permissible delay has passed, or we have received all notifications.
-        interactions = self._retry_with_backoff(
+        interactions, query = self._retry_with_backoff(
             fetch_interactions,
             retries=3,
             delay_s=1,
             delay_reason="waiting for expected notifications to be delivered",
             was_successful=includes_all_notifications,
         )
+
         # fish out the notification times per participant ID
         notifs_by_participant = self._relevant_notified_subs(
-            interactions, relevant_participant_ids, notifications_received_after
+            interactions, relevant_participant_ids
         )
         # For each of the service providers we injected flights in,
         # check that we received a notification. We don't check the latency as a single datapoint does not allow
@@ -208,61 +223,27 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
                     check.record_failed(
                         summary="No notification received",
                         details=f"No notification received within roughly {self._rid_version.dp_data_resp_percentile99_s} seconds from {test_flight.uss_participant_id} for subscription {self._subscription_id} about flight {test_flight.test_id} that happened within the subscription's boundaries.",
+                        queries=query,
                     )
                     continue
-
-    def _notif_operation_id(self) -> api_v19.OperationID | api_v22a.OperationID:
-        if self._rid_version.f3411_19:
-            return api_v19.OperationID.PostIdentificationServiceArea
-        elif self._rid_version.f3411_22a:
-            return api_v22a.OperationID.PostIdentificationServiceArea
-        else:
-            raise ValueError(f"Unsupported RID version: {self._rid_version}")
-
-    def _notif_param_type(
-        self,
-    ) -> type[
-        api_v19.PutIdentificationServiceAreaNotificationParameters
-        | api_v22a.PutIdentificationServiceAreaNotificationParameters
-    ]:
-        if self._rid_version == RIDVersion.f3411_19:
-            return api_v19.PutIdentificationServiceAreaNotificationParameters
-        elif self._rid_version == RIDVersion.f3411_22a:
-            return api_v22a.PutIdentificationServiceAreaNotificationParameters
-        else:
-            raise ValueError(f"Unsupported RID version: {self._rid_version}")
 
     def _relevant_notified_subs(
         self,
         raw_interactions: list[Interaction],
         relevant_pids: set[str],
-        received_after: datetime,
     ) -> dict[str, list[datetime]]:
-        # Parse version-specific notification parameters
-        PutIsaParamsType = self._notif_param_type()
-
-        relevant = []
+        notifs_by_participant: dict[ParticipantID, list[datetime]] = {}
         for interaction in raw_interactions:
-            received_at = interaction.query.request.received_at.datetime
-            notification: PutIsaParamsType = ImplicitDict.parse(
-                interaction.query.request.json, PutIsaParamsType
+            # Associate queries' clients to participants where possible
+            participant_id = self._uss_identification.identify_query_client(
+                interaction.query
             )
-            for sub in notification.subscriptions:
-                if (
-                    sub.subscription_id == self._subscription_id
-                    and "service_area"
-                    in notification  # deletion notification don't have this field
-                    and notification.service_area.owner in relevant_pids
-                    # We may sometimes receive slightly older and unrelated notifications which we filter out
-                    and received_at > received_after
-                ):
-                    relevant.append((received_at, notification.service_area.owner))
+            if not participant_id or participant_id not in relevant_pids:
+                continue
+            notifs = notifs_by_participant.get(participant_id, [])
+            notifs.append(interaction.query.request.received_at.datetime)
+            notifs_by_participant[participant_id] = notifs
 
-        notifs_by_participant: dict[str, list[datetime]] = {}
-        for received_at, participant_id in relevant:
-            if participant_id not in notifs_by_participant:
-                notifs_by_participant[participant_id] = []
-            notifs_by_participant[participant_id].append(received_at)
         return notifs_by_participant
 
     def cleanup(self):
@@ -285,19 +266,15 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
                 )
             sp = matching_sps[0]
             check = self.check("Successful test deletion", [sp.participant_id])
-            try:
-                query = sp.delete_test(injected_test.test_id, injected_test.version)
-                self.record_query(query)
-                if query.status_code != 200:
-                    raise ValueError(
-                        f"Received status code {query.status_code} after attempting to delete test {injected_test.test_id} at version {injected_test.version} from service provider {sp.participant_id}"
-                    )
+            query = sp.delete_test(injected_test.test_id, injected_test.version)
+            self.record_query(query)
+            if query.status_code == 200:
                 check.record_passed()
-            except (RequestException, ValueError) as e:
-                stacktrace = stacktrace_string(e)
+            else:
                 check.record_failed(
-                    summary="Error while trying to delete test flight",
-                    details=f"While trying to delete a test flight from {sp.participant_id}, encountered error:\n{stacktrace}",
+                    summary="Test flight deletion was unsuccessful",
+                    details=f"Received status code {query.status_code} after attempting to delete test {injected_test.test_id} at version {injected_test.version} from service provider {sp.participant_id}",
+                    queries=query,
                 )
         self.end_cleanup()
 

@@ -14,7 +14,7 @@ from loguru import logger
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib import fetch, inspection
 from monitoring.monitorlib.errors import current_stack_string
-from monitoring.monitorlib.fetch import QueryType
+from monitoring.monitorlib.fetch import Query, QueryType
 from monitoring.monitorlib.inspection import fullname
 from monitoring.monitorlib.temporal import TestTimeContext
 from monitoring.uss_qualifier import scenarios as scenarios_module
@@ -127,6 +127,7 @@ class PendingCheck:
         details: str = "",
         query_timestamps: list[datetime] | None = None,
         additional_data: dict | None = None,
+        queries: Query | Iterable[Query] | None = None,
     ) -> None:
         self._outcome_recorded = True
         if "severity" in self._documentation and self._documentation.severity:
@@ -159,10 +160,24 @@ class PendingCheck:
         }
         if additional_data is not None:
             kwargs["additional_data"] = additional_data
-        if query_timestamps is not None:
-            kwargs["query_report_timestamps"] = [
-                StringBasedDateTime(t) for t in query_timestamps
-            ]
+        if query_timestamps is not None or queries is not None:
+            query_report_timestamps = []
+            if query_timestamps is not None:
+                query_report_timestamps.extend(
+                    StringBasedDateTime(t) for t in query_timestamps
+                )
+            if isinstance(queries, Query):
+                if "initiated_at" in queries.request and queries.request.initiated_at:
+                    query_report_timestamps.append(
+                        StringBasedDateTime(queries.request.initiated_at)
+                    )
+            elif queries:
+                for query in queries:
+                    if "initiated_at" in query.request and query.request.initiated_at:
+                        query_report_timestamps.append(
+                            StringBasedDateTime(query.request.initiated_at)
+                        )
+            kwargs["query_report_timestamps"] = query_report_timestamps
         failed_check = FailedCheck(**kwargs)
         self._step_report.failed_checks.append(failed_check)
         if self._on_failed_check is not None:

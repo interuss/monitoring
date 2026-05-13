@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Any
 
 from uas_standards.astm.f3548.v21.api import (
     ConstraintReference,
@@ -343,6 +344,7 @@ class CRSynchronization(TestScenario):
         involved_participants: list[str],
         from_search: bool = False,
     ):
+        check_args: dict[str, Any] = {}
         with self.check(main_check_name, involved_participants) as main_check:
             with self.check(
                 "Propagated constraint reference contains the correct manager",
