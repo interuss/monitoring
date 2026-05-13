@@ -9,9 +9,7 @@ from implicitdict import ImplicitDict
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v22a
 from uas_standards.astm.f3411.v22a.api import (
-    Altitude,
     HorizontalAccuracy,
-    LatLngPoint,
     RIDHeightReference,
     RIDOperationalStatus,
     SpeedAccuracy,
@@ -23,6 +21,7 @@ from uas_standards.interuss.automated_testing.rid.v1.observation import (
     OperatorAltitudeAltitudeType,
 )
 
+from monitoring.monitorlib import geo
 from monitoring.monitorlib.fetch.rid import Flight
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
@@ -95,45 +94,45 @@ def _assert_operator_location(
 def test_operator_location():
     valid_locations: list[
         tuple[
-            LatLngPoint | None,
-            Altitude | None,
-            OperatorAltitudeAltitudeType | None,
-            LatLngPoint | None,
-            Altitude | None,
+            geo.LatLngPoint | None,
+            injection.Altitude | None,
+            injection.OperatorAltitudeAltitudeType | None,
+            geo.LatLngPoint | None,
+            geo.Altitude | None,
             OperatorAltitudeAltitudeType | None,
             int,
         ]
     ] = [
         (
-            LatLngPoint(lat=1.0, lng=1.0),
+            geo.LatLngPoint(lat=1.0, lng=1.0),
             None,
             None,
-            LatLngPoint(lat=1.0, lng=1.0),
-            None,
-            None,
-            2,
-        ),
-        (
-            LatLngPoint(lat=-90.0, lng=180.0),
-            None,
-            None,
-            LatLngPoint(lat=-90.0, lng=180.0),
+            geo.LatLngPoint(lat=1.0, lng=1.0),
             None,
             None,
             2,
         ),
         (
-            LatLngPoint(
+            geo.LatLngPoint(lat=-90.0, lng=180.0),
+            None,
+            None,
+            geo.LatLngPoint(lat=-90.0, lng=180.0),
+            None,
+            None,
+            2,
+        ),
+        (
+            geo.LatLngPoint(
                 lat=46.2,
                 lng=6.1,
             ),
-            Altitude(value=1),
-            OperatorAltitudeAltitudeType("Takeoff"),
-            LatLngPoint(
+            injection.Altitude(1),
+            injection.OperatorAltitudeAltitudeType("Takeoff"),
+            geo.LatLngPoint(
                 lat=46.2,
                 lng=6.1,
             ),
-            Altitude(value=1),
+            geo.Altitude.w84m(1),
             OperatorAltitudeAltitudeType("Takeoff"),
             6,
         ),
@@ -143,31 +142,34 @@ def test_operator_location():
 
     invalid_locations: list[
         tuple[
-            LatLngPoint | None,
-            Altitude | None,
+            geo.LatLngPoint | None,
+            injection.Altitude | None,
+            injection.OperatorAltitudeAltitudeType | None,
+            geo.LatLngPoint | None,
+            geo.Altitude | None,
             OperatorAltitudeAltitudeType | None,
             int,
             int,
         ]
     ] = [
         (
-            LatLngPoint(lat=-90.001, lng=0),  # out of range and valid
+            geo.LatLngPoint(lat=-90.001, lng=0),  # out of range and valid
             None,
             None,
-            LatLngPoint(lat=-90.001, lng=0),  # out of range and valid
+            geo.LatLngPoint(lat=-90.001, lng=0),  # out of range and valid
             None,
             None,
             1,
             1,
         ),
         (
-            LatLngPoint(
+            geo.LatLngPoint(
                 lat=0,  # valid
                 lng=180.001,  # out of range
             ),
             None,
             None,
-            LatLngPoint(
+            geo.LatLngPoint(
                 lat=0,  # valid
                 lng=180.001,  # out of range
             ),
@@ -177,23 +179,23 @@ def test_operator_location():
             1,
         ),
         (
-            LatLngPoint(lat=-90.001, lng=180.001),  # both out of range
+            geo.LatLngPoint(lat=-90.001, lng=180.001),  # both out of range
             None,
             None,
-            LatLngPoint(lat=-90.001, lng=180.001),  # both out of range
+            geo.LatLngPoint(lat=-90.001, lng=180.001),  # both out of range
             None,
             None,
             0,
             2,
         ),
         (
-            LatLngPoint(
+            geo.LatLngPoint(
                 lat=46.2,
                 lng=6.1,
             ),
             None,
             None,
-            LatLngPoint(
+            geo.LatLngPoint(
                 lat="46°12'7.99 N",  # Float required
                 lng="6°08'44.48 E",  # Float required
             ),
@@ -203,44 +205,40 @@ def test_operator_location():
             2,
         ),
         (
-            LatLngPoint(
+            geo.LatLngPoint(
                 lat=46.2,
                 lng=6.1,
             ),
-            Altitude(value=1),
-            "invalid",  # Invalid value
-            LatLngPoint(
+            injection.Altitude(1),
+            injection.OperatorAltitudeAltitudeType("Fixed"),
+            geo.LatLngPoint(
                 lat=46.2,
                 lng=6.1,
             ),
-            Altitude(value=1),
-            "invalid",  # Invalid value
+            geo.Altitude.w84m(1),
+            OperatorAltitudeAltitudeType("Takeoff"),
             5,
             1,
         ),
         (
-            LatLngPoint(
+            geo.LatLngPoint(
                 lat=46.2,
                 lng=6.1,
             ),
-            Altitude(
+            injection.Altitude(1000.9),
+            injection.OperatorAltitudeAltitudeType("Takeoff"),
+            geo.LatLngPoint(
+                lat=46.2,
+                lng=6.1,
+            ),
+            geo.Altitude(
                 value=1000.9,
                 units="FT",  # Invalid value
                 reference="UNKNOWN",  # Invalid value
             ),
-            "Takeoff",
-            LatLngPoint(
-                lat=46.2,
-                lng=6.1,
-            ),
-            Altitude(
-                value=1000.9,
-                units="FT",  # Invalid value
-                reference="UNKNOWN",  # Invalid value
-            ),
-            "Takeoff",
-            5,
-            2,
+            OperatorAltitudeAltitudeType("Takeoff"),
+            4,
+            3,
         ),
     ]
     for invalid_location in invalid_locations:

@@ -37,7 +37,14 @@ from uas_standards.interuss.automated_testing.rid.v1.injection import (
 )
 
 from monitoring.monitorlib.fetch.rid import Flight, FlightDetails, Position
-from monitoring.monitorlib.geo import Altitude, LatLngPoint, validate_lat, validate_lng
+from monitoring.monitorlib.geo import (
+    Altitude,
+    AltitudeDatum,
+    DistanceUnits,
+    LatLngPoint,
+    validate_lat,
+    validate_lng,
+)
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
@@ -169,10 +176,17 @@ class RIDCommonDictionaryEvaluator:
             )
 
         self._evaluate_operator_id(None, observed_details.operator_id, [participant_id])
+
+        operator_altitude_inj = injected_details.get("operator_altitude", {}).get(
+            "altitude", None
+        )
+        operator_altitude_type_inj = injected_details.get("operator_altitude", {}).get(
+            "altitude_type", None
+        )
         self._evaluate_operator_location(
             None,
-            None,
-            None,
+            operator_altitude_inj,
+            operator_altitude_type_inj,
             observed_details.operator_location,
             observed_details.operator_altitude,
             observed_details.operator_altitude_type,
@@ -211,9 +225,7 @@ class RIDCommonDictionaryEvaluator:
         operator_altitude_inj = injected_details.get("operator_altitude", {})
         self._evaluate_operator_location(
             injected_details.get("operator_location", None),
-            operator_altitude_inj.get(
-                "altitude", None
-            ),  # should be of the correct type already
+            operator_altitude_inj.get("altitude", None),
             operator_altitude_inj.get("altitude_type", None),
             operator_obs.get("location", None),
             Altitude.w84m(value=operator_altitude_value_obs),
@@ -760,7 +772,7 @@ class RIDCommonDictionaryEvaluator:
     def _evaluate_operator_location(
         self,
         position_inj: LatLngPoint | None,
-        altitude_inj: Altitude | None,
+        altitude_inj: injection.Altitude | None,
         altitude_type_inj: injection.OperatorAltitudeAltitudeType | None,
         position_obs: LatLngPoint | None,
         altitude_obs: Altitude | None,
@@ -830,10 +842,11 @@ class RIDCommonDictionaryEvaluator:
                         participants,
                     ) as check:
                         if (
-                            alt.units != altitude_inj.units
-                            or alt.reference != altitude_inj.reference
-                            or abs(alt.value - altitude_inj.value)
-                            > 1  # TODO  replace with constants.MinOperatorAltitudeResolution
+                            # right now we inject only altitude in meters with W84 reference
+                            alt.units != DistanceUnits.M
+                            or alt.reference != AltitudeDatum.W84
+                            or abs(alt.value - altitude_inj)
+                            > constants.MinOperatorAltitudeResolution
                         ):
                             check.record_failed(
                                 "Observed operator altitude inconsistent with injected one",
