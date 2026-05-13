@@ -14,6 +14,9 @@ unit-test:
 image: ../uv.lock ../pyproject.toml $(shell find . -type f ! -path "*/output/*" ! -name image ! -name *.pyc) $(shell find ../interfaces -type f)
 	./build.sh
 
+image-dev: ../uv.lock ../pyproject.toml $(shell find . -type f ! -path "*/output/*" ! -name image ! -name *.pyc) $(shell find ../interfaces -type f)
+	./build_dev.sh
+
 .PHONY: test
 test:
 	cd mock_uss && make test

@@ -10,7 +10,7 @@ else
 endif
 
 .PHONY: format
-format: image
+format: image-dev
 	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring-dev uv run ruff format
 	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring-dev uv run ruff check --fix
 	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring-dev uv run basedpyright
@@ -23,11 +23,11 @@ lint: shell-lint python-lint
 	cd schemas && make lint
 
 .PHONY: check-hygiene
-check-hygiene: image lint validate-uss-qualifier-docs
+check-hygiene: image-dev lint validate-uss-qualifier-docs
 	test/repo_hygiene/repo_hygiene.sh
 
 .PHONY: python-lint
-python-lint: image
+python-lint: image-dev
 
 	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring-dev uv run ruff format --check || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
 	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring-dev uv run ruff check || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
@@ -51,6 +51,10 @@ unit-test:
 .PHONY: image
 image:
 	cd monitoring && make image
+
+.PHONY: image-dev
+image-dev:
+	cd monitoring && make image-dev
 
 tag:
 	scripts/tag.sh $(UPSTREAM_OWNER)/monitoring/v$(VERSION)
