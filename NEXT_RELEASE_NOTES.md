@@ -33,14 +33,10 @@ The release notes should contain at least the following sections:
 
 --------------------------------------------------------------------------------------------------------------------
 
-# Release Notes for v0.29.0
+# Release Notes for v0.30.0
 
 ## Mandatory migration tasks
-
-The field `astm_url_regexes` in the USSIdentificationResource has been changed to `server_url_regexes`.  Any test configurations using this resource (likely NetRID configurations) must change `astm_url_regexes` to `server_url_regexes`.
 
 ## Optional migration tasks
 
 ## Important information
-
-`successful` attributes in test report objects are deprecated and will be removed in the future (#1428).
