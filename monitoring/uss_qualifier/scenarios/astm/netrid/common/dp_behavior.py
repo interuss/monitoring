@@ -182,7 +182,7 @@ class DisplayProviderBehavior(GenericTestScenario):
         if self._identification is not None:
             # Attribute notifications to participants when possible
             for base_url, notification in isa_change.notifications.items():
-                self._identification.attribute_query(notification.query)
+                self._identification.attribute_query_server(notification.query)
 
             # For any attributed notifications, check that the recipient acknowledged them correctly
             for base_url, notification in isa_change.notifications.items():

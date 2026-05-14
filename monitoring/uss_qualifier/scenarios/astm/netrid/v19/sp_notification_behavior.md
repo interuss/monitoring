@@ -28,6 +28,10 @@ A [`DSSInstancesResource`](../../../../resources/astm/f3411/dss.py) from which a
 
 [`IDGeneratorResource`](../../../../resources/interuss/id_generator.py) providing the Subscription ID for this scenario.
 
+### uss_identification
+
+[`USSIdentificationResource`](../../../../resources/interuss/uss_identification.py) describing how to identify participants responsible for observed notifications.
+
 ## Setup test case
 
 ### [Clean workspace test step](./dss/test_steps/clean_workspace.md)
