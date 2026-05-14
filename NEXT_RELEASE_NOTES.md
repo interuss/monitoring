@@ -37,6 +37,8 @@ The release notes should contain at least the following sections:
 
 ## Mandatory migration tasks
 
+The field `astm_url_regexes` in the USSIdentificationResource has been changed to `server_url_regexes`.  Any test configurations using this resource (likely NetRID configurations) must change `astm_url_regexes` to `server_url_regexes`.
+
 ## Optional migration tasks
 
 ## Important information
