@@ -38,6 +38,7 @@ jobs:
         mkdir -p image-artifact/monitoring
         mv monitoring-image.tar image-artifact/
         cp monitoring/image image-artifact/monitoring/
+        cp monitoring/image-dev image-artifact/monitoring/
     - name: Upload monitoring image artifact
       uses: actions/upload-artifact@v7
       with:
