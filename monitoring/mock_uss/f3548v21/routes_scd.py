@@ -20,15 +20,18 @@ from monitoring.mock_uss.f3548v21.flight_planning import (
     op_intent_from_flightrecord,
 )
 from monitoring.mock_uss.flights.database import FlightRecord, db
+from monitoring.mock_uss.logging import query_type
 from monitoring.mock_uss.user_interactions.notifications import (
     UserNotification,
     UserNotificationType,
 )
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.clients.flight_planning.planning import Conflict
+from monitoring.monitorlib.fetch import QueryType
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents/<entityid>", methods=["GET"])
+@query_type(QueryType.F3548v21USSGetOperationalIntentDetails)
 @requires_scope(scd.SCOPE_SC)
 def scdsc_get_operational_intent_details(entityid: str):
     """Implements getOperationalIntentDetails in ASTM SCD API."""
@@ -62,6 +65,7 @@ def scdsc_get_operational_intent_details(entityid: str):
 @webapp.route(
     "/mock/scd/uss/v1/operational_intents/<entityid>/telemetry", methods=["GET"]
 )
+@query_type(QueryType.F3548v21USSGetOperationalIntentTelemetry)
 @requires_scope(scd.SCOPE_CM_SA)
 def scdsc_get_operational_intent_telemetry(entityid: str):
     """Implements getOperationalIntentTelemetry in ASTM SCD API."""
@@ -110,6 +114,7 @@ def scdsc_get_operational_intent_telemetry(entityid: str):
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents", methods=["POST"])
+@query_type(QueryType.F3548v21USSNotifyOperationalIntentDetailsChanged)
 @requires_scope(scd.SCOPE_SC)
 def scdsc_notify_operational_intent_details_changed():
     """Implements notifyOperationalIntentDetailsChanged in ASTM SCD API."""
@@ -146,6 +151,7 @@ def scdsc_notify_operational_intent_details_changed():
 
 
 @webapp.route("/mock/scd/uss/v1/reports", methods=["POST"])
+@query_type(QueryType.F3548v21USSMakeUssReport)
 @requires_scope(
     [scd.SCOPE_SC, scd.SCOPE_CP, scd.SCOPE_CM, scd.SCOPE_CM_SA, scd.SCOPE_AA]
 )

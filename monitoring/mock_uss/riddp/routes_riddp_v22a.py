@@ -10,8 +10,9 @@ from uas_standards.astm.f3411.v22a.constants import Scope
 
 from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.auth import requires_scope
+from monitoring.mock_uss.logging import query_type
 from monitoring.mock_uss.riddp.database import db
-from monitoring.monitorlib.fetch import describe_flask_query
+from monitoring.monitorlib.fetch import QueryType, describe_flask_query
 from monitoring.monitorlib.mutate.rid import UpdatedISA
 
 
@@ -22,6 +23,7 @@ def rid_v22a_operation(op_id: OperationID):
 
 
 @rid_v22a_operation(OperationID.PostIdentificationServiceArea)
+@query_type(QueryType.F3411v22aUSSPostIdentificationServiceArea)
 @requires_scope(Scope.ServiceProvider)
 def riddp_notify_isa_v22a(id: str):
     try:

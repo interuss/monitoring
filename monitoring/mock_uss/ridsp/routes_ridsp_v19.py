@@ -26,7 +26,9 @@ from uas_standards.interuss.automated_testing.rid.v1 import injection
 
 from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.auth import requires_scope
+from monitoring.mock_uss.logging import query_type
 from monitoring.monitorlib import geo
+from monitoring.monitorlib.fetch import QueryType
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
 
@@ -94,18 +96,8 @@ def rid_v19_operation(op_id: OperationID):
     return webapp.route("/mock/ridsp" + path, methods=[op.verb])
 
 
-@rid_v19_operation(OperationID.PostIdentificationServiceArea)
-@requires_scope(Scope.Write)
-def ridsp_notify_isa_v19(id: str):
-    return (
-        flask.jsonify(
-            {"message": "mock_ridsp never solicits subscription notifications"}
-        ),
-        400,
-    )
-
-
 @rid_v19_operation(OperationID.SearchFlights)
+@query_type(QueryType.F3411v19USSSearchFlights)
 @requires_scope(Scope.Read)
 def ridsp_flights_v19():
     if "view" not in flask.request.args:
@@ -150,6 +142,7 @@ def ridsp_flights_v19():
 
 
 @rid_v19_operation(OperationID.GetFlightDetails)
+@query_type(QueryType.F3411v19USSGetFlightDetails)
 @requires_scope(Scope.Read)
 def ridsp_flight_details_v19(id: str):
     now = arrow.utcnow().datetime

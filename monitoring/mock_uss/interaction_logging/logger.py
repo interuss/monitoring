@@ -6,6 +6,7 @@ import flask
 
 from monitoring.mock_uss.app import require_config_value, webapp
 from monitoring.mock_uss.interaction_logging.config import KEY_INTERACTIONS_LOG_DIR
+from monitoring.mock_uss.logging import get_query_type
 from monitoring.monitorlib.clients import QueryHook, query_hooks
 from monitoring.monitorlib.clients.mock_uss.interactions import (
     Interaction,
@@ -76,12 +77,22 @@ def interaction_log_after_request(response):
     elapsed_s = (
         datetime.datetime.now(datetime.UTC) - flask.current_app.custom_profiler["start"]
     ).total_seconds()
+    query_type = get_query_type()
     # TODO: Make this configurable instead of hardcoding exactly these query types
-    if (
-        "/uss/v1/" in flask.request.url
-        or "/uss/identification_service_areas/" in flask.request.url
-        or "/uss/flights" in flask.request.url
+    if query_type in (
+        QueryType.F3548v21USSGetConstraintDetails,
+        QueryType.F3548v21USSGetOperationalIntentDetails,
+        QueryType.F3548v21USSGetOperationalIntentTelemetry,
+        QueryType.F3548v21USSMakeUssReport,
+        QueryType.F3548v21USSNotifyConstraintDetailsChanged,
+        QueryType.F3548v21USSNotifyOperationalIntentDetailsChanged,
+        QueryType.F3411v22aUSSSearchFlights,
+        QueryType.F3411v22aUSSPostIdentificationServiceArea,
+        QueryType.F3411v19USSSearchFlights,
+        QueryType.F3411v19USSPostIdentificationServiceArea,
     ):
         query = describe_flask_query(flask.request, response, elapsed_s)
+        if query_type:
+            query.query_type = query_type
         log_interaction(QueryDirection.Incoming, query)
     return response
