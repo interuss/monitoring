@@ -25,10 +25,33 @@ def test_record():
 
 
 def test_invalid_record():
-    # accuracy_h is a field in position, speed_accuracy in state.
     for file in [
-        "test/invalid_no_accuracy_h.kml",
-        "test/invalid_no_speed_accuracy.kml",
+        "test/invalid_wrong_ua_type.json",
+        "test/invalid_no_timestamp.json",
+        "test/invalid_wrong_timestamp.json",
+        "test/invalid_no_timestamp_accuracy.json",
+        "test/invalid_wrong_timestamp_accuracy.json",
+        "test/invalid_wrong_operational_status.json",
+        "test/invalid_no_alt.json",
+        "test/invalid_no_accuracy_v.json",
+        "test/invalid_wrong_accuracy_v.json",
+        "test/invalid_no_accuracy_h.json",
+        "test/invalid_wrong_accuracy_h.json",
+        "test/invalid_no_speed_accuracy.json",
+        "test/invalid_wrong_speed_accuracy.json",
+        "test/invalid_no_vertical_speed.json",
+        "test/invalid_wrong_vertical_speed.json",
+        "test/invalid_no_speed.json",
+        "test/invalid_wrong_speed.json",
+        "test/invalid_no_track.json",
+        "test/invalid_wrong_track.json",
+        "test/invalid_no_height.json",
+        "test/invalid_no_height_type.json",
+        "test/invalid_wrong_height_type.json",
+        "test/invalid_no_uas_id.json",
+        "test/invalid_wrong_serial_number.json",
+        "test/invalid_wrong_registration_id.json",
+        "test/invalid_wrong_utm_id.json",
     ]:
         specs = FlightDataSpecification(
             record_source=ExternalFile(path=f"file://./test_data/{file}")
@@ -55,6 +78,8 @@ def test_invalid_kmls():
     for file in [
         "test/invalid_no_accuracy_h.kml",
         "test/invalid_no_speed_accuracy.kml",
+        "test/invalid_wrong_serial_number.kml",
+        "test/invalid_wrong_ua_type.kml",
     ]:
         specs = FlightDataSpecification(
             kml_source=FlightDataKMLFileConfiguration(

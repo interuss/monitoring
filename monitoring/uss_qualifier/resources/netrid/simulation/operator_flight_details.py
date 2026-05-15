@@ -17,8 +17,10 @@ class OperatorFlightDataGenerator:
         return str(SerialNumber.generate_valid())
 
     def generate_registration_number(self, prefix="CHE"):
+        if not prefix.endswith("."):
+            prefix = f"{prefix}."
         registration_number = prefix + "".join(
-            self.random.choices(string.ascii_lowercase + string.digits, k=13)
+            self.random.choices(string.ascii_uppercase + string.digits, k=13)
         )
         return registration_number
 

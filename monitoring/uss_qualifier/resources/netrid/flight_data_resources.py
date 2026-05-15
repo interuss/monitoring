@@ -11,8 +11,10 @@ from uas_standards.interuss.automated_testing.rid.v1.injection import (
     TestFlightDetails,
 )
 
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
 from monitoring.uss_qualifier.resources.files import load_content, load_dict
+from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.resources.netrid.flight_data import (
     FlightDataSpecification,
     FlightRecordCollection,
@@ -24,6 +26,7 @@ from monitoring.uss_qualifier.resources.netrid.simulation.kml_flights import (
     get_flight_records,
 )
 from monitoring.uss_qualifier.resources.resource import Resource
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
 
 class FlightDataResource(Resource[FlightDataSpecification]):
@@ -190,34 +193,40 @@ class FlightDataResource(Resource[FlightDataSpecification]):
     def _validate_flight(self, flight):
         """Ensure flight data is valid"""
 
-        for state in flight.states:
-            # RIDAircraftState don't enforce values for thoses fields so we can
-            # create invalid flight on purpose, but we want then to be valid
-            # when coming from a source.
-            # See https://github.com/interuss/uas_standards/blob/main/src/uas_standards/interuss/automated_testing/rid/v1/injection.py#L412
+        from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
+            RIDCommonDictionaryEvaluator,
+        )  # Circular import
 
-            for field in [
-                "timestamp",
-                "timestamp_accuracy",
-                "speed",
-                "vertical_speed",
-                "track",
-                "speed_accuracy",
-                "position",
-            ]:
-                if not state.has_field_with_value(field) or state[field] is None:
-                    raise Exception(
-                        f"Mandatory field {field} not found in state {state}"
-                    )
+        # We pass the flight throught a "normal" TestFlight (some processing is
+        # done inside)
+        details = TestFlightDetails(
+            effective_after=StringBasedDateTime(arrow.utcnow()),
+            details=flight.flight_details,
+        )
 
-            for field in ["accuracy_h", "accuracy_v"]:
-                if (
-                    not state.position.has_field_with_value(field)
-                    or state.position[field] is None
-                ):
-                    raise Exception(
-                        f"Mandatory field position.{field} not found in state {state}"
-                    )
+        test_flight = TestFlight(
+            injection_id=str(uuid.uuid4()),
+            telemetry=flight.states[::],
+            details_responses=[details],
+            aircraft_type=flight.aircraft_type,
+            filter_invalid_telemetry=False,
+        )
+
+        class DummyTestScenario(TestScenario):
+            def __init__(self):
+                pass
+
+            def run(self, *args, **kwargs):
+                pass
+
+        # We ask the evaluator to process it
+        evaluator = RIDCommonDictionaryEvaluator(
+            EvaluationConfiguration(), DummyTestScenario(), RIDVersion.f3411_22a
+        )
+        for state in test_flight.raw_telemetry or []:
+            evaluator.evaluate_injected_flight(
+                state, test_flight, test_flight.details_responses[0].details
+            )
 
 
 class FlightDataStorageSpecification(ImplicitDict):
