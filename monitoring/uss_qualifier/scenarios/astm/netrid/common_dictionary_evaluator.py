@@ -54,6 +54,10 @@ T = TypeVar("T")
 T2 = TypeVar("T2")
 
 
+class NoObservedFlight(ValueError):
+    pass
+
+
 class RIDCommonDictionaryEvaluator:
     flight_evaluators = [
         "_evaluate_ua_type",
@@ -92,6 +96,45 @@ class RIDCommonDictionaryEvaluator:
         self._config = config
         self._test_scenario = test_scenario
         self._rid_version = rid_version
+
+    def evaluate_injected_flight(
+        self, injected_telemetry, injected_flight, injected_flight_details
+    ) -> None:
+        """Helper for generator of flights that raise an exception if an injected flight is invalid"""
+
+        for generics_evaluator in self.flight_evaluators:
+            try:
+                getattr(self, generics_evaluator)(
+                    injected=injected_flight,
+                    sp_observed=None,
+                    dp_observed=None,
+                    participant=[],
+                    query_timestamp=datetime.datetime.now(),
+                )
+            except NoObservedFlight:
+                continue
+        for generics_evaluator in self.details_evaluators:
+            try:
+                getattr(self, generics_evaluator)(
+                    injected=injected_flight_details,
+                    sp_observed=None,
+                    dp_observed=None,
+                    participant=[],
+                    query_timestamp=datetime.datetime.now(),
+                )
+            except NoObservedFlight:
+                continue
+        for generics_evaluator in self.telemetry_evaluators:
+            try:
+                getattr(self, generics_evaluator)(
+                    injected=injected_telemetry,
+                    sp_observed=None,
+                    dp_observed=None,
+                    participant=[],
+                    query_timestamp=datetime.datetime.now(),
+                )
+            except NoObservedFlight:
+                continue
 
     def evaluate_sp_flight(
         self,
@@ -235,14 +278,14 @@ class RIDCommonDictionaryEvaluator:
 
     def _evaluate_uas_id(
         self,
-        injected: injection.RIDFlightDetails,  # unused but required by callers
+        injected: injection.RIDFlightDetails,
         sp_observed: FlightDetails | None,
         dp_observed: observation_api.GetDetailsResponse | None,
         participant: ParticipantID,
         query_timestamp: datetime.datetime,
     ):
         """
-        Evaluates UAS id Exactly one of sp_observed or dp_observed must be provided.
+        Evaluates UAS id Exactly one of sp_observed or dp_observed must be provided, if not, will only evaluate injected values.
         See as well `common_dictionary_evaluator.md`.
 
         Raises:
@@ -252,6 +295,24 @@ class RIDCommonDictionaryEvaluator:
         if dp_observed:
             # skip if evaluating DP: the UAS ID may be None, and if present is evaluated by evaluators specific to UAS ID types
             return
+
+        if sp_observed is None:
+            injected_values = []
+
+            for field in [
+                "uas_id.specific_session_id",
+                "uas_id.serial_number",
+                "uas_id.registration_id",
+                "uas_id.utm_id",
+            ]:
+                injected_values.append(_dotted_get(injected, field))
+
+            if not any(injected_values):
+                raise ValueError(
+                    "No valid UAS ID provided"
+                )  # NB: We may enounter invalid data for f3411_19, as a smaller subset of fields is needed, but we don't know how flight is going to be injected.
+
+            return NoObservedFlight("No observed flight")
 
         # We check that there is at least one value set
         with self._test_scenario.check(
@@ -304,7 +365,9 @@ class RIDCommonDictionaryEvaluator:
             serial_number = SerialNumber(val)
 
             if not serial_number.valid:
-                raise ValueError("Invalid serial number")
+                raise ValueError(
+                    f"Invalid serial number {SerialNumber.generate_valid()}"
+                )
 
             return serial_number
 
@@ -1225,7 +1288,7 @@ class RIDCommonDictionaryEvaluator:
             ) and dp_observed.uas.has_field_with_value("eu_classification"):
                 observed_ua_classification = "eu_classification"
         else:
-            raise ValueError("No observed flight provided.")
+            raise NoObservedFlight("No observed flight provided.")
 
         with self._test_scenario.check(
             "UA classification type is consistent with injected value",
@@ -1411,7 +1474,13 @@ class RIDCommonDictionaryEvaluator:
         elif dp_observed is not None:
             observed_val = _dotted_get(dp_observed, dp_field_name)
         else:
-            raise ValueError("No observed flight provided.")
+            # Check that injected value is valid if required
+            if injected_val is None and injection_required_field:
+                raise ValueError(
+                    f"Field {field_human_name} is not defined, but is requiered."
+                )
+
+            raise NoObservedFlight("No observed flight provided.")
 
         if skip_eval:
             skip_reason = skip_eval(injected_val, observed_val)
