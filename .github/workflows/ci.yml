@@ -5,8 +5,8 @@ on:
     branches:
     - main
 jobs:
-  build-monitoring-image:
-    name: Build monitoring image
+  build-monitoring-images:
+    name: Build monitoring images
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -28,14 +28,17 @@ jobs:
         fetch-tags: true
         fetch-depth: 0
         filter: tree:0
-    - name: Build monitoring image
-      run: make image
+    - name: Build monitoring images
+      run: |
+        make image
+        make image-dev
     - name: Save monitoring image artifact
       run: |
         docker save interuss/monitoring interuss/monitoring-dev -o monitoring-image.tar
         mkdir -p image-artifact/monitoring
         mv monitoring-image.tar image-artifact/
         cp monitoring/image image-artifact/monitoring/
+        cp monitoring/image-dev image-artifact/monitoring/
     - name: Upload monitoring image artifact
       uses: actions/upload-artifact@v7
       with:
@@ -45,7 +48,7 @@ jobs:
   hygiene-tests:
     name: Repository hygiene
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#permissions
     permissions:
       contents: read
@@ -73,7 +76,7 @@ jobs:
   unit-tests:
     name: Unit tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -100,7 +103,7 @@ jobs:
   mock_uss-test:
     name: mock_uss tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -113,7 +116,7 @@ jobs:
   uss_qualifier-noop-test:
     name: uss_qualifier configurations.dev.noop tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -128,7 +131,7 @@ jobs:
   uss_qualifier-geoawareness_cis-test:
     name: uss_qualifier configurations.dev.geoawareness_cis tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -143,7 +146,7 @@ jobs:
   uss_qualifier-generate_rid_test_data-test:
     name: uss_qualifier configurations.dev.generate_rid_test_data tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -158,7 +161,7 @@ jobs:
   uss_qualifier-geospatial_comprehension-test:
     name: uss_qualifier configurations.dev.geospatial_comprehension tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -173,7 +176,7 @@ jobs:
   uss_qualifier-general_flight_auth-test:
     name: uss_qualifier configurations.dev.general_flight_auth tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -188,7 +191,7 @@ jobs:
   uss_qualifier-message_signing-test:
     name: uss_qualifier configurations.dev.message_signing tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -203,7 +206,7 @@ jobs:
   uss_qualifier-dss_probing-test:
     name: uss_qualifier configurations.dev.dss_probing tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -218,7 +221,7 @@ jobs:
   uss_qualifier-f3548_self_contained-test:
     name: uss_qualifier configurations.dev.f3548_self_contained tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -233,7 +236,7 @@ jobs:
   uss_qualifier-utm_implementation_us-test:
     name: uss_qualifier configurations.dev.utm_implementation_us tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -248,7 +251,7 @@ jobs:
   uss_qualifier-netrid_v22a-test:
     name: uss_qualifier configurations.dev.netrid_v22a tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -263,7 +266,7 @@ jobs:
   uss_qualifier-netrid_v19-test:
     name: uss_qualifier configurations.dev.netrid_v19 tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -278,7 +281,7 @@ jobs:
   uss_qualifier-uspace-test:
     name: uss_qualifier configurations.dev.uspace tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -293,7 +296,7 @@ jobs:
   uss_qualifier-minimal_probing_simulations-crdb-test:
     name: uss_qualifier configurations.dev.minimal_probing_simulations tests with crdb
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -313,7 +316,7 @@ jobs:
   uss_qualifier-minimal_probing_simulations-ybdb-test:
     name: uss_qualifier configurations.dev.minimal_probing_simulations tests with ybdb
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml
@@ -333,7 +336,7 @@ jobs:
   prober-test:
     name: prober tests
     needs:
-      - build-monitoring-image
+      - build-monitoring-images
     permissions:
       contents: read
     uses: ./.github/workflows/monitoring-test.yml

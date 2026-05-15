@@ -15,7 +15,7 @@ cd "${BASEDIR}/../../.." || exit 1
 
 (
 cd monitoring || exit 1
-make image
+make image-dev
 )
 
 # shellcheck disable=SC2086
@@ -26,4 +26,3 @@ docker run --name monitorlib_unit_test \
   -v /var/run/docker.sock:/var/run/docker.sock \
   interuss/monitoring-dev \
   monitorlib/scripts/in_container/run_unit_tests.sh
-

@@ -15,7 +15,7 @@ cd "${BASEDIR}/../../.." || exit 1
 
 (
 cd monitoring || exit 1
-make image
+make image-dev
 )
 
 # shellcheck disable=SC2086
