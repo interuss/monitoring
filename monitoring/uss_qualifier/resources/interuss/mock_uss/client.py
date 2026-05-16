@@ -1,3 +1,6 @@
+from datetime import datetime
+
+import arrow
 from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 
 from monitoring.monitorlib import fetch
@@ -89,6 +92,22 @@ class MockUSSClient:
             query_type=QueryType.InterUSSMockUSSSetLocality,
             json=PutLocalityRequest(locality_code=locality_code),
         )
+
+    def get_clock(self) -> tuple[datetime | None, fetch.Query]:
+        query = fetch.query_and_describe(
+            self.session,
+            "GET",
+            "/clock",
+            participant_id=self.participant_id,
+            query_type=QueryType.InterUSSMockUSSGetClock,
+        )
+        try:
+            result = (
+                arrow.get(query.response.body).datetime if query.response.body else None
+            )
+        except arrow.ParserError:
+            result = None
+        return result, query
 
     # TODO: Add other methods to interact with the mock USS in other ways (like starting/stopping message signing data collection)
 

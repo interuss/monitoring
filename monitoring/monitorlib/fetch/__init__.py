@@ -398,6 +398,7 @@ class QueryType(StrEnum):
     )
 
     # InterUSS mock_uss
+    InterUSSMockUSSGetClock = "interuss.mock_uss.clock"
     InterUSSMockUSSGetLogs = "interuss.mock_uss.logging.interaction_logs"
     InterUSSMockUSSGetLocality = "interuss.mock_uss.locality.locality_get"
     InterUSSMockUSSSetLocality = "interuss.mock_uss.locality.locality_set"

@@ -2,7 +2,6 @@ from collections.abc import Callable
 from datetime import datetime, timedelta
 from typing import TypeVar
 
-import arrow
 from s2sphere import LatLngRect
 
 from monitoring.monitorlib.clients.mock_uss.interactions import (
@@ -38,7 +37,10 @@ from monitoring.uss_qualifier.scenarios.interuss.mock_uss.test_steps import (
     get_mock_uss_interactions,
     query_type_filter,
 )
-from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+from monitoring.uss_qualifier.scenarios.scenario import (
+    GenericTestScenario,
+    ScenarioDidNotStopError,
+)
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 TOperationResult = TypeVar("TOperationResult")
@@ -101,7 +103,18 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
         self.end_test_step()
 
         self.begin_test_step("Injection")
-        injection_time = arrow.utcnow().datetime
+        injection_time, query = self._mock_uss.get_clock()
+        self.record_query(query)
+        with self.check(
+            "mock_uss clock time retrievable", self._mock_uss.participant_id
+        ) as check:
+            if injection_time is None:
+                check.record_failed(
+                    "mock_uss clock time was not retrievable",
+                    f"mock_uss responded {query.response.status_code} without a valid clock time",
+                    queries=query,
+                )
+                raise ScenarioDidNotStopError(check)
         self._inject_flights()
         self.end_test_step()
 

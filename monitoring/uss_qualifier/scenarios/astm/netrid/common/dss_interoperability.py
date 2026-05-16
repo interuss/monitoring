@@ -128,9 +128,20 @@ class DSSInteroperability(GenericTestScenario):
                 "DSS instance is publicly addressable", [dss.participant_id]
             ) as check:
                 parsed_url = urlparse(dss.base_url)
-                ip_addr = socket.gethostbyname(parsed_url.hostname)
+                try:
+                    if not parsed_url.hostname:
+                        raise ValueError(
+                            f"Invalid hostname from urlparse: {parsed_url.hostname}"
+                        )
+                    ip_addr = socket.gethostbyname(parsed_url.hostname)
+                except (socket.gaierror, ValueError) as e:
+                    ip_addr = None
+                    check.record_failed(
+                        summary=f"DSS host {parsed_url.netloc} could not be checked for public addressability",
+                        details=f"DSS (URL: {dss.base_url}, netloc: {parsed_url.netloc}), could not resolve to an IP because {str(e)}",
+                    )
 
-                if ipaddress.ip_address(ip_addr).is_private:
+                if ip_addr and ipaddress.ip_address(ip_addr).is_private:
                     if self._allow_private_addresses:
                         check.skip()
                     else:

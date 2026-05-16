@@ -1,5 +1,6 @@
 import traceback
 
+import arrow
 import flask
 from werkzeug.exceptions import HTTPException
 
@@ -15,6 +16,11 @@ def status():
     return "Mock USS ok {}; hosting {}".format(
         versioning.get_code_version(), ", ".join(enabled_services)
     )
+
+
+@webapp.route("/clock")
+def get_clock() -> str:
+    return arrow.utcnow().isoformat()
 
 
 @webapp.route("/favicon.ico")
