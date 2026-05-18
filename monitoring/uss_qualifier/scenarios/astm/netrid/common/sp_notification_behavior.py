@@ -111,7 +111,7 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
             if injection_time is None:
                 check.record_failed(
                     "mock_uss clock time was not retrievable",
-                    f"mock_uss responded {query.response.status_code} without a valid clock time",
+                    f"mock_uss responded {query.response.status_code} without a valid clock time; is mock_uss running the latest version of `monitoring`?",
                     queries=query,
                 )
                 raise ScenarioDidNotStopError(check)
