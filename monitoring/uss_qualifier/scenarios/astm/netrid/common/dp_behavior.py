@@ -133,7 +133,20 @@ class DisplayProviderBehavior(GenericTestScenario):
         self.begin_test_case("Display Provider Behavior")
 
         for obs in self._observers:
-            test_step_start_time = arrow.utcnow().datetime
+            self.begin_test_step("Note remote clock")
+            test_case_start_time, query = self._mock_uss.get_clock()
+            self.record_query(query)
+            with self.check(
+                "mock_uss clock time retrievable", self._mock_uss.participant_id
+            ) as check:
+                if test_case_start_time is None:
+                    check.record_failed(
+                        "mock_uss clock time was not retrievable",
+                        f"mock_uss responded {query.response.status_code} without a valid clock time; is mock_uss running the latest version of `monitoring`?",
+                        queries=query,
+                    )
+            self.end_test_step()
+
             self.begin_test_step("Query acceptable diagonal area")
             # Query the DP for the exact area of the ISA
             self._step_query_ok_diagonal(obs)
@@ -148,9 +161,10 @@ class DisplayProviderBehavior(GenericTestScenario):
             self._step_query_too_big_diagonal(obs)
             self.end_test_step()
 
-            self.begin_test_step("Verify query to SP")
-            self._step_validate_queries_to_sp(obs, test_step_start_time)
-            self.end_test_step()
+            if test_case_start_time:
+                self.begin_test_step("Verify query to SP")
+                self._step_validate_queries_to_sp(obs, test_case_start_time)
+                self.end_test_step()
 
         self.end_test_case()
         self.end_test_scenario()

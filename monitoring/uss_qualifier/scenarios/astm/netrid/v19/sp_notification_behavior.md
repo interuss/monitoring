@@ -52,6 +52,10 @@ start and end time missing, provided all the required parameters are valid.
 
 In this step, uss_qualifier injects a single nominal flight into each SP under test, usually with a start time in the future.  Each SP is expected to queue the provided telemetry and later simulate that telemetry coming from an aircraft at the designated timestamps.
 
+#### 🛑 mock_uss clock time retrievable check
+
+We need to know mock_uss's clock time to later request observed interactions after the injection time.  If mock_uss's current time isn't retrievable, the mock_uss provider's mock_uss does not meet **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+
 ### Validate Mock USS received notification test step
 
 This test step verifies that the mock_uss for which a subscription was registered before flight injection properly received a notification from each Service Provider

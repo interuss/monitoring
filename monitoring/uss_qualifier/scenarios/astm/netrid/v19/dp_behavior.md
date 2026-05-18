@@ -66,6 +66,14 @@ Prior to ISA creation, the Display Providers of one or more observers may have e
 
 ## Display Provider Behavior test case
 
+### Note remote clock test step
+
+To check whether the mock_uss, acting as Service Provider, received a valid request from the Display Provider due to the following test steps, we must known the earliest time such a request could have been made, according to mock_uss.  In this step, we retrieve mock_uss's clock time for "now" so we can only ask for interactions after "now" later in this case.
+
+#### ⚠️ mock_uss clock time retrievable check
+
+If mock_uss's current time isn't retrievable, the mock_uss provider's mock_uss does not meet **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+
 ### Query acceptable diagonal area test step
 
 This test step queries the Display Provider for the exact area of the ISA.
