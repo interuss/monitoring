@@ -1,5 +1,5 @@
-from abc import ABC
-from typing import TypeVar, get_type_hints
+from abc import ABC, abstractmethod
+from typing import TypeVar, get_args, get_origin, get_type_hints
 
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -41,6 +41,36 @@ class Resource[SpecificationType: ImplicitDict](ABC):
 
 
 ResourceType = TypeVar("ResourceType", bound=Resource)
+
+
+class ResourceModifier[SpecificationType: ImplicitDict, ResourceType](
+    Resource[SpecificationType], ABC
+):
+    """A specifc type of resources that can return adjusted an resource that shall unique based on a specifc 'index'.
+    The underlying resource shall be a dependency named 'base_resource'.
+
+    Concrete subclass must implement 'adjust' as needed.
+    """
+
+    _spec: SpecificationType
+    base_resource: ResourceType
+
+    def __init__(
+        self,
+        specification: SpecificationType,
+        resource_origin: str,
+        base_resource: ResourceType,
+    ):
+        super().__init__(specification, resource_origin)
+        self._spec = specification
+        self.base_resource = base_resource
+
+    @abstractmethod
+    def adjust(self, index: int) -> ResourceType:
+        """
+        Return a new instance of the base resource, modified to be unique based on 'index' value.
+        """
+        pass
 
 
 class MissingResourceError(ValueError):
@@ -156,6 +186,20 @@ def get_resource_types(
         )
 
     constructor_signature = get_type_hints(resource_type.__init__)
+
+    # Resolve generic type vars
+    typevar_map: dict = {}
+    for base in getattr(resource_type, "__orig_bases__", ()):
+        params = getattr(get_origin(base), "__type_params__", None) or getattr(
+            get_origin(base), "__parameters__", ()
+        )
+        for param, arg in zip(params, get_args(base)):
+            if not isinstance(arg, TypeVar):
+                typevar_map[param] = arg
+    constructor_signature = {
+        name: typevar_map.get(t, t) for name, t in constructor_signature.items()
+    }
+
     specification_type = None
     for arg_name, arg_type in constructor_signature.items():
         if arg_name == "return":
