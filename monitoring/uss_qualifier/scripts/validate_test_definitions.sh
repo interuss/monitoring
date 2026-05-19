@@ -22,5 +22,5 @@ make image-dev
 docker run --name test_definition_validator \
   --rm \
   -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
-  interuss/monitoring \
+  interuss/monitoring-dev \
   uss_qualifier/scripts/in_container/validate_test_definitions.sh

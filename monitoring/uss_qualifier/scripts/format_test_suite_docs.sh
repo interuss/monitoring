@@ -23,5 +23,5 @@ docker run --name test_suite_docs_formatter \
   --rm \
   -v "$(pwd):/app" \
   -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
-  interuss/monitoring \
+  interuss/monitoring-dev \
   uss_qualifier/scripts/in_container/format_test_suite_docs.sh "$@"
