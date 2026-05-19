@@ -2,3 +2,5 @@ from .noop import NoOpResource as NoOpResource
 from .test_exclusions import TestExclusionsResource as TestExclusionsResource
 from .test_modifier import TestModifierModifierResource as TestModifierModifierResource
 from .test_modifier import TestModifierResource as TestModifierResource
+from .test_modifier import TestSquareModifier as TestSquareModifier
+from .test_modifier import TestSquareResource as TestSquareResource
