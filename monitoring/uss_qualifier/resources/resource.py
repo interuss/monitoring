@@ -41,15 +41,19 @@ class Resource[SpecificationType: ImplicitDict](ABC):
 
 
 ResourceType = TypeVar("ResourceType", bound=Resource)
+SpawnKeyType = TypeVar("SpawnKeyType")
 
 
-class ResourceModifier[SpecificationType: ImplicitDict, ResourceType](
-    Resource[SpecificationType], ABC
-):
-    """A specifc type of resources that can return adjusted an resource that shall unique based on a specifc 'index'.
-    The underlying resource shall be a dependency named 'base_resource'.
+class ResourceModifyingResource[
+    SpecificationType: ImplicitDict,
+    SpawnKeyType,
+    ResourceType: Resource,
+](Resource[SpecificationType], ABC):
+    """Resource capable of spawning ResourceType resources by modifying a template/base
+    ResourceType resource according to a desired key, such as an index.
 
-    Concrete subclass must implement 'adjust' as needed.
+    Useful for deconflicting multiple copies of a resource so many different variants of the same
+    test can be performed without conflicting with each other.
     """
 
     _spec: SpecificationType
@@ -65,12 +69,17 @@ class ResourceModifier[SpecificationType: ImplicitDict, ResourceType](
         self._spec = specification
         self.base_resource = base_resource
 
+    def _modified_resource_origin(self, modification_name: str) -> str:
+        """Method that should be used to determine the origin of a resource spawned by this resource."""
+        return f"Modification {modification_name} of {self.base_resource.resource_origin} by {self.resource_origin}"
+
     @abstractmethod
-    def adjust(self, index: int) -> ResourceType:
+    def modify(self, key: SpawnKeyType) -> ResourceType:
+        """Spawn a new resource formed by modifying the template/base resource according to the provided key.
+
+        Different `key` values generally produce different variants; the same `key` should produce equivalent results.
         """
-        Return a new instance of the base resource, modified to be unique based on 'index' value.
-        """
-        pass
+        raise NotImplementedError()
 
 
 class MissingResourceError(ValueError):

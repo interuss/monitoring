@@ -33,13 +33,13 @@ Resources for a given test configuration are all declared in a single global res
 3. Every type of test resource must define how to create an instance of the test resource from an instance of the resource specification.
 
 
-## Resource modifiers
+## Resource-modifying resources
 
-A `ResourceModifier` is a resource that wraps another resource and produces variants of it based on an integer index. This is useful when a test scenario needs multiple unique-but-related instances of a resource (e.g., distinct flights derived from a single base flight).
+A `ResourceModifyingResource` is a resource capable of spawning other resources by modifying a template/base resource according to a desired key, such as an index.  This is useful when a test scenario needs multiple unique-but-related instances of a resource (e.g., distinct flights derived from a single base flight).
 
-To use a `ResourceModifier`:
+To use a `ResourceModifyingResource`:
 
 1. Declare it like any other resource, with its `base_resource` dependency pointing to the resource to be modified.
-2. When need, call `adjust(index)` to obtain a modified copy of the base resource. Different `index` values produce different (unique) variants; the same `index` produces equivalent results.
+2. When a variant of the base/template resource is needed, call `modify(key)` to obtain a modified copy of the base resource. Different `key` values generally produce different variants; the same `key` should produce equivalent results.
 
-The base resource itself remains available as `base_resource` on the modifier.
+The base/template resource itself remains available as `base_resource` on the modifier.

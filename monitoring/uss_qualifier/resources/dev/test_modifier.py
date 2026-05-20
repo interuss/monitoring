@@ -1,20 +1,23 @@
 from implicitdict import ImplicitDict
 
-from monitoring.uss_qualifier.resources.resource import Resource, ResourceModifier
+from monitoring.uss_qualifier.resources.resource import (
+    Resource,
+    ResourceModifyingResource,
+)
 
 
-class TestModifierSpecification(ImplicitDict):
+class TestNumberGeneratorSpecification(ImplicitDict):
     base_id: int
 
 
-class TestModifierResource(Resource[TestModifierSpecification]):
-    """TestModifierResource is a simple resource returing 10 number, starting from base_id. Used for unit tests."""
+class TestNumberGeneratorResource(Resource[TestNumberGeneratorSpecification]):
+    """A simple resource returing 10 numbers, starting from base_id. Used for unit tests."""
 
-    _spec: TestModifierSpecification
+    _spec: TestNumberGeneratorSpecification
 
     def __init__(
         self,
-        specification: TestModifierSpecification,
+        specification: TestNumberGeneratorSpecification,
         resource_origin: str,
     ):
         super().__init__(specification, resource_origin)
@@ -24,22 +27,24 @@ class TestModifierResource(Resource[TestModifierSpecification]):
         return list(range(self._spec.base_id, self._spec.base_id + 10))
 
 
-class TestModifierModifierSpecification(ImplicitDict):
+class TestNumberGeneratorModifierSpecification(ImplicitDict):
     shift_interval: int
 
 
-class TestModifierModifierResource(
-    ResourceModifier[TestModifierModifierSpecification, TestModifierResource]
+class TestNumberGeneratorModifierResource(
+    ResourceModifyingResource[
+        TestNumberGeneratorModifierSpecification, int, TestNumberGeneratorResource
+    ]
 ):
-    """Modifier for a TestModifierResource. Used for unit tests."""
+    """Modifier for a TestNumberGeneratorResource. Used for unit tests."""
 
-    def adjust(self, index: int) -> TestModifierResource:
+    def modify(self, key: int) -> TestNumberGeneratorResource:
 
         # 'Clone' the resource with new specs
-        return TestModifierResource(
-            TestModifierSpecification(
+        return TestNumberGeneratorResource(
+            TestNumberGeneratorSpecification(
                 base_id=self.base_resource._spec.base_id
-                + self._spec.shift_interval * index,
+                + self._spec.shift_interval * key,
             ),
-            resource_origin=self.base_resource.resource_origin,
+            resource_origin=self._modified_resource_origin(str(key)),
         )
