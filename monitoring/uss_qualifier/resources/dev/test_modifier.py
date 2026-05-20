@@ -6,18 +6,18 @@ from monitoring.uss_qualifier.resources.resource import (
 )
 
 
-class TestNumberGeneratorSpecification(ImplicitDict):
+class NumberGeneratorSpecification(ImplicitDict):
     base_id: int
 
 
-class TestNumberGeneratorResource(Resource[TestNumberGeneratorSpecification]):
+class NumberGeneratorResource(Resource[NumberGeneratorSpecification]):
     """A simple resource returing 10 numbers, starting from base_id. Used for unit tests."""
 
-    _spec: TestNumberGeneratorSpecification
+    _spec: NumberGeneratorSpecification
 
     def __init__(
         self,
-        specification: TestNumberGeneratorSpecification,
+        specification: NumberGeneratorSpecification,
         resource_origin: str,
     ):
         super().__init__(specification, resource_origin)
@@ -27,22 +27,22 @@ class TestNumberGeneratorResource(Resource[TestNumberGeneratorSpecification]):
         return list(range(self._spec.base_id, self._spec.base_id + 10))
 
 
-class TestNumberGeneratorModifierSpecification(ImplicitDict):
+class NumberGeneratorModifierSpecification(ImplicitDict):
     shift_interval: int
 
 
-class TestNumberGeneratorModifierResource(
+class NumberGeneratorModifierResource(
     ResourceModifyingResource[
-        TestNumberGeneratorModifierSpecification, int, TestNumberGeneratorResource
+        NumberGeneratorModifierSpecification, int, NumberGeneratorResource
     ]
 ):
-    """Modifier for a TestNumberGeneratorResource. Used for unit tests."""
+    """Modifier for a NumberGeneratorResource. Used for unit tests."""
 
-    def modify(self, key: int) -> TestNumberGeneratorResource:
+    def modify(self, key: int) -> NumberGeneratorResource:
 
         # 'Clone' the resource with new specs
-        return TestNumberGeneratorResource(
-            TestNumberGeneratorSpecification(
+        return NumberGeneratorResource(
+            NumberGeneratorSpecification(
                 base_id=self.base_resource._spec.base_id
                 + self._spec.shift_interval * key,
             ),

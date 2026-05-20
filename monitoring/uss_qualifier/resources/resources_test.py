@@ -5,8 +5,8 @@ from monitoring.uss_qualifier.resources.definitions import (
     ResourceID,
 )
 from monitoring.uss_qualifier.resources.dev.test_modifier import (
-    TestNumberGeneratorModifierSpecification,
-    TestNumberGeneratorSpecification,
+    NumberGeneratorModifierSpecification,
+    NumberGeneratorSpecification,
 )
 from monitoring.uss_qualifier.resources.resource import create_resources
 
@@ -17,8 +17,8 @@ class TestModifierResource(unittest.TestCase):
     ) -> dict[ResourceID, ResourceDeclaration]:
         return {
             "number_generator": ResourceDeclaration(
-                resource_type="resources.dev.TestNumberGeneratorResource",
-                specification=TestNumberGeneratorSpecification(base_id=base_id),
+                resource_type="resources.dev.NumberGeneratorResource",
+                specification=NumberGeneratorSpecification(base_id=base_id),
             )
         }
 
@@ -30,8 +30,8 @@ class TestModifierResource(unittest.TestCase):
                 "number_generator"
             ],
             "modifier": ResourceDeclaration(
-                resource_type="resources.dev.TestNumberGeneratorModifierResource",
-                specification=TestNumberGeneratorModifierSpecification(
+                resource_type="resources.dev.NumberGeneratorModifierResource",
+                specification=NumberGeneratorModifierSpecification(
                     shift_interval=shift_interval
                 ),
                 dependencies={
@@ -72,7 +72,7 @@ class TestModifierResource(unittest.TestCase):
 
         resource = resources["modifier"]
 
-        assert resource.adjust(0).build_ids() == [
+        assert resource.modify(0).build_ids() == [
             42,
             43,
             44,
@@ -84,7 +84,7 @@ class TestModifierResource(unittest.TestCase):
             50,
             51,
         ]
-        assert resource.adjust(1).build_ids() == [
+        assert resource.modify(1).build_ids() == [
             52,
             53,
             54,
@@ -106,7 +106,7 @@ class TestModifierResource(unittest.TestCase):
 
         resource = resources["modifier"]
 
-        assert resource.adjust(0).build_ids() == [
+        assert resource.modify(0).build_ids() == [
             42,
             43,
             44,
@@ -118,7 +118,7 @@ class TestModifierResource(unittest.TestCase):
             50,
             51,
         ]
-        assert resource.adjust(1).build_ids() == [
+        assert resource.modify(1).build_ids() == [
             62,
             63,
             64,
