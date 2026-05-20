@@ -5,9 +5,12 @@ v1:
       resource_declarations:
         locality_che: {$ref: 'library/resources.yaml#/locality_che'}
         che_conflicting_flights: {$ref: 'library/resources.yaml#/che_conflicting_flights'}
+        che_conflicting_flights_parallel: {$ref: 'library/resources.yaml#/che_conflicting_flights_parallel'}
         che_invalid_flight_intents: {$ref: 'library/resources.yaml#/che_invalid_flight_intents'}
+        che_invalid_flight_intents_parallel: {$ref: 'library/resources.yaml#/che_invalid_flight_intents_parallel'}
         che_invalid_flight_auth_flights: {$ref: 'library/resources.yaml#/che_invalid_flight_auth_flights'}
         che_non_conflicting_flights: {$ref: 'library/resources.yaml#/che_non_conflicting_flights'}
+        che_non_conflicting_flights_parallel: {$ref: 'library/resources.yaml#/che_non_conflicting_flights_parallel'}
         che_planning_area_volume: {$ref: 'library/resources.yaml#/che_planning_area_volume'}
         che_planning_area: {$ref: 'library/resources.yaml#/che_planning_area'}
         netrid_observation_evaluation_configuration: {$ref: 'library/resources.yaml#/netrid_observation_evaluation_configuration'}
@@ -59,10 +62,14 @@ v1:
           prod_env_version_providers: prod_env_version_providers?
 
           conflicting_flights: che_conflicting_flights
+          conflicting_flights_parallel: che_conflicting_flights_parallel
           priority_preemption_flights: che_conflicting_flights
+          priority_preemption_flights_parallel: che_conflicting_flights_parallel
           invalid_flight_intents: che_invalid_flight_intents
+          invalid_flight_intents_parallel: che_invalid_flight_intents_parallel
           invalid_flight_auth_flights: che_invalid_flight_auth_flights
           non_conflicting_flights: che_non_conflicting_flights
+          non_conflicting_flights_parallel: che_non_conflicting_flights_parallel
           flight_planners: all_flight_planners?
           mock_uss: mock_uss_instance_uss6
           mock_uss_dp: mock_uss_instance_dp
@@ -96,10 +103,14 @@ v1:
                 prod_env_version_providers: prod_env_version_providers?
 
                 conflicting_flights: conflicting_flights
+                conflicting_flights_parallel: conflicting_flights_parallel
                 priority_preemption_flights: priority_preemption_flights
+                priority_preemption_flights_parallel: priority_preemption_flights_parallel
                 invalid_flight_intents: invalid_flight_intents
+                invalid_flight_intents_parallel: invalid_flight_intents_parallel
                 invalid_flight_auth_flights: invalid_flight_auth_flights
                 non_conflicting_flights: non_conflicting_flights
+                non_conflicting_flights_parallel: non_conflicting_flights_parallel
                 flight_planners: flight_planners?
                 mock_uss: mock_uss
                 mock_uss_dp: mock_uss_dp

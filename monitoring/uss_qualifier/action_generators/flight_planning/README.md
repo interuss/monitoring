@@ -19,3 +19,13 @@ This action generator accepts a [FlightPlannersResource](../../resources/flight_
 | `ussC`          | `ussC`          | `ExampleTestScenario` |
 
 The usage intent for this action generator is to enable design of simple test scenarios with a small number of participants, but to automatically repeat that simple scenario with all applicable role assignment combinations given a list of flight planner USSs to test.
+
+## `ParallelFlightPlannerCombinations`
+
+Variant of `FlightPlannerCombinations` that runs combinations in parallel where possible.
+
+Same configuration as `FlightPlannerCombinations`. The only difference is scheduling: combinations sharing no flight planner participant are grouped together and executed concurrently. Combinations sharing at least one participant remain in different groups (so no participant is hit by two tests at the same time).
+
+Groups are built greedily (first-fit): each combination is placed in the first existing group with no participant overlap, otherwise a new group is started. This is not minimal in the worst case but the problem is graph coloring, NP-hard.
+
+Each combination receives its own `adjust(index)` variant of every `ResourceModifier` resource in the pool (inherited from `FlightPlannerCombinations`), so parallel branches don't share mutable resource state.

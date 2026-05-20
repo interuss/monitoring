@@ -87,6 +87,29 @@ def _make_type_schemas(
                     )
 
 
+def _resolve_resource_spec_type(cls: type) -> type:
+    """Find the spec type bound to Resource[Spec] for a Resource subclass,
+    resolving TypeVars through intermediate generic bases (e.g., ResourceModifier)."""
+
+    def walk(c: type, subst: dict):
+        for base in getattr(c, "__orig_bases__", ()):
+            origin = get_origin(base)
+            if origin is None:
+                continue
+            args = tuple(subst.get(a, a) for a in get_args(base))
+            if origin is Resource:
+                return args[0]
+            result = walk(origin, dict(zip(origin.__parameters__, args)))
+            if result is not None:
+                return result
+        return None
+
+    result = walk(cls, {})
+    if result is None:
+        raise ValueError(f"Could not resolve Resource specification type for {cls}")
+    return result
+
+
 def _find_specifications(
     module,
     repo: dict[str, type[ImplicitDict]],
@@ -105,7 +128,9 @@ def _find_specifications(
             _find_specifications(member, repo, already_checked)
         elif inspect.isclass(member):
             if issubclass(member, Resource) and member != Resource:
-                spec_type = get_args(member.__orig_bases__[0])[0]
+                if inspect.isabstract(member):
+                    continue
+                spec_type = _resolve_resource_spec_type(member)
                 repo[fullname(spec_type)] = spec_type
             elif issubclass(member, ActionGenerator) and member != ActionGenerator:
                 spec_type = get_args(member.__orig_bases__[0])[0]

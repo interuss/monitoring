@@ -7,9 +7,13 @@ resources:
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
   conflicting_flights: resources.flight_planning.FlightIntentsResource
+  conflicting_flights_parallel: resources.flight_planning.FlightIntentsModifier
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
+  non_conflicting_flights_parallel: resources.flight_planning.FlightIntentsModifier
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
+  priority_preemption_flights_parallel: resources.flight_planning.FlightIntentsModifier
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
+  invalid_flight_intents_parallel: resources.flight_planning.FlightIntentsModifier
   id_generator: resources.interuss.IDGeneratorResource
   utm_client_identity: resources.communications.ClientIdentityResource
   second_utm_auth: resources.communications.AuthAdapterResource?
@@ -27,12 +31,16 @@ actions:
     resources:
       mock_uss: mock_uss
       conflicting_flights: conflicting_flights
+      conflicting_flights_parallel: conflicting_flights_parallel
       non_conflicting_flights: non_conflicting_flights
+      non_conflicting_flights_parallel: non_conflicting_flights_parallel
       priority_preemption_flights: priority_preemption_flights
+      priority_preemption_flights_parallel: priority_preemption_flights_parallel
       flight_planners: flight_planners
       flight_planners_to_clear: flight_planners
       nominal_planning_selector: combination_selector
       invalid_flight_intents: invalid_flight_intents
+      invalid_flight_intents_parallel: invalid_flight_intents_parallel
       priority_planning_selector: combination_selector
       dss: dss
       dss_instances: dss_instances

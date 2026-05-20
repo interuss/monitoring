@@ -23,9 +23,13 @@ function(env) {
             flight_planners: 'flight_planners',
             flight_planners_to_clear: 'flight_planners_to_clear',
             conflicting_flights: 'conflicting_flights',
+            conflicting_flights_parallel: 'conflicting_flights_parallel',
             priority_preemption_flights: 'conflicting_flights',
+            priority_preemption_flights_parallel: 'conflicting_flights_parallel',
             invalid_flight_intents: 'invalid_flight_intents',
+            invalid_flight_intents_parallel: 'invalid_flight_intents_parallel',
             non_conflicting_flights: 'non_conflicting_flights',
+            non_conflicting_flights_parallel: 'non_conflicting_flights_parallel',
             test_exclusions: 'test_exclusions',
             dss: 'dss',
             dss_instances: 'dss_instances',
@@ -205,6 +209,13 @@ function(env) {
             },
           },
 
+          conflicting_flights_parallel: {
+            resource_type: 'resources.flight_planning.FlightIntentsModifier',
+            dependencies: {
+              base_resource: 'conflicting_flights',
+            },
+          },
+
           // Details of flights with invalid operational intents (used in flight intent validation scenario)
           invalid_flight_intents: {
             resource_type: 'resources.flight_planning.FlightIntentsResource',
@@ -224,6 +235,13 @@ function(env) {
             },
           },
 
+          invalid_flight_intents_parallel: {
+            resource_type: 'resources.flight_planning.FlightIntentsModifier',
+            dependencies: {
+              base_resource: 'invalid_flight_intents',
+            },
+          },
+
           // Details of non-conflicting flights (used in data validation scenario)
           non_conflicting_flights: {
             resource_type: 'resources.flight_planning.FlightIntentsResource',
@@ -240,6 +258,13 @@ function(env) {
                   },
                 },
               ],
+            },
+          },
+
+          non_conflicting_flights_parallel: {
+            resource_type: 'resources.flight_planning.FlightIntentsModifier',
+            dependencies: {
+              base_resource: 'non_conflicting_flights',
             },
           },
 

@@ -1,3 +1,4 @@
+from .flight_intents_resource import FlightIntentsModifier as FlightIntentsModifier
 from .flight_intents_resource import FlightIntentsResource as FlightIntentsResource
 from .flight_planners import (
     FlightPlannerCombinationSelectorResource as FlightPlannerCombinationSelectorResource,
