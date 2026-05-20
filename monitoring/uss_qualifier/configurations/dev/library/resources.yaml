@@ -347,6 +347,11 @@ che_conflicting_flights:
           degrees_east: 7.4774
           meters_up: 605
 
+che_conflicting_flights_parallel:
+  resource_type: resources.flight_planning.FlightIntentsModifier
+  dependencies:
+    base_resource: che_conflicting_flights
+
 che_invalid_flight_intents:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
   resource_type: resources.flight_planning.FlightIntentsResource
@@ -359,6 +364,11 @@ che_invalid_flight_intents:
           degrees_north: 46.9748
           degrees_east: 7.4774
           meters_up: 605
+
+che_invalid_flight_intents_parallel:
+  resource_type: resources.flight_planning.FlightIntentsModifier
+  dependencies:
+    base_resource: che_invalid_flight_intents
 
 che_general_flight_auth_flights:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -380,6 +390,11 @@ che_non_conflicting_flights:
           degrees_north: 46.9748
           degrees_east: 7.4774
           meters_up: 605
+
+che_non_conflicting_flights_parallel:
+  resource_type: resources.flight_planning.FlightIntentsModifier
+  dependencies:
+    base_resource: che_non_conflicting_flights
 
 # ===== General flight authorization =====
 
