@@ -1,8 +1,11 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import arrow
 from implicitdict import ImplicitDict
+from uas_standards.astm.f3548.v21.constants import (
+    TimeSyncMaxDifferentialSeconds,
+)
 from uas_standards.interuss.automated_testing.rid.v1.injection import ChangeTestResponse
 
 from monitoring.monitorlib import geo
@@ -187,6 +190,7 @@ def get_user_notifications(
                     details=f"Expected response code 200 from {target.participant_id} but received {query.status_code} while trying to retrieve user notifications",
                     query_timestamps=[query.request.timestamp],
                 )
+                continue
             if response is None:
                 check.record_failed(
                     summary="Error while trying to retrieve user notifications",
@@ -194,7 +198,23 @@ def get_user_notifications(
                     query_timestamps=[query.request.timestamp],
                 )
                 notifications[target.participant_id] = []
-            else:
-                notifications[target.participant_id] = response.user_notifications
+                continue
+
+            if any(
+                [
+                    notification.observed_at.value.datetime
+                    > arrow.now() + timedelta(seconds=TimeSyncMaxDifferentialSeconds)
+                    for notification in response.user_notifications
+                ]
+            ):
+                check.record_failed(
+                    summary="Error while trying to retrieve user notifications",
+                    details=f"Response from {target.participant_id} returned notifications in the future.",
+                    query_timestamps=[query.request.timestamp],
+                )
+                notifications[target.participant_id] = []
+                continue
+
+            notifications[target.participant_id] = response.user_notifications
 
     return notifications

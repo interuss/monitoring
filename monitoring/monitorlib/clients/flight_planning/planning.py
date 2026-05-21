@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.interuss.automated_testing.flight_planning.v1 import (
     api as flight_planning_api,
@@ -18,7 +18,7 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
 from monitoring.monitorlib.fetch import Query
 
 
-class PlanningActivityResult(str, Enum):
+class PlanningActivityResult(StrEnum):
     """The result of the flight planning operation."""
 
     Completed = "Completed"
@@ -34,7 +34,7 @@ class PlanningActivityResult(str, Enum):
     """The USS's implementation does not support the attempted interaction.  For instance, if the request specified a high-priority flight and the USS does not support management of high-priority flights."""
 
 
-class FlightPlanStatus(str, Enum):
+class FlightPlanStatus(StrEnum):
     """Status of a user's flight plan."""
 
     NotPlanned = "NotPlanned"
@@ -63,7 +63,7 @@ class FlightPlanStatus(str, Enum):
         return FlightPlanStatus.Planned
 
 
-class AdvisoryInclusion(str, Enum):
+class AdvisoryInclusion(StrEnum):
     """Indication of whether any advisories or conditions were provided to the user along with the result of a flight planning attempt."""
 
     Unknown = "Unknown"
@@ -89,10 +89,17 @@ class PlanningActivityResponse(ImplicitDict):
     flight_plan_status: FlightPlanStatus
     """Status of the flight plan following the flight planning activity."""
 
-    notes: str | None
+    as_planned: Optional[FlightInfo]
+    """The flight information, as it was actually planned (after any adjustments or adaptations).
+    
+    If the flight was planned or modified successfully but this field is not populated, the flight information was
+    accepted exactly as provided.
+    """
+
+    notes: Optional[str]
     """Any human-readable notes regarding the activity."""
 
-    includes_advisories: AdvisoryInclusion | None = AdvisoryInclusion.Unknown
+    includes_advisories: Optional[AdvisoryInclusion] = AdvisoryInclusion.Unknown
 
     def to_inject_flight_response(self) -> scd_api.InjectFlightResponse:
         if self.activity_result == PlanningActivityResult.Completed:
@@ -135,13 +142,13 @@ class ClearAreaResponse(ImplicitDict):
     flight_deletion_errors: dict[FlightID, dict]
     """When an error was encountered deleting a particular flight, information about that error."""
 
-    op_intents_removed: list[f3548v21.EntityOVN]
+    op_intents_removed: list[f3548v21.EntityID]
     """List of IDs of ASTM F3548-21 operational intent references that were removed during this area clearing operation."""
 
-    op_intent_removal_errors: dict[f3548v21.EntityOVN, dict]
+    op_intent_removal_errors: dict[f3548v21.EntityID, dict]
     """When an error was encountered removing a particular operational intent reference, information about that error."""
 
-    error: dict | None = None
+    error: Optional[dict] = None
     """If an error was encountered that could not be linked to a specific flight or operational intent, information about it will be populated here."""
 
     @property
@@ -153,7 +160,7 @@ class ClearAreaResponse(ImplicitDict):
         )
 
 
-class Conflict(str, Enum):
+class Conflict(StrEnum):
     """Conflict status as indicated in the notification."""
 
     Unknown = "Unknown"

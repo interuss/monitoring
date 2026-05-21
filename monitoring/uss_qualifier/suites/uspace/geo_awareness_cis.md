@@ -5,6 +5,7 @@
 ## [Actions](../README.md#actions)
 
 1. Scenario: [EUROCAE ED-269 UAS geographical zone model](../../scenarios/eurocae/ed269/source_data_model.md) ([`scenarios.eurocae.ed269.source_data_model.SourceDataModelValidation`](../../scenarios/eurocae/ed269/source_data_model.py))
+2. Scenario: [EUROCAE ED-318 UAS geographical zone model](../../scenarios/eurocae/ed318/source_data_model.md) ([`scenarios.eurocae.ed318.source_data_model.SourceDataModelValidation`](../../scenarios/eurocae/ed318/source_data_model.py))
 
 ## [Checked requirements](../README.md#checked-requirements)
 

@@ -65,8 +65,8 @@ class SubscriptionSimple(GenericTestScenario):
         self._dss = dss.dss_instance
         self._dss_wrapper = DSSWrapper(self, self._dss)
         self._base_sub_id = id_generator.id_factory.make_id(self.SUB_TYPE)
-        self._isa = isa.specification
-        self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._isa = isa
+        self._isa_area = isa.s2_vertices()
         # List of vertices that has the same first and last point:
         # Used to validate some special-case handling by the DSS
         self._isa_area_loop = self._isa_area.copy()

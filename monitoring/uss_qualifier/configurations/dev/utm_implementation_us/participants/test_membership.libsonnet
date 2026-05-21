@@ -22,7 +22,6 @@ function(env_code)
   local unique_test_names = std.uniq(std.sort(all_test_names));
 
   {
-    // --- Active Participant Lists per Environment ---
     // Defines which participants are active for each specific test configuration in the environment.
     active_participants: {
       // For each unique test name, build an array of participants involved in that test.

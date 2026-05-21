@@ -1,8 +1,10 @@
 name: ASTM F3411-22a
 resources:
+  test_env_version_providers: resources.versioning.VersionProvidersResource?
+  system_identity: resources.versioning.SystemIdentityResource?
   flights_data: resources.netrid.FlightDataResource
   service_providers: resources.netrid.NetRIDServiceProviders?
-  observers: resources.netrid.NetRIDObserversResource
+  observers: resources.netrid.NetRIDObserversResource?
   mock_uss_dp: resources.interuss.mock_uss.client.MockUSSResource?
   mock_uss_sp: resources.interuss.mock_uss.client.MockUSSResource?
   evaluation_configuration: resources.netrid.EvaluationConfigurationResource
@@ -16,6 +18,12 @@ resources:
   test_exclusions: resources.dev.TestExclusionsResource?
   uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
 actions:
+  - test_scenario:
+      scenario_type: scenarios.versioning.GetSystemVersions
+      resources:
+        version_providers: test_env_version_providers
+        system_identity: system_identity
+      on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.ServiceProviderNotifiesSlowUpdates
       resources:
@@ -48,6 +56,33 @@ actions:
         service_providers: service_providers
         evaluation_configuration: evaluation_configuration
     on_failure: Continue
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v22a.ServiceProviderNotificationBehavior
+      resources:
+        flights_data: flights_data
+        service_providers: service_providers
+        mock_uss: mock_uss_dp
+        id_generator: id_generator
+        dss_pool: dss_instances
+        uss_identification: uss_identification
+    on_failure: Continue
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v22a.NominalBehavior
+      resources:
+        flights_data: flights_data
+        service_providers: service_providers
+        observers: observers?
+        evaluation_configuration: evaluation_configuration
+        dss_pool: dss_instances?
+    on_failure: Continue
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v22a.Misbehavior
+      resources:
+        flights_data: flights_data
+        service_providers: service_providers
+        evaluation_configuration: evaluation_configuration
+        dss_pool: dss_instances
+      on_failure: Continue
   - action_generator:
       generator_type: action_generators.astm.f3411.ForEachDSS
       resources:
@@ -79,41 +114,10 @@ actions:
         dss_instance_id: dss
       on_failure: Continue
   - test_scenario:
-      scenario_type: scenarios.astm.netrid.v22a.ServiceProviderNotificationBehavior
-      resources:
-        flights_data: flights_data
-        service_providers: service_providers
-        mock_uss: mock_uss_dp
-        id_generator: id_generator
-        dss_pool: dss_instances
-    on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v22a.NominalBehavior
-      resources:
-        flights_data: flights_data
-        service_providers: service_providers
-        observers: observers
-        evaluation_configuration: evaluation_configuration
-        dss_pool: dss_instances?
-    on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v22a.Misbehavior
-      resources:
-        flights_data: flights_data
-        service_providers: service_providers
-        observers: observers
-        evaluation_configuration: evaluation_configuration
-        dss_pool: dss_instances
-      on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v22a.OperatorInteractions
-      resources: {}
-      on_failure: Continue
-  - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.AggregateChecks
       resources:
         service_providers: service_providers
-        observers: observers
+        observers: observers?
         dss_instances: dss_instances
         test_exclusions: test_exclusions?
 participant_verifiable_capabilities:
@@ -203,6 +207,32 @@ participant_verifiable_capabilities:
             checked:
               requirement_sets:
                 - "astm.f3411.v22a.service_provider#Operator Position provider"
+  - id: service_provider_operator_altitude_provider
+    name: NetRID Service Provider providing operator altitude data field
+    description: Participant fulfills testable requirements necessary to provide operator altitude data field according to F3411-22a.
+    verification_condition:
+      all_conditions:
+        conditions:
+          - capability_verified:
+              capability_ids:
+                - service_provider
+          - requirements_checked:
+              checked:
+                requirement_sets:
+                  - "astm.f3411.v22a.service_provider#Operator Altitude provider"
+  - id: service_provider_operator_location_type_provider
+    name: NetRID Service Provider providing operator location type data field
+    description: Participant fulfills testable requirements necessary to provide operator location type data field according to F3411-22a.
+    verification_condition:
+      all_conditions:
+        conditions:
+          - capability_verified:
+              capability_ids:
+                - service_provider
+          - requirements_checked:
+              checked:
+                requirement_sets:
+                  - "astm.f3411.v22a.service_provider#Operator Location Type provider"
   - id: service_provider_operational_status_provider
     name: NetRID Service Provider providing operational status data field
     description: Participant fulfills testable requirements necessary to provide operational status data field according to F3411-22a.

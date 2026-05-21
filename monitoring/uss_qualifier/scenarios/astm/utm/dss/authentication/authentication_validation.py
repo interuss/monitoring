@@ -3,8 +3,9 @@ from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.auth import InvalidTokenSignatureAuth
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4D
-from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    utm_client_session_factory,
+)
 from monitoring.monitorlib.inspection import fullname
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -167,21 +168,21 @@ class AuthenticationValidation(TestScenario):
 
         self._pid = [self._scd_dss.participant_id]
         self._test_id = id_generator.id_factory.make_id(self.SUB_TYPE)
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
         # Build a ready-to-use 4D volume with no specified time for searching
         # the currently active subscriptions
-        self._planning_area_volume4d = Volume4D(
-            volume=self._planning_area.volume,
+        self._planning_area_volume4d = self._planning_area.resolved_volume4d_with_times(
+            None, None
         )
 
         # Session that won't provide a token at all
-        self._no_auth_session = UTMClientSession(
+        self._no_auth_session = utm_client_session_factory.get_session(
             self._scd_dss.base_url, auth_adapter=None
         )
 
         # Session that should provide a well-formed token with a wrong signature
-        self._invalid_token_session = UTMClientSession(
+        self._invalid_token_session = utm_client_session_factory.get_session(
             self._scd_dss.base_url, auth_adapter=InvalidTokenSignatureAuth()
         )
 

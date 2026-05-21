@@ -9,6 +9,10 @@ def validate_request(flight_info: FlightInfo) -> None:
     Args:
         flight_info: Information about the requested flight.
     """
+
+    if not flight_info.uspace_flight_authorisation:
+        return
+
     problems = problems_with_flight_authorisation(
         flight_info.uspace_flight_authorisation
     )

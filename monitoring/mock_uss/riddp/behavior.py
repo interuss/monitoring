@@ -1,8 +1,8 @@
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 ServiceProviderID = str
 
 
 class DisplayProviderBehavior(ImplicitDict):
-    always_omit_recent_paths: bool | None = False
-    do_not_display_flights_from: list[ServiceProviderID] | None = []
+    always_omit_recent_paths: Optional[bool] = False
+    do_not_display_flights_from: Optional[list[ServiceProviderID]] = []

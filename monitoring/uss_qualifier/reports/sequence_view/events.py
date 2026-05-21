@@ -15,7 +15,6 @@ from monitoring.uss_qualifier.reports.report import (
 from monitoring.uss_qualifier.reports.sequence_view.summary_types import (
     Epoch,
     Event,
-    EventType,
     Indexer,
     NoteEvent,
     TestedCase,
@@ -67,7 +66,7 @@ def _step_events(
     scenario_participants: dict[ParticipantID, TestedParticipant],
     all_events: list[Event],
     after: datetime | None,
-) -> tuple[TestedStep, datetime]:
+) -> tuple[TestedStep, datetime | None]:
     events = []
 
     # Create events for this step's passed checks
@@ -84,7 +83,7 @@ def _step_events(
         )
         for pid in participants:
             p = scenario_participants.get(pid, TestedParticipant())
-            p.has_successes = True
+            p.has_passes = True
             scenario_participants[pid] = p
 
     # Create events for this step's queries
@@ -116,7 +115,7 @@ def _step_events(
                 found = False
                 for e in all_events:
                     if (
-                        e.type == EventType.Query
+                        e.query is not None
                         and e.query.request.initiated_at == query_timestamp
                     ):
                         query_events.append(e)

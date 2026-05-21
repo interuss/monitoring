@@ -9,7 +9,7 @@ from monitoring.monitorlib.clients.mock_uss.interactions import (
     Interaction,
     QueryDirection,
 )
-from monitoring.monitorlib.fetch import Query, QueryError
+from monitoring.monitorlib.fetch import Query, QueryError, QueryType
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
 from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
 
@@ -130,5 +130,18 @@ def status_code_filter(
 
     def is_applicable(interaction: Interaction) -> bool:
         return interaction.query.status_code == status_code
+
+    return is_applicable
+
+
+def query_type_filter(*query_type: QueryType | None) -> Callable[[Interaction], bool]:
+    def is_applicable(interaction: Interaction) -> bool:
+        if "query_type" in interaction.query and interaction.query.query_type:
+            if interaction.query.query_type in query_type:
+                return True
+        else:
+            if None in query_type:
+                return True
+        return False
 
     return is_applicable

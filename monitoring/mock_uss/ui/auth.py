@@ -10,7 +10,7 @@ from loguru import logger
 from oauthlib.oauth2 import WebApplicationClient
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from monitoring.mock_uss import import_environment_variable, webapp
+from monitoring.mock_uss.app import import_environment_variable, webapp
 
 login_manager = LoginManager()
 login_manager.init_app(webapp)
@@ -63,7 +63,7 @@ class User(flask_login.UserMixin):
 
 def _get_users() -> list[User]:
     users = []
-    user_strings = webapp.config.get(KEY_UI_USERS).split(";")
+    user_strings = (webapp.config.get(KEY_UI_USERS) or "").split(";")
     for user_string in user_strings:
         if not user_string.strip():
             continue
@@ -122,7 +122,9 @@ def ui_login_usernamepassword():
     if not users:
         flask.flash("Invalid username/password combination")
         return flask.redirect(flask.url_for("ui_login"))
-    if check_password_hash(users[0].password_hash, flask.request.form["password"]):
+    if users[0].password_hash and check_password_hash(
+        users[0].password_hash, flask.request.form["password"]
+    ):
         flask_login.login_user(users[0])
         return flask.redirect(flask.url_for("ui_login_successful"))
     else:
@@ -132,6 +134,9 @@ def ui_login_usernamepassword():
 
 @webapp.route("/ui/login/callback")
 def ui_login_callback():
+    if not oauth_client:
+        return "Not in oauth mode", 400
+
     if "code" not in flask.request.args:
         return "Missing `code` in request arguments", 400
     code = flask.request.args.get("code")
@@ -150,8 +155,8 @@ def ui_login_callback():
         headers=headers,
         data=body,
         auth=(
-            webapp.config.get(KEY_GOOGLE_OAUTH_CLIENT_ID),
-            webapp.config.get(KEY_GOOGLE_OAUTH_CLIENT_SECRET),
+            webapp.config.get(KEY_GOOGLE_OAUTH_CLIENT_ID, ""),
+            webapp.config.get(KEY_GOOGLE_OAUTH_CLIENT_SECRET, ""),
         ),
     )
     oauth_client.parse_request_body_response(json.dumps(token_response.json()))

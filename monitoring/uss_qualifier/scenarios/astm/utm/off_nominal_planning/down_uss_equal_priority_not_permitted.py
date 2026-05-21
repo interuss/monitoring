@@ -1,4 +1,3 @@
-import arrow
 from uas_standards.astm.f3548.v21.api import (
     OperationalIntentReference,
     OperationalIntentState,
@@ -16,7 +15,6 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     FlightPlanStatus,
     PlanningActivityResult,
 )
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation import (
     ExpectedFlightIntent,
 )
@@ -63,11 +61,6 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
         ]
 
     def run(self, context: ExecutionContext):
-        self.times = {
-            TimeDuringTest.StartOfTestRun: Time(context.start_time),
-            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
-        }
-
         self.begin_test_scenario(context)
 
         self.record_note(

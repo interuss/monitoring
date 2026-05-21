@@ -30,7 +30,6 @@ v1:
           second_utm_auth: second_utm_auth
           planning_area: planning_area
           problematically_big_area: problematically_big_area
-          test_exclusions: test_exclusions
 
     # When a test run is executed, a "baseline signature" is computed uniquely identifying the "baseline" of the test,
     # usually excluding exactly what systems are participating in the test (the "environment").  This is a list of
@@ -135,7 +134,7 @@ v1:
           specification:
             # A USS that hosts a DSS instance is also a participant in the test, even if they don't fulfill any other roles
             participant_id: uss1_dss
-            base_url: http://dss.uss1.localutm
+            base_url: http://dss1.uss1.localutm
             supports_ovn_request: true
 
         dss_instances:
@@ -148,10 +147,10 @@ v1:
                 user_participant_ids:
                   # Participants using a DSS instance they do not provide should be listed as users of that DSS (so that they can take credit for USS requirements enforced by the DSS)
                   - mock_uss  # mock_uss uses this DSS instance; it does not provide its own instance
-                base_url: http://dss.uss1.localutm
+                base_url: http://dss1.uss1.localutm
                 supports_ovn_request: true
               - participant_id: uss2_dss
-                base_url: http://dss.uss2.localutm
+                base_url: http://dss1.uss2.localutm
                 supports_ovn_request: true
 
         # Mock USS that can be used in tests for flight planning, modifying data sharing behavior and recording interactions
@@ -166,15 +165,6 @@ v1:
         # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         # ========== Environment ==========
         # =================================
-
-        # Controls tests behavior
-        test_exclusions:
-          $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-          resource_type: resources.dev.TestExclusionsResource
-          specification:
-            # Tests should allow private addresses that are not publicly addressable since this configuration runs locally
-            allow_private_addresses: true
-            allow_cleartext_queries: true
 
         # Means by which uss_qualifier can discover which subscription ('sub' claim of its tokes) it is described by
         utm_client_identity:
@@ -194,12 +184,11 @@ v1:
             client_identity: utm_client_identity
 
         # Area that will be used for queries and resource creation that are geo-located
-        planning_area:
+        planning_area_volume:
           $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
-          resource_type: resources.PlanningAreaResource
+          resource_type: resources.VolumeResource
           specification:
-            base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/f3548_self_contained/planning_area
-            volume:
+            template:
               outline_polygon:
                 vertices:
                   - lat: 37.1853
@@ -218,6 +207,14 @@ v1:
                 value: 3048
                 reference: W84
                 units: M
+
+        planning_area:
+          $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+          resource_type: resources.PlanningAreaResource
+          dependencies:
+            volume: planning_area_volume
+          specification:
+            base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/f3548_self_contained/planning_area
 
         # An area designed to be soo big as to be refused by systems queries with it.
         problematically_big_area:
@@ -280,9 +277,12 @@ v1:
 
     # How to execute a test run using this configuration
     execution:
-      # Since we expect no failed checks and want to stop execution immediately if there are any failed checks, we set
-      # this parameter to true.
+      # Since we want to stop execution immediately if there are any unexpected failed checks, we set this parameter to
+      # true.
       stop_fast: true
+
+      # But, don't stop_fast for findings that are acceptable according to any of the tested_requirements.
+      do_not_stop_fast_for_acceptable_findings: true
 
   # This block defines artifacts related to the test run.  Note that all paths are
   # relative to where uss_qualifier is executed from, and are located inside the
@@ -370,6 +370,7 @@ v1:
               - astm.f3548.v21.DSS0210,A2-7-2,7
               - astm.f3548.v21.DSS0215
               - astm.f3548.v21.DSS0300
+              - interuss.automated_testing.execution.RunToCompletion
               - interuss.automated_testing.flight_planning.ClearArea
               - interuss.automated_testing.flight_planning.DeleteFlightSuccess
               - interuss.automated_testing.flight_planning.ExpectedBehavior
@@ -404,6 +405,7 @@ v1:
               - astm.f3548.v21.USS0105,1
               - astm.f3548.v21.USS0105,3
               - astm.f3548.v21.USS0105,4
+              - interuss.automated_testing.execution.RunToCompletion
               - interuss.automated_testing.flight_planning.ClearArea
               - interuss.automated_testing.flight_planning.DeleteFlightSuccess
               - interuss.automated_testing.flight_planning.ExpectedBehavior
@@ -415,11 +417,23 @@ v1:
           uss1: scd_and_dss
           uss2: scd_no_dss
 
+        # It is acceptable for the checks listed below to fail (in terms of determining the status of tested requirements in this artifact)
+        acceptable_findings:
+          - scenario_type: scenarios.astm.utm.dss.dss_interoperability.DSSInteroperability
+            test_case_name: "Prerequisites"
+            test_step_name: "Test environment requirements"
+            check_name: "DSS instance is publicly addressable"
+            # Rationale: tests should allow private addresses that are not publicly addressable since this configuration runs locally
+
     # Write out a human-readable report showing the sequence of events of the test
     sequence_view: {}
 
     # Write out a long-form report mimicking if the test run was performed manually
     globally_expanded_report: {}
+
+    # Write out a report describing where and how time was spent during the test
+    timing_report:
+      percentage_of_time_to_break_down: 90
 
   # This block defines whether to return an error code from the execution of uss_qualifier, based on the content of the
   # test run report.  All of the criteria must be met to return a successful code.
@@ -441,6 +455,7 @@ v1:
         pass_condition:
           # When considering all of the applicable elements...
           elements:
-            # ...the number of applicable elements should be zero.
+            # ...the number of applicable elements should be 4...
             count:
-              equal_to: 0
+              # ...specifically, the 4x "DSS instance is publicly accessible" checks we deem acceptable
+              equal_to: 4

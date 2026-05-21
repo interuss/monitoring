@@ -52,7 +52,7 @@
     {% set first_row = namespace(epoch=True, step=True) %}
     {% for epoch in test_scenario.epochs %}
       {% set first_row.epoch = True %}
-      {% if epoch.type == EpochType.Case %}
+      {% if epoch.case %}
         {% for test_step in epoch.case.steps %}
           {% set first_row.step = True %}
           {% for event in test_step.events %}
@@ -76,7 +76,7 @@
                 </span></td>
               {% endif %}
               <td><a href="#e{{ event.event_index }}">{{ event.event_index }}</a></td>
-              {% if event.type == EventType.PassedCheck %}
+              {% if event.passed_check %}
                 <td>&#x2705;</td>
                 <td class="pass_result">
                   {{ event.passed_check.name }}
@@ -88,7 +88,7 @@
                     <td></td>
                   {% endif %}
                 {% endfor %}
-              {% elif event.type == EventType.FailedCheck %}
+              {% elif event.failed_check %}
                 <td>{{ severity_symbol(event.failed_check.severity) }}</td>
                 <td class="{{ severity_class(event.failed_check.severity) }}">
                   {% if event.failed_check.documentation_url %}
@@ -117,7 +117,7 @@
                     <td></td>
                   {% endif %}
                 {% endfor %}
-              {% elif event.type == EventType.Query %}
+              {% elif event.query %}
                 <td>&#x1F310;</td>
                 <td>
                   {% set query_dict = {event.query.request.method + " " + event.query.request.url_hostname + " " + str(event.query.response.status_code): event.query} %}
@@ -132,20 +132,20 @@
                     <td></td>
                   {% endif %}
                 {% endfor %}
-              {% elif event.type == EventType.Note %}
+              {% elif event.note %}
                 <td>&#x1F4D3;</td>
                 <td colspan="{{ 1 + len(all_participants) }}">
                   <code>{{ event.note.key }}</code>: {{ event.note.message }}
                 </td>
               {% else %}
-                <td>???</td><td>Render error: unknown EventType '{{ event.type }}'</td>
+                <td>???</td><td>Render error: unknown event type</td>
               {% endif %}
             </tr>
             {% set first_row.epoch = False %}
             {% set first_row.step = False %}
           {% endfor %}
         {% endfor %}
-      {% elif epoch.type == EpochType.Events %}
+      {% elif epoch.events %}
         {% for event in epoch.events %}
           <tr id="e{{ event.event_index }}">
             {% if first_row.epoch %}

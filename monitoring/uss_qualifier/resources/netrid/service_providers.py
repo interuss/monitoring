@@ -50,7 +50,7 @@ class NetRIDServiceProvider:
     ):
         self.participant_id = participant_id
         self.injection_base_url = injection_base_url
-        self.injection_client = infrastructure.UTMClientSession(
+        self.injection_client = infrastructure.utm_client_session_factory.get_session(
             injection_base_url, auth_adapter
         )
 

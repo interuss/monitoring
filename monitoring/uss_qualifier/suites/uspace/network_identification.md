@@ -17,7 +17,7 @@
     <th><a href="../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="123" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
+    <td rowspan="122" style="vertical-align:top;"><a href="../../requirements/astm/f3411/v22a.md">astm<br>.f3411<br>.v22a</a></td>
     <td><a href="../../requirements/astm/f3411/v22a.md">DSS0010</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/astm/netrid/v22a/dss/token_validation.md">ASTM NetRID DSS: Token Validation</a></td>
@@ -224,13 +224,13 @@
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0030</a></td>
-    <td>Implemented + TODO</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_missing_fields.md">ASTM NetRID Service Provider operator notification on missing fields</a><br><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_missing_fields.md">ASTM NetRID Service Provider operator notification on missing fields</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0040</a></td>
-    <td>Implemented + TODO</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0210</a></td>
@@ -420,7 +420,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0340</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0420</a></td>
@@ -604,18 +604,13 @@
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0610</a></td>
-    <td>Implemented + TODO</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a><br><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
-  </tr>
-  <tr>
-    <td><a href="../../requirements/astm/f3411/v22a.md">NET0620</a></td>
-    <td>TODO</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/operator_interactions.md">ASTM NetRID: Operator interactions</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0710,1</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td><a href="../../requirements/astm/f3411/v22a.md">NET0710,2</a></td>
@@ -678,7 +673,7 @@
   <tr>
     <td><a href="../../requirements/interuss/f3411/dss_endpoints.md">SearchISAs</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/netrid/v22a/dss/heavy_traffic_concurrent.md">ASTM NetRID DSS: Concurrent Requests</a><br><a href="../../scenarios/astm/netrid/v22a/dss/isa_expiry.md">ASTM NetRID DSS: ISA Expiry</a><br><a href="../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../scenarios/astm/netrid/v22a/dss/token_validation.md">ASTM NetRID DSS: Token Validation</a><br><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
+    <td><a href="../../scenarios/astm/netrid/v22a/dss/heavy_traffic_concurrent.md">ASTM NetRID DSS: Concurrent Requests</a><br><a href="../../scenarios/astm/netrid/v22a/dss/isa_expiry.md">ASTM NetRID DSS: ISA Expiry</a><br><a href="../../scenarios/astm/netrid/v22a/dss/isa_simple.md">ASTM NetRID DSS: Simple ISA</a><br><a href="../../scenarios/astm/netrid/v22a/dss/token_validation.md">ASTM NetRID DSS: Token Validation</a><br><a href="../../scenarios/astm/netrid/v22a/misbehavior.md">ASTM NetRID SP clients misbehavior handling</a><br><a href="../../scenarios/astm/netrid/v22a/sp_operator_notify_slow_update.md">ASTM NetRID Service Provider operator notification under slow update rate</a><br><a href="../../scenarios/astm/netrid/v22a/networked_uas_disconnect.md">ASTM NetRID networked UAS disconnection</a><br><a href="../../scenarios/astm/netrid/v22a/nominal_behavior.md">ASTM NetRID nominal behavior</a></td>
   </tr>
   <tr>
     <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/interuss/mock_uss/hosted_instance.md">interuss<br>.mock_uss<br>.hosted_instance</a></td>
@@ -691,5 +686,11 @@
     <td><a href="../../requirements/uspace/article8.md">MSLAltitude</a></td>
     <td>Implemented</td>
     <td><a href="../../scenarios/uspace/netrid/msl.md">U-space MSL altitude</a></td>
+  </tr>
+  <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../requirements/versioning.md">versioning</a></td>
+    <td><a href="../../requirements/versioning.md">ReportSystemVersion</a></td>
+    <td>Implemented</td>
+    <td><a href="../../scenarios/versioning/get_system_versions.md">Get system versions</a></td>
   </tr>
 </table>

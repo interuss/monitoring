@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 # This script is intended to be called from within a Docker container running
 # mock_uss via the interuss/monitoring image.  In that context, this script is
 # the entrypoint into the mock_uss server.
@@ -27,4 +29,4 @@ uv run gunicorn \
     --workers=4 \
     --worker-tmp-dir="/dev/shm" \
     "--bind=0.0.0.0:${port}" \
-    monitoring.mock_uss:webapp
+    monitoring.mock_uss.app:webapp

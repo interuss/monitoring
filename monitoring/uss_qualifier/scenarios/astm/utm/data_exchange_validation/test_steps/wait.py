@@ -4,7 +4,7 @@ from datetime import timedelta
 import arrow
 
 from monitoring.monitorlib.clients.mock_uss.interactions import Interaction, Query
-from monitoring.monitorlib.delay import sleep
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
 MaxTimeToWaitForSubscriptionNotificationSeconds = 7
 """
@@ -18,29 +18,32 @@ WaitIntervalSeconds = 1
 """Time interval to wait between two calls to get interactions from Mock USS"""
 
 
-def wait_in_intervals(func) -> Callable[..., tuple[list[Interaction], Query]]:
+def wait_in_intervals(
+    func, scenario: TestScenario
+) -> Callable[..., tuple[list[Interaction], Query]]:
     """
     This wrapper calls the given function in intervals till desired interactions (of notifications) are returned,
     or till the max wait time is reached.
     Args:
         func: Given function func must also return Tuple[List[Interaction], Query].
-
+        scenario: Test scenario providing capability to delay.
     """
 
     def wrapper(*args, **kwargs) -> tuple[list[Interaction], Query]:
         wait_until = arrow.utcnow().datetime + timedelta(
             seconds=MaxTimeToWaitForSubscriptionNotificationSeconds
         )
+        interactions, query = func(*args, **kwargs)
         while arrow.utcnow().datetime < wait_until:
-            interactions, query = func(*args, **kwargs)
             if interactions:
                 break
             dt = (wait_until - arrow.utcnow().datetime).total_seconds()
             if dt > 0:
-                sleep(
+                scenario.sleep(
                     min(dt, WaitIntervalSeconds),
                     "the expected notification was not found yet",
                 )
+                interactions, query = func(*args, **kwargs)
         return interactions, query
 
     return wrapper

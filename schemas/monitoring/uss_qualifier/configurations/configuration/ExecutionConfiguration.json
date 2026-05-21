@@ -7,6 +7,13 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
+    "do_not_stop_fast_for_acceptable_findings": {
+      "description": "If true, make an exception for stop_fast above when the failed check is identified as an acceptable_finding in one of the tested_requirements artifact descriptions.",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
     "include_action_when": {
       "description": "If specified, only execute test actions if they are selected by ANY of these conditions (and not selected by any of the `skip_when` conditions).",
       "items": {
@@ -17,6 +24,13 @@
         "null"
       ]
     },
+    "scenarios_filter": {
+      "description": "Filter test scenarios by scenario type using a regex. If the filter regex does not match within the scenario type, the scenario is skipped. When empty, all scenarios are executed. Useful for targeted debugging. Overridden by --filter",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "skip_action_when": {
       "description": "If specified, do not execute test actions if they are selected by ANY of these conditions.",
       "items": {
@@ -24,6 +38,14 @@
       },
       "type": [
         "array",
+        "null"
+      ]
+    },
+    "stop_after": {
+      "description": "If specified, stop the test run at the next earliest convenience (generally just after completion of the current test scenario) if it has been running at least this long.",
+      "format": "duration",
+      "type": [
+        "string",
         "null"
       ]
     },

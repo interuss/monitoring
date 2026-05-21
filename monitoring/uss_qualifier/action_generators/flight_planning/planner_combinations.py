@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.inspection import fullname
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
@@ -30,7 +30,7 @@ class FlightPlannerCombinationsSpecification(ImplicitDict):
     flight_planners_source: ResourceID
     """ID of the resource providing all available flight planners"""
 
-    combination_selector_source: ResourceID | None = None
+    combination_selector_source: Optional[ResourceID] = None
     """If specified and contained in the provided resources, the resource containing a FlightPlannerCombinationSelectorResource to select only a subset of combinations"""
 
     roles: list[ResourceID]

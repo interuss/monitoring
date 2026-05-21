@@ -48,6 +48,34 @@ actions:
         service_providers: service_providers
         evaluation_configuration: evaluation_configuration
     on_failure: Continue
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v19.ServiceProviderNotificationBehavior
+      resources:
+        flights_data: flights_data
+        service_providers: service_providers
+        mock_uss: mock_uss_dp
+        id_generator: id_generator
+        dss_pool: dss_instances
+        uss_identification: uss_identification
+    on_failure: Continue
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v19.NominalBehavior
+      resources:
+        flights_data: flights_data
+        service_providers: service_providers
+        observers: observers
+        evaluation_configuration: evaluation_configuration
+        dss_pool: dss_instances
+    on_failure: Continue
+  - test_scenario:
+      scenario_type: scenarios.astm.netrid.v19.Misbehavior
+      resources:
+        flights_data: flights_data
+        service_providers: service_providers
+        observers: observers
+        evaluation_configuration: evaluation_configuration
+        dss_pool: dss_instances
+      on_failure: Continue
   - action_generator:
       generator_type: action_generators.astm.f3411.ForEachDSS
       resources:
@@ -76,37 +104,6 @@ actions:
           on_failure: Continue
         dss_instances_source: dss_instances
         dss_instance_id: dss
-      on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.ServiceProviderNotificationBehavior
-      resources:
-        flights_data: flights_data
-        service_providers: service_providers
-        mock_uss: mock_uss_dp
-        id_generator: id_generator
-        dss_pool: dss_instances
-    on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.NominalBehavior
-      resources:
-        flights_data: flights_data
-        service_providers: service_providers
-        observers: observers
-        evaluation_configuration: evaluation_configuration
-        dss_pool: dss_instances
-    on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.Misbehavior
-      resources:
-        flights_data: flights_data
-        service_providers: service_providers
-        observers: observers
-        evaluation_configuration: evaluation_configuration
-        dss_pool: dss_instances
-      on_failure: Continue
-  - test_scenario:
-      scenario_type: scenarios.astm.netrid.v19.OperatorInteractions
-      resources: {}
       on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v19.AggregateChecks

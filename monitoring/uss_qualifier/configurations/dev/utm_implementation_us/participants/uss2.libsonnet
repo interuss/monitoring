@@ -42,7 +42,7 @@
     dss_instances: [
       {
         participant_id: 'uss2_dss',
-        base_url: 'http://dss.uss2.localutm',
+        base_url: 'http://dss1.uss2.localutm',
         supports_ovn_request: true,
       },
     ]

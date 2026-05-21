@@ -8,7 +8,9 @@ from s2sphere import LatLng, LatLngRect
 from monitoring.monitorlib import auth, geo
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.fetch import rid
-from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    utm_client_session_factory,
+)
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.netrid import (
@@ -85,10 +87,6 @@ class Misbehavior(GenericTestScenario):
 
         self.begin_test_step("Invalid search area")
         self._poll_during_flights(
-            [
-                self._rid_version.max_diagonal_km * 1000
-                - 100,  # valid diagonal required for sps urls discovery
-            ],
             self._evaluate_and_test_too_large_area_requests,
             dict(),
         )
@@ -96,11 +94,6 @@ class Misbehavior(GenericTestScenario):
 
         self.begin_test_step("Unauthenticated requests")
         self._poll_during_flights(
-            [
-                self._rid_version.max_diagonal_km * 1000 + 500,  # too large
-                self._rid_version.max_diagonal_km * 1000 - 100,  # clustered
-                self._rid_version.max_details_diagonal_km * 1000 - 100,  # details
-            ],
             self._evaluate_and_test_authentication,
             {
                 "auth": auth.NoAuth(aud_override=""),
@@ -112,11 +105,6 @@ class Misbehavior(GenericTestScenario):
 
         self.begin_test_step("Incorrectly authenticated requests")
         self._poll_during_flights(
-            [
-                self._rid_version.max_diagonal_km * 1000 + 500,  # too large
-                self._rid_version.max_diagonal_km * 1000 - 100,  # clustered
-                self._rid_version.max_details_diagonal_km * 1000 - 100,  # details
-            ],
             self._evaluate_and_test_authentication,
             {
                 "auth": auth.InvalidTokenSignatureAuth(),
@@ -136,7 +124,6 @@ class Misbehavior(GenericTestScenario):
 
     def _poll_during_flights(
         self,
-        diagonals_m: list[float],
         evaluation_func: Callable[
             [LatLngRect, Unpack[dict[str, auth.AuthAdapter | str]]], set[str]
         ],
@@ -145,7 +132,6 @@ class Misbehavior(GenericTestScenario):
         """
         Poll until every injected flights have been observed.
 
-        :param diagonals_m: List of diagonals in meters used by the virtual observer to fetch flights.
         :param evaluation_func: This method is called on each polling tick with the area to observe. It is responsible
         to fetch flights and to return the list of observed injected ids.
         """
@@ -156,6 +142,7 @@ class Misbehavior(GenericTestScenario):
             min_query_diagonal_m=config.min_query_diagonal,
             relevant_past_data_period=self._rid_version.realtime_period
             + config.max_propagation_latency.timedelta,
+            sleep=self.sleep,
         )
 
         remaining_injection_ids = set(
@@ -173,14 +160,16 @@ class Misbehavior(GenericTestScenario):
 
         virtual_observer.start_polling(
             config.min_polling_interval.timedelta,
-            diagonals_m,
+            [self._rid_version.max_diagonal_km * 1000 - 100],
             poll_func,
         )
+
+    def _is_area_too_large(self, rect: s2sphere.LatLngRect) -> bool:
+        return geo.get_latlngrect_diagonal_km(rect) > self._rid_version.max_diagonal_km
 
     def _fetch_flights_from_dss(self, rect: LatLngRect) -> dict[str, TelemetryMapping]:
         # We grab all flights from the SPs (which we know how to reach by first querying the DSS).
         # This is authenticated and is expected to succeed
-        # TODO: Add the following requests to the documentation. Possibly split it as a test step.
         sp_observation = rid.all_flights(
             rect,
             include_recent_positions=True,
@@ -190,14 +179,23 @@ class Misbehavior(GenericTestScenario):
             dss_participant_id=self._dss.participant_id,
         )
 
+        self.record_queries(sp_observation.queries)
+
         mapping_by_injection_id = (
             display_data_evaluator.map_fetched_to_injected_flights(
                 self._injected_flights,
                 list(sp_observation.uss_flight_queries.values()),
+                list(sp_observation.uss_flight_details_queries.values()),
                 self._query_cache,
             )
         )
-        self.record_queries(sp_observation.queries)
+
+        display_data_evaluator.check_fetched_flights(
+            sp_observation,
+            self,
+            self._dss.participant_id,
+            self._is_area_too_large(rect),
+        )
 
         return mapping_by_injection_id
 
@@ -274,7 +272,7 @@ class Misbehavior(GenericTestScenario):
             participant_id = mapping.injected_flight.uss_participant_id
             flights_url = mapping.observed_flight.query.flights_url
 
-            invalid_session = UTMClientSession(flights_url, auth)
+            invalid_session = utm_client_session_factory.get_session(flights_url, auth)
 
             self.record_note(
                 f"{participant_id}/{injection_id}/missing_credentials_queries",

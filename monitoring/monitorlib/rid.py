@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 
 import arrow
 import uas_standards.astm.f3411.v19.api as v19_api
@@ -10,7 +10,7 @@ import uas_standards.astm.f3411.v22a.constants as v22a_constants
 from monitoring.monitorlib import schema_validation
 
 
-class RIDVersion(str, Enum):
+class RIDVersion(StrEnum):
     f3411_19 = "F3411-19"
     """ASTM F3411-19 (first version, v1)"""
 

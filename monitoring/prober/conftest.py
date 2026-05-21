@@ -6,7 +6,11 @@ import uas_standards.astm.f3411.v19.constants as v19_constants
 import uas_standards.astm.f3548.v21.constants as v21_constants
 
 from monitoring.monitorlib import auth, scd
-from monitoring.monitorlib.infrastructure import AsyncUTMTestSession, UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    AsyncUTMTestSession,
+    UTMClientSession,
+    utm_client_session_factory,
+)
 from monitoring.prober.infrastructure import (
     IDFactory,
     ResourceType,
@@ -120,7 +124,9 @@ def make_session(
             pytest.skip(f"{auth_option} option not set")
         auth_adapter = auth.make_auth_adapter(auth_spec)
 
-    s = UTMClientSession(dss_endpoint + endpoint_suffix, auth_adapter)
+    s = utm_client_session_factory.get_session(
+        dss_endpoint + endpoint_suffix, auth_adapter
+    )
     return s
 
 

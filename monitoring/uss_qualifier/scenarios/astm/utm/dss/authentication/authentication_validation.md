@@ -550,14 +550,14 @@ Check response format of a search.
 
 ## Cleanup
 
-### [Clean any existing OIRs with known test IDs](../clean_workspace_op_intents.md)
+### [Clean any existing OIRs with known test IDs](../clean_workspace_op_intents_during_cleanup.md)
 
-### [Clean any existing subscriptions with known test IDs](../clean_workspace_subs.md)
+### [Clean any existing subscriptions with known test IDs](../clean_workspace_subs_during_cleanup.md)
 
-### [Clean any existing constraint references with known test IDs](../clean_workspace_constraints.md)
+### [Clean any existing constraint references with known test IDs](../clean_workspace_constraints_during_cleanup.md)
 
-### [Availability can be requested](../fragments/availability/read.md)
+### [Availability can be requested](../fragments/availability/read_during_cleanup.md)
 
-### [Availability can be set](../fragments/availability/update.md)
+### [Availability can be set](../fragments/availability/update_during_cleanup.md)
 
 The cleanup phase of this test scenario removes the subscription with the known test ID if it has not been removed before.

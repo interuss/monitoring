@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 
 import arrow
-from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
+from implicitdict import (
+    ImplicitDict,
+    Optional,
+    StringBasedDateTime,
+    StringBasedTimeDelta,
+)
 from pvlib.solarposition import get_solarposition
 from uas_standards.astm.f3548.v21 import api as f3548v21
 
@@ -30,7 +35,7 @@ class NextSunPosition(ImplicitDict):
     """Elevation of the center of the sun above horizontal, in degrees."""
 
 
-class DayOfTheWeek(str, Enum):
+class DayOfTheWeek(StrEnum):
     Mo = "Mo"
     """Monday"""
     Tu = "Tu"
@@ -58,63 +63,121 @@ class NextDay(ImplicitDict):
       * "-08:00" (ISO time zone)
       * "US/Pacific" (IANA time zone)"""
 
-    days_of_the_week: list[DayOfTheWeek] | None = None
+    days_of_the_week: Optional[list[DayOfTheWeek]] = None
     """Acceptable days of the week.  Omit to indicate that any day of the week is acceptable."""
 
 
-class TimeDuringTest(str, Enum):
-    StartOfTestRun = "StartOfTestRun"
+class TimeDuringTest(str):
+    """A particular time during the test, as identified/named by this value.
+
+    Names listed below are provided by the framework when appropriate:
+        * StartOfTestRun: The time at which the test run started.
+        * StartOfScenario: The time at which the current scenario started.
+        * TimeOfEvaluation: The time at which a TestTime was resolved to an absolute time; generally close to 'now'.
+    """
+
+    StartOfTestRun: TimeDuringTest
     """The time at which the test run started."""
 
-    StartOfScenario = "StartOfScenario"
+    StartOfScenario: TimeDuringTest
     """The time at which the current scenario started."""
 
-    TimeOfEvaluation = "TimeOfEvaluation"
+    TimeOfEvaluation: TimeDuringTest
     """The time at which a TestTime was resolved to an absolute time; generally close to 'now'."""
+
+    ProvidedByFramework: list[TimeDuringTest]
+    """The TimeDuringTests provided by the framework when appropriate"""
+
+
+TimeDuringTest.StartOfTestRun = TimeDuringTest("StartOfTestRun")
+TimeDuringTest.StartOfScenario = TimeDuringTest("StartOfScenario")
+TimeDuringTest.TimeOfEvaluation = TimeDuringTest("TimeOfEvaluation")
+TimeDuringTest.ProvidedByFramework = [
+    TimeDuringTest.StartOfTestRun,
+    TimeDuringTest.StartOfScenario,
+    TimeDuringTest.TimeOfEvaluation,
+]
+
+
+class Time(StringBasedDateTime):
+    def offset(self, dt: timedelta) -> Time:
+        return Time(self.datetime + dt)
+
+    def to_f3548v21(self) -> f3548v21.Time:
+        return f3548v21.Time(value=self)
+
+
+class TestTimeContext(dict[TimeDuringTest, Time]):
+    """Context in which TestTimes are evaluated.
+
+    Stores definitions for TimeDuringTests."""
+
+    def evaluate_now(self) -> TestTimeContext:
+        """Set TimeOfEvaluation in this context to the current time.
+
+        This should be performed once before resolving a TestTime."""
+        self[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+        return self
+
+    @staticmethod
+    def all_times_are(t: Time) -> TestTimeContext:
+        """Returns a TestTimeContext where all framework-provided times are the provided time.
+
+        For the purpose of testing/validation."""
+        return TestTimeContext(
+            {
+                TimeDuringTest.StartOfTestRun: t,
+                TimeDuringTest.StartOfScenario: t,
+                TimeDuringTest.TimeOfEvaluation: t,
+            }
+        )
 
 
 class TestTime(ImplicitDict):
     """Exactly one of the time option fields of this object must be specified."""
 
-    absolute_time: StringBasedDateTime | None = None
+    absolute_time: Optional[StringBasedDateTime] = None
     """Time option field to use a precise timestamp which does not change with test conditions.
 
     The value of absolute_time is limited given that the specific time a test will be started is unknown, and the jurisdictions usually impose a limit on how far in the future an operation can be planned.
     """
 
-    time_during_test: TimeDuringTest | None = None
+    time_during_test: Optional[TimeDuringTest] = None
     """Time option field to, if specified, use a timestamp relating to the current test run."""
 
-    next_day: NextDay | None = None
+    name: Optional[TimeDuringTest]
+    """If specified, update the TestTimeContext with the time computed for this TestTime as this name, which may then later be referenced by a different TestTime via time_during_test."""
+
+    next_day: Optional[NextDay] = None
     """Time option field to use a timestamp equal to midnight beginning the next occurrence of any matching day following the specified reference timestamp."""
 
-    next_sun_position: NextSunPosition | None = None
+    next_sun_position: Optional[NextSunPosition] = None
     """Time option field to use a timestamp equal to the next time after the specified reference timestamp at which the sun will be at the specified angle above the horizon."""
 
-    offset_from: OffsetTime | None = None
+    offset_from: Optional[OffsetTime] = None
     """Time option field to use a timestamp that is offset by the specified amount from the specified time."""
 
-    use_timezone: str | None = None
+    use_timezone: Optional[str] = None
     """If specified, report the timestamp in the specified time zone.  Examples:
       * "local" (local time of machine running this code)
       * "Z" (Zulu time)
       * "-08:00" (ISO time zone)
       * "US/Pacific" (IANA time zone)"""
 
-    def resolve(self, times: dict[TimeDuringTest, Time]) -> Time:
+    def resolve(self, context: TestTimeContext) -> Time:
         """Resolve TestTime into specific Time."""
         result = None
         if self.absolute_time is not None:
             result = self.absolute_time.datetime
         elif self.time_during_test is not None:
-            if self.time_during_test not in times:
+            if self.time_during_test not in context:
                 raise ValueError(
-                    f"Specified {self.time_during_test} time during test was not provided when resolving TestTime"
+                    f"Specified '{self.time_during_test}' time during test was not provided when resolving TestTime"
                 )
-            result = times[self.time_during_test].datetime
+            result = context[self.time_during_test].datetime
         elif self.next_day is not None:
             t0 = (
-                arrow.get(self.next_day.starting_from.resolve(times).datetime)
+                arrow.get(self.next_day.starting_from.resolve(context).datetime)
                 .to(self.next_day.time_zone)
                 .datetime
             )
@@ -130,11 +193,11 @@ class TestTime(ImplicitDict):
             result = t
         elif self.offset_from is not None:
             result = (
-                self.offset_from.starting_from.resolve(times).datetime
+                self.offset_from.starting_from.resolve(context).datetime
                 + self.offset_from.offset.timedelta
             )
         elif self.next_sun_position is not None:
-            t0 = self.next_sun_position.starting_from.resolve(times).datetime
+            t0 = self.next_sun_position.starting_from.resolve(context).datetime
 
             dt = timedelta(minutes=5)
             lat = self.next_sun_position.observed_from.lat
@@ -186,7 +249,12 @@ class TestTime(ImplicitDict):
         if self.use_timezone:
             result = arrow.get(result).to(self.use_timezone).datetime
 
-        return Time(result)
+        t_result = Time(result)
+
+        if "name" in self and self.name:
+            context[self.name] = t_result
+
+        return t_result
 
 
 _weekdays = [
@@ -212,11 +280,3 @@ def _sun_elevation(t: datetime, lat_deg: float, lng_deg: float) -> float:
     Returns: Degrees above the horizon of the center of the sun.
     """
     return get_solarposition(t, lat_deg, lng_deg).elevation.values[0]  # pyright:ignore[reportAttributeAccessIssue]
-
-
-class Time(StringBasedDateTime):
-    def offset(self, dt: timedelta) -> Time:
-        return Time(self.datetime + dt)
-
-    def to_f3548v21(self) -> f3548v21.Time:
-        return f3548v21.Time(value=self)

@@ -65,4 +65,4 @@ If the DSS accepts the OVN suffix, or fails with an unexpected error, this check
 Check that the DSS rejects OVN suffix that are outdated UUIDv7.
 If the DSS accepts the OVN suffix, or fails with an unexpected error, this check will fail.
 
-## [Cleanup](../../astm/utm/dss/clean_workspace_op_intents.md)
+## [Cleanup](../../astm/utm/dss/clean_workspace_op_intents_during_cleanup.md)

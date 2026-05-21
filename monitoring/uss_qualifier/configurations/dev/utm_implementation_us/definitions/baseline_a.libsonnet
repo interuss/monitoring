@@ -108,10 +108,10 @@ function(env) {
           },
 
           // Area that will be used for queries and resource creation that are geo-located
-          planning_area: {
-            resource_type: 'resources.PlanningAreaResource',
+          planning_area_volume: {
+            resource_type: 'resources.VolumeResource',
             specification: {
-              volume: {
+              template: {
                 outline_polygon: {
                   vertices: [
                     {
@@ -143,6 +143,13 @@ function(env) {
                   units: 'M',
                 },
               },
+            },
+          },
+          planning_area: {
+            resource_type: 'resources.PlanningAreaResource',
+            specification: {},
+            dependencies: {
+              volume: 'planning_area_volume',
             },
           },
 
@@ -361,6 +368,11 @@ function(env) {
 
       // Write out a human-readable report showing the sequence of events of the test
       sequence_view: {},
+
+      // Write out a timing report showing where and how time was spent during the test
+      timing_report: {
+        percentage_of_time_to_break_down: 90,
+      },
     }, // artifacts
 
     validation: {

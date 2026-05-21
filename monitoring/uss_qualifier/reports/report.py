@@ -4,7 +4,13 @@ from collections.abc import Callable, Iterator
 from datetime import UTC, datetime
 from typing import Any
 
-from implicitdict import ImplicitDict, StringBasedDateTime
+import deprecation
+from implicitdict import (
+    ImplicitDict,
+    Optional,
+    StringBasedDateTime,
+    StringBasedTimeDelta,
+)
 
 from monitoring.monitorlib import fetch, inspection
 from monitoring.monitorlib.errors import stacktrace_string
@@ -50,10 +56,10 @@ class FailedCheck(ImplicitDict):
     participants: list[ParticipantID]
     """Participants that may not meet the relevant requirements due to this failed check"""
 
-    query_report_timestamps: list[str] | None
+    query_report_timestamps: Optional[list[str]]
     """List of the `report` timestamp field for queries relevant to this failed check"""
 
-    additional_data: dict | None
+    additional_data: Optional[dict]
     """Additional data, structured according to the checks' needs, that may be relevant for understanding this failed check"""
 
 
@@ -71,6 +77,34 @@ class PassedCheck(ImplicitDict):
     """Participants that may not have met the relevant requirements if this check had failed"""
 
 
+class IntentionalDelay(ImplicitDict):
+    start_time: StringBasedDateTime
+    """When the delay started"""
+
+    duration: StringBasedTimeDelta
+    """Duration of the delay"""
+
+    reason: str
+    """Reason given for this delay"""
+
+
+class _TimestampAccumulator:
+    result: datetime | None
+    _f_accum: Callable[[datetime, datetime], datetime]
+
+    def __init__(self, f_accum: Callable[[datetime, datetime], datetime]):
+        self.result = None
+        self._f_accum = f_accum
+
+    def accumulate(self, new_timestamp: datetime | None) -> None:
+        if new_timestamp is None:
+            return
+        if self.result is None:
+            self.result = new_timestamp
+        else:
+            self.result = self._f_accum(self.result, new_timestamp)
+
+
 class TestStepReport(ImplicitDict):
     name: str
     """Name of this test step"""
@@ -81,7 +115,7 @@ class TestStepReport(ImplicitDict):
     start_time: StringBasedDateTime
     """Time at which the test step started"""
 
-    queries: list[fetch.Query] | None
+    queries: Optional[list[fetch.Query]]
     """Description of HTTP requests relevant to this issue"""
 
     failed_checks: list[FailedCheck]
@@ -90,12 +124,16 @@ class TestStepReport(ImplicitDict):
     passed_checks: list[PassedCheck]
     """The checks which successfully passed in this test step"""
 
-    end_time: StringBasedDateTime | None
+    delays: Optional[list[IntentionalDelay]]
+    """Delays intentionally introduced during this test step"""
+
+    end_time: Optional[StringBasedDateTime]
     """Time at which the test step completed or encountered an error"""
 
     def has_critical_problem(self) -> bool:
         return any(fc.severity == Severity.Critical for fc in self.failed_checks)
 
+    @deprecation.deprecated()
     def successful(self) -> bool:
         return False if self.failed_checks else True
 
@@ -125,7 +163,7 @@ class TestStepReport(ImplicitDict):
 
     def query_failed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
         for i, fc in enumerate(self.failed_checks):
             if participant_id is None or participant_id in fc.participants:
                 yield f"failed_checks[{i}]", fc
@@ -138,6 +176,25 @@ class TestStepReport(ImplicitDict):
             ids.update(fc.participants)
         return ids
 
+    @property
+    def latest_timestamp(self) -> datetime | None:
+        timestamp = _TimestampAccumulator(max)
+        if "end_time" in self and self.end_time:
+            timestamp.accumulate(self.end_time.datetime)
+        if "queries" in self and self.queries:
+            for query in self.queries:
+                timestamp.accumulate(query.response.reported.datetime)
+        if "delays" in self and self.delays:
+            for delay in self.delays:
+                timestamp.accumulate(
+                    delay.start_time.datetime + delay.duration.timedelta
+                )
+        for check in self.failed_checks:
+            timestamp.accumulate(check.timestamp.datetime)
+        for check in self.passed_checks:
+            timestamp.accumulate(check.timestamp.datetime)
+        return timestamp.result
+
 
 class TestCaseReport(ImplicitDict):
     name: str
@@ -149,7 +206,7 @@ class TestCaseReport(ImplicitDict):
     start_time: StringBasedDateTime
     """Time at which the test case started"""
 
-    end_time: StringBasedDateTime | None
+    end_time: Optional[StringBasedDateTime]
     """Time at which the test case completed or encountered an error"""
 
     steps: list[TestStepReport]
@@ -173,7 +230,7 @@ class TestCaseReport(ImplicitDict):
 
     def query_failed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
         for i, step in enumerate(self.steps):
             for path, fc in step.query_failed_checks(participant_id):
                 yield f"steps[{i}].{path}", fc
@@ -183,6 +240,16 @@ class TestCaseReport(ImplicitDict):
         for step in self.steps:
             ids.update(step.participant_ids())
         return ids
+
+    @property
+    def latest_timestamp(self) -> datetime | None:
+        timestamp = _TimestampAccumulator(max)
+        if "end_time" in self and self.end_time:
+            timestamp.accumulate(self.end_time.datetime)
+        if "steps" in self and self.steps:
+            for step in self.steps:
+                timestamp.accumulate(step.latest_timestamp)
+        return timestamp.result
 
 
 class ErrorReport(ImplicitDict):
@@ -223,28 +290,31 @@ class TestScenarioReport(ImplicitDict):
     documentation_url: str
     """URL at which this test scenario is described"""
 
-    resource_origins: dict[ResourceID, str] | None
+    resource_origins: Optional[dict[ResourceID, str]]
     """For each resource used by this test scenario, the place that resource originated."""
 
-    notes: dict[str, Note] | None
+    notes: Optional[dict[str, Note]]
     """Additional information about this scenario that may be useful"""
+
+    delays: Optional[list[IntentionalDelay]]
+    """Delays intentionally introduced during this test scenario, but not during any test step"""
 
     start_time: StringBasedDateTime
     """Time at which the test scenario started"""
 
-    end_time: StringBasedDateTime | None
+    end_time: Optional[StringBasedDateTime]
     """Time at which the test scenario completed or encountered an error"""
 
     successful: bool = False
-    """True iff test scenario completed normally with no failed checks"""
+    """DEPRECATED.  True iff test scenario completed normally with no failed checks."""
 
     cases: list[TestCaseReport]
     """Reports for each of the test cases in this test scenario, in chronological order."""
 
-    cleanup: TestStepReport | None
+    cleanup: Optional[TestStepReport]
     """If this test scenario performed cleanup, this report captures the relevant information."""
 
-    execution_error: ErrorReport | None
+    execution_error: Optional[ErrorReport]
     """If there was an error while executing this test scenario, this field describes the error"""
 
     def has_critical_problem(self) -> bool:
@@ -288,11 +358,14 @@ class TestScenarioReport(ImplicitDict):
         queries = list()
         for case in self.cases:
             for step in case.steps:
-                if step.has_field_with_value("queries"):
+                if "queries" in step and step.queries:
                     queries.extend(step.queries)
 
-        if self.has_field_with_value("cleanup") and self.cleanup.has_field_with_value(
-            "queries"
+        if (
+            "cleanup" in self
+            and self.cleanup
+            and "queries" in self.cleanup
+            and self.cleanup.queries
         ):
             queries.extend(self.cleanup.queries)
 
@@ -306,6 +379,28 @@ class TestScenarioReport(ImplicitDict):
             ids.update(self.cleanup.participant_ids())
         return ids
 
+    @property
+    def latest_timestamp(self) -> datetime | None:
+        timestamp = _TimestampAccumulator(max)
+        if "end_time" in self and self.end_time:
+            timestamp.accumulate(self.end_time.datetime)
+        if "notes" in self and self.notes:
+            for note in self.notes.values():
+                timestamp.accumulate(note.timestamp.datetime)
+        if "delays" in self and self.delays:
+            for delay in self.delays:
+                timestamp.accumulate(
+                    delay.start_time.datetime + delay.duration.timedelta
+                )
+        if "cases" in self and self.cases:
+            for case in self.cases:
+                timestamp.accumulate(case.latest_timestamp)
+        if "cleanup" in self and self.cleanup:
+            timestamp.accumulate(self.cleanup.latest_timestamp)
+        if "execution_error" in self and self.execution_error:
+            timestamp.accumulate(self.execution_error.timestamp.datetime)
+        return timestamp.result
+
 
 class ActionGeneratorReport(ImplicitDict):
     generator_type: GeneratorTypeName
@@ -317,11 +412,11 @@ class ActionGeneratorReport(ImplicitDict):
     actions: list[TestSuiteActionReport]
     """Reports from the actions generated by the action generator, in order of execution."""
 
-    end_time: StringBasedDateTime | None
+    end_time: Optional[StringBasedDateTime]
     """Time at which the action generator completed or encountered an error"""
 
     successful: bool = False
-    """True iff all actions completed normally with no failed checks"""
+    """DEPRECATED.  True iff all actions completed normally with no failed checks"""
 
     def has_critical_problem(self) -> bool:
         return any(a.has_critical_problem() for a in self.actions)
@@ -341,7 +436,7 @@ class ActionGeneratorReport(ImplicitDict):
 
     def query_failed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
         for i, action in enumerate(self.actions):
             for path, fc in action.query_failed_checks(participant_id):
                 yield f"actions[{i}].{path}", fc
@@ -358,78 +453,63 @@ class ActionGeneratorReport(ImplicitDict):
             ids.update(action.participant_ids())
         return ids
 
+    @property
+    def latest_timestamp(self) -> datetime | None:
+        timestamp = _TimestampAccumulator(max)
+        if "end_time" in self and self.end_time:
+            timestamp.accumulate(self.end_time.datetime)
+        for action in self.actions:
+            timestamp.accumulate(action.latest_timestamp)
+        return timestamp.result
+
 
 class TestSuiteActionReport(ImplicitDict):
-    test_suite: TestSuiteReport | None
+    test_suite: Optional[TestSuiteReport]
     """If this action was a test suite, this field will hold its report"""
 
-    test_scenario: TestScenarioReport | None
+    test_scenario: Optional[TestScenarioReport]
     """If this action was a test scenario, this field will hold its report"""
 
-    action_generator: ActionGeneratorReport | None
+    action_generator: Optional[ActionGeneratorReport]
     """If this action was an action generator, this field will hold its report"""
 
-    skipped_action: SkippedActionReport | None
+    skipped_action: Optional[SkippedActionReport]
     """If this action was skipped, this field will hold its report"""
 
-    def get_applicable_report(self) -> tuple[bool, bool, bool]:
-        """Determine which type of report is applicable for this action.
-
-        Note that skipped_action is applicable if none of the other return values are true.
-
-        Returns:
-            * Whether test_suite is applicable
-            * Whether test_scenario is applicable
-            * Whether action_generator is applicable
-        """
-        test_suite = "test_suite" in self and self.test_suite is not None
-        test_scenario = "test_scenario" in self and self.test_scenario is not None
-        action_generator = (
-            "action_generator" in self and self.action_generator is not None
+    @property
+    def invalid_type_error(self):
+        return ValueError(
+            "Invalid TestSuiteActionReport: test_scenario, test_suite, action_generator or skipped_action must be specified"
         )
-        skipped_action = "skipped_action" in self and self.skipped_action is not None
-        if (
-            sum(
-                1 if case else 0
-                for case in [
-                    test_suite,
-                    test_scenario,
-                    action_generator,
-                    skipped_action,
-                ]
-            )
-            != 1
-        ):
-            raise ValueError(
-                "Exactly one of `test_suite`, `test_scenario`, `action_generator`, or `skipped_action` must be populated"
-            )
-        return test_suite, test_scenario, action_generator
 
     def _conditional(
         self,
-        test_suite_func: Callable[[TestSuiteReport], Any] | Callable[[Any], Any],
+        test_suite_func: Callable[[Any], Any],
         test_scenario_func: Callable[[TestScenarioReport], Any] | None = None,
         action_generator_func: Callable[[ActionGeneratorReport], Any] | None = None,
         skipped_action_func: Callable[[SkippedActionReport], Any] | None = None,
     ) -> Any:
-        test_suite, test_scenario, action_generator = self.get_applicable_report()
-        if test_suite:
+        if "test_suite" in self and self.test_suite:
             return test_suite_func(self.test_suite)
-        if test_scenario:
+        elif "test_scenario" in self and self.test_scenario:
             if test_scenario_func is not None:
                 return test_scenario_func(self.test_scenario)
             else:
                 return test_suite_func(self.test_scenario)
-        if action_generator:
+        elif "action_generator" in self and self.action_generator:
             if action_generator_func is not None:
                 return action_generator_func(self.action_generator)
             else:
                 return test_suite_func(self.action_generator)
-        if skipped_action_func is not None:
-            return skipped_action_func(self.skipped_action)
+        elif "skipped_action" in self and self.skipped_action:
+            if skipped_action_func is not None:
+                return skipped_action_func(self.skipped_action)
+            else:
+                return test_suite_func(self.skipped_action)
         else:
-            return test_suite_func(self.skipped_action)
+            raise self.invalid_type_error
 
+    @deprecation.deprecated()
     def successful(self) -> bool:
         return self._conditional(lambda report: report.successful)
 
@@ -442,14 +522,13 @@ class TestSuiteActionReport(ImplicitDict):
     def query_passed_checks(
         self, participant_id: str | None = None
     ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
-        test_suite, test_scenario, action_generator = self.get_applicable_report()
-        if test_suite:
+        if "test_suite" in self and self.test_suite:
             report = self.test_suite
             prefix = "test_suite"
-        elif test_scenario:
+        elif "test_scenario" in self and self.test_scenario:
             report = self.test_scenario
             prefix = "test_scenario"
-        elif action_generator:
+        elif "action_generator" in self and self.action_generator:
             report = self.action_generator
             prefix = "action_generator"
         else:
@@ -461,14 +540,13 @@ class TestSuiteActionReport(ImplicitDict):
     def query_failed_checks(
         self, participant_id: str | None = None
     ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
-        test_suite, test_scenario, action_generator = self.get_applicable_report()
-        if test_suite:
+        if "test_suite" in self and self.test_suite:
             report = self.test_suite
             prefix = "test_suite"
-        elif test_scenario:
+        elif "test_scenario" in self and self.test_scenario:
             report = self.test_scenario
             prefix = "test_scenario"
-        elif action_generator:
+        elif "action_generator" in self and self.action_generator:
             report = self.action_generator
             prefix = "action_generator"
         else:
@@ -492,6 +570,22 @@ class TestSuiteActionReport(ImplicitDict):
         return self._conditional(
             lambda report: report.end_time if "end_time" in report else None
         )
+
+    @property
+    def latest_timestamp(self) -> datetime | None:
+        return self._conditional(lambda report: report.latest_time)
+
+    def get_action_type_name(self):
+        if "test_suite" in self and self.test_suite:
+            return "test_suite"
+        elif "test_scenario" in self and self.test_scenario:
+            return "test_scenario"
+        elif "action_generator" in self and self.action_generator:
+            return "action_generator"
+        elif "skipped_action" in self and self.skipped_action:
+            return "skipped_action"
+        else:
+            return "unknown"
 
 
 class AllConditionsEvaluationReport(ImplicitDict):
@@ -594,19 +688,19 @@ class ParticipantCapabilityConditionEvaluationReport(ImplicitDict):
     condition_satisfied: bool
     """Whether the condition was satisfied for the relevant participant."""
 
-    all_conditions: AllConditionsEvaluationReport | None
+    all_conditions: Optional[AllConditionsEvaluationReport]
     """When specified, the condition evaluated was AllConditions."""
 
-    any_conditions: AnyConditionEvaluationReport | None
+    any_conditions: Optional[AnyConditionEvaluationReport]
     """When specified, the condition evaluated was AnyCondition."""
 
-    no_failed_checks: NoFailedChecksConditionEvaluationReport | None
+    no_failed_checks: Optional[NoFailedChecksConditionEvaluationReport]
     """When specified, the condition evaluated was NoFailedChecksCondition."""
 
-    requirements_checked: RequirementsCheckedConditionEvaluationReport | None
+    requirements_checked: Optional[RequirementsCheckedConditionEvaluationReport]
     """When specified, the condition evaluated was RequirementsCheckedCondition."""
 
-    capability_verified: CapabilityVerifiedConditionEvaluationReport | None
+    capability_verified: Optional[CapabilityVerifiedConditionEvaluationReport]
     """When specified, the condition evaluated was CapabilityVerifiedCondition."""
 
 
@@ -635,6 +729,7 @@ class SkippedActionReport(ImplicitDict):
     """Full declaration of the action that was skipped."""
 
     @property
+    @deprecation.deprecated()
     def successful(self) -> bool:
         return True
 
@@ -675,11 +770,11 @@ class TestSuiteReport(ImplicitDict):
     actions: list[TestSuiteActionReport]
     """Reports from test scenarios and test suites comprising the test suite for this report, in order of execution."""
 
-    end_time: StringBasedDateTime | None
+    end_time: Optional[StringBasedDateTime]
     """Time at which the test suite completed"""
 
     successful: bool = False
-    """True iff test suite completed normally with no failed checks"""
+    """DEPRECATED.  True iff test suite completed normally with no failed checks"""
 
     capability_evaluations: list[ParticipantCapabilityEvaluationReport]
     """List of capabilities defined in this test suite, evaluated for each participant."""
@@ -743,7 +838,7 @@ class TestRunReport(ImplicitDict):
     report: TestSuiteActionReport
     """Report produced by configured test action"""
 
-    runtime_metadata: dict | None
+    runtime_metadata: Optional[dict]
     """Metadata for the test run specified at runtime."""
 
 

@@ -28,6 +28,10 @@ A [`DSSInstancesResource`](../../../../resources/astm/f3411/dss.py) from which a
 
 [`IDGeneratorResource`](../../../../resources/interuss/id_generator.py) providing the Subscription ID for this scenario.
 
+### uss_identification
+
+[`USSIdentificationResource`](../../../../resources/interuss/uss_identification.py) describing how to identify participants responsible for observed notifications.
+
 ## Setup test case
 
 ### [Clean workspace test step](./dss/test_steps/clean_workspace.md)
@@ -47,6 +51,10 @@ start and end time missing, provided all the required parameters are valid.
 ### [Injection test step](./fragments/flight_injection.md)
 
 In this step, uss_qualifier injects a single nominal flight into each SP under test, usually with a start time in the future.  Each SP is expected to queue the provided telemetry and later simulate that telemetry coming from an aircraft at the designated timestamps.
+
+#### 🛑 mock_uss clock time retrievable check
+
+We need to know mock_uss's clock time to later request observed interactions after the injection time.  If mock_uss's current time isn't retrievable, the mock_uss provider's mock_uss does not meet **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
 
 ### Validate Mock USS received notification test step
 
@@ -71,6 +79,6 @@ The cleanup phase of this test scenario attempts to remove injected data from al
 
 **[interuss.automated_testing.rid.injection.DeleteTestSuccess](../../../../requirements/interuss/automated_testing/rid/injection.md)**
 
-### [Clean Subscriptions](./dss/test_steps/clean_workspace.md)
+### [Clean Subscriptions](./dss/test_steps/clean_workspace_during_cleanup.md)
 
 Remove all created subscriptions from the DSS.

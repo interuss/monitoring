@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 OS=$(uname)
 if [[ $OS == "Darwin" ]]; then
 	# OSX uses BSD readlink

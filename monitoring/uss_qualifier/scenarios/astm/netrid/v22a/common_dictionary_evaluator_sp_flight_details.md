@@ -93,6 +93,14 @@ NET0260 requires that relevant Remote ID data, consistent with the common data d
 
 NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that if the Operator Altitude is based on WGS-84 height above ellipsoid (HAE) and is provided in meters. (**[astm.f3411.v22a.NET0260,Table1,25](../../../../requirements/astm/f3411/v22a.md)**)
 
+## ⚠️ Operator Altitude is consistent with injected one check
+
+If the operator altitude is exposed by the SP API, but is inconsistent with the injected value, this check will fail per **[astm.f3411.v22a.NET0260,Table1,25](../../../../requirements/astm/f3411/v22a.md)**.
+
 ## ⚠️ Operator Altitude Type consistency with Common Dictionary check
 
 NET0260 requires that relevant Remote ID data, consistent with the common data dictionary, be reported by the Service Provider. This check validates that if the Operator Altitude Type is valid, if present. (**[astm.f3411.v22a.NET0260,Table1,26](../../../../requirements/astm/f3411/v22a.md)**)
+
+## ⚠️ Operator Altitude Type is consistent with injected one check
+
+If the operator altitude type is exposed by the SP API, but is inconsistent with the injected value, this check will fail per **[astm.f3411.v22a.NET0260,Table1,26](../../../../requirements/astm/f3411/v22a.md)**.

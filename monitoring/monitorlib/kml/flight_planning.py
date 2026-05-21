@@ -23,13 +23,17 @@ def upsert_flight_plan(req: UpsertFlightPlanRequest, resp: UpsertFlightPlanRespo
             f"Activity {resp.planning_result.value}, flight {resp.flight_plan_status.value}"
         )
     )
+    if "uas_state" in basic_info and basic_info.uas_state:
+        uas_state = basic_info.uas_state.value
+    else:
+        uas_state = None
     for i, v4_flight_planning in enumerate(basic_info.area or []):
         v4 = Volume4D.from_flight_planning_api(v4_flight_planning)
         folder.append(
             make_placemark_from_volume(
                 v4,
                 name=f"Volume {i}",
-                style_url=f"#{basic_info.usage_state.value}_{basic_info.uas_state.value}",
+                style_url=f"#{basic_info.usage_state.value}_{uas_state}",
             )
         )
     return folder

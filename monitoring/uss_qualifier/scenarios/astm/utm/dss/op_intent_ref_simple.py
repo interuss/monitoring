@@ -10,7 +10,6 @@ from uas_standards.astm.f3548.v21.api import (
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -19,7 +18,6 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
 )
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
-from monitoring.uss_qualifier.resources.planning_area import PlanningAreaSpecification
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.oir import (
     crud as oir_fragments,
@@ -50,8 +48,7 @@ class OIRSimple(TestScenario):
     _current_oir: OperationalIntentReference | None
     _current_oir_params: PutOperationalIntentReferenceParameters | None
     _expected_manager: str
-    _planning_area: PlanningAreaSpecification
-    _planning_area_volume4d: Volume4D
+    _planning_area: PlanningAreaResource
 
     def __init__(
         self,
@@ -80,11 +77,7 @@ class OIRSimple(TestScenario):
 
         self._expected_manager = client_identity.subject()
 
-        self._planning_area = planning_area.specification
-
-        self._planning_area_volume4d = Volume4D(
-            volume=self._planning_area.volume,
-        )
+        self._planning_area = planning_area
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
@@ -127,19 +120,17 @@ class OIRSimple(TestScenario):
                 # We don't expect to reach this point:
                 check.record_failed(
                     summary="OIR Deletion with empty OVN was not expected to succeed",
-                    details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {q.status_code} instead",
+                    details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {q.status_code}",
                     query_timestamps=[q.request.timestamp],
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code in [400, 404, 409]:
-                    # An empty OVN can be seen as:
-                    # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
-                    pass
-                else:
+                # An empty OVN can be seen as:
+                # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
+                if qe.cause_status_code not in [400, 404, 409]:
                     check.record_failed(
                         summary="OIR Deletion with empty OVN failed for unexpected reason",
-                        details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {qe.cause_status_code} instead",
+                        details=f"Was expecting an HTTP 400, 404 or 409 response because of an empty OVN, but got {qe.cause_status_code}: {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
 
@@ -159,18 +150,16 @@ class OIRSimple(TestScenario):
                 # We don't expect to reach this point:
                 check.record_failed(
                     summary="OIR Deletion with incorrect OVN was not expected to succeed",
-                    details=f"Was expecting an HTTP 400, 404 or 409 response because of an incorrect OVN, but got {q.status_code} instead",
+                    details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {q.status_code}",
                     query_timestamps=[q.request.timestamp],
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code in [400, 404, 409]:
-                    # The spec explicitly requests a 409 response code for incorrect OVNs.
-                    pass
-                else:
+                # The spec explicitly requests a 409 response code for incorrect OVNs.
+                if qe.cause_status_code != 409:
                     check.record_failed(
                         summary="OIR Deletion with incorrect OVN failed for unexpected reason",
-                        details=f"Was expecting an HTTP 400, 404 or 409 response because of an incorrect OVN, but got {qe.cause_status_code} instead",
+                        details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {qe.cause_status_code}: {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
 
@@ -196,19 +185,17 @@ class OIRSimple(TestScenario):
                 # We don't expect to reach this point:
                 check.record_failed(
                     summary="OIR Mutation with missing OVN was not expected to succeed",
-                    details=f"Was expecting an HTTP 400, 404 or 409 response because of a missing OVN, but got {query.status_code} instead",
+                    details=f"Was expecting an HTTP 400, 404 or 409 response because of a missing OVN, but got {query.status_code}",
                     query_timestamps=[query.request.timestamp],
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code in [400, 404, 409]:
-                    # An empty OVN can be seen as:
-                    # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
-                    pass
-                else:
+                # An empty OVN can be seen as:
+                # an incorrect parameter (400), a reference to a non-existing entity (404) as well as a conflict (409)
+                if qe.cause_status_code not in [400, 404, 409]:
                     check.record_failed(
                         summary="OIR Mutation with missing OVN failed for unexpected reason",
-                        details=f"Was expecting an HTTP 400, 404 or 409 response because of a missing OVN, but got {qe.cause_status_code} instead",
+                        details=f"Was expecting an HTTP 400, 404 or 409 response because of a missing OVN, but got {qe.cause_status_code}: {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
         self.end_test_step()
@@ -233,17 +220,16 @@ class OIRSimple(TestScenario):
                 # We don't expect to reach this point:
                 check.record_failed(
                     summary="OIR Mutation with incorrect OVN was not expected to succeed",
-                    details=f"Was expecting an HTTP 400, 404 or 409 response because of an incorrect OVN, but got {query.status_code} instead",
+                    details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {query.status_code}",
                     query_timestamps=[query.request.timestamp],
                 )
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                if qe.cause_status_code in [400, 404, 409]:
-                    pass
-                else:
+                # The spec explicitly requests a 409 response code for incorrect OVNs.
+                if qe.cause_status_code != 409:
                     check.record_failed(
                         summary="OIR Mutation with incorrect OVN failed for unexpected reason",
-                        details=f"Was expecting an HTTP 400, 404 or 409 response because of an incorrect OVN, but got {qe.cause_status_code} instead",
+                        details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {qe.cause_status_code}: {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
 
@@ -320,10 +306,11 @@ class OIRSimple(TestScenario):
 
     def _clean_all_oirs(self):
         # Delete any active OIR we might own
+        vol = self._planning_area.resolved_volume4d_with_times(None, None)
         test_step_fragments.cleanup_active_oirs(
             self,
             self._dss,
-            self._planning_area_volume4d.to_f3548v21(),
+            vol.to_f3548v21(),
             self._expected_manager,
         )
 
@@ -341,7 +328,7 @@ class OIRSimple(TestScenario):
         return self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=datetime.now() - timedelta(seconds=10),
             time_end=datetime.now() + timedelta(minutes=20),
             subscription_id=None,
@@ -353,7 +340,7 @@ class OIRSimple(TestScenario):
         return self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=datetime.now() - timedelta(seconds=10),
             time_end=datetime.now() + timedelta(minutes=20),
             subscription_id=subscription_id,

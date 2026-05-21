@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-import arrow
 from implicitdict import StringBasedTimeDelta
 from uas_standards.astm.f3548.v21.constants import (
     OiMaxPlanHorizonDays,
@@ -21,7 +20,6 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     FlightPlanStatus,
     PlanningActivityResult,
 )
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
@@ -48,8 +46,6 @@ class FlightIntentValidation(TestScenario):
         "Validate transition to Ended state after cancellation"
     )
     PLAN_VALID_FLIGHT_STEP = "Plan Valid Flight"
-
-    times: dict[TimeDuringTest, Time]
 
     valid_flight: FlightInfoTemplate
     valid_activated: FlightInfoTemplate
@@ -131,15 +127,9 @@ class FlightIntentValidation(TestScenario):
             setattr(self, efi.intent_id, templates[efi.intent_id])
 
     def resolve_flight(self, flight_template: FlightInfoTemplate) -> FlightInfo:
-        self.times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        return flight_template.resolve(self.times)
+        return flight_template.resolve(self.time_context.evaluate_now())
 
     def run(self, context: ExecutionContext):
-        self.times = {
-            TimeDuringTest.StartOfTestRun: Time(context.start_time),
-            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
-        }
-
         self.begin_test_scenario(context)
         self.record_note(
             "Tested USS",
@@ -218,11 +208,14 @@ class FlightIntentValidation(TestScenario):
             self.dss,
             valid_flight,
         ) as planned_validator:
-            _, flight_id = plan_flight(
+            _, flight_id, as_planned = plan_flight(
                 self,
                 self.tested_uss,
                 valid_flight,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            assert as_planned is not None
+            valid_flight = as_planned
             oi_ref = planned_validator.expect_shared(valid_flight)
         self.end_test_step()
 
@@ -241,11 +234,12 @@ class FlightIntentValidation(TestScenario):
         self.begin_test_step(self.PLAN_VALID_FLIGHT_STEP)
         valid_flight = self.resolve_flight(self.valid_flight)
 
-        plan_flight(
+        _, _, as_planned = plan_flight(
             self,
             self.tested_uss,
             valid_flight,
         )
+        # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
         self.end_test_step()
 
         self.begin_test_step("Attempt to plan Tiny Overlap Conflict Flight")

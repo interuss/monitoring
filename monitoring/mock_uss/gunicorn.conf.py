@@ -6,7 +6,7 @@ from gunicorn.http.wsgi import Response
 from gunicorn.workers.base import Worker
 from loguru import logger
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 
 
 def on_starting(server: Arbiter):

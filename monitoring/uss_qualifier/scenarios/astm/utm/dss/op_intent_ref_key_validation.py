@@ -10,7 +10,6 @@ from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib import fetch, schema_validation
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.schema_validation import F3548_21
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources import PlanningAreaResource
@@ -51,6 +50,7 @@ class OIRKeyValidation(TestScenario):
 
     # Keep track of the current OIR state
     _current_oirs: dict[EntityID, OperationalIntentReference]
+    _planning_area: PlanningAreaResource
 
     def __init__(
         self,
@@ -79,10 +79,10 @@ class OIRKeyValidation(TestScenario):
 
         self._expected_manager = client_identity.subject()
 
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
-        self._planning_area_volume4d = Volume4D(
-            volume=self._planning_area.volume,
+        self._planning_area_volume4d = self._planning_area.resolved_volume4d_with_times(
+            None, None
         )
 
         self._current_oirs = {}
@@ -109,7 +109,7 @@ class OIRKeyValidation(TestScenario):
         first_oir_params = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=datetime.now() - timedelta(seconds=10),
             time_end=datetime.now() + timedelta(minutes=20),
             subscription_id=None,
@@ -119,7 +119,7 @@ class OIRKeyValidation(TestScenario):
         second_oir_params = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=datetime.now() + timedelta(hours=1, minutes=20),
             time_end=datetime.now() + timedelta(hours=1, minutes=40),
             subscription_id=None,
@@ -189,13 +189,13 @@ class OIRKeyValidation(TestScenario):
                 self.record_query(q)
                 check.record_failed(
                     summary="Operational intent reference with OVN missing in key was created",
-                    details=f"Was expecting an HTTP 409 response because of a conflict with OIR {conflicting_ids}, but got a successful response ({q.status_code}) instead",
+                    details=f"Was expecting an HTTP 409 response because of a conflict with OIR {conflicting_ids}, but got {q.status_code}",
                     query_timestamps=[q.request.timestamp],
                 )
                 return
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                _expect_conflict_code(check, conflicting_ids, qe.cause)
+                _expect_conflict_code(check, conflicting_ids, qe)
                 conflicting_query = qe.cause
 
         self._validate_conflict_response(conflicting_ids, conflicting_query)
@@ -222,13 +222,13 @@ class OIRKeyValidation(TestScenario):
                 self.record_query(q)
                 check.record_failed(
                     summary="Operational intent reference with OVN missing in key was mutated",
-                    details=f"Was expecting an HTTP 409 response because of a conflict with OIR {conflicting_ids}, but got a successful response ({q.status_code}) instead",
+                    details=f"Was expecting an HTTP 409 response because of a conflict with OIR {conflicting_ids}, but got {q.status_code}",
                     query_timestamps=[q.request.timestamp],
                 )
                 return
             except QueryError as qe:
                 self.record_queries(qe.queries)
-                _expect_conflict_code(check, conflicting_ids, qe.cause)
+                _expect_conflict_code(check, conflicting_ids, qe)
                 conflicting_query = qe.cause
 
         self._validate_conflict_response(conflicting_ids, conflicting_query)
@@ -243,7 +243,7 @@ class OIRKeyValidation(TestScenario):
         conflict_first = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=first_oir.time_start.value.datetime,
             time_end=first_oir.time_end.value.datetime,
             subscription_id=None,
@@ -258,7 +258,7 @@ class OIRKeyValidation(TestScenario):
         conflict_second = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=second_oir.time_start.value.datetime,
             time_end=second_oir.time_end.value.datetime,
             subscription_id=None,
@@ -273,7 +273,7 @@ class OIRKeyValidation(TestScenario):
         conflict_both = self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
             time_start=first_oir.time_start.value.datetime,
             time_end=second_oir.time_end.value.datetime,
             subscription_id=None,
@@ -431,11 +431,11 @@ class OIRKeyValidation(TestScenario):
 
 
 def _expect_conflict_code(
-    check: PendingCheck, conflicting_ids: list[EntityID], query: fetch.Query
+    check: PendingCheck, conflicting_ids: list[EntityID], qe: fetch.QueryError
 ):
-    if query.status_code != 409:
+    if qe.cause_status_code != 409:
         check.record_failed(
             summary="OIR Creation failed for the unexpected reason",
-            details=f"Was expecting an HTTP 409 response because of a conflict with OIR {conflicting_ids}, but got a {query.status_code} instead",
-            query_timestamps=[query.request.timestamp],
+            details=f"Was expecting an HTTP 409 response because of a conflict with OIR {conflicting_ids}, but got {qe.cause_status_code}: {qe.msg}",
+            query_timestamps=qe.query_timestamps,
         )

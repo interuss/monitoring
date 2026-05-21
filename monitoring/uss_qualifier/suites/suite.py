@@ -15,6 +15,7 @@ from loguru import logger
 from monitoring.monitorlib.dicts import JSONAddress
 from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.inspection import fullname
+from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.monitorlib.versioning import repo_url_of
 from monitoring.uss_qualifier.action_generators.action_generator import (
     ActionGenerator,
@@ -22,6 +23,7 @@ from monitoring.uss_qualifier.action_generators.action_generator import (
 )
 from monitoring.uss_qualifier.configurations.configuration import (
     ExecutionConfiguration,
+    FullyQualifiedCheck,
     TestSuiteActionSelectionCondition,
 )
 from monitoring.uss_qualifier.fileio import resolve_filename
@@ -49,15 +51,18 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioCannotContinueError,
     TestRunCannotContinueError,
     TestScenario,
+    are_scenario_types_equal,
+    fully_qualified_check_in_collection,
     get_scenario_type_by_name,
 )
 from monitoring.uss_qualifier.suites.definitions import (
-    ActionType,
     ReactionToFailure,
     TestSuiteActionDeclaration,
     TestSuiteDeclaration,
     TestSuiteDefinition,
 )
+
+TEST_RUN_TIMEOUT_SKIP_REASON = "Maximum test run time has been exceeded"
 
 
 def _print_failed_check(failed_check: FailedCheck) -> None:
@@ -87,25 +92,24 @@ class TestSuiteAction[T: ActionGenerator]:
         resources_for_child = make_child_resources(
             resources,
             action.get_resource_links(),
-            f"Test suite action to run {action.get_action_type()} {action.get_child_type()}",
+            f"Test suite action to run {action.get_action_type_name()} {action.get_child_type()}",
         )
 
-        action_type = action.get_action_type()
-        if action_type == ActionType.TestScenario and action.test_scenario:
+        if "test_scenario" in action and action.test_scenario:
             self.test_scenario = TestScenario.make_test_scenario(
                 declaration=action.test_scenario, resource_pool=resources_for_child
             )
-        elif action_type == ActionType.TestSuite and action.test_suite:
+        elif "test_suite" in action and action.test_suite:
             self.test_suite = TestSuite(
                 declaration=action.test_suite,
                 resources=resources,
             )
-        elif action_type == ActionType.ActionGenerator and action.action_generator:
+        elif "action_generator" in action and action.action_generator:
             self.action_generator = ActionGenerator.make_from_definition(
                 definition=action.action_generator, resources=resources_for_child
             )
         else:
-            raise ActionType.build_invalid_action_declaration()
+            raise action.invalid_type_error
 
     def get_name(self) -> str:
         if self.test_suite:
@@ -124,7 +128,7 @@ class TestSuiteAction[T: ActionGenerator]:
         skip_report = context.evaluate_skip()
         if skip_report:
             logger.warning(
-                f"Skipping {self.declaration.get_action_type()} '{self.get_name()}' because: {skip_report.reason}"
+                f"Skipping {self.declaration.get_action_type_name()} '{self.get_name()}' because: {skip_report.reason}"
             )
             report = TestSuiteActionReport(skipped_action=skip_report)
         else:
@@ -153,6 +157,11 @@ class TestSuiteAction[T: ActionGenerator]:
 
         logger.info(f'Running "{scenario.documentation.name}" scenario...')
         scenario.on_failed_check = _print_failed_check
+        scenario.time_context[TimeDuringTest.StartOfTestRun] = Time(context.start_time)
+        scenario.time_context[TimeDuringTest.StartOfScenario] = Time(
+            arrow.utcnow().datetime
+        )
+
         try:
             try:
                 scenario.run(context)
@@ -168,15 +177,15 @@ class TestSuiteAction[T: ActionGenerator]:
         except Exception as e:
             scenario.record_execution_error(e)
         report = scenario.get_report()
-        if report.successful:
-            logger.info(f'SUCCESS for "{scenario.documentation.name}" scenario')
+        if "execution_error" in report and report.execution_error:
+            lines = report.execution_error.stacktrace.split("\n")
+            logger.error(
+                'Execution error in scenario "{}":\n{}',
+                scenario.documentation.name,
+                "\n".join("  " + line for line in lines),
+            )
         else:
-            if "execution_error" in report and report.execution_error:
-                lines = report.execution_error.stacktrace.split("\n")
-                logger.error(
-                    "Execution error:\n{}", "\n".join("  " + line for line in lines)
-                )
-            logger.warning(f'FAILURE for "{scenario.documentation.name}" scenario')
+            logger.info(f'"{scenario.documentation.name}" scenario completed')
         return report
 
     def _run_test_suite(self, context: ExecutionContext) -> TestSuiteReport:
@@ -282,7 +291,7 @@ class TestSuite:
                 )
             except MissingResourceError as e:
                 logger.warning(
-                    f"Skipping action {a} ({action_dec.get_action_type()} {action_dec.get_child_type()}) because {str(e)}"
+                    f"Skipping action {a} ({action_dec.get_action_type_name()} {action_dec.get_child_type()}) because {str(e)}"
                 )
                 actions.append(
                     SkippedActionReport(
@@ -348,6 +357,15 @@ def _run_actions(
     for a, action in enumerate(actions):
         if isinstance(action, SkippedActionReport):
             action_report = TestSuiteActionReport(skipped_action=action)
+        elif context.should_stop_early_now():
+            assert context.current_frame
+            action_report = TestSuiteActionReport(
+                skipped_action=SkippedActionReport(
+                    timestamp=StringBasedDateTime(arrow.utcnow().datetime),
+                    reason=TEST_RUN_TIMEOUT_SKIP_REASON,
+                    declaration=context.current_frame.action.declaration,
+                )
+            )
         else:
             action_report = action.run(context)
         report.actions.append(action_report)
@@ -405,11 +423,17 @@ class ActionStackFrame:
 class ExecutionContext:
     start_time: datetime
     config: ExecutionConfiguration | None
+    acceptable_findings: list[FullyQualifiedCheck]
     top_frame: ActionStackFrame | None
     current_frame: ActionStackFrame | None
 
-    def __init__(self, config: ExecutionConfiguration | None):
+    def __init__(
+        self,
+        config: ExecutionConfiguration | None,
+        acceptable_findings: list[FullyQualifiedCheck],
+    ):
         self.config = config
+        self.acceptable_findings = acceptable_findings
         self.top_frame = None
         self.current_frame = None
         self.start_time = arrow.utcnow().datetime
@@ -449,15 +473,42 @@ class ExecutionContext:
         for child in frame.children:
             yield from self.test_scenario_reports(child)
 
-    @property
-    def stop_fast(self) -> bool:
+    def stop_fast(
+        self, test_case_name: str, test_step_name: str, check_name: str
+    ) -> bool:
         if (
             self.config is not None
             and "stop_fast" in self.config
-            and self.config.stop_fast is not None
+            and self.config.stop_fast
         ):
-            return self.config.stop_fast
+            if (
+                "do_not_stop_fast_for_acceptable_findings" in self.config
+                and self.config.do_not_stop_fast_for_acceptable_findings
+            ):
+                # See if there is an exception for the particular check being considered
+                if self.current_frame and self.current_frame.action.test_scenario:
+                    current_check = FullyQualifiedCheck(
+                        scenario_type=self.current_frame.action.test_scenario.declaration.scenario_type,
+                        test_case_name=test_case_name,
+                        test_step_name=test_step_name,
+                        check_name=check_name,
+                    )
+                    if fully_qualified_check_in_collection(
+                        current_check, self.acceptable_findings
+                    ):
+                        return False
+            return True
         return False
+
+    def should_stop_early_now(self) -> bool:
+        if (
+            not self.config
+            or "stop_after" not in self.config
+            or not self.config.stop_after
+        ):
+            return False
+        dt = arrow.utcnow() - self.start_time
+        return dt >= self.config.stop_after.timedelta
 
     def _compute_n_of(
         self, target: TestSuiteAction, condition: TestSuiteActionSelectionCondition
@@ -541,10 +592,15 @@ class ExecutionContext:
                     "types" in f.is_test_scenario
                     and f.is_test_scenario.types is not None
                 ):
-                    if (
-                        action.test_scenario.declaration.scenario_type
-                        not in f.is_test_scenario.types
-                    ):
+                    matches_scenario_type = False
+                    for scenario_type in f.is_test_scenario.types:
+                        if are_scenario_types_equal(
+                            scenario_type,
+                            action.test_scenario.declaration.scenario_type,
+                        ):
+                            matches_scenario_type = True
+                            break
+                    if not matches_scenario_type:
                         return False
                 result = True
             else:
@@ -625,6 +681,21 @@ class ExecutionContext:
                         declaration=self.current_frame.action.declaration,
                     )
 
+        if (
+            "scenarios_filter" in self.config
+            and self.config.scenarios_filter
+            and self.current_frame.action.test_scenario
+        ):
+            scenario_type = (
+                self.current_frame.action.test_scenario.declaration.scenario_type
+            )
+            if not re.search(self.config.scenarios_filter, scenario_type):
+                return SkippedActionReport(
+                    timestamp=StringBasedDateTime(arrow.utcnow()),
+                    reason=f"Scenario type '{scenario_type}' did not match against scenarios_filter regex `{self.config.scenarios_filter}`",
+                    declaration=self.current_frame.action.declaration,
+                )
+
         return None
 
     def begin_action(self, action: TestSuiteAction) -> None:
@@ -648,7 +719,7 @@ class ExecutionContext:
 
         if self.current_frame.action is not action:
             raise RuntimeError(
-                f"Action {self.current_frame.action.declaration.get_action_type()} {self.current_frame.action.declaration.get_child_type()} was started, but a different action {action.declaration.get_action_type()} {action.declaration.get_child_type()} was ended"
+                f"Action {self.current_frame.action.declaration.get_action_type_name()} {self.current_frame.action.declaration.get_child_type()} was started, but a different action {action.declaration.get_action_type_name()} {action.declaration.get_child_type()} was ended"
             )
         self.current_frame.report = report
         self.current_frame = self.current_frame.parent

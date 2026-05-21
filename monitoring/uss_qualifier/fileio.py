@@ -332,7 +332,7 @@ def _replace_refs(
     cache: dict[str, dict] | None = None,
 ) -> None:
     for path in ref_parent_paths:
-        parent = [m.value for m in bc_jsonpath_ng.parse(path).find(content)]
+        parent = [m.value for m in bc_jsonpath_ng.parser.parse(path).find(content)]
         if len(parent) != 1:
             raise RuntimeError(
                 f'Unexpectedly found {len(parent)} matches for $ref parent JSON Path "{path}"'
@@ -344,7 +344,7 @@ def _replace_refs(
                 ref_path, context_file_name, cache
             )
         else:
-            ref_json_path = bc_jsonpath_ng.parse(
+            ref_json_path = bc_jsonpath_ng.parser.parse(
                 ref_path.replace("#", "$").replace("/", ".")
             )
             ref_content = [m.value for m in ref_json_path.find(content)]
@@ -362,7 +362,9 @@ def _replace_refs(
             if allof_parent_path + ".allOf" in allof_paths:
                 allof_parent_content = [
                     m.value
-                    for m in bc_jsonpath_ng.parse(allof_parent_path).find(content)
+                    for m in bc_jsonpath_ng.parser.parse(allof_parent_path).find(
+                        content
+                    )
                 ]
                 if len(allof_parent_content) != 1:
                     raise RuntimeError(

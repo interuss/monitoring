@@ -2,7 +2,9 @@ from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib import fetch, schema_validation
 from monitoring.monitorlib.auth import InvalidTokenSignatureAuth
-from monitoring.monitorlib.infrastructure import UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    utm_client_session_factory,
+)
 from monitoring.monitorlib.schema_validation import F3548_21
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
@@ -22,10 +24,12 @@ class GenericAuthValidator:
         self._pid = dss.participant_id
         self._scenario = scenario
         self._authenticated_session = dss.client
-        self._invalid_token_session = UTMClientSession(
+        self._invalid_token_session = utm_client_session_factory.get_session(
             dss.base_url, auth_adapter=InvalidTokenSignatureAuth()
         )
-        self._no_auth_session = UTMClientSession(dss.base_url, auth_adapter=None)
+        self._no_auth_session = utm_client_session_factory.get_session(
+            dss.base_url, auth_adapter=None
+        )
         self._valid_scope = valid_scope
 
     def query_no_auth(self, **query_kwargs) -> fetch.Query:

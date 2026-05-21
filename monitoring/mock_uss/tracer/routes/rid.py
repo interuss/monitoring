@@ -12,7 +12,7 @@ from uas_standards.astm.f3411.v22a.api import (
     PutIdentificationServiceAreaNotificationParameters as PutIdentificationServiceAreaNotificationParametersV22a,
 )
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.log_types import RIDISANotification
 from monitoring.mock_uss.tracer.template import _print_time_range

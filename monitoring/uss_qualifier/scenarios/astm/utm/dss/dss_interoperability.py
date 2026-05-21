@@ -44,7 +44,9 @@ class DSSInteroperability(TestScenario):
             if not dss.is_same_as(primary_dss_instance)
         ]
 
-        self._valid_search_area = Volume4D(volume=planning_area.specification.volume)
+        self._valid_search_area = planning_area.resolved_volume4d_with_times(
+            None, None
+        ).to_f3548v21()
 
         if test_exclusions is not None:
             self._allow_private_addresses = test_exclusions.allow_private_addresses

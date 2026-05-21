@@ -1,6 +1,6 @@
 from urllib.parse import urlparse
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
@@ -16,13 +16,13 @@ class FlightPlannerConfiguration(ImplicitDict):
     participant_id: str
     """ID of the flight planner into which test data can be injected"""
 
-    scd_injection_base_url: str | None
+    scd_injection_base_url: Optional[str]
     """Base URL for the flight planner's implementation of the interfaces/automated_testing/scd/v1/scd.yaml API"""
 
-    v1_base_url: str | None
+    v1_base_url: Optional[str]
     """Base URL for the flight planner's implementation of the interfaces/automated_testing/flight_planning/v1/flight_planning.yaml API"""
 
-    timeout_seconds: float | None = None
+    timeout_seconds: Optional[float | None] = None
     """Number of seconds to allow for requests to this flight planner.  If None, use default."""
 
     def __init__(self, *args, **kwargs):
@@ -48,12 +48,12 @@ class FlightPlannerConfiguration(ImplicitDict):
         self, auth_adapter: infrastructure.AuthAdapter
     ) -> FlightPlannerClient:
         if "scd_injection_base_url" in self and self.scd_injection_base_url:
-            session = infrastructure.UTMClientSession(
+            session = infrastructure.utm_client_session_factory.get_session(
                 self.scd_injection_base_url, auth_adapter, self.timeout_seconds
             )
             return SCDFlightPlannerClient(session, self.participant_id)
         elif "v1_base_url" in self and self.v1_base_url:
-            session = infrastructure.UTMClientSession(
+            session = infrastructure.utm_client_session_factory.get_session(
                 self.v1_base_url, auth_adapter, self.timeout_seconds
             )
             return V1FlightPlannerClient(session, self.participant_id)

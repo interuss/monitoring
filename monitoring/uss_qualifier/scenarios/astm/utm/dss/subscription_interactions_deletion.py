@@ -10,7 +10,6 @@ from uas_standards.astm.f3548.v21.api import (
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.fetch import QueryError
-from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -44,6 +43,8 @@ class SubscriptionInteractionsDeletion(TestScenario):
 
     _manager: str
 
+    _planning_area: PlanningAreaResource
+
     def __init__(
         self,
         dss: DSSInstanceResource,
@@ -57,7 +58,7 @@ class SubscriptionInteractionsDeletion(TestScenario):
             Scope.StrategicCoordination: "create and delete subscriptions and operational intents"
         }
         self._dss = dss.get_instance(scopes)
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
         self._secondary_instances = [
             dss.get_instance(scopes) for dss in other_instances.dss_instances
@@ -291,7 +292,7 @@ class SubscriptionInteractionsDeletion(TestScenario):
         self.end_test_step()
 
     def _clean_workspace(self):
-        extents = Volume4D(volume=self._planning_area.volume)
+        extents = self._planning_area.resolved_volume4d_with_times(None, None)
         test_step_fragments.cleanup_active_oirs(
             self,
             self._dss,

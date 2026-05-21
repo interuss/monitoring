@@ -6,12 +6,14 @@ import os
 import sys
 
 import yaml
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from loguru import logger
 
 from monitoring.monitorlib.dicts import get_element_or_default, remove_elements
 from monitoring.monitorlib.versioning import get_code_version, get_commit_hash
 from monitoring.uss_qualifier.configurations.configuration import (
+    ExecutionConfiguration,
+    TestConfiguration,
     USSQualifierConfiguration,
     USSQualifierConfigurationV1,
 )
@@ -79,6 +81,12 @@ def parseArgs() -> argparse.Namespace:
         help="When true, do not run a test configuration which would produce unredacted sensitive information in its artifacts",
     )
 
+    parser.add_argument(
+        "--filter",
+        default=None,
+        help="Filter test scenarios by class name using a regex. When empty, all scenarios are executed. Useful for targeted debugging.",
+    )
+
     return parser.parse_args()
 
 
@@ -87,8 +95,8 @@ class TestDefinitionDescription(ImplicitDict):
 
     codebase_version: str
     commit_hash: str
-    baseline_signature: str | None = None
-    environment_signature: str | None = None
+    baseline_signature: Optional[str] = None
+    environment_signature: Optional[str] = None
 
     def sign(self, whole_config: USSQualifierConfiguration) -> None:
         logger.debug("Computing signatures of inputs")
@@ -101,17 +109,20 @@ class TestDefinitionDescription(ImplicitDict):
             baseline = whole_config
             environment = []
         self.baseline_signature = compute_baseline_signature(
-            self.codebase_version,
-            self.commit_hash,
-            compute_signature(baseline),
+            self.codebase_version, self.commit_hash, compute_signature(baseline)
         )
         self.environment_signature = compute_signature(environment)
 
 
 def execute_test_run(
-    whole_config: USSQualifierConfiguration, description: TestDefinitionDescription
+    whole_config: USSQualifierConfiguration,
+    description: TestDefinitionDescription,
 ):
+    assert whole_config.v1
     config = whole_config.v1.test_run
+
+    if not config:
+        raise ValueError("v1.test_run not defined in configuration")
 
     logger.info("Instantiating resources")
     stop_when_not_created = (
@@ -127,14 +138,17 @@ def execute_test_run(
     )
 
     logger.info("Instantiating top-level test suite action")
-    context = ExecutionContext(config.execution if "execution" in config else None)
+    if "artifacts" in whole_config.v1 and whole_config.v1.artifacts:
+        acceptable_findings = list(whole_config.v1.artifacts.acceptable_findings)
+    else:
+        acceptable_findings = []
+    context = ExecutionContext(
+        config.execution if "execution" in config else None, acceptable_findings
+    )
     action = TestSuiteAction(config.action, resources)
     logger.info("Running top-level test suite action")
     report = action.run(context)
-    if report.successful():
-        logger.info("Final result: SUCCESS")
-    else:
-        logger.warning("Final result: FAILURE")
+    logger.info("Top-level test suite action complete")
 
     return TestRunReport(
         codebase_version=description.codebase_version,
@@ -172,6 +186,7 @@ def run_config(
     output_path: str | None,
     runtime_metadata: dict | None,
     disallow_unredacted: bool,
+    scenarios_filter: str | None,
 ):
     config_src = load_dict_with_references(config_name)
 
@@ -186,6 +201,21 @@ def run_config(
             )
 
     whole_config = ImplicitDict.parse(config_src, USSQualifierConfiguration)
+
+    if scenarios_filter:
+        # We set the scenario filter in the test run execution's object
+        # As parameters are optional, we ensure they do exist first
+
+        if "v1" not in whole_config or not whole_config.v1:
+            whole_config.v1 = USSQualifierConfigurationV1()
+        if "test_run" not in whole_config.v1 or not whole_config.v1.test_run:
+            whole_config.v1.test_run = TestConfiguration()
+        if (
+            "execution" not in whole_config.v1.test_run
+            or not whole_config.v1.test_run.execution
+        ):
+            whole_config.v1.test_run.execution = ExecutionConfiguration()
+        whole_config.v1.test_run.execution.scenarios_filter = scenarios_filter
 
     if config_output:
         logger.info("Writing flattened configuration to {}", config_output)
@@ -257,6 +287,7 @@ def main() -> int:
         raise ValueError("--runtime-metadata must specify a JSON dictionary")
 
     disallow_unredacted = args.disallow_unredacted
+    scenarios_filter = args.filter
 
     config_names = str(args.config).split(",")
 
@@ -285,6 +316,7 @@ def main() -> int:
             output_path,
             runtime_metadata,
             disallow_unredacted,
+            scenarios_filter,
         )
         if exit_code != os.EX_OK:
             return exit_code

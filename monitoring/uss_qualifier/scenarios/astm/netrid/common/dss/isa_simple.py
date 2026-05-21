@@ -1,6 +1,5 @@
 import datetime
 
-import arrow
 import s2sphere
 
 from monitoring.monitorlib.fetch import rid as fetch
@@ -39,12 +38,13 @@ class ISASimple(GenericTestScenario):
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
         self._isa_id = id_generator.id_factory.make_id(ISASimple.ISA_TYPE)
         self._isa_version: str | None = None
-        self._isa = isa.specification
-        self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._isa = isa
+
+        self._isa_area = isa.s2_vertices()
         self._huge_area = problematically_big_area.specification.s2_vertices()
 
     def run(self, context: ExecutionContext):
-        self._shift_isa_time_relative_to_now()
+        self._resolve_isa_time_bounds()
 
         self.begin_test_scenario(context)
 
@@ -55,10 +55,10 @@ class ISASimple(GenericTestScenario):
 
         self.end_test_scenario()
 
-    def _shift_isa_time_relative_to_now(self):
-        now = arrow.utcnow().datetime
-        self._isa_start_time = self._isa.shifted_time_start(now)
-        self._isa_end_time = self._isa.shifted_time_end(now)
+    def _resolve_isa_time_bounds(self):
+        self._isa_start_time, self._isa_end_time = self._isa.resolved_time_bounds(
+            self.time_context.evaluate_now()
+        )
 
     def _setup_case(self):
         self.begin_test_case("Setup")

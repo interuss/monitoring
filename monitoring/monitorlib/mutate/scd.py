@@ -1,8 +1,7 @@
 import datetime
 
 import s2sphere
-import yaml
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from uas_standards.astm.f3548.v21.api import (
     OPERATIONS,
     OperationalIntentReference,
@@ -10,7 +9,6 @@ from uas_standards.astm.f3548.v21.api import (
     PutSubscriptionParameters,
     Subscription,
 )
-from yaml.representer import Representer
 
 from monitoring.monitorlib import fetch, infrastructure, scd
 from monitoring.monitorlib.fetch import QueryType
@@ -19,7 +17,7 @@ from monitoring.monitorlib.geotemporal import Volume4D
 
 
 class MutatedSubscription(fetch.Query):
-    mutation: str | None = None
+    mutation: Optional[str] = None
 
     @property
     def success(self) -> bool:
@@ -62,9 +60,6 @@ class MutatedSubscription(fetch.Query):
             ]
         except ValueError:
             return []
-
-
-yaml.add_representer(MutatedSubscription, Representer.represent_dict)
 
 
 def upsert_subscription(

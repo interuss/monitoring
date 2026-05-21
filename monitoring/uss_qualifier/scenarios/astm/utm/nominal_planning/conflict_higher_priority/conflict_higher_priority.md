@@ -42,7 +42,7 @@ FlightIntentsResource that provides the following flight intents:
     <td rowspan="2">Flight 1m</td>
     <td>Accepted</td>
     <td rowspan="2">Flight 2</td>
-    <td rowspan="2">N/A</td>
+    <td rowspan="2">Flight 2m</td>
   </tr>
   <tr>
     <td><code>flight1m_activated</code></td>
@@ -88,6 +88,12 @@ FlightPlannerResource that will manage conflicting Flight 2.
 ### dss
 DSSInstanceResource that provides access to a DSS instance where flight creation/sharing can be verified.
 
+## Prerequisites check test case
+
+### [Verify area is clear test step](../../clear_area_validation.md)
+
+While this scenario assumes that the area used is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario) in order to avoid a large number of area-clearing operations, the scenario will not proceed correctly if the area was left in a dirty state following a previous scenario that was supposed to leave the area clear.  This test step verifies that the area is clear.
+
 ## Attempt to plan flight in conflict test case
 ![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict.svg)
 
@@ -108,7 +114,6 @@ higher priority. As such it should be rejected per **[astm.f3548.v21.SCD0015](..
 
 ### [Delete Flight 2 test step](../../../../flight_planning/delete_flight_intent.md)
 
-
 ## Attempt to modify planned flight in conflict test case
 ![Test case summary illustration](assets/attempt_to_modify_planned_flight_into_conflict.svg)
 
@@ -121,6 +126,10 @@ The first flight should be successfully planned by the tested USS.
 
 ### Plan Flight 2 test step
 
+#### ℹ️ Retrieve pre-existing notifications check
+
+Just before directing the planning activity, the test director observes pre-existing notifications which cannot relate to the planning activity that has not yet happened.  If these notifications cannot be retrieved, the USS has not fully implemented **[interuss.automated_testing.flight_planning.ImplementAPI](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
+
 #### [Plan Flight 2](../../../../flight_planning/plan_flight_intent.md)
 The second flight should be successfully planned by the control USS.
 It conflicts with Flight 1, but it has higher priority.
@@ -129,13 +138,17 @@ It conflicts with Flight 1, but it has higher priority.
 
 ### Check for conflict notifications test step
 
-The test director checks whether a notification reporting the creation of a conflict by Flight 2 was sent to UAS personnel for the control_uss.
+The test director checks whether a notification reporting the creation of a conflict by Flight 2 was sent to UAS personnel for the control_uss as is required by SCD0090.
 
-The test director also checks whether a notification reporting the creation of a new conflict with Flight 1 was sent to the UAS personnel for the tested_uss managing Flight 1.
+The test director also checks whether a notification reporting the creation of a new conflict with Flight 1 was sent to the UAS personnel for the tested_uss managing Flight 1 as is required by SCD0095.
+
+The timeliness and completeness of these notifications will be checked for compliance with SCD0090 and SCD0095 in aggregate in a later test scenario -- only the raw data is gathered in this test scenario.  When eligible notifications are found, they are reported as [notes](../../notifications_to_operator/notification_checker.py) in the test scenario; if a USS does not have a `scd0090_notification` or `scd0095_notification` note, then uss_qualifier did not detect a required notification.
+
+Note that these actions will not be performed if the test director was unable to retrieve the notifications before the planning activity.
 
 #### ℹ️ Retrieve notifications check
 
-We fetch the list of notifications. If the USS doesn't return a valid answer, we cannot proceed with notification tests.
+We fetch the list of notifications. If the USS doesn't return a valid answer, the USS has not fully implemented **[interuss.automated_testing.flight_planning.ImplementAPI](../../../../../requirements/interuss/automated_testing/flight_planning.md)** and we cannot proceed with notification checks.
 
 ### Attempt to modify planned Flight 1 in conflict test step
 
@@ -185,6 +198,10 @@ The second flight should be successfully planned by the control USS.
 
 ### Activate Flight 2 test step
 
+#### ℹ️ Retrieve pre-existing notifications check
+
+Just before directing the planning activity, the test director observes pre-existing notifications which cannot relate to the planning activity that has not yet happened.  This list of pre-existing notifications will be used later to determine if a new notification resulted from the planning activity.  If these notifications cannot be retrieved, the USS has not fully implemented **[interuss.automated_testing.flight_planning.ImplementAPI](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
+
 #### [Activate Flight 2](../../../../flight_planning/activate_flight_intent.md)
 The test driver activates Flight 2, which should be done successfully given that it is the highest-priority flight.
 
@@ -192,66 +209,89 @@ The test driver activates Flight 2, which should be done successfully given that
 
 ### Check for conflict notifications test step
 
-The test director checks whether a notification reporting the modification of Flight 2 while in conflict was sent to UAS personnel for the control_uss.
+The test director checks whether a notification reporting the modification of Flight 2 while in conflict was sent to UAS personnel for the control_uss as required by SCD0090.
 
-The test director also checks whether a notification reporting the modification of a flight conflicting with Flight 1 was sent to the UAS personnel for the tested_uss managing Flight 1.
+The test director also checks whether a notification reporting the modification of a flight conflicting with Flight 1 was sent to the UAS personnel for the tested_uss managing Flight 1 as required by SCD0095.
+
+The timeliness and completeness of these notifications will be checked for compliance with SCD0090 and SCD0095 in aggregate in a later test scenario -- only the raw data is gathered in this test scenario.  When eligible notifications are found, they are reported as [notes](../../notifications_to_operator/notification_checker.py) in the test scenario; if a USS does not have a `scd0090_notification` or `scd0095_notification` note, then uss_qualifier did not detect a required notification.
+
+Note that these actions will not be performed if the test director was unable to retrieve the notifications before the planning activity.
 
 #### ℹ️ Retrieve notifications check
 
-We fetch the list of notifications. If the USS doesn't return a valid answer, we cannot proceed with notification tests.
+We fetch the list of notifications. If the USS doesn't return a valid answer, the USS has not fully implemented **[interuss.automated_testing.flight_planning.ImplementAPI](../../../../../requirements/interuss/automated_testing/flight_planning.md)** and we cannot proceed with notification checks.
 
 ### Modify activated Flight 1 in conflict with activated Flight 2 test step
 
-#### [Modify Flight 1](../../../../flight_planning/modify_activated_flight_intent.md)
 Before execution of this step, flights 1 and 2 are activated and in conflict. Flight 2 is the highest-priority flight.
-The test driver attempts to modify Flight 1 in a way that still conflicts with Flight 2.
+The virtual user attempts to modify Flight 1 in a way that still conflicts with Flight 2, though the conflict is likely
+reduced.
+
+A practical usage of this workflow might consist of the following sequence of events:
+* Operator 1 plans and begins low-priority Flight 1
+* Operator 2 plans high-priority Flight 2
+* Operator 1 is notified of Flight 2
+* Operator 1 cancels their current mission and makes a new plan to exit Flight 2's volumes
+* Operator 1 informs USS 1 of their plan
+
+This last action is the virtual user flight planning interaction the USS under test will encounter in this test step.
+
+#### [Modify Flight 1](../../../../flight_planning/modify_activated_flight_intent.md)
+The virtual user attempts to modify Flight 1 to reduce/mitigate the conflict.
 
 The successful outcomes of the modification attempts:
 1. Even though Flight 2 is the highest-priority flight, because the conflict existed before the modification was
    initiated, an accepted modification is considered a success per **[astm.f3548.v21.SCD0030](../../../../../requirements/astm/f3548/v21.md)**.
-2. Due to the conflict, the USS may decide to be more conservative and to not support the modification. This is
-   considered a success as there is no positive requirement for the USS to accept the modification.
+2. If the USS does not support flight updates of this type (perhaps because their operators have indicated that they
+   would not use such a capability), the USS may indicate that the action the virtual user is trying to take is not
+   supported.
 
-A rejected modification will indicate a low severity failure. Indeed, in some situations a rejection may not be strictly
-speaking a failure to meet a requirement. This could be the case for example if the USS does not support directly update
-of intents and instead delete the previous one and create a new one. Since we cannot distinguish between an actual
-failure to meet the requirement and a reasonable behavior due to implementation limitations, we indicate a low severity
-failure which won't actually fail the test.
+If the USS rejects the modification, the USS is indicating the modification is "not allowed".  This is not correct when
+judging solely on the rules of F3548-21.  However, USSs may (generally) apply any number of additional rules to
+determine whether or not a flight planning action is accepted by the USS.  Because of this, a rejection is not
+conclusive evidence of SCD0030 non-compliance since the rejection may be due to a different reason.  However, rejection
+in this case would not seem to be justified on the basis of conservatism since rejection is effectively a refusal to
+communicate relevant information to other USSs and operators in the ecosystem.  Therefore, a rejected modification will
+indicate a low severity failure, producing a finding since we cannot distinguish between an actual failure to meet the
+requirement and a reasonable behavior due non-F3548-21 constraints.  Since this finding is a low severity failure, it
+does not indicate a failure to comply with a requirement.
 
 In any case, whatever is the outcome of this step, there should not be any impact on the rest of the execution of the
-scenario. An intent should exist (this is checked in the next step) and it should be either the previous or the modified
-intent, both of which make no difference in the next steps.
+scenario. An intent should exist (this is checked in the next step) and it should be either Flight 1 or Flight 1m, both
+of which can be used in the next step since neither conflicts with Flight 2m.
 
 #### [Validate Flight 1 sharing](../../validate_shared_operational_intent.md)
 If the modification was accepted, Flight 1 should have been modified.
-If the modification was not supported, Flight 1 should not have been modified.
-If the modification was rejected, Flight 1 should not have been modified and should still exist. If it does not exist,
-it means that there is an active flight without an operational intent, which is a failure to meet **[interuss.automated_testing.flight_planning.FlightCoveredByOperationalIntent](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
+If the modification was not supported or the modification was rejected, Flight 1 should not have been modified and
+should still exist. If it does not exist, it means that there is an active flight without an operational intent, which
+is a failure to meet **[interuss.automated_testing.flight_planning.FlightCoveredByOperationalIntent](../../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
-
-## Attempt to modify activated flight in conflict test case
+## Attempt to modify activated flight into conflict test case
 ![Test case summary illustration](assets/attempt_to_modify_activated_flight_into_conflict.svg)
 
 ### Modify activated Flight 2 to not conflict with activated Flight 1 test step
 
 #### [Modify Flight 2](../../../../flight_planning/modify_planned_flight_intent.md)
-The test driver modifies (activated) Flight 2 with the control USS so that it is not anymore in conflict with (activated)
-flight of test USS.
-As Flight 2 is of higher priority, this should succeed and leave Flight 1 clear of conflict.
+The test driver modifies (activated) Flight 2 with the control USS so that it is not anymore in conflict with
+(activated) flight of test USS.  This should succeed and leave Flight 1 clear of conflict.
+
+If flight modification is not supported by the USS, the next test step cannot be performed and the test case will end
+here.
 
 #### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
 
-### Attempt to modify activated Flight 1 in conflict test step
+### Attempt to modify activated Flight 1 into conflict test step
 
 #### [Attempt to modify Flight 1](../../../../flight_planning/modify_activated_priority_conflict_flight_intent.md)
 The test driver attempts to modify Flight 1 so that it becomes in conflict with Flight 2. Both flights are activated at that point.
 However, because the conflict did not exist when the modification was initiated, it should be rejected
 per **[astm.f3548.v21.SCD0030](../../../../../requirements/astm/f3548/v21.md)**.
+In addition, Flight 1 should not have been removed, because doing so would leave an aircraft in flight without any flight plan.
 
-#### [Validate Flight 1 not modified](../../validate_shared_operational_intent.md)
-Because the modification attempt was invalid, either Flight 1 should not have been modified (because the USS kept the
-original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
+#### [Validate Flight 1 not modified](../../validate_not_shared_operational_intent.md)
+Because the modification attempt was invalid, Flight 1 should not have been modified.
 
 ## Cleanup
+
 ### ⚠️ Successful flight deletion check
 **[interuss.automated_testing.flight_planning.DeleteFlightSuccess](../../../../../requirements/interuss/automated_testing/flight_planning.md)**

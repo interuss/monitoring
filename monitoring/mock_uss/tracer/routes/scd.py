@@ -6,7 +6,7 @@ from implicitdict import StringBasedDateTime
 from loguru import logger
 from termcolor import colored
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.tracer import context
 from monitoring.mock_uss.tracer.log_types import (
     ConstraintNotification,
@@ -39,6 +39,10 @@ def tracer_scd_v21_operation_notification(observation_area_id: str) -> tuple[str
     label = colored("Operation", "blue")
     try:
         json = flask.request.json
+
+        if json is None:
+            raise ValueError("No json in request")
+
         id = json.get("operational_intent_id", "<Unknown ID>")
         if json.get("operational_intent"):
             op = json["operational_intent"]
@@ -94,6 +98,10 @@ def tracer_scd_v21_constraint_notification(observation_area_id: str) -> tuple[st
     label = colored("Constraint", "magenta")
     try:
         json = flask.request.json
+
+        if json is None:
+            raise ValueError("No json in request")
+
         id = json.get("constraint_id", "<Unknown ID>")
         if json.get("constraint"):
             constraint = json["constraint"]

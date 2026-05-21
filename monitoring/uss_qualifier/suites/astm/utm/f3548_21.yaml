@@ -80,25 +80,6 @@ actions:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
       flight_planners: flight_planners
-      flight_intents: conflicting_flights
-      dss: dss
-    specification:
-      action_to_repeat:
-        test_scenario:
-          scenario_type: scenarios.astm.utm.nominal_planning.solo_happy_path.SoloHappyPath
-          resources:
-            flight_intents: flight_intents
-            tested_uss: tested_uss
-            dss: dss
-        on_failure: Continue
-      flight_planners_source: flight_planners
-      roles:
-        - tested_uss
-  on_failure: Continue
-- action_generator:
-    generator_type: action_generators.flight_planning.FlightPlannerCombinations
-    resources:
-      flight_planners: flight_planners
       flight_intent_validation_selector: flight_intent_validation_selector?
       invalid_flight_intents: invalid_flight_intents
       dss: dss

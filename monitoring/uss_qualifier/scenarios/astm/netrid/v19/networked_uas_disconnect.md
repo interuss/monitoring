@@ -52,11 +52,7 @@ This particular test requires each flight to be uniquely identifiable by its 2D 
 
 ### Service Provider polling test step
 
-uss_qualifier acts as a Display Provider to query Service Providers under test in this step.
-
-#### ⚠️ ISA query check
-
-**[interuss.f3411.dss_endpoints.SearchISAs](../../../../requirements/interuss/f3411/dss_endpoints.md)** requires a USS providing a DSS instance to implement the DSS endpoints of the OpenAPI specification.  If uss_qualifier is unable to query the DSS for ISAs, this check will fail.
+#### [Service Provider polling test step](./fragments/sp_polling.md)
 
 #### [Flight presence checks](./display_data_evaluator_flight_presence.md)
 

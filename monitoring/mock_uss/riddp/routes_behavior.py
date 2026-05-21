@@ -1,14 +1,14 @@
 import flask
 from implicitdict import ImplicitDict
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 
 from .behavior import DisplayProviderBehavior
 from .database import db
 
 
 @webapp.route("/riddp/behavior", methods=["PUT"])
-def riddp_set_dp_behavior() -> tuple[str, int]:
+def riddp_set_dp_behavior() -> tuple[str, int] | flask.Response:
     """Set the behavior of the mock Display Provider."""
     try:
         json = flask.request.json
@@ -19,13 +19,13 @@ def riddp_set_dp_behavior() -> tuple[str, int]:
         msg = f"Change behavior for Display Provider unable to parse JSON: {e}"
         return msg, 400
 
-    with db as tx:
-        tx.behavior = dp_behavior
+    with db.transact() as tx:
+        tx.value.behavior = dp_behavior
 
     return flask.jsonify(dp_behavior)
 
 
 @webapp.route("/riddp/behavior", methods=["GET"])
-def riddp_get_dp_behavior() -> tuple[str, int]:
+def riddp_get_dp_behavior() -> flask.Response:
     """Get the behavior of the mock Display Provider."""
     return flask.jsonify(db.value.behavior)

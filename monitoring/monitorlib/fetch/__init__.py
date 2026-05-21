@@ -1,24 +1,29 @@
+import copy
 import datetime
 import json
 import os
 import traceback
 import uuid
 from dataclasses import dataclass
-from enum import Enum
-from typing import TypeVar
+from enum import StrEnum
+from http.client import RemoteDisconnected
+from typing import Optional, Self, TypeVar
 from urllib.parse import urlparse
 
 import flask
 import jwt
 import requests
 import urllib3
-import yaml
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import (
+    ImplicitDict,
+    StringBasedDateTime,
+    StringBasedTimeDelta,
+)
 from loguru import logger
-from yaml.representer import Representer
 
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.errors import stacktrace_string
+from monitoring.monitorlib.infrastructure import AUTHORIZATION_DT
 from monitoring.monitorlib.rid import RIDVersion
 
 
@@ -47,12 +52,15 @@ settings = Settings()
 class RequestDescription(ImplicitDict):
     method: str
     url: str
-    headers: dict | None
-    json: dict | None = None
-    body: str | None = None
+    headers: Optional[dict]
+    json: Optional[dict] = None
+    body: Optional[str] = None
 
-    initiated_at: StringBasedDateTime | None
-    received_at: StringBasedDateTime | None
+    initiated_at: Optional[StringBasedDateTime]
+    received_at: Optional[StringBasedDateTime]
+
+    auth_dt: Optional[StringBasedTimeDelta]
+    """Amount of time required to obtain authorization before performing the primary query (de minimus or unknown by default)."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -95,9 +103,6 @@ class RequestDescription(ImplicitDict):
             return self.body
 
 
-yaml.add_representer(RequestDescription, Representer.represent_dict)
-
-
 def describe_flask_request(request: flask.Request) -> RequestDescription:
     headers = {k: v for k, v in request.headers}
     kwargs = {
@@ -127,6 +132,11 @@ def describe_request(
         "initiated_at": StringBasedDateTime(initiated_at),
         "headers": headers,
     }
+    authorization_dt: datetime.timedelta | None = getattr(req, AUTHORIZATION_DT, None)
+    if authorization_dt:
+        kwargs["auth_dt"] = StringBasedTimeDelta(
+            f"{authorization_dt.total_seconds():.4g}s"
+        )
     body = req.body.decode("utf-8") if req.body else None
     try:
         if body:
@@ -139,13 +149,13 @@ def describe_request(
 
 
 class ResponseDescription(ImplicitDict):
-    code: int | None = None
-    failure: str | None
-    headers: dict | None
+    code: Optional[int] = None
+    failure: Optional[str]
+    headers: Optional[dict]
     elapsed_s: float
     reported: StringBasedDateTime
-    json: dict | None = None
-    body: str | None = None
+    json: Optional[dict] = None
+    body: Optional[str] = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -162,9 +172,6 @@ class ResponseDescription(ImplicitDict):
             return json.dumps(self.json)
         else:
             return self.body
-
-
-yaml.add_representer(ResponseDescription, Representer.represent_dict)
 
 
 def describe_response(resp: requests.Response) -> ResponseDescription:
@@ -223,7 +230,9 @@ def describe_flask_response(resp: flask.Response, elapsed_s: float):
     return ResponseDescription(**kwargs)
 
 
-class QueryType(str, Enum):
+class QueryType(StrEnum):
+    Unknown = "unknown"
+
     # ASTM F3411-19 and F3411-22a (RID)
     # DSS endpoints
     F3411v19DSSSearchIdentificationServiceAreas = (
@@ -389,6 +398,7 @@ class QueryType(str, Enum):
     )
 
     # InterUSS mock_uss
+    InterUSSMockUSSGetClock = "interuss.mock_uss.clock"
     InterUSSMockUSSGetLogs = "interuss.mock_uss.logging.interaction_logs"
     InterUSSMockUSSGetLocality = "interuss.mock_uss.locality.locality_get"
     InterUSSMockUSSSetLocality = "interuss.mock_uss.locality.locality_set"
@@ -452,11 +462,14 @@ class Query(ImplicitDict):
     request: RequestDescription
     response: ResponseDescription
 
-    participant_id: str | None
+    participant_id: Optional[str]
     """If specified, identifier of the USS/participant hosting the server involved in this query."""
 
-    query_type: QueryType | None
+    query_type: Optional[QueryType]
     """If specified, the recognized type of this query."""
+
+    _previous_query: Self | None
+    """If specified, the previous, failling query that generated this query as a retry"""
 
     @property
     def timestamp(self) -> datetime.datetime:
@@ -569,20 +582,17 @@ class QueryError(RuntimeError):
         return stacktrace_string(self)
 
 
-yaml.add_representer(Query, Representer.represent_dict)
-
-yaml.add_representer(StringBasedDateTime, Representer.represent_str)
-
-
 def describe_query(
     resp: requests.Response,
     initiated_at: datetime.datetime,
     query_type: QueryType | None = None,
     participant_id: str | None = None,
+    previous_query: Query | None = None,
 ) -> Query:
     query = Query(
         request=describe_request(resp.request, initiated_at),
         response=describe_response(resp),
+        _previous_query=previous_query,
     )
     if query_type is not None:
         query.query_type = query_type
@@ -618,10 +628,9 @@ def query_and_describe(
         Query object describing the request and response/result.
     """
     if client is None:
-        utm_session = False
-        client = requests.session()
+        _client = requests.session()
     else:
-        utm_session = True
+        _client = client
     req_kwargs = kwargs.copy()
     if "timeout" not in req_kwargs:
         req_kwargs["timeout"] = (
@@ -655,6 +664,36 @@ def query_and_describe(
             .strip()
         )
 
+    previous_query = None
+
+    def build_failing_query(t0) -> Query:
+        _req_kwargs = copy.deepcopy(req_kwargs)
+
+        if isinstance(_client, infrastructure.UTMClientSession):
+            _req_kwargs = _client.adjust_request_kwargs(_req_kwargs)
+        del _req_kwargs["timeout"]
+
+        req = requests.Request(verb, url, **_req_kwargs)
+        prepped_req = _client.prepare_request(req)
+
+        t1 = datetime.datetime.now(datetime.UTC)
+
+        query = Query(
+            request=describe_request(prepped_req, t0),
+            response=ResponseDescription(
+                code=None,
+                failure="\n".join(failures),
+                elapsed_s=(t1 - t0).total_seconds(),
+                reported=StringBasedDateTime(t1),
+            ),
+            participant_id=participant_id,
+            _previous_query=previous_query,
+        )
+        if query_type is not None:
+            query.query_type = query_type
+
+        return query
+
     # Note: retry logic could be attached to the `client` Session by `mount`ing an HTTPAdapter with custom
     # `max_retries`, however we do not want to mutate the provided Session.  Instead, retry only on errors we explicitly
     # consider retryable.
@@ -664,13 +703,14 @@ def query_and_describe(
             if is_netloc_fake:
                 failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} was not attempted because network location of {url} was identified as fake: {settings.fake_netlocs}\nAt {get_location()}"
                 failures.append(failure_message)
-                break
+                return build_failing_query(t0)
 
             return describe_query(
-                client.request(verb, url, **req_kwargs),
+                _client.request(verb, url, **req_kwargs),
                 t0,
                 query_type=query_type,
                 participant_id=participant_id,
+                previous_query=previous_query,
             )
         except (requests.Timeout, urllib3.exceptions.ReadTimeoutError) as e:
             failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with timeout {type(e).__name__}: {str(e)}\nAt {get_location()}"
@@ -678,10 +718,21 @@ def query_and_describe(
                 logger.warning(failure_message)
             failures.append(failure_message)
         except requests.ConnectionError as e:
-            if "RemoteDisconnected" in str(e):
-                # This error manifests as:
-                #   ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
-                # ...and this may be retryable
+
+            def context_contains(exception, types) -> bool:
+                if (
+                    exception.__class__ in types
+                ):  # We don't use isinstance, we want exact type
+                    return True
+
+                parent = getattr(exception, "__context__", None)
+
+                if parent:
+                    return context_contains(parent, types)
+                else:
+                    return False
+
+            if context_contains(e, (RemoteDisconnected, ConnectionResetError)):
                 retryable = True
             else:
                 retryable = False
@@ -689,38 +740,28 @@ def query_and_describe(
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
+
             if not retryable:
-                break
+                return build_failing_query(t0)
+
         except requests.RequestException as e:
             failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with non-retryable RequestException {type(e).__name__}: {str(e)}\nAt {get_location()}"
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
 
-            break
-        finally:
-            t1 = datetime.datetime.now(datetime.UTC)
+            return build_failing_query(t0)
 
-    # Reconstruct request similar to the one in the query (which is not
-    # accessible at this point)
-    if utm_session:
-        req_kwargs = client.adjust_request_kwargs(req_kwargs)
-    del req_kwargs["timeout"]
-    req = requests.Request(verb, url, **req_kwargs)
-    prepped_req = client.prepare_request(req)
-    result = Query(
-        request=describe_request(prepped_req, t0),
-        response=ResponseDescription(
-            code=None,
-            failure="\n".join(failures),
-            elapsed_s=(t1 - t0).total_seconds(),
-            reported=StringBasedDateTime(t1),
-        ),
-        participant_id=participant_id,
-    )
-    if query_type is not None:
-        result.query_type = query_type
-    return result
+        previous_query = build_failing_query(
+            t0
+        )  # If we arrive there, query failled, but is retriable
+
+    if not previous_query:
+        raise Exception(
+            "Internal error: arrived after retried without any expected failled query"
+        )
+
+    return previous_query  # Previous query is the last failled one
 
 
 def describe_flask_query(

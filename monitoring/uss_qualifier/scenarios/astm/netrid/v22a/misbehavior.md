@@ -28,7 +28,9 @@ A [`DSSInstanceResource`](../../../../resources/astm/f3411/dss.py) is required f
 
 ### Invalid search area test step
 
-This step will attempt to search for flights in a rectangular area with a diagonal greater than [NetMaxDisplayAreaDiagonal] km.
+This step will attempt to search for flights in a rectangular area with a diagonal greater than [NetMaxDisplayAreaDiagonal] km. First, the Service Providers with service in the large area will be determined from the DSS and then each Service Provider will be queried for flights (this should succeed). Then each Service Provider will be queried again for flights, this time using an unacceptably-large area (this should fail).
+
+#### [Service provider queries test step](../v22a/fragments/sp_simple_queries.md)
 
 #### ⚠️ Area too large check
 
@@ -36,10 +38,11 @@ This step will attempt to search for flights in a rectangular area with a diagon
 
 ### Unauthenticated requests test step
 
-In order to properly test whether the SP handles authentication correctly, this step will first attempt to do a request with the proper credentials
-to confirm that the requested data is indeed available to any authorized query.
+in order to properly test whether the SP handles authentication correctly, after identifying the SP contact information via its ISA in the DSS, this step will first attempt to do a flights request with the proper credentials to confirm that the requested data is indeed available to any authorized query.
 
 It then repeats the exact same request without credentials, and expects this to fail.
+
+#### [Service provider queries test step](../v22a/fragments/sp_simple_queries.md)
 
 #### ⚠️ Missing credentials check
 
@@ -49,6 +52,8 @@ and that requests for existing flights that are executed with missing credential
 ### Incorrectly authenticated requests test step
 
 This step is similar to unauthenticated requests, but uses incorrectly-authenticated requests instead.
+
+#### [Service provider queries test step](../v22a/fragments/sp_simple_queries.md)
 
 #### ⚠️ Invalid credentials check
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 # Find and change to repo root directory
 OS=$(uname)
 if [[ "$OS" == "Darwin" ]]; then
@@ -20,7 +22,7 @@ container_name="mock_uss_geoawareness_test"
 AUD="localhost"
 docker_command="mock_uss/test.sh"
 
-PORT=8076
+PORT=8070
 
 if [ "$CI" == "true" ]; then
   docker_args="--add-host host.docker.internal:host-gateway" # Required to reach other containers in Ubuntu (used for Github Actions)

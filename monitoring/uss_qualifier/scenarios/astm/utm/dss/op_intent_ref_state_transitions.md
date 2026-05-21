@@ -124,4 +124,4 @@ If the DSS allows a client with the `utm.strategic_coordination` scope to transi
 it is in violation of **[astm.f3548.v21.SCD0100](../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 
-## [Cleanup](clean_workspace_op_intents.md)
+## [Cleanup](clean_workspace_op_intents_during_cleanup.md)

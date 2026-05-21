@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -e
+
 COMMIT=$(git rev-parse --short HEAD)
 
 if  test -n "$(git status -s)"; then

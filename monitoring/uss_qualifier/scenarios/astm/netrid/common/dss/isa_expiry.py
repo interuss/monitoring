@@ -1,8 +1,5 @@
 import datetime
 
-import arrow
-
-from monitoring.monitorlib.delay import sleep
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
@@ -35,12 +32,11 @@ class ISAExpiry(GenericTestScenario):
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
         self._isa_id = id_generator.id_factory.make_id(ISAExpiry.ISA_TYPE)
         self._isa_version: str | None = None
-        self._isa = isa.specification
-
-        self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._isa = isa
+        self._isa_area = isa.s2_vertices()
 
     def run(self, context: ExecutionContext):
-        self._shift_isa_time_relative_to_now()
+        self._resolve_isa_time_bounds()
 
         self.begin_test_scenario(context)
 
@@ -55,10 +51,10 @@ class ISAExpiry(GenericTestScenario):
         self.end_test_case()
         self.end_test_scenario()
 
-    def _shift_isa_time_relative_to_now(self):
-        now = arrow.utcnow().datetime
-        self._isa_start_time = self._isa.shifted_time_start(now)
-        self._isa_end_time = self._isa.shifted_time_end(now)
+    def _resolve_isa_time_bounds(self):
+        self._isa_start_time, self._isa_end_time = self._isa.resolved_time_bounds(
+            self.time_context.evaluate_now()
+        )
 
     def _check_expiry_behaviors(self):
         """
@@ -85,7 +81,7 @@ class ISAExpiry(GenericTestScenario):
             )
 
         # Wait for it to expire
-        sleep(5, "we need to wait for the short-lived ISA to expire")
+        self.sleep(5, "we need to wait for the short-lived ISA to expire")
 
         # Search for ISAs: we should not find the expired one
         with self.check(

@@ -58,7 +58,7 @@ def main():
 
     for a in r.report.test_suite.actions:
         print("Types of actions (test_suite, test_scenario, action_generator): ")
-        print(a._get_applicable_report())
+        print(a.get_action_type_name())
 
     suite_reports = {
         subr.test_suite.name: subr.test_suite

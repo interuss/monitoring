@@ -40,7 +40,7 @@ def compute_overall_status(
             if req.classname == FAIL_CLASS:
                 return ParticipantVerificationStatus.Fail
             elif req.classname == NOT_TESTED_CLASS:
-                overall_status = ParticipantVerificationStatus.Incomplete
+                overall_status = ParticipantVerificationStatus.NotFullyVerified
             elif req.classname == FINDINGS_CLASS:
                 if overall_status == ParticipantVerificationStatus.Pass:
                     overall_status = ParticipantVerificationStatus.PassWithFindings
@@ -57,15 +57,14 @@ def find_participant_system_versions(
 ) -> list[str]:
     if isinstance(participant_ids, ParticipantID):
         participant_ids = [participant_ids]
-    test_suite, test_scenario, action_generator = report.get_applicable_report()
     result = []
-    if test_suite:
+    if "test_suite" in report and report.test_suite:
         for action in report.test_suite.actions:
             result.extend(find_participant_system_versions(action, participant_ids))
-    elif action_generator:
+    elif "action_generator" in report and report.action_generator:
         for action in report.action_generator.actions:
             result.extend(find_participant_system_versions(action, participant_ids))
-    elif test_scenario:
+    elif "test_scenario" in report and report.test_scenario:
         if (
             report.test_scenario.scenario_type
             in (
@@ -73,6 +72,7 @@ def find_participant_system_versions(
                 "scenarios.versioning.GetSystemVersions",
             )
             and "notes" in report.test_scenario
+            and report.test_scenario.notes is not None
         ):
             for participant_id in participant_ids:
                 if participant_id in report.test_scenario.notes:

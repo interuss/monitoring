@@ -3,7 +3,7 @@ import uuid
 import pytest
 from flask import json
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.monitorlib.auth import NoAuth
 
 TEST_DATASET_URL = "https://raw.githubusercontent.com/interuss/dss/517595ad4074bdb621feb4ab81c2d2f4fc11eff1/monitoring/uss_qualifier/scenarios/uspace/geo_awareness/design/CHE/geo-awareness-che-1.json"

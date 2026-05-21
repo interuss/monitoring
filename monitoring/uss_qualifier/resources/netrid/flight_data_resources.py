@@ -5,14 +5,16 @@ from datetime import timedelta
 from typing import Self
 
 import arrow
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from uas_standards.interuss.automated_testing.rid.v1.injection import (
     RIDAircraftState,
     TestFlightDetails,
 )
 
+from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.rid_automated_testing.injection_api import TestFlight
 from monitoring.uss_qualifier.resources.files import load_content, load_dict
+from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.resources.netrid.flight_data import (
     FlightDataSpecification,
     FlightRecordCollection,
@@ -24,6 +26,7 @@ from monitoring.uss_qualifier.resources.netrid.simulation.kml_flights import (
     get_flight_records,
 )
 from monitoring.uss_qualifier.resources.resource import Resource
+from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
 
 class FlightDataResource(Resource[FlightDataSpecification]):
@@ -57,6 +60,8 @@ class FlightDataResource(Resource[FlightDataSpecification]):
                 + json.dumps(specification, indent=2)
             )
         self._flight_start_delay = specification.flight_start_delay.timedelta
+
+        self._validate_flights()
 
     def get_test_flights(self) -> list[TestFlight]:
         t0 = arrow.utcnow() + self._flight_start_delay
@@ -179,12 +184,56 @@ class FlightDataResource(Resource[FlightDataSpecification]):
             flight.states = flight.states[::n]
         return self_copy
 
+    def _validate_flights(self):
+        """Ensure that loaded flights are valid"""
+
+        for flight in self.flight_collection.flights:
+            self._validate_flight(flight)
+
+    def _validate_flight(self, flight):
+        """Ensure flight data is valid"""
+
+        from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator import (
+            RIDCommonDictionaryEvaluator,
+        )  # Circular import
+
+        # We pass the flight throught a "normal" TestFlight (some processing is
+        # done inside)
+        details = TestFlightDetails(
+            effective_after=StringBasedDateTime(arrow.utcnow()),
+            details=flight.flight_details,
+        )
+
+        test_flight = TestFlight(
+            injection_id=str(uuid.uuid4()),
+            telemetry=flight.states[::],
+            details_responses=[details],
+            aircraft_type=flight.aircraft_type,
+            filter_invalid_telemetry=False,
+        )
+
+        class DummyTestScenario(TestScenario):
+            def __init__(self):
+                pass
+
+            def run(self, *args, **kwargs):
+                pass
+
+        # We ask the evaluator to process it
+        evaluator = RIDCommonDictionaryEvaluator(
+            EvaluationConfiguration(), DummyTestScenario(), RIDVersion.f3411_22a
+        )
+        for state in test_flight.raw_telemetry or []:
+            evaluator.evaluate_injected_flight(
+                state, test_flight, test_flight.details_responses[0].details
+            )
+
 
 class FlightDataStorageSpecification(ImplicitDict):
-    flight_record_collection_path: str | None
+    flight_record_collection_path: Optional[str]
     """Path, usually ending with .json, at which to store the FlightRecordCollection"""
 
-    geojson_tracks_path: str | None
+    geojson_tracks_path: Optional[str]
     """Path (folder) in which to store track_XX.geojson files, 1 for each flight"""
 
 

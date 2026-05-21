@@ -1,11 +1,11 @@
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class TestExclusionsSpecification(ImplicitDict):
-    allow_private_addresses: bool | None
-    allow_cleartext_queries: bool | None
+    allow_private_addresses: Optional[bool]
+    allow_cleartext_queries: Optional[bool]
 
 
 class TestExclusionsResource(Resource[TestExclusionsSpecification]):

@@ -55,12 +55,12 @@ the note to wait >D seconds from a particular time
 
 ### Test environment requirements test step
 
-#### 🛑 DSS instance is publicly addressable check
+#### ⚠️ DSS instance is publicly addressable check
 As per **[astm.f3411.v22a.DSS0210](../../../../requirements/astm/f3411/v22a.md)** the DSS instance should be publicly addressable.
 As such, this check will fail if the resolved IP of the DSS host is a private IP address.
 This check is skipped if the test exclusion `allow_private_addresses` is set to `True`.
 
-#### 🛑 DSS instance is reachable check
+#### ⚠️ DSS instance is reachable check
 As per **[astm.f3411.v22a.DSS0210](../../../../requirements/astm/f3411/v22a.md)** the DSS instance should be publicly addressable.
 As such, this check will fail if the DSS is not reachable with a dummy query,
 

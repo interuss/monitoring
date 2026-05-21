@@ -13,7 +13,6 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstanceRes
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.planning_area import (
     PlanningAreaResource,
-    PlanningAreaSpecification,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenario
@@ -39,7 +38,7 @@ class SubscriptionValidation(TestScenario):
     _sub_id: str
     """Base identifier for the subscriptions that will be created"""
 
-    _planning_area: PlanningAreaSpecification
+    _planning_area: PlanningAreaResource
 
     _planning_area_volume4d: Volume4D
 
@@ -71,12 +70,12 @@ class SubscriptionValidation(TestScenario):
         self._dss = dss.get_instance(scopes)
         self._pid = [self._dss.participant_id]
         self._sub_id = id_generator.id_factory.make_id(self.SUB_TYPE)
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
 
         # Build a ready-to-use 4D volume with no specified time for searching
         # the currently active subscriptions
-        self._planning_area_volume4d = Volume4D(
-            volume=self._planning_area.volume,
+        self._planning_area_volume4d = self._planning_area.resolved_volume4d_with_times(
+            None, None
         )
 
         self._sub_generation_kwargs = dict(

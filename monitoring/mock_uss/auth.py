@@ -1,4 +1,4 @@
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.monitorlib import auth_validation
 
 from . import config

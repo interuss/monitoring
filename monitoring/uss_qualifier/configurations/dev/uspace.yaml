@@ -8,11 +8,14 @@ v1:
         che_invalid_flight_intents: {$ref: 'library/resources.yaml#/che_invalid_flight_intents'}
         che_invalid_flight_auth_flights: {$ref: 'library/resources.yaml#/che_invalid_flight_auth_flights'}
         che_non_conflicting_flights: {$ref: 'library/resources.yaml#/che_non_conflicting_flights'}
+        che_planning_area_volume: {$ref: 'library/resources.yaml#/che_planning_area_volume'}
         che_planning_area: {$ref: 'library/resources.yaml#/che_planning_area'}
         netrid_observation_evaluation_configuration: {$ref: 'library/resources.yaml#/netrid_observation_evaluation_configuration'}
         utm_client_identity: {$ref: 'library/resources.yaml#/utm_client_identity'}
         id_generator: {$ref: 'library/resources.yaml#/id_generator'}
+        zurich_service_area_volume: {$ref: 'library/resources.yaml#/zurich_service_area_volume'}
         zurich_service_area: {$ref: 'library/resources.yaml#/zurich_service_area'}
+        zurich_planning_area_volume: {$ref: 'library/resources.yaml#/zurich_planning_area_volume'}
         zurich_planning_area: {$ref: 'library/resources.yaml#/zurich_planning_area'}
         zurich_problematically_big_area: {$ref: 'library/resources.yaml#/zurich_problematically_big_area'}
         zurich_flights_data: {$ref: 'library/resources.yaml#/zurich_flights_data'}
@@ -137,6 +140,8 @@ v1:
                   - astm.f3411.v22a.service_provider#UAS ID Serial Number provider
                   - astm.f3411.v22a.service_provider#Height provider
                   - astm.f3411.v22a.service_provider#Operator Position provider
+                  - astm.f3411.v22a.service_provider#Operator Altitude provider
+                  - astm.f3411.v22a.service_provider#Operator Location Type provider
                   - astm.f3411.v22a.service_provider#Operational Status provider
                   - astm.f3411.v22a.display_provider#Mandatory requirements
                   - astm.f3411.v22a.display_provider#UAS ID transmitter
@@ -157,6 +162,8 @@ v1:
                   - astm.f3411.v22a.display_provider#Speed transmitter
                   - astm.f3411.v22a.display_provider#Vertical Speed transmitter
                   - astm.f3411.v22a.display_provider#Operator Position transmitter
+                  - astm.f3411.v22a.display_provider#Operator Altitude transmitter
+                  - astm.f3411.v22a.display_provider#Operator Location Type transmitter
                   - astm.f3411.v22a.dss_provider
                   - astm.f3548.v21.scd#Automated verification
                   - astm.f3548.v21.dss_provider
@@ -176,6 +183,8 @@ v1:
           uss1: uspace
           uss2: uspace
     sequence_view: {}
+    timing_report:
+      percentage_of_time_to_break_down: 90
   validation:
     criteria:
       - $ref: ./library/validation.yaml#/execution_error_none
@@ -185,4 +194,4 @@ v1:
         pass_condition:
           elements:
             count:
-              equal_to: 4 # 4 DatastoreAccess scenarios are skipped
+              equal_to: 5 # 4 DatastoreAccess scenarios are skipped, 1 F3411-22a system versions

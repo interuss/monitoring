@@ -47,7 +47,7 @@ def expect_tested_uss_receives_notification_from_mock_uss(
     with scenario.check(
         "Mock USS sends valid notification", mock_uss.participant_id
     ) as check:
-        interactions, query = wait_in_intervals(get_mock_uss_interactions)(
+        interactions, query = wait_in_intervals(get_mock_uss_interactions, scenario)(
             scenario,
             mock_uss,
             StringBasedDateTime(interactions_since_time),

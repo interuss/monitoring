@@ -17,8 +17,7 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
 from monitoring.monitorlib.clients.mock_uss.mock_uss_scd_injection_api import (
     MockUssFlightBehavior,
 )
-from monitoring.monitorlib.delay import sleep
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
+from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
 from monitoring.uss_qualifier.resources.flight_planning import FlightIntentsResource
@@ -128,10 +127,6 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
     def run(self, context: ExecutionContext):
         self.op_intent_ids = set()
-        times = {
-            TimeDuringTest.StartOfTestRun: Time(context.start_time),
-            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
-        }
         self.begin_test_scenario(context)
 
         self.record_note(
@@ -140,18 +135,17 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         )
 
         self.begin_test_case("Successfully plan flight near an existing flight")
-        self._plan_successfully_test_case(times)
+        self._plan_successfully_test_case()
         self.end_test_case()
 
         self.begin_test_case("Flight planning prevented due to invalid data sharing")
-        self._plan_unsuccessfully_test_case(times)
+        self._plan_unsuccessfully_test_case()
         self.end_test_case()
 
         self.end_test_scenario()
 
-    def _plan_successfully_test_case(self, times: dict[TimeDuringTest, Time]):
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        flight_2 = self.flight_2.resolve(times)
+    def _plan_successfully_test_case(self):
+        flight_2 = self.flight_2.resolve(self.time_context.evaluate_now())
 
         self.begin_test_step("mock_uss plans flight 2")
         with OpIntentValidator(
@@ -161,18 +155,19 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             flight_2.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             flight_2_planning_time = Time(arrow.utcnow().datetime)
-            _, self.flight_2_id = plan_flight(
+            _, self.flight_2_id, as_planned = plan_flight(
                 self,
                 self.mock_uss_client,
                 flight_2,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight_2 = as_planned
 
             flight_2_oi_ref = validator.expect_shared(flight_2)
             self.op_intent_ids.add(flight_2_oi_ref.id)
         self.end_test_step()
 
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        flight_1 = self.flight_1.resolve(times)
+        flight_1 = self.flight_1.resolve(self.time_context.evaluate_now())
 
         self.begin_test_step("tested_uss plans flight 1")
         with OpIntentValidator(
@@ -182,17 +177,19 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             flight_1.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             flight_1_planning_time = Time(arrow.utcnow().datetime)
-            plan_res, self.flight_1_id = plan_flight(
+            plan_res, self.flight_1_id, as_planned = plan_flight(
                 self,
                 self.tested_uss_client,
                 flight_1,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight_1 = as_planned
             flight_1_oi_ref = validator.expect_shared(flight_1)
             self.op_intent_ids.add(flight_1_oi_ref.id)
         self.end_test_step()
 
         self.begin_test_step("Validate that tested_uss obtained flight2 details")
-        sleep(
+        self.sleep(
             max_wait_time,
             "we have to wait the longest it may take a USS to send a notification before we can establish another USS has obtained operational intent details",
         )
@@ -224,9 +221,8 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         delete_flight(self, self.mock_uss_client, self.flight_2_id)
         self.end_test_step()
 
-    def _plan_unsuccessfully_test_case(self, times: dict[TimeDuringTest, Time]):
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        flight_info = self.flight_2.resolve(times)
+    def _plan_unsuccessfully_test_case(self):
+        flight_info = self.flight_2.resolve(self.time_context.evaluate_now())
 
         modify_field1 = "state"
         modify_field2 = "priority"
@@ -250,12 +246,14 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             flight_info.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             flight_2_planning_time = Time(arrow.utcnow().datetime)
-            _, self.flight_2_id = plan_flight(
+            _, self.flight_2_id, as_planned = plan_flight(
                 self,
                 self.mock_uss_client,
                 flight_info,
                 additional_fields,
             )
+            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+            flight_info = as_planned
             flight_2_oi_ref = validator.expect_shared_with_invalid_data(
                 flight_info,
                 validation_failure_type=OpIntentValidationFailureType.DataFormat,
@@ -264,8 +262,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             self.op_intent_ids.add(flight_2_oi_ref.id)
         self.end_test_step()
 
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        flight_1 = self.flight_1.resolve(times)
+        flight_1 = self.flight_1.resolve(self.time_context.evaluate_now())
         self.begin_test_step("tested_uss attempts to plan flight 1, expect failure")
         with OpIntentValidator(
             self,
@@ -274,7 +271,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             flight_1.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
             flight_1_planning_time = Time(arrow.utcnow().datetime)
-            _, self.flight_1_id = submit_flight(
+            _, self.flight_1_id, _ = submit_flight(
                 self,
                 "Plan should fail",
                 {
@@ -289,7 +286,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.end_test_step()
 
         self.begin_test_step("Validate that tested_uss obtained flight2 details")
-        sleep(
+        self.sleep(
             max_wait_time,
             "we have to wait the longest it may take a USS to send a notification before we can establish another USS has obtained operational intent details",
         )

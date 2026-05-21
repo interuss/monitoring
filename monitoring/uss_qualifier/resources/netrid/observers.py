@@ -8,7 +8,6 @@ from uas_standards.interuss.automated_testing.rid.v1.constants import Scope
 
 from monitoring.monitorlib import fetch, infrastructure
 from monitoring.monitorlib.fetch import QueryType
-from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.resource import Resource
 
@@ -24,7 +23,9 @@ class RIDSystemObserver:
         base_url: str,
         auth_adapter: infrastructure.AuthAdapter,
     ):
-        self.session = UTMClientSession(base_url, auth_adapter)
+        self.session = infrastructure.utm_client_session_factory.get_session(
+            base_url, auth_adapter
+        )
         self.participant_id = participant_id
         self.base_url = base_url
 

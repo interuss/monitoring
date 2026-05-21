@@ -1,12 +1,19 @@
+from __future__ import annotations
+
 import asyncio
 import datetime
 import functools
+import threading
+import time
 import urllib.parse
+import weakref
+from dataclasses import dataclass
 from enum import Enum
 
 import jwt
 import requests
 from aiohttp import ClientSession
+from loguru import logger
 
 ALL_SCOPES = [
     "dss.write.identification_service_areas",
@@ -20,10 +27,20 @@ ALL_SCOPES = [
 EPOCH = datetime.datetime.fromtimestamp(0, datetime.UTC)
 TOKEN_REFRESH_MARGIN = datetime.timedelta(seconds=15)
 CLIENT_TIMEOUT = 10  # seconds
+SOCKET_KEEP_ALIVE_LIMIT = 57  # seconds.
+
+AUTHORIZATION_DT = "authorization_dt"
+"""This attribute may be added to a PreparedRequest indicating the timedelta required to obtain authorization"""
 
 
 AuthSpec = str
 """Specification for means by which to obtain access tokens."""
+
+
+@dataclass
+class AdditionalHeaders:
+    headers: dict[str, str]
+    token_issuance_seconds: float | None = None
 
 
 class AuthAdapter:
@@ -37,33 +54,48 @@ class AuthAdapter:
 
         raise NotImplementedError()
 
-    def get_headers(self, url: str, scopes: list[str] | None = None) -> dict[str, str]:
+    def get_headers(
+        self, url: str, scopes: list[str] | None = None
+    ) -> AdditionalHeaders:
         if scopes is None:
             scopes = ALL_SCOPES
         scopes = [s.value if isinstance(s, Enum) else s for s in scopes]
         intended_audience = urllib.parse.urlparse(url).hostname
 
         if not intended_audience:
-            return {}
+            return AdditionalHeaders(headers={})
 
         scope_string = " ".join(scopes)
         if intended_audience not in self._tokens:
             self._tokens[intended_audience] = {}
         if scope_string not in self._tokens[intended_audience]:
+            t0 = time.monotonic()
             token = self.issue_token(intended_audience, scopes)
+            dt_s = time.monotonic() - t0
         else:
             token = self._tokens[intended_audience][scope_string]
+            dt_s = None
         payload = jwt.decode(token, options={"verify_signature": False})
         expires = EPOCH + datetime.timedelta(seconds=payload["exp"])
         if datetime.datetime.now(datetime.UTC) > expires - TOKEN_REFRESH_MARGIN:
+            t0 = time.monotonic()
             token = self.issue_token(intended_audience, scopes)
+            dt_s = (dt_s or 0) + (time.monotonic() - t0)
         self._tokens[intended_audience][scope_string] = token
-        return {"Authorization": "Bearer " + token}
+        return AdditionalHeaders(
+            headers={"Authorization": "Bearer " + token}, token_issuance_seconds=dt_s
+        )
 
-    def add_headers(self, request: requests.PreparedRequest, scopes: list[str]):
+    def add_headers(
+        self, request: requests.PreparedRequest, scopes: list[str]
+    ) -> AdditionalHeaders:
         if request.url:
-            for k, v in self.get_headers(request.url, scopes).items():
+            additional_headers = self.get_headers(request.url, scopes)
+            for k, v in additional_headers.headers.items():
                 request.headers[k] = v
+            return additional_headers
+        else:
+            return AdditionalHeaders(headers={})
 
     def get_sub(self) -> str | None:
         """Retrieve `sub` claim from one of the existing tokens"""
@@ -84,7 +116,19 @@ class UTMClientSession(requests.Session):
     If the URL starts with '/', then automatically prefix the URL with the
     `prefix_url` specified on construction (this is usually the base URL of the
     DSS).
+
+    When possible, a UTMClientSession should be reused rather than creating a
+    new one because an excessive number of UTMClientSessions can exhaust the
+    number of connections allowed by the system (see #1407).
     """
+
+    _next_session_id: int = 1
+    _session_id: int
+    _session_id_lock = threading.Lock()
+
+    _closure_timer: threading.Timer | None = None
+    _closure_lock: threading.Lock
+    _last_used: float | None = None
 
     def __init__(
         self,
@@ -92,12 +136,68 @@ class UTMClientSession(requests.Session):
         auth_adapter: AuthAdapter | None = None,
         timeout_seconds: float | None = None,
     ):
+        """Instances should usually be constructed using a factory to avoid unnecessary duplication."""
+
         super().__init__()
+
+        with UTMClientSession._session_id_lock:
+            self._session_id = UTMClientSession._next_session_id
+            UTMClientSession._next_session_id += 1
 
         self._prefix_url = prefix_url[0:-1] if prefix_url[-1] == "/" else prefix_url
         self.auth_adapter = auth_adapter
         self.default_scopes: list[str] | None = None
         self.timeout_seconds = timeout_seconds or CLIENT_TIMEOUT
+        self._closure_lock = threading.Lock()
+
+        UTMClientSession._start_closure_timer(weakref.ref(self))
+
+    @staticmethod
+    def _start_closure_timer(wref: weakref.ReferenceType[UTMClientSession]) -> None:
+        def wrapper():
+            weak_self_final = wref()
+            if weak_self_final is not None:
+                try:
+                    weak_self_final.close_if_idle()
+                finally:
+                    UTMClientSession._start_closure_timer(wref)
+
+        weak_self_initial = wref()
+        if weak_self_initial:
+            weak_self_initial._closure_timer = threading.Timer(
+                weak_self_initial.seconds_until_idle(), wrapper
+            )
+            weak_self_initial._closure_timer.daemon = True
+            weak_self_initial._closure_timer.start()
+
+    def close_if_idle(self) -> None:
+        with self._closure_lock:
+            if (
+                self._last_used
+                and time.monotonic() - self._last_used > SOCKET_KEEP_ALIVE_LIMIT
+            ):
+                logger.debug(
+                    "Closing idle UTMClientSession {} to {} with default scopes {} last used {} (now {})",
+                    self._session_id,
+                    self._prefix_url,
+                    ", ".join(self.default_scopes) if self.default_scopes else "<none>",
+                    self._last_used,
+                    time.monotonic(),
+                )
+                self.close()
+                self._last_used = None
+
+    def seconds_until_idle(self) -> float:
+        if self._last_used is None:
+            return SOCKET_KEEP_ALIVE_LIMIT
+        else:
+            return max(
+                0.0, SOCKET_KEEP_ALIVE_LIMIT - (time.monotonic() - self._last_used)
+            )
+
+    def __del__(self):
+        if timer := self._closure_timer:
+            timer.cancel()
 
     # Overrides method on requests.Session
     def prepare_request(self, request, **kwargs):
@@ -106,6 +206,21 @@ class UTMClientSession(requests.Session):
             request.url = self._prefix_url + request.url
 
         return super().prepare_request(request, **kwargs)
+
+    def add_auth(
+        self, prepared_request: requests.PreparedRequest, scopes: list[str] | None
+    ) -> requests.PreparedRequest:
+        if scopes and self.auth_adapter:
+            additional_headers = self.auth_adapter.add_headers(prepared_request, scopes)
+            if additional_headers.token_issuance_seconds:
+                setattr(
+                    prepared_request,
+                    AUTHORIZATION_DT,
+                    datetime.timedelta(
+                        seconds=additional_headers.token_issuance_seconds
+                    ),
+                )
+        return prepared_request
 
     def adjust_request_kwargs(self, kwargs):
         if self.auth_adapter:
@@ -119,14 +234,7 @@ class UTMClientSession(requests.Session):
             if scopes is None:
                 scopes = self.default_scopes
 
-            def auth(
-                prepared_request: requests.PreparedRequest,
-            ) -> requests.PreparedRequest:
-                if scopes and self.auth_adapter:
-                    self.auth_adapter.add_headers(prepared_request, scopes)
-                return prepared_request
-
-            kwargs["auth"] = auth
+            kwargs["auth"] = lambda req: self.add_auth(req, scopes)
         if "timeout" not in kwargs:
             kwargs["timeout"] = self.timeout_seconds
         return kwargs
@@ -135,7 +243,10 @@ class UTMClientSession(requests.Session):
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(kwargs)
 
-        return super().request(method, url, *args, **kwargs)
+        with self._closure_lock:
+            result = super().request(method, url, *args, **kwargs)
+            self._last_used = time.monotonic()
+            return result
 
     def get_prefix_url(self):
         return self._prefix_url
@@ -145,6 +256,31 @@ class UTMClientSession(requests.Session):
 
     def delete(self, *args, **kwargs):
         return super().delete(*args, **kwargs)
+
+
+class UTMClientSessionFactory:
+    _sessions: dict[tuple, UTMClientSession]
+
+    def __init__(self):
+        self._sessions = {}
+
+    def get_session(
+        self,
+        prefix_url: str,
+        auth_adapter: AuthAdapter | None = None,
+        timeout_seconds: float | None = None,
+    ) -> UTMClientSession:
+        key = (prefix_url, auth_adapter, timeout_seconds)
+        if key not in self._sessions:
+            self._sessions[key] = UTMClientSession(
+                prefix_url=prefix_url,
+                auth_adapter=auth_adapter,
+                timeout_seconds=timeout_seconds,
+            )
+        return self._sessions[key]
+
+
+utm_client_session_factory = UTMClientSessionFactory()
 
 
 class AsyncUTMTestSession:
@@ -192,10 +328,8 @@ class AsyncUTMTestSession:
                 raise ValueError(
                     "All tests must specify auth scope for all session requests.  Either specify as an argument for each individual HTTP call, or decorate the test with @default_scope."
                 )
-            headers = {}
-            for k, v in self.auth_adapter.get_headers(url, scopes).items():
-                headers[k] = v
-            kwargs["headers"] = headers
+            additional_headers = self.auth_adapter.get_headers(url, scopes)
+            kwargs["headers"] = additional_headers.headers
             if method == "PUT" and kwargs.get("data"):
                 kwargs["json"] = kwargs["data"]
                 del kwargs["data"]

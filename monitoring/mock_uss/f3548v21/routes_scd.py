@@ -13,22 +13,25 @@ from uas_standards.astm.f3548.v21.api import (
     PutOperationalIntentDetailsParameters,
 )
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
 from monitoring.mock_uss.auth import requires_scope
 from monitoring.mock_uss.f3548v21.flight_planning import (
     conflicts_with_flightrecords,
     op_intent_from_flightrecord,
 )
 from monitoring.mock_uss.flights.database import FlightRecord, db
+from monitoring.mock_uss.logging import query_type
 from monitoring.mock_uss.user_interactions.notifications import (
     UserNotification,
     UserNotificationType,
 )
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.clients.flight_planning.planning import Conflict
+from monitoring.monitorlib.fetch import QueryType
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents/<entityid>", methods=["GET"])
+@query_type(QueryType.F3548v21USSGetOperationalIntentDetails)
 @requires_scope(scd.SCOPE_SC)
 def scdsc_get_operational_intent_details(entityid: str):
     """Implements getOperationalIntentDetails in ASTM SCD API."""
@@ -37,12 +40,12 @@ def scdsc_get_operational_intent_details(entityid: str):
     tx = db.value
     flight = None
     for f in tx.flights.values():
-        if f and f.op_intent.reference.id == entityid:
+        if f and f.op_intent and f.op_intent.reference.id == entityid:
             flight = f
             break
 
     # If requested operational intent doesn't exist, return 404
-    if flight is None:
+    if flight is None or flight.op_intent is None:
         return (
             flask.jsonify(
                 ErrorResponse(
@@ -62,6 +65,7 @@ def scdsc_get_operational_intent_details(entityid: str):
 @webapp.route(
     "/mock/scd/uss/v1/operational_intents/<entityid>/telemetry", methods=["GET"]
 )
+@query_type(QueryType.F3548v21USSGetOperationalIntentTelemetry)
 @requires_scope(scd.SCOPE_CM_SA)
 def scdsc_get_operational_intent_telemetry(entityid: str):
     """Implements getOperationalIntentTelemetry in ASTM SCD API."""
@@ -70,7 +74,7 @@ def scdsc_get_operational_intent_telemetry(entityid: str):
     tx = db.value
     flight: FlightRecord | None = None
     for f in tx.flights.values():
-        if f and f.op_intent.reference.id == entityid:
+        if f and f.op_intent and f.op_intent.reference.id == entityid:
             flight = f
             break
 
@@ -85,7 +89,7 @@ def scdsc_get_operational_intent_telemetry(entityid: str):
             404,
         )
 
-    elif flight.op_intent.reference.state not in {
+    elif flight.op_intent and flight.op_intent.reference.state not in {
         OperationalIntentState.Contingent,
         OperationalIntentState.Nonconforming,
     }:
@@ -110,6 +114,7 @@ def scdsc_get_operational_intent_telemetry(entityid: str):
 
 
 @webapp.route("/mock/scd/uss/v1/operational_intents", methods=["POST"])
+@query_type(QueryType.F3548v21USSNotifyOperationalIntentDetailsChanged)
 @requires_scope(scd.SCOPE_SC)
 def scdsc_notify_operational_intent_details_changed():
     """Implements notifyOperationalIntentDetailsChanged in ASTM SCD API."""
@@ -127,12 +132,12 @@ def scdsc_notify_operational_intent_details_changed():
 
     if "operational_intent" in op_intent_data and op_intent_data.operational_intent:
         # An op intent is being created or modified; check if it conflicts with any flights we're managing
-        with db as tx:
+        with db.transact() as tx:
             if conflicts_with_flightrecords(
-                op_intent_data.operational_intent, tx.flights.values()
+                op_intent_data.operational_intent, list(tx.value.flights.values())
             ):
                 # Virtually notify user that another op intent conflicts with their flight
-                tx.flight_planning_notifications.append(
+                tx.value.flight_planning_notifications.append(
                     UserNotification(
                         type=UserNotificationType.DetectedConflict,
                         observed_at=StringBasedDateTime(arrow.utcnow().datetime),
@@ -146,6 +151,7 @@ def scdsc_notify_operational_intent_details_changed():
 
 
 @webapp.route("/mock/scd/uss/v1/reports", methods=["POST"])
+@query_type(QueryType.F3548v21USSMakeUssReport)
 @requires_scope(
     [scd.SCOPE_SC, scd.SCOPE_CP, scd.SCOPE_CM, scd.SCOPE_CM_SA, scd.SCOPE_AA]
 )

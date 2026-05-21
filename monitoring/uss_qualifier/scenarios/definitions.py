@@ -3,7 +3,12 @@ from implicitdict import ImplicitDict
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 
 TestScenarioTypeName = str
-"""This plain string represents a type of test scenario, expressed as a Python class name qualified relative to the `uss_qualifier` module"""
+"""This plain string represents a type of test scenario, expressed as a Python class name qualified relative to the
+`uss_qualifier` module.
+
+Note that equality between different TestScenarioTypeNames (whether they refer to the same type of test scenario) should
+be determined via are_scenario_types_equal as multiple TestScenarioTypeNames may resolve to the same test scenario type.
+"""
 
 
 class TestScenarioDeclaration(ImplicitDict):

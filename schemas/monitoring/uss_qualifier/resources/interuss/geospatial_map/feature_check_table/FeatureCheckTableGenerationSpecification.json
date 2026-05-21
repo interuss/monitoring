@@ -1,0 +1,35 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/interuss/geospatial_map/feature_check_table/FeatureCheckTableGenerationSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.interuss.geospatial_map.feature_check_table.FeatureCheckTableGenerationSpecification, as defined in monitoring/uss_qualifier/resources/interuss/geospatial_map/feature_check_table.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "dict_resources": {
+      "additionalProperties": {
+        "$ref": "../../../files/ExternalFile.json"
+      },
+      "description": "External dict-like content (.json, .yaml, .jsonnet) to load and make available to the script.\nKey defines the name of the resource accessible to the script.",
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "jsonnet_script": {
+      "$ref": "../../../files/ExternalFile.json",
+      "description": "Source of Jsonnet \"script\" that produces a FeatureCheckTable.\n\nThis converter may access resources with std.extVars(\"resource_name\").  Also, std.extVars(\"now\") returns the current\ndatetime as an ISO string.  The return value of the Jsonnet must be an object following the FeatureCheckTable\nschema.  `import` is not allowed.  The following additional functions are available:\n  * std.native(\"timestamp_of\")(s: str) -> float\n    * s: Datetime string\n    * Returns: Seconds past epoch"
+    }
+  },
+  "required": [
+    "jsonnet_script"
+  ],
+  "type": "object"
+}

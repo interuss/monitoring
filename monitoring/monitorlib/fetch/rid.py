@@ -4,8 +4,7 @@ import datetime
 from typing import Any
 
 import s2sphere
-import yaml
-from implicitdict import ImplicitDict, StringBasedDateTime
+from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from uas_standards.ansi_cta_2063_a import SerialNumber
 from uas_standards.astm.f3411 import v19, v22a
 from uas_standards.astm.f3411.v22a.api import (
@@ -13,7 +12,6 @@ from uas_standards.astm.f3411.v22a.api import (
     RIDHeight,
     VerticalAccuracy,
 )
-from yaml.representer import Representer
 
 from monitoring.monitorlib import fetch, geo, rid_v1, rid_v2
 from monitoring.monitorlib.fetch import Query, QueryType
@@ -24,8 +22,8 @@ from monitoring.monitorlib.rid import RIDVersion
 class ISA(ImplicitDict):
     """Version-independent representation of a F3411 identification service area."""
 
-    v19_value: v19.api.IdentificationServiceArea | None = None
-    v22a_value: v22a.api.IdentificationServiceArea | None = None
+    v19_value: Optional[v19.api.IdentificationServiceArea] = None
+    v22a_value: Optional[v22a.api.IdentificationServiceArea] = None
 
     @property
     def rid_version(self) -> RIDVersion:
@@ -152,16 +150,16 @@ class Position(ImplicitDict):
     time: datetime.datetime
     """Timestamp for the position."""
 
-    height: RIDHeight | None
+    height: Optional[RIDHeight]
 
-    accuracy_v: (
-        VerticalAccuracy | None
-    )  # Note: we use the enum defined in the v2 API as it is equivalent (and thus compatible) to the v19 one
+    accuracy_v: Optional[
+        VerticalAccuracy
+    ]  # Note: we use the enum defined in the v2 API as it is equivalent (and thus compatible) to the v19 one
     """Vertical error that is likely to be present in this reported position"""
 
-    accuracy_h: (
-        HorizontalAccuracy | None
-    )  # Note: we use the enum defined in the v2 API as it is equivalent (and thus compatible) to the v19 one
+    accuracy_h: Optional[
+        HorizontalAccuracy
+    ]  # Note: we use the enum defined in the v2 API as it is equivalent (and thus compatible) to the v19 one
     """Horizontal error that is likely to be present in this reported position."""
 
     @staticmethod
@@ -198,8 +196,8 @@ class Position(ImplicitDict):
 class Flight(ImplicitDict):
     """Version-independent representation of a F3411 flight."""
 
-    v19_value: v19.api.RIDFlight | None = None
-    v22a_value: v22a.api.RIDFlight | None = None
+    v19_value: Optional[v19.api.RIDFlight] = None
+    v22a_value: Optional[v22a.api.RIDFlight] = None
 
     @property
     def rid_version(self) -> RIDVersion:
@@ -488,8 +486,8 @@ class Flight(ImplicitDict):
 class FlightDetails(ImplicitDict):
     """Version-independent representation of details for a F3411 flight."""
 
-    v19_value: v19.api.RIDFlightDetails | None = None
-    v22a_value: v22a.api.RIDFlightDetails | None = None
+    v19_value: Optional[v19.api.RIDFlightDetails] = None
+    v22a_value: Optional[v22a.api.RIDFlightDetails] = None
 
     @property
     def rid_version(self) -> RIDVersion:
@@ -673,8 +671,8 @@ class FlightDetails(ImplicitDict):
 class Subscription(ImplicitDict):
     """Version-independent representation of a F3411 subscription."""
 
-    v19_value: v19.api.Subscription | None = None
-    v22a_value: v22a.api.Subscription | None = None
+    v19_value: Optional[v19.api.Subscription] = None
+    v22a_value: Optional[v22a.api.Subscription] = None
 
     @property
     def duration(self) -> datetime.timedelta | None:
@@ -734,7 +732,7 @@ class Subscription(ImplicitDict):
         return self.raw.version
 
     @property
-    def time_start(self) -> datetime:
+    def time_start(self) -> datetime.datetime:
         if self.rid_version == RIDVersion.f3411_19:
             return self.v19_value.time_start.datetime
         elif self.rid_version == RIDVersion.f3411_22a:
@@ -745,7 +743,7 @@ class Subscription(ImplicitDict):
             )
 
     @property
-    def time_end(self) -> datetime:
+    def time_end(self) -> datetime.datetime:
         if self.rid_version == RIDVersion.f3411_19:
             return self.v19_value.time_end.datetime
         elif self.rid_version == RIDVersion.f3411_22a:
@@ -793,8 +791,8 @@ class Subscription(ImplicitDict):
 
 
 class RIDQuery(ImplicitDict):
-    v19_query: Query | None = None
-    v22a_query: Query | None = None
+    v19_query: Optional[Query] = None
+    v22a_query: Optional[Query] = None
 
     @property
     def rid_version(self) -> RIDVersion:
@@ -1625,12 +1623,3 @@ def subscriptions(
         raise NotImplementedError(
             f"Cannot query DSS for subscriptions using RID version {rid_version}"
         )
-
-
-yaml.add_representer(FetchedISA, Representer.represent_dict)
-yaml.add_representer(FetchedISAs, Representer.represent_dict)
-yaml.add_representer(FetchedUSSFlights, Representer.represent_dict)
-yaml.add_representer(FetchedUSSFlightDetails, Representer.represent_dict)
-yaml.add_representer(FetchedFlights, Representer.represent_dict)
-yaml.add_representer(FetchedSubscription, Representer.represent_dict)
-yaml.add_representer(FetchedSubscriptions, Representer.represent_dict)

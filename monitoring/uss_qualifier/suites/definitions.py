@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.uss_qualifier.action_generators.definitions import (
     ActionGeneratorDefinition,
@@ -22,13 +22,13 @@ TestSuiteTypeName = FileReference
 
 
 class TestSuiteDeclaration(ImplicitDict):
-    suite_type: TestSuiteTypeName | None
+    suite_type: Optional[TestSuiteTypeName]
     """Type/location of test suite.  Usually expressed as the file name of the suite definition (without extension) qualified relative to the `uss_qualifier` folder"""
 
-    suite_definition: TestSuiteDefinition | None
+    suite_definition: Optional[TestSuiteDefinition]
     """Definition of test suite internal to the configuration -- specified instead of `suite_type`."""
 
-    resources: dict[ResourceID, ResourceID] | None
+    resources: Optional[dict[ResourceID, ResourceID]]
     """Mapping of the ID a resource will be known by in the child test suite -> the ID a resource is known by in the parent test suite.
 
     The child suite resource <key> is supplied by the parent suite resource <value>.
@@ -60,24 +60,12 @@ class TestSuiteDeclaration(ImplicitDict):
             return "<in-configuration definition>"
 
 
-class ReactionToFailure(str, Enum):
+class ReactionToFailure(StrEnum):
     Continue = "Continue"
     """If the test suite action fails, continue to the next action in that test suite"""
 
     Abort = "Abort"
     """If the test suite action fails, do not execute any more actions in that test suite"""
-
-
-class ActionType(str, Enum):
-    TestScenario = "test_scenario"
-    TestSuite = "test_suite"
-    ActionGenerator = "action_generator"
-
-    @staticmethod
-    def build_invalid_action_declaration() -> Exception:
-        return ValueError(
-            f"Exactly one of ({', '.join(a for a in ActionType)}) must be specified in a TestSuiteActionDeclaration"
-        )
 
 
 class TestSuiteActionDeclaration(ImplicitDict):
@@ -86,45 +74,53 @@ class TestSuiteActionDeclaration(ImplicitDict):
     Exactly one of `test_scenario`, `test_suite`, or `action_generator` must be specified.
     """
 
-    test_scenario: TestScenarioDeclaration | None
+    test_scenario: Optional[TestScenarioDeclaration]
     """If this field is populated, declaration of the test scenario to run"""
 
-    test_suite: TestSuiteDeclaration | None
+    test_suite: Optional[TestSuiteDeclaration]
     """If this field is populated, declaration of the test suite to run"""
 
-    action_generator: ActionGeneratorDefinition | None
+    action_generator: Optional[ActionGeneratorDefinition]
     """If this field is populated, declaration of a generator that will produce 0 or more test suite actions"""
 
     on_failure: ReactionToFailure = ReactionToFailure.Continue
     """What to do if this action fails"""
 
-    def get_action_type(self) -> ActionType:
-        matches = [v for v in ActionType if v in self and self[v]]
-        if len(matches) != 1:
-            raise ActionType.build_invalid_action_declaration()
-        return ActionType(matches[0])
+    @property
+    def invalid_type_error(self):
+        return ValueError(
+            "Invalid TestSuiteActionDeclaration: test_scenario, test_suite or action_generator must be specified"
+        )
 
     def get_resource_links(self) -> dict[ResourceID, ResourceID]:
-        action_type = self.get_action_type()
-        if action_type == ActionType.TestScenario and self.test_scenario:
+        if "test_scenario" in self and self.test_scenario:
             return self.test_scenario.resources or {}
-        elif action_type == ActionType.TestSuite and self.test_suite:
+        elif "test_suite" in self and self.test_suite:
             return self.test_suite.resources or {}
-        elif action_type == ActionType.ActionGenerator and self.action_generator:
+        elif "action_generator" in self and self.action_generator:
             return self.action_generator.resources
         else:
-            raise ActionType.build_invalid_action_declaration()
+            raise self.invalid_type_error
 
     def get_child_type(self) -> str:
-        action_type = self.get_action_type()
-        if action_type == ActionType.TestScenario and self.test_scenario:
+        if "test_scenario" in self and self.test_scenario:
             return self.test_scenario.scenario_type
-        elif action_type == ActionType.TestSuite and self.test_suite:
+        elif "test_suite" in self and self.test_suite:
             return self.test_suite.type_name
-        elif action_type == ActionType.ActionGenerator and self.action_generator:
+        elif "action_generator" in self and self.action_generator:
             return self.action_generator.generator_type
         else:
-            raise ActionType.build_invalid_action_declaration()
+            raise self.invalid_type_error
+
+    def get_action_type_name(self) -> str:
+        if "test_scenario" in self and self.test_scenario:
+            return "TestScenario"
+        elif "test_suite" in self and self.test_suite:
+            return "TestSuite"
+        elif "action_generator" in self and self.action_generator:
+            return "ActionGenerator"
+        else:
+            return "UnknownType"
 
 
 ResourceTypeNameSpecifyingOptional = ResourceTypeName
@@ -140,13 +136,13 @@ class TestSuiteDefinition(ImplicitDict):
     resources: dict[ResourceID, ResourceTypeNameSpecifyingOptional]
     """Enumeration of the resources used by this test suite"""
 
-    local_resources: dict[ResourceID, ResourceDeclaration] | None
+    local_resources: Optional[dict[ResourceID, ResourceDeclaration]]
     """Declarations of resources originating in this test suite.  If a resource is defined in both `resources` and `local_resources`, the resource in `local_resources` will be ignored (`resources` overrides `local_resources`)."""
 
     actions: list[TestSuiteActionDeclaration]
     """The actions to take when running the test suite.  Components will be executed in order."""
 
-    participant_verifiable_capabilities: list[ParticipantCapabilityDefinition] | None
+    participant_verifiable_capabilities: Optional[list[ParticipantCapabilityDefinition]]
     """Definitions of capabilities verified by this test suite for individual participants."""
 
     @staticmethod

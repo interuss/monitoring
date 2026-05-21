@@ -192,7 +192,7 @@ As a result, the DSS pool under test is failing to meet **[astm.f3548.v21.DSS002
 
 ## Cleanup
 
-### [Ensure that no subscriptions with the known test IDs remain in the DSS](../clean_workspace_subs.md)
+### [Ensure that no subscriptions with the known test IDs remain in the DSS](../clean_workspace_subs_during_cleanup.md)
 
 This includes the main test subscription used in this test, as well as the extra subscription
 used for testing the `manager` field sync, if the test is configured to test for it.

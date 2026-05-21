@@ -101,6 +101,14 @@ All Service Provider Role requirements can be verified by automation.
 * **astm.f3411.v22a.NET0260,Table1,23**
 * **astm.f3411.v22a.NET0260,Table1,24**
 
+#### Operator Altitude provider
+
+* **astm.f3411.v22a.NET0260,Table1,25**
+
+#### Operator Location Type provider
+
+* **astm.f3411.v22a.NET0260,Table1,26**
+
 #### Operational Status provider
 
 * **astm.f3411.v22a.NET0260,Table1,7**

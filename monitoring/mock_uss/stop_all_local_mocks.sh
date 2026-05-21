@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 # Find and change to repo root directory
 OS=$(uname)
 if [[ "$OS" == "Darwin" ]]; then

@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from typing import Protocol, get_type_hints
 
 from implicitdict import ImplicitDict
-from loguru import logger
 from lxml import etree
 from pykml.factory import KML_ElementMaker as kml
 from pykml.util import format_xml_with_cdata
+from uas_standards.astm.f3411.v22a import api as f3411v22a
 from uas_standards.astm.f3548.v21.api import (
     GetOperationalIntentDetailsResponse,
     QueryOperationalIntentReferenceParameters,
@@ -15,6 +15,7 @@ from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     UpsertFlightPlanRequest,
     UpsertFlightPlanResponse,
 )
+from uas_standards.interuss.automated_testing.rid.v1 import injection as rid_injection
 
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.fetch import Query, QueryType
@@ -28,13 +29,14 @@ from monitoring.monitorlib.kml.flight_planning import (
     upsert_flight_plan,
 )
 from monitoring.monitorlib.kml.generation import query_styles
+from monitoring.monitorlib.kml.rid import create_test, get_flights_v22a, rid_styles
 from monitoring.uss_qualifier.reports.sequence_view.summary_types import TestedScenario
 
 
 class QueryKMLRenderer(Protocol):
     def __call__(
         self, query: Query, req: ImplicitDict, resp: ImplicitDict
-    ) -> list[kml.Element]:
+    ) -> list[kml.Element]:  # pyright: ignore[reportInvalidTypeForm, reportReturnType]
         """Function that renders the provided query information into KML elements.
 
         Args:
@@ -44,6 +46,8 @@ class QueryKMLRenderer(Protocol):
 
         Returns: List of KML elements to include the folder for the query.
         """
+
+    __name__: str
 
 
 @dataclass
@@ -97,7 +101,11 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
             step_folder = kml.Folder(kml.name(step.name))
             case_folder.append(step_folder)
             for event in step.events:
-                if not event.query or "query_type" not in event.query:
+                if (
+                    not event.query
+                    or "query_type" not in event.query
+                    or not event.query.query_type
+                ):
                     continue  # Only visualize queries of known types
                 if event.query.query_type not in _query_kml_renderers:
                     continue  # Only visualize queries with renderers
@@ -114,18 +122,20 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                 )
                 step_folder.append(query_folder)
 
-                kwargs = {}
+                kwargs: dict[str, ImplicitDict | Query] = {}
                 if render_info.include_query:
                     kwargs["query"] = event.query
                 if render_info.request_type:
                     try:
+                        if not event.query.request.json:
+                            raise ValueError("No JSON in request")
+
                         kwargs["req"] = ImplicitDict.parse(
                             event.query.request.json,
                             render_info.request_type,
                         )
                     except ValueError as e:
                         msg = f"Error parsing request into {render_info.request_type.__name__}"
-                        logger.warning(msg)
                         query_folder.append(
                             kml.Folder(
                                 kml.name(msg),
@@ -138,13 +148,15 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                     and render_info.response_type
                 ):
                     try:
+                        if not event.query.response.json:
+                            raise ValueError("No JSON in response")
+
                         kwargs["resp"] = ImplicitDict.parse(
                             event.query.response.json,
                             render_info.response_type,
                         )
                     except ValueError as e:
                         msg = f"Error parsing response into {render_info.response_type.__name__}"
-                        logger.warning(msg)
                         query_folder.append(
                             kml.Folder(
                                 kml.name(msg),
@@ -153,7 +165,7 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                         )
                         continue
                 try:
-                    query_folder.extend(render_info.renderer(**kwargs))
+                    query_folder.extend(render_info.renderer(**kwargs))  # pyright: ignore[reportArgumentType]
                 except (TypeError, KeyError, ValueError) as e:
                     msg = f"Error rendering {render_info.renderer.__name__}"
                     query_folder.append(
@@ -164,13 +176,17 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
                     )
     doc = kml.kml(
         kml.Document(
-            *query_styles(), *f3548v21_styles(), *flight_planning_styles(), top_folder
+            *query_styles(),
+            *f3548v21_styles(),
+            *flight_planning_styles(),
+            *rid_styles(),
+            top_folder,
         )
     )
     return etree.tostring(format_xml_with_cdata(doc), pretty_print=True).decode("utf-8")
 
 
-@query_kml_renderer(QueryType.F3548v21DSSQueryOperationalIntentReferences)
+@query_kml_renderer(QueryType.F3548v21DSSQueryOperationalIntentReferences)  # pyright: ignore[reportArgumentType]
 def render_query_op_intent_references(
     req: QueryOperationalIntentReferenceParameters,
     resp: QueryOperationalIntentReferenceResponse,
@@ -178,13 +194,25 @@ def render_query_op_intent_references(
     return [op_intent_refs_query(req, resp)]
 
 
-@query_kml_renderer(QueryType.F3548v21USSGetOperationalIntentDetails)
+@query_kml_renderer(QueryType.F3548v21USSGetOperationalIntentDetails)  # pyright: ignore[reportArgumentType]
 def render_get_op_intent_details(resp: GetOperationalIntentDetailsResponse):
     return [full_op_intent(resp.operational_intent)]
 
 
-@query_kml_renderer(QueryType.InterUSSFlightPlanningV1UpsertFlightPlan)
+@query_kml_renderer(QueryType.InterUSSFlightPlanningV1UpsertFlightPlan)  # pyright: ignore[reportArgumentType]
 def render_flight_planning_upsert_flight_plan(
     req: UpsertFlightPlanRequest, resp: UpsertFlightPlanResponse
 ):
     return [upsert_flight_plan(req, resp)]
+
+
+@query_kml_renderer(QueryType.InterussRIDAutomatedTestingV1CreateTest)  # pyright: ignore[reportArgumentType]
+def render_rid_injection_create_test(
+    req: rid_injection.CreateTestParameters, resp: rid_injection.ChangeTestResponse
+):
+    return create_test(req, resp)
+
+
+@query_kml_renderer(QueryType.F3411v22aUSSSearchFlights)  # pyright: ignore[reportArgumentType]
+def render_f3411_22a_search_flights(query: Query, resp: f3411v22a.GetFlightsResponse):
+    return get_flights_v22a(query.request.url, resp)

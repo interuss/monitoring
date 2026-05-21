@@ -115,6 +115,8 @@ class USSAvailabilitySynchronization(TestScenario):
 
         self.end_test_case()
 
+        self.end_test_scenario()
+
     def _step_unknown_uss_reported_as_unknown(self):
         unknown_uss_id = "ThisIdShouldNotExistOnTheDSS"
         with self.check(

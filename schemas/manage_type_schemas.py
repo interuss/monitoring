@@ -4,7 +4,7 @@ import inspect
 import json
 import os
 import sys
-from typing import get_args, get_origin, get_type_hints
+from typing import Self, get_args, get_origin, get_type_hints
 
 import implicitdict
 import implicitdict.jsonschema
@@ -24,7 +24,7 @@ from monitoring.uss_qualifier.reports.report import TestRunReport
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
-class Action(str, enum.Enum):
+class Action(enum.StrEnum):
     Check = "Check"
     Generate = "Generate"
 
@@ -78,7 +78,8 @@ def _make_type_schemas(
                 pending_types.extend(get_args(pending_type))
             else:
                 if (
-                    issubclass(pending_type, ImplicitDict)
+                    pending_type != Self
+                    and issubclass(pending_type, ImplicitDict)
                     and fullname(pending_type) not in already_checked
                 ):
                     _make_type_schemas(
@@ -175,7 +176,7 @@ def main() -> int:
     changes = 0
 
     # Check for non-current schemas that need to be removed
-    for dirpath, _, filenames in os.walk(os.path.join(repo_root, "schemas")):
+    for dirpath, _, filenames in os.walk(os.path.join(repo_root, "schemas/monitoring")):
         for filename in filenames:
             rel_filename = os.path.relpath(
                 os.path.join(dirpath, filename), start=repo_root

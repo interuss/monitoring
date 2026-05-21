@@ -1,6 +1,5 @@
 import datetime
 
-import arrow
 import s2sphere
 from uas_standards.astm.f3411 import v19, v22a
 
@@ -44,23 +43,24 @@ class TokenValidation(GenericTestScenario):
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
         self._isa_id = id_generator.id_factory.make_id(ISASimple.ISA_TYPE)
         self._isa_version: str | None = None
-        self._isa = isa.specification
-
-        self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._isa = isa
+        self._isa_area = isa.s2_vertices()
 
         # correctly formed and signed using an unrecognized private key
         # (should cause requests to be rejected)
-        self._unsigned_token_session = infrastructure.UTMClientSession(
-            self._dss.base_url, InvalidTokenSignatureAuth()
+        self._unsigned_token_session = (
+            infrastructure.utm_client_session_factory.get_session(
+                self._dss.base_url, InvalidTokenSignatureAuth()
+            )
         )
         # Session that won't provide a token at all
         # (should cause requests to be rejected)
-        self._no_token_session = infrastructure.UTMClientSession(
+        self._no_token_session = infrastructure.utm_client_session_factory.get_session(
             self._dss.base_url, None
         )
 
     def run(self, context: ExecutionContext):
-        self._shift_isa_time_relative_to_now()
+        self._resolve_isa_time_bounds()
 
         self.begin_test_scenario(context)
 
@@ -86,10 +86,10 @@ class TokenValidation(GenericTestScenario):
 
         self.end_test_scenario()
 
-    def _shift_isa_time_relative_to_now(self):
-        now = arrow.utcnow().datetime
-        self._isa_start_time = self._isa.shifted_time_start(now)
-        self._isa_end_time = self._isa.shifted_time_end(now)
+    def _resolve_isa_time_bounds(self):
+        self._isa_start_time, self._isa_end_time = self._isa.resolved_time_bounds(
+            self.time_context.evaluate_now()
+        )
 
     def _wrong_auth_put(self):
         # Try to create an ISA with a read scope

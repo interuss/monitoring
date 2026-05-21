@@ -1,4 +1,7 @@
-from implicitdict import ImplicitDict, StringBasedDateTime
+from datetime import datetime
+
+import arrow
+from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 
 from monitoring.monitorlib import fetch
 from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerClient
@@ -14,7 +17,10 @@ from monitoring.monitorlib.clients.mock_uss.locality import (
     PutLocalityRequest,
 )
 from monitoring.monitorlib.fetch import QueryError, QueryType
-from monitoring.monitorlib.infrastructure import AuthAdapter, UTMClientSession
+from monitoring.monitorlib.infrastructure import (
+    AuthAdapter,
+    utm_client_session_factory,
+)
 from monitoring.monitorlib.locality import LocalityCode
 from monitoring.monitorlib.scd_automated_testing.scd_injection_api import (
     SCOPE_SCD_QUALIFIER_INJECT,
@@ -39,11 +45,16 @@ class MockUSSClient:
         timeout_seconds: float | None = None,
     ):
         self.base_url = base_url
-        self.session = UTMClientSession(base_url, auth_adapter, timeout_seconds)
+        self.session = utm_client_session_factory.get_session(
+            base_url, auth_adapter, timeout_seconds
+        )
         self.participant_id = participant_id
         v1_base_url = base_url + "/flight_planning/v1"
         self.flight_planner = V1FlightPlannerClient(
-            UTMClientSession(v1_base_url, auth_adapter, timeout_seconds), participant_id
+            utm_client_session_factory.get_session(
+                v1_base_url, auth_adapter, timeout_seconds
+            ),
+            participant_id,
         )
 
     def get_status(self) -> fetch.Query:
@@ -81,6 +92,22 @@ class MockUSSClient:
             query_type=QueryType.InterUSSMockUSSSetLocality,
             json=PutLocalityRequest(locality_code=locality_code),
         )
+
+    def get_clock(self) -> tuple[datetime | None, fetch.Query]:
+        query = fetch.query_and_describe(
+            self.session,
+            "GET",
+            "/clock",
+            participant_id=self.participant_id,
+            query_type=QueryType.InterUSSMockUSSGetClock,
+        )
+        try:
+            result = (
+                arrow.get(query.response.body).datetime if query.response.body else None
+            )
+        except arrow.ParserError:
+            result = None
+        return result, query
 
     # TODO: Add other methods to interact with the mock USS in other ways (like starting/stopping message signing data collection)
 
@@ -136,7 +163,7 @@ class MockUSSSpecification(ImplicitDict):
     participant_id: ParticipantID
     """Test participant responsible for this mock USS."""
 
-    timeout_seconds: float | None = None
+    timeout_seconds: Optional[float] = None
     """Number of seconds to allow for requests to this mock_uss instance.  If None, use default."""
 
 

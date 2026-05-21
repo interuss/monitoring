@@ -137,6 +137,6 @@ Checks that an OIR in the ACCEPTED state that is attached to an explicit subscri
 
 ## Cleanup
 
-### [Cleanup OIRs test step](./clean_workspace_op_intents.md)
+### [Cleanup OIRs test step](./clean_workspace_op_intents_during_cleanup.md)
 
-### [Cleanup Subscriptions test step](./clean_workspace_subs.md)
+### [Cleanup Subscriptions test step](./clean_workspace_subs_during_cleanup.md)

@@ -1,4 +1,3 @@
-import arrow
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -8,7 +7,6 @@ from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
 )
 from monitoring.monitorlib.fetch import QueryError
 from monitoring.monitorlib.geotemporal import Volume4D
-from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
@@ -82,16 +80,11 @@ class OpIntentReferenceStateTransitions(TestScenario):
         self._flight = templates["flight_1"]
 
     def run(self, context: ExecutionContext):
-        times = {
-            TimeDuringTest.StartOfTestRun: Time(context.start_time),
-            TimeDuringTest.StartOfScenario: Time(arrow.utcnow().datetime),
-        }
         self.begin_test_scenario(context)
         self.begin_test_case("Setup")
 
         self.begin_test_step("Ensure clean workspace")
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
-        ws_is_clean = self._ensure_clean_workspace(times)
+        ws_is_clean = self._ensure_clean_workspace()
         self.end_test_step()
         self.end_test_case()
 
@@ -99,13 +92,13 @@ class OpIntentReferenceStateTransitions(TestScenario):
             self.begin_test_case("Attempt unauthorized state creation")
 
             self.begin_test_step("Attempt direct creation with unauthorized state")
-            self._check_unauthorized_state_creation(times)
+            self._check_unauthorized_state_creation()
             self.end_test_step()
             self.end_test_case()
 
             self.begin_test_case("Attempt unauthorized state transitions")
 
-            self._steps_check_unauthorized_state_transitions(times)
+            self._steps_check_unauthorized_state_transitions()
 
             self.end_test_case()
         else:
@@ -116,8 +109,10 @@ class OpIntentReferenceStateTransitions(TestScenario):
 
         self.end_test_scenario()
 
-    def _get_extents(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
-        return self._flight.resolve(times).basic_information.area.bounding_volume
+    def _get_extents(self) -> Volume4D:
+        return self._flight.resolve(
+            self.time_context.evaluate_now()
+        ).basic_information.area.bounding_volume
 
     def _clean_known_op_intents_ids(self):
         with self.check(
@@ -153,12 +148,9 @@ class OpIntentReferenceStateTransitions(TestScenario):
                         query_timestamps=e.query_timestamps,
                     )
 
-    def _attempt_to_delete_remaining_op_intents(
-        self, times: dict[TimeDuringTest, Time]
-    ):
+    def _attempt_to_delete_remaining_op_intents(self, extent: Volume4D):
         """Search for op intents and attempt to delete them"""
 
-        extent = self._get_extents(times)
         with self.check(
             "Operational intent references can be searched for",
             self._pid,
@@ -196,19 +188,19 @@ class OpIntentReferenceStateTransitions(TestScenario):
                             query_timestamps=e.query_timestamps,
                         )
 
-    def _ensure_clean_workspace(self, times: dict[TimeDuringTest, Time]) -> bool:
+    def _ensure_clean_workspace(self) -> bool:
         """
         Tries to provide a clean workspace. If it fails to do so and the underlying check
         has a severity below HIGH, this function will return false.
 
         It will only return true if the workspace is clean.
         """
-        extent = self._get_extents(times)
+        extent = self._get_extents()
 
         # Delete what we know about
         self._clean_known_op_intents_ids()
         # Search and attempt deleting what may be found through search
-        self._attempt_to_delete_remaining_op_intents(times)
+        self._attempt_to_delete_remaining_op_intents(extent)
 
         with self.check(
             "Operational intent references can be searched for",
@@ -240,10 +232,9 @@ class OpIntentReferenceStateTransitions(TestScenario):
 
         return True
 
-    def _check_unauthorized_state_creation(self, times: dict[TimeDuringTest, Time]):
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
+    def _check_unauthorized_state_creation(self):
         # Reuse info from flight 1 for the third Operational Intent Ref
-        flight_3 = self._flight.resolve(times)
+        flight_3 = self._flight.resolve(self.time_context.evaluate_now())
         with self.check(
             "Direct Nonconforming state creation is forbidden", self._pid + self._uids
         ) as check:
@@ -290,7 +281,7 @@ class OpIntentReferenceStateTransitions(TestScenario):
                 # If we reach this point, we should fail:
                 check.record_failed(
                     "Could create operational intent using main credentials",
-                    details=f"DSS responded with {q.response.status_code} to attempt to create OI {self._oid_1}",
+                    details=f"DSS responded with {q.response.status_code} to attempt to create OI {self._oid}",
                     query_timestamps=[q.request.timestamp],
                 )
             except QueryError as e:
@@ -302,18 +293,15 @@ class OpIntentReferenceStateTransitions(TestScenario):
                         query_timestamps=e.query_timestamps,
                     )
 
-    def _steps_check_unauthorized_state_transitions(
-        self, times: dict[TimeDuringTest, Time]
-    ):
+    def _steps_check_unauthorized_state_transitions(self):
         """This checks for UNAUTHORIZED state transitions, that is, transitions that require the correct scope,
         but are not otherwise disallowed by the standard."""
 
         self.begin_test_step("Create an Accepted OIR")
 
-        times[TimeDuringTest.TimeOfEvaluation] = Time(arrow.utcnow().datetime)
         # Reuse info from flight 1 for the third Operational Intent Ref
         flight_extents = self._flight.resolve(
-            times
+            self.time_context.evaluate_now()
         ).basic_information.area.to_f3548v21()
 
         with self.check("Creation of an Accepted OIR is allowed", self._pid) as check:

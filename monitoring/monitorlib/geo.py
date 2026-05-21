@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import math
 import os
-from enum import Enum
+from enum import StrEnum
 
 import numpy as np
+import pyproj
 import s2sphere
 import shapely.geometry
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from s2sphere import LatLng
 from scipy.interpolate import RectBivariateSpline as Spline
 from uas_standards.astm.f3411.v19 import api as f3411v19
@@ -37,7 +38,7 @@ DISTANCE_TOLERANCE_M = 0.01
 COORD_TOLERANCE_DEG = 360 / EARTH_CIRCUMFERENCE_M * DISTANCE_TOLERANCE_M
 
 
-class DistanceUnits(str, Enum):
+class DistanceUnits(StrEnum):
     M = "M"
     """Meters"""
 
@@ -109,7 +110,7 @@ class Radius(ImplicitDict):
 
 
 class Polygon(ImplicitDict):
-    vertices: list[LatLngPoint] | None
+    vertices: Optional[list[LatLngPoint]]
 
     def vertex_average(self) -> LatLngPoint:
         lat = sum(p.lat for p in self.vertices) / len(self.vertices)
@@ -157,6 +158,28 @@ class Polygon(ImplicitDict):
             vertices=[ImplicitDict.parse(p, LatLngPoint) for p in vol.vertices]
         )
 
+    def is_equivalent(self, other: Polygon) -> bool:
+        if "vertices" not in self and "vertices" not in other:
+            return True
+        elif "vertices" not in self or "vertices" not in other:
+            return False
+
+        if self.vertices == other.vertices:
+            # covers both None and exact equality
+            return True
+        elif not self.vertices or not other.vertices:
+            # covers one being None
+            return False
+        elif len(self.vertices) != len(other.vertices):
+            return False
+
+        return all(
+            [
+                vertices[0].match(vertices[1])
+                for vertices in zip(self.vertices, other.vertices)
+            ]
+        )
+
 
 class Circle(ImplicitDict):
     center: LatLngPoint
@@ -180,8 +203,17 @@ class Circle(ImplicitDict):
             radius=ImplicitDict.parse(vol.radius, Radius),
         )
 
+    def is_equivalent(self, other: Circle) -> bool:
+        if not self.center.match(other.center):
+            return False
 
-class AltitudeDatum(str, Enum):
+        return (
+            abs(self.radius.in_meters() - other.radius.in_meters())
+            <= DISTANCE_TOLERANCE_M
+        )
+
+
+class AltitudeDatum(StrEnum):
     W84 = "W84"
     """WGS84 reference ellipsoid"""
 
@@ -207,16 +239,36 @@ class Altitude(ImplicitDict):
             units=fp_api.AltitudeUnits.M,
         )
 
+    def to_w84_m(self) -> float:
+        """This altitude expressed in WGS84 meters, if possible to convert to it."""
+        if self.reference != AltitudeDatum.W84:
+            raise NotImplementedError(
+                f"Cannot convert altitude with reference {self.reference} to WGS84 meters"
+            )
+        if self.units != DistanceUnits.M:
+            raise NotImplementedError(
+                f"Cannot convert altitude with units {self.units} to WGS84 meters"
+            )
+        return self.value
+
     @staticmethod
     def from_f3548v21(vol: f3548v21.Altitude | dict) -> Altitude:
         return ImplicitDict.parse(vol, Altitude)
 
+    def is_equivalent(self, other: Altitude) -> bool:
+        if self.reference != other.reference:
+            return False
+        return (
+            abs(self.units.in_meters(self.value) - other.units.in_meters(other.value))
+            <= DISTANCE_TOLERANCE_M
+        )
+
 
 class Volume3D(ImplicitDict):
-    outline_circle: Circle | None = None
-    outline_polygon: Polygon | None = None
-    altitude_lower: Altitude | None = None
-    altitude_upper: Altitude | None = None
+    outline_circle: Optional[Circle] = None
+    outline_polygon: Optional[Polygon] = None
+    altitude_lower: Optional[Altitude] = None
+    altitude_upper: Optional[Altitude] = None
 
     def altitude_lower_wgs84_m(self, default_value: float | None = None) -> float:
         if self.altitude_lower is None:
@@ -297,7 +349,7 @@ class Volume3D(ImplicitDict):
 
         return footprint1.intersects(footprint2)
 
-    def transform(self, transformation: Transformation):
+    def transform(self, transformation: Transformation) -> Volume3D:
         if (
             "relative_translation" in transformation
             and transformation.relative_translation
@@ -433,6 +485,38 @@ class Volume3D(ImplicitDict):
             return [v.as_s2sphere() for v in self.outline_polygon.vertices]
         else:
             return get_latlngrect_vertices(make_latlng_rect(self))
+
+    def is_equivalent(
+        self,
+        other: Volume3D,
+    ) -> bool:
+        if self.altitude_lower and other.altitude_lower:
+            if not self.altitude_lower.is_equivalent(other.altitude_lower):
+                return False
+        elif self.altitude_lower or other.altitude_lower:
+            return False
+
+        if self.altitude_upper and other.altitude_upper:
+            if not self.altitude_upper.is_equivalent(other.altitude_upper):
+                return False
+        elif self.altitude_upper or other.altitude_upper:
+            return False
+
+        if self.outline_polygon and other.outline_polygon:
+            if not self.outline_polygon.is_equivalent(other.outline_polygon):
+                return False
+        elif self.outline_circle and other.outline_circle:
+            if not self.outline_circle.is_equivalent(other.outline_circle):
+                return False
+        elif (
+            self.outline_circle
+            or self.outline_polygon
+            or other.outline_circle
+            or other.outline_polygon
+        ):
+            return False
+
+        return True
 
 
 def make_latlng_rect(area) -> s2sphere.LatLngRect:
@@ -682,6 +766,33 @@ def egm96_geoid_offset(p: s2sphere.LatLng) -> float:
     # listed -90 to 90.  Since latitude data are symmetric, we can simply
     # convert "-90 to 90" to "90 to -90" by inverting the requested latitude.
     return _egm96.ev(-lat, lng)
+
+
+def egm2008_geoid_offset(p: s2sphere.LatLng) -> float:
+    """Estimate the EGM2008 geoid height above the WGS84 ellipsoid.
+
+    Args:
+        p: Point where offset should be estimated.
+
+    Returns: Meters above WGS84 ellipsoid of the EGM2008 geoid at p.
+    """
+
+    if not pyproj.network.is_network_enabled():  # pyright:ignore[reportAttributeAccessIssue]
+        raise Exception("""
+To enable EGM2008 conversions, you must allow pyproj to download files to do the conversion. For that, please set PROJ_NETWORK=TRUE in your environment variables.
+
+Please ensure this comply with your policies, and avoid multiple downloads by mounting the directoy '/root/.local/share/proj/' to a docker volume.
+""")
+
+    transformer = pyproj.Transformer.from_crs(
+        "EPSG:4979",  # WGS 84 -- 3D
+        "EPSG:4326+3855",  # WGS 84 (2D) + EGM2008 height (vertical)
+        always_xy=True,
+    )
+
+    _, _, ortho_height = transformer.transform(p.lng().degrees, p.lat().degrees, 0)
+
+    return -ortho_height
 
 
 def center_of_mass(in_points: list[LatLng]) -> LatLng:

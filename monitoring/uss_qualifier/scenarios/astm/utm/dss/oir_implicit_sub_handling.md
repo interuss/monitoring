@@ -360,7 +360,7 @@ it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm
 
 ## Cleanup
 
-### [Remove OIRs created during this test](clean_workspace_op_intents.md)
+### [Remove OIRs created during this test](clean_workspace_op_intents_during_cleanup.md)
 
-### [Remove subscriptions created during this test](clean_workspace_subs.md)
+### [Remove subscriptions created during this test](clean_workspace_subs_during_cleanup.md)
 

@@ -6,7 +6,6 @@ import arrow
 from implicitdict import StringBasedDateTime
 from loguru import logger
 
-from monitoring.deployment_manager.infrastructure import Context
 from monitoring.monitorlib.fetch import (
     Query,
     QueryType,
@@ -66,7 +65,8 @@ def build_fake_scenarios_module():
             pass
 
     class TestScenarioB(_TestScenario):
-        pass
+        def run(self, context):
+            pass
 
     class NotATestScenarioC:
         pass
@@ -78,10 +78,12 @@ def build_fake_scenarios_module():
     fake_sub_module = _build_module("test.submodule")
 
     class TestScenarioSubA(_TestScenario):
-        pass
+        def run(self, context):
+            pass
 
     class TestScenarioSubB(_TestScenario):
-        pass
+        def run(self, context):
+            pass
 
     fake_sub_module.TestScenarioSubA = TestScenarioSubA
     fake_sub_module.TestScenarioSubB = TestScenarioSubB
@@ -90,7 +92,8 @@ def build_fake_scenarios_module():
     fake_subsub_module = _build_module("test.submodule.subsubmodule")
 
     class TestScenarioSubSubA(_TestScenario):
-        pass
+        def run(self, context):
+            pass
 
     fake_subsub_module.TestScenarioSubSubA = TestScenarioSubSubA
 
@@ -158,14 +161,17 @@ class HideLogOutput:
         logger.enable("monitoring.uss_qualifier.scenarios.scenario")
 
 
-def build_context(stop_fast: bool = False) -> Context:
+def build_context(stop_fast: bool = False):
     """Return a context that can be used with TestScenarios"""
 
     class DummyContext:
-        stop_fast = False
+        stop_fast_result = False
+
+        def stop_fast(self, case_name: str, step_name: str, check_name: str) -> bool:
+            return self.stop_fast_result
 
     dc = DummyContext()
-    dc.stop_fast = stop_fast
+    dc.stop_fast_result = stop_fast
 
     return dc
 

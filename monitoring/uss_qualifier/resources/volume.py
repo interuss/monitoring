@@ -20,7 +20,7 @@ class VolumeSpecification(ImplicitDict):
         """Returns the vertices of the 2D area represented by this volume specification, after application of the template's transformations.
         Note that if the underlying volume contains a Circle, the vertices of its bounding rectangle are returned.
         """
-        return self.template.resolve({}).volume.s2_vertices()
+        return self.template.resolve_3d().s2_vertices()
 
     def vertices(self) -> list[LatLngPoint]:
         """Returns the vertices of the 2D area represented by this volume specification, after application of the template's transformations.

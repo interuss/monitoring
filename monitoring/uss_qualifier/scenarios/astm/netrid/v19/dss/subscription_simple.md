@@ -387,11 +387,11 @@ If the DSS returns the deleted subscription in a search that covers the area it 
 
 The cleanup phase of this test scenario removes the subscription with the known test ID if it has not been removed before.
 
-#### 🛑 Subscription can be queried by ID check
+#### ⚠️ Subscription can be queried by ID check
 
 If the DSS cannot be queried for the existing test ID, the DSS is likely not implementing **[astm.f3411.v19.DSS0030,e](../../../../../requirements/astm/f3411/v19.md)** correctly.
 
-#### 🛑 Subscription can be deleted check
+#### ⚠️ Subscription can be deleted check
 
 An attempt to delete a subscription when the correct version is provided should succeed, otherwise the DSS is in violation of **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)**.
 

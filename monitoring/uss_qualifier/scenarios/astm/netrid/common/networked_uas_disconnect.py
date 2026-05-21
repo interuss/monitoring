@@ -91,6 +91,7 @@ class NetworkedUASDisconnect(GenericTestScenario):
             min_query_diagonal_m=config.min_query_diagonal,
             relevant_past_data_period=self._rid_version.realtime_period
             + config.max_propagation_latency.timedelta,
+            sleep=self.sleep,
         )
 
         evaluator = display_data_evaluator.DisconnectedUASObservationEvaluator(

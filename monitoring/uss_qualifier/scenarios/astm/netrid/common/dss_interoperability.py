@@ -3,12 +3,11 @@ import ipaddress
 import socket
 import uuid
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from urllib.parse import urlparse
 
 import s2sphere
 
-from monitoring.monitorlib.delay import sleep
 from monitoring.monitorlib.fetch.rid import ISA
 from monitoring.monitorlib.geo import get_latlngrect_vertices, make_latlng_rect
 from monitoring.uss_qualifier.resources import PlanningAreaResource
@@ -19,7 +18,6 @@ from monitoring.uss_qualifier.resources.astm.f3411.dss import (
 from monitoring.uss_qualifier.resources.dev.test_exclusions import (
     TestExclusionsResource,
 )
-from monitoring.uss_qualifier.resources.planning_area import PlanningAreaSpecification
 from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrapper
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -30,7 +28,7 @@ DEFAULT_LOWER_ALT_M = 20
 DEFAULT_UPPER_ALT_M = 400
 
 
-class EntityType(str, Enum):
+class EntityType(StrEnum):
     ISA = "ISA"
     Sub = "Sub"
 
@@ -55,7 +53,7 @@ class DSSInteroperability(GenericTestScenario):
     _allow_private_addresses: bool = False
     _context: dict[str, TestEntity]
     _area_vertices: list[s2sphere.LatLng]
-    _planning_area: PlanningAreaSpecification
+    _planning_area: PlanningAreaResource
 
     def __init__(
         self,
@@ -72,9 +70,11 @@ class DSSInteroperability(GenericTestScenario):
             if not dss.is_same_as(primary_dss_instance.dss_instance)
         ]
 
-        self._planning_area = planning_area.specification
+        self._planning_area = planning_area
         self._area_vertices = get_latlngrect_vertices(
-            make_latlng_rect(self._planning_area.volume)
+            make_latlng_rect(
+                self._planning_area.resolved_volume4d_with_times(None, None).volume
+            )
         )
         if test_exclusions is not None:
             self._allow_private_addresses = test_exclusions.allow_private_addresses
@@ -128,9 +128,20 @@ class DSSInteroperability(GenericTestScenario):
                 "DSS instance is publicly addressable", [dss.participant_id]
             ) as check:
                 parsed_url = urlparse(dss.base_url)
-                ip_addr = socket.gethostbyname(parsed_url.hostname)
+                try:
+                    if not parsed_url.hostname:
+                        raise ValueError(
+                            f"Invalid hostname from urlparse: {parsed_url.hostname}"
+                        )
+                    ip_addr = socket.gethostbyname(parsed_url.hostname)
+                except (socket.gaierror, ValueError) as e:
+                    ip_addr = None
+                    check.record_failed(
+                        summary=f"DSS host {parsed_url.netloc} could not be checked for public addressability",
+                        details=f"DSS (URL: {dss.base_url}, netloc: {parsed_url.netloc}), could not resolve to an IP because {str(e)}",
+                    )
 
-                if ipaddress.ip_address(ip_addr).is_private:
+                if ip_addr and ipaddress.ip_address(ip_addr).is_private:
                     if self._allow_private_addresses:
                         check.skip()
                     else:
@@ -565,7 +576,7 @@ class DSSInteroperability(GenericTestScenario):
         """Expired ISA automatically removed, ISA modifications
         accessible from all non-primary DSSs"""
 
-        sleep(
+        self.sleep(
             SHORT_WAIT_SEC,
             "ISA_1 needs to expire so we can check it is automatically removed",
         )
@@ -661,7 +672,7 @@ class DSSInteroperability(GenericTestScenario):
     def step12(self):
         """Expired Subscriptions don’t trigger subscription notification requests"""
 
-        sleep(
+        self.sleep(
             SHORT_WAIT_SEC,
             "Subscriptions needs to expire so we can check they don't trigger notifications",
         )
@@ -816,18 +827,14 @@ class DSSInteroperability(GenericTestScenario):
 
     def _default_params(self, duration: datetime.timedelta) -> dict:
         now = datetime.datetime.now().astimezone()
-
+        v4d = self._planning_area.resolved_volume4d_with_times(now, now + duration)
         return dict(
             area_vertices=self._area_vertices,
-            alt_lo=self._planning_area.volume.altitude_lower_wgs84_m(
-                DEFAULT_LOWER_ALT_M
-            ),
-            alt_hi=self._planning_area.volume.altitude_upper_wgs84_m(
-                DEFAULT_UPPER_ALT_M
-            ),
+            alt_lo=v4d.volume.altitude_lower_wgs84_m(DEFAULT_LOWER_ALT_M),
+            alt_hi=v4d.volume.altitude_upper_wgs84_m(DEFAULT_UPPER_ALT_M),
             start_time=now,
             end_time=now + duration,
-            uss_base_url=self._planning_area.get_base_url(),
+            uss_base_url=self._planning_area.specification.get_base_url(),
         )
 
     def cleanup(self):

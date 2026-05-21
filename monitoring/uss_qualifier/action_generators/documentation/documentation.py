@@ -14,7 +14,6 @@ from monitoring.uss_qualifier.action_generators.documentation.definitions import
     PotentialTestSuiteAction,
 )
 from monitoring.uss_qualifier.suites.definitions import (
-    ActionType,
     TestSuiteActionDeclaration,
 )
 
@@ -36,8 +35,7 @@ def list_potential_actions_for_action_generator_definition(
 def list_potential_actions_for_action_declaration(
     declaration: TestSuiteActionDeclaration,
 ) -> list[PotentialGeneratedAction]:
-    action_type = declaration.get_action_type()
-    if action_type == ActionType.TestScenario:
+    if "test_scenario" in declaration and declaration.test_scenario:
         return [
             PotentialGeneratedAction(
                 test_scenario=PotentialTestScenarioAction(
@@ -45,7 +43,7 @@ def list_potential_actions_for_action_declaration(
                 )
             )
         ]
-    elif action_type == ActionType.TestSuite:
+    elif "test_suite" in declaration and declaration.test_suite:
         if "suite_type" in declaration.test_suite and declaration.test_suite.suite_type:
             return [
                 PotentialGeneratedAction(
@@ -65,7 +63,7 @@ def list_potential_actions_for_action_declaration(
                     )
                 )
             ]
-    elif action_type == ActionType.ActionGenerator:
+    elif "action_generator" in declaration and declaration.action_generator:
         return [
             PotentialGeneratedAction(
                 action_generator=PotentialActionGeneratorAction(
@@ -74,4 +72,4 @@ def list_potential_actions_for_action_declaration(
             )
         ]
     else:
-        raise NotImplementedError(f"Action type {action_type} is not supported")
+        raise declaration.invalid_type_error

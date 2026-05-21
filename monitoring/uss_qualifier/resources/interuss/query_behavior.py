@@ -1,4 +1,4 @@
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 from loguru import logger
 
 from monitoring.monitorlib.fetch import settings
@@ -6,19 +6,19 @@ from monitoring.uss_qualifier.resources.resource import Resource
 
 
 class QueryBehaviorSpecification(ImplicitDict):
-    connect_timeout_seconds: float | None
+    connect_timeout_seconds: Optional[float]
     """Number of seconds to allow for establishing a connection.  Use 0 for no timeout."""
 
-    read_timeout_seconds: float | None
+    read_timeout_seconds: Optional[float]
     """Number of seconds to allow for a request to complete after establishing a connection.  Use 0 for no timeout."""
 
-    attempts: int | None
+    attempts: Optional[int]
     """Number of attempts to query when experiencing a retryable error like a timeout"""
 
-    add_request_id: bool | None
+    add_request_id: Optional[bool]
     """Whether to automatically add a `request_id` field to any request with a JSON body and no pre-existing `request_id` field"""
 
-    fake_netlocs: list[str] | None
+    fake_netlocs: Optional[list[str]]
     """Network locations well-known to be fake and for which a request should fail immediately without being attempted."""
 
 

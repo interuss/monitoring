@@ -25,7 +25,7 @@ Defined in [parent suite](prod_probe.md) [`suites.astm.utm.prod_probe`](./prod_p
     <th><a href="../../README.md#checked-in">Checked in</a></th>
   </tr>
   <tr>
-    <td rowspan="47" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
+    <td rowspan="49" style="vertical-align:top;"><a href="../../../requirements/astm/f3548/v21.md">astm<br>.f3548<br>.v21</a></td>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0005,1</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/dss/authentication/authentication_validation.md">ASTM SCD DSS: Interfaces authentication</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions_deletion.md">ASTM SCD DSS: Subscription and entity deletion interaction</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions.md">ASTM SCD DSS: Subscription and entity interaction</a></td>
@@ -198,12 +198,22 @@ Defined in [parent suite](prod_probe.md) [`suites.astm.utm.prod_probe`](./prod_p
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,A2-7-2,3a</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/synchronization/constraint_ref_synchronization.md">ASTM SCD DSS: Constraint Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,A2-7-2,3b</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/synchronization/constraint_ref_synchronization.md">ASTM SCD DSS: Constraint Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,A2-7-2,3c</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/constraint_ref_synchronization.md">ASTM SCD DSS: Constraint Reference Synchronization</a></td>
+  </tr>
+  <tr>
+    <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,A2-7-2,3d</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/constraint_ref_synchronization.md">ASTM SCD DSS: Constraint Reference Synchronization</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0210,A2-7-2,4a</a></td>

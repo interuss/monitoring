@@ -1,4 +1,9 @@
-from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
+from implicitdict import (
+    ImplicitDict,
+    Optional,
+    StringBasedDateTime,
+    StringBasedTimeDelta,
+)
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 
 from monitoring.uss_qualifier.resources.files import ExternalFile
@@ -30,7 +35,7 @@ class AdjacentCircularFlightsSimulatorConfiguration(ImplicitDict):
     relative to a time close to the time of test.
     """
 
-    random_seed: int | None = 12345
+    random_seed: Optional[int] = 12345
     """Pseudorandom seed that should be used, or specify None to use default Random."""
 
     minx: float = 7.4735784530639648
@@ -63,7 +68,7 @@ class FlightDataKMLFileConfiguration(ImplicitDict):
     relative to a time close to the time of test.
     """
 
-    random_seed: int | None = 12345
+    random_seed: Optional[int] = 12345
     """Pseudorandom seed that should be used, or specify None to use default Random."""
 
     kml_file: ExternalFile
@@ -74,13 +79,13 @@ class FlightDataSpecification(ImplicitDict):
     flight_start_delay: StringBasedTimeDelta = StringBasedTimeDelta("15s")
     """Amount of time between starting the test and commencement of flights"""
 
-    record_source: ExternalFile | None
+    record_source: Optional[ExternalFile]
     """When this field is populated, flight record data will be loaded directly from this file"""
 
-    kml_source: FlightDataKMLFileConfiguration | None
+    kml_source: Optional[FlightDataKMLFileConfiguration]
     """When this field is populated, flight data will be generated from a KML file"""
 
-    adjacent_circular_flights_simulation_source: (
-        AdjacentCircularFlightsSimulatorConfiguration | None
-    )
+    adjacent_circular_flights_simulation_source: Optional[
+        AdjacentCircularFlightsSimulatorConfiguration
+    ]
     """When this field is populated, flight data will be simulated with the AdjacentCircularFlightsSimulator"""

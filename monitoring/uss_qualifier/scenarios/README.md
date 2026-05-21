@@ -42,6 +42,10 @@ Test scenarios will usually be enumerated/identified/created by mapping a list o
 
 See [CONTRIBUTING.md](../../../CONTRIBUTING.md#ussqualifier-test-scenarios) for more information on how to develop test scenarios.
 
+### Delays
+
+Scenarios should avoid delays when possible as automated tests are more valuable when they run more quickly.  When delays are necessary, only use `<TestScenario>.sleep` -- do not use `time.sleep` nor `monitorlib.delay.sleep` nor any other means to cause an intentional delay.  The use of `<TestScenario>.sleep` allows delays to be more easily tracked and audited as they are often a prime target of interest when attempting to reduce automated testing run time.
+
 ## Resources
 
 Most test scenarios will require [test resources](../resources/README.md) (like NetRID telemetry to inject, NetRID service providers under test, etc) usually customized to the ecosystem in which the tests are being performed.  A test scenario declares what kind of resource(s) it requires, and a test suite identifies which available resources should be used to fulfill each test scenario's needs.

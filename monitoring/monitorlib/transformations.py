@@ -1,22 +1,22 @@
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 
 class RelativeTranslation(ImplicitDict):
     """Offset a geo feature by a particular amount."""
 
-    meters_east: float | None
+    meters_east: Optional[float]
     """Number of meters east to translate."""
 
-    meters_north: float | None
+    meters_north: Optional[float]
     """Number of meters north to translate."""
 
-    meters_up: float | None
+    meters_up: Optional[float]
     """Number of meters upward to translate."""
 
-    degrees_east: float | None
+    degrees_east: Optional[float]
     """Number of degrees of longitude east to translate."""
 
-    degrees_north: float | None
+    degrees_north: Optional[float]
     """Number of degrees of latitude north to translate."""
 
 
@@ -33,6 +33,6 @@ class AbsoluteTranslation(ImplicitDict):
 class Transformation(ImplicitDict):
     """A transformation to apply to a geotemporal feature.  Exactly one field must be specified."""
 
-    relative_translation: RelativeTranslation | None
+    relative_translation: Optional[RelativeTranslation]
 
-    absolute_translation: AbsoluteTranslation | None
+    absolute_translation: Optional[AbsoluteTranslation]

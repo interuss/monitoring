@@ -112,4 +112,4 @@ in violation of **[astm.f3548.v21.OPIN0035](../../../../requirements/astm/f3548/
 If an operational intent reference can be deleted by a client which did not create it, the DSS implementation is
 in violation of **[astm.f3548.v21.OPIN0035](../../../../requirements/astm/f3548/v21.md)**.
 
-## [Cleanup](clean_workspace_op_intents.md)
+## [Cleanup](clean_workspace_op_intents_during_cleanup.md)

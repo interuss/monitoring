@@ -7,7 +7,9 @@ v1:
         netrid_observation_evaluation_configuration: {$ref: 'library/resources.yaml#/netrid_observation_evaluation_configuration'}
         utm_client_identity: {$ref: 'library/resources.yaml#/utm_client_identity'}
         id_generator: {$ref: 'library/resources.yaml#/id_generator'}
+        kentland_service_area_volume: {$ref: 'library/resources.yaml#/kentland_service_area_volume'}
         kentland_service_area: {$ref: 'library/resources.yaml#/kentland_service_area'}
+        kentland_planning_area_volume: {$ref: 'library/resources.yaml#/kentland_planning_area_volume'}
         kentland_planning_area: {$ref: 'library/resources.yaml#/kentland_planning_area'}
         au_problematically_big_area: {$ref: 'library/resources.yaml#/au_problematically_big_area'}
 
@@ -64,6 +66,7 @@ v1:
           uss1: sp_dp_dss
           uss2: sp_dss
     sequence_view: {}
+    timing_report: {}
   validation:
     criteria:
       - $ref: ./library/validation.yaml#/execution_error_none
@@ -73,4 +76,4 @@ v1:
         pass_condition:
           elements:
             count:
-              equal_to: 2 # 2 DatastoreAccess scenarios are skipped
+              equal_to: 3 # 2 DatastoreAccess scenarios are skipped, 1 F3411-22a system versions

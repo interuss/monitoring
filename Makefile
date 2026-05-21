@@ -10,10 +10,10 @@ else
 endif
 
 .PHONY: format
-format: image
-	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run ruff format
-	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run ruff check --fix
-	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run basedpyright
+format: image-dev
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring-dev uv run ruff format
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring-dev uv run ruff check --fix
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring-dev uv run basedpyright
 	cd monitoring && make format
 	cd schemas && make format
 
@@ -23,16 +23,16 @@ lint: shell-lint python-lint
 	cd schemas && make lint
 
 .PHONY: check-hygiene
-check-hygiene: image lint validate-uss-qualifier-docs
+check-hygiene: image-dev lint validate-uss-qualifier-docs
 	test/repo_hygiene/repo_hygiene.sh
 
 .PHONY: python-lint
-python-lint: image
+python-lint: image-dev
 
-	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run ruff format --check || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
-	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run ruff check || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring-dev uv run ruff format --check || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring-dev uv run ruff check || (echo "Linter didn't succeed. You can use the following command to fix python linter issues: make format" && exit 1)
 	shasum -b -a 256 .basedpyright/baseline.json > /tmp/baseline-before.hash
-	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring uv run basedpyright || (echo "Typing check didn't succeed. Please fix issue and run make format to validate changes." && exit 1)
+	docker run --rm -u ${USER_GROUP} -v "$(CURDIR):/app" -w /app interuss/monitoring-dev uv run basedpyright || (echo "Typing check didn't succeed. Please fix issue and run make format to validate changes." && exit 1)
 	shasum -b -a 256 .basedpyright/baseline.json > /tmp/baseline-after.hash
 	diff /tmp/baseline-before.hash /tmp/baseline-after.hash || (echo "Basedpyright baseline changed, probably dues to issues that have been cleanup. Use the following command to update baseline: make format" && exit 1)
 
@@ -42,7 +42,7 @@ validate-uss-qualifier-docs:
 
 .PHONY: shell-lint
 shell-lint:
-	find . -name '*.sh' ! -path "./interfaces/*" | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck
+	find . -name '*.sh' ! -path "./interfaces/*" | git check-ignore --stdin --no-index -n -v --non-matching | grep '^::' | cut -f2 | xargs docker run --rm -v "$(CURDIR):/monitoring" -w /monitoring koalaman/shellcheck:v0.11.0
 
 .PHONY: unit-test
 unit-test:
@@ -52,12 +52,16 @@ unit-test:
 image:
 	cd monitoring && make image
 
+.PHONY: image-dev
+image-dev:
+	cd monitoring && make image-dev
+
 tag:
 	scripts/tag.sh $(UPSTREAM_OWNER)/monitoring/v$(VERSION)
 
 .PHONY: start-locally
 start-locally:
-	build/dev/run_locally.sh up -d
+	build/dev/run_locally.sh up --wait
 
 .PHONY: probe-locally
 probe-locally:

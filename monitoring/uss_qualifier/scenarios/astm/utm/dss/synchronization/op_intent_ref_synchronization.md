@@ -134,4 +134,4 @@ If a DSS returns an operational intent reference that was previously successfull
 either one of the primary DSS or the DSS that returned the operational intent reference is in violation of **[astm.f3548.v21.DSS0210,2a](../../../../../requirements/astm/f3548/v21.md)**
 and **[astm.f3548.v21.DSS0210,A2-7-2,3a](../../../../../requirements/astm/f3548/v21.md)**.
 
-## [Cleanup](../clean_workspace_op_intents.md)
+## [Cleanup](../clean_workspace_op_intents_during_cleanup.md)

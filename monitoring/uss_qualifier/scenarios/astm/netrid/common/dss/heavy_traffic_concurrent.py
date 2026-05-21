@@ -3,7 +3,6 @@ import typing
 from datetime import UTC, datetime
 
 import aiohttp
-import arrow
 import requests
 from uas_standards.astm.f3411 import v19, v22a
 
@@ -66,8 +65,8 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
 
         self._isa_versions: dict[str, str] = {}
-        self._isa = isa.specification
-        self._isa_area = [vertex.as_s2sphere() for vertex in self._isa.footprint]
+        self._isa = isa
+        self._isa_area = isa.s2_vertices()
 
         # Note that when the test scenario ends prematurely, we may end up with an unclosed session.
         self._async_session = AsyncUTMTestSession(
@@ -90,7 +89,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         )
 
     def run(self, context: ExecutionContext):
-        self._shift_isa_time_relative_to_now()
+        self._resolve_isa_time_bounds()
 
         self.begin_test_scenario(context)
 
@@ -129,10 +128,10 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         self.end_test_case()
         self.end_test_scenario()
 
-    def _shift_isa_time_relative_to_now(self):
-        now = arrow.utcnow().datetime
-        self._isa_params["start_time"] = self._isa.shifted_time_start(now)
-        self._isa_params["end_time"] = self._isa.shifted_time_end(now)
+    def _resolve_isa_time_bounds(self):
+        start, end = self._isa.resolved_time_bounds(self.time_context.evaluate_now())
+        self._isa_params["start_time"] = start
+        self._isa_params["end_time"] = end
 
     def _delete_isas_if_exists(self):
         """Delete test ISAs if they exist. Done sequentially."""
@@ -207,6 +206,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 "GET",
                 url,
             )
+            # TODO: Do not rely on a prepared request that is not actually used in order to create the Query RequestDescription; instead build it from the request actually made
             prep = self._dss.client.prepare_request(r)
             t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
@@ -243,6 +243,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 url,
                 json=payload,
             )
+            # TODO: Do not rely on a prepared request that is not actually used in order to create the Query RequestDescription; instead build it from the request actually made
             prep = self._dss.client.prepare_request(r)
             t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)
@@ -273,6 +274,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 "DELETE",
                 url,
             )
+            # TODO: Do not rely on a prepared request that is not actually used in order to create the Query RequestDescription; instead build it from the request actually made
             prep = self._dss.client.prepare_request(r)
             t0 = datetime.now(UTC)
             req_descr = describe_request(prep, t0)

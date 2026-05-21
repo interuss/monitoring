@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import json
 import os
+from functools import wraps
 
 import flask
 import loguru
 from flask import Request, Response
 from loguru import logger
 
-from monitoring.mock_uss import webapp
+from monitoring.mock_uss.app import webapp
+from monitoring.monitorlib.fetch import QueryType
 
 
 def _get_request_id(req: Request) -> str:
@@ -96,3 +98,33 @@ def end_request_log(e: BaseException | None) -> None:
     request_logger = get_request_logger()
     if request_logger is not None:
         request_logger.remove_from_loguru()
+
+
+def query_type(q_type: QueryType):
+    """Decorator for a view function that indicates which QueryType it handles."""
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        # Attach the attribute directly to the wrapper function object
+        setattr(wrapper, "query_type", q_type)
+        return wrapper
+
+    return decorator
+
+
+def get_query_type() -> QueryType | None:
+    """Get the query type handled by the active Flask view function (as indicated by the query_type decorator)."""
+    if (
+        flask.request.endpoint
+        and flask.request.endpoint in flask.current_app.view_functions
+    ):
+        handler_func = flask.current_app.view_functions[flask.request.endpoint]
+
+        q_type = getattr(handler_func, "query_type", None)
+
+        return q_type
+    else:
+        return None

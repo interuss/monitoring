@@ -30,6 +30,6 @@ If a mock USS instance doesn't respond properly to a request to change its local
 
 ## Cleanup
 
-### 🛑 Restore locality check
+### ⚠️ Restore locality check
 
 If uss_qualifier cannot restore a mock_uss instance's locality to its old value when rolling back incomplete locality changes, **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../requirements/interuss/mock_uss/hosted_instance.md)** is not met.

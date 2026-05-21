@@ -4,7 +4,7 @@ import math
 from datetime import datetime, timedelta
 
 import s2sphere as s2sphere
-from implicitdict import ImplicitDict, StringBasedTimeDelta
+from implicitdict import ImplicitDict, Optional, StringBasedTimeDelta
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.interuss.automated_testing.flight_planning.v1 import api as fp_api
 from uas_standards.interuss.automated_testing.geospatial_map.v1 import (
@@ -13,39 +13,51 @@ from uas_standards.interuss.automated_testing.geospatial_map.v1 import (
 from uas_standards.interuss.automated_testing.scd.v1 import api as interuss_scd_api
 
 from monitoring.monitorlib import geo
-from monitoring.monitorlib.geo import Altitude, Circle, LatLngPoint, Polygon, Volume3D
-from monitoring.monitorlib.temporal import TestTime, Time, TimeDuringTest
+from monitoring.monitorlib.geo import (
+    Altitude,
+    AltitudeDatum,
+    Circle,
+    DistanceUnits,
+    LatLngPoint,
+    Polygon,
+    Volume3D,
+)
+from monitoring.monitorlib.temporal import (
+    TestTime,
+    TestTimeContext,
+    Time,
+)
 from monitoring.monitorlib.transformations import Transformation
+
+TIME_TOLERANCE = timedelta(milliseconds=10)
 
 
 class Volume4DTemplate(ImplicitDict):
-    outline_polygon: Polygon | None = None
+    outline_polygon: Optional[Polygon] = None
     """Polygonal 2D outline/footprint of the specified area.  May not be defined if outline_circle is defined."""
 
-    outline_circle: Circle | None = None
+    outline_circle: Optional[Circle] = None
     """Circular outline/footprint of the specified area.  May not be defined if outline_polygon is defined."""
 
-    start_time: TestTime | None = None
+    start_time: Optional[TestTime] = None
     """The time at which the virtual user may start using the specified geospatial area for their flight.  May not be defined if duration and end_time are defined."""
 
-    end_time: TestTime | None = None
+    end_time: Optional[TestTime] = None
     """The time at which the virtual user will be finished using the specified geospatial area for their flight.  May not be defined if duration and start_time are defined."""
 
-    duration: StringBasedTimeDelta | None = None
+    duration: Optional[StringBasedTimeDelta] = None
     """If only one of start_time and end_time is specified, then the other time should be separated from the specified time by this amount.  May not be defined in both start_time and end_time are defined."""
 
-    altitude_lower: Altitude | None = None
+    altitude_lower: Optional[Altitude] = None
     """The minimum altitude at which the virtual user will fly while using this volume for their flight."""
 
-    altitude_upper: Altitude | None = None
+    altitude_upper: Optional[Altitude] = None
     """The maximum altitude at which the virtual user will fly while using this volume for their flight."""
 
-    transformations: list[Transformation] | None = None
+    transformations: Optional[list[Transformation]] = None
     """If specified, transform this volume according to these transformations in order."""
 
-    def resolve(self, times: dict[TimeDuringTest, Time]) -> Volume4D:
-        """Resolve Volume4DTemplate into concrete Volume4D."""
-        # Make 3D volume
+    def _get_volume(self) -> Volume3D:
         kwargs = {}
         if self.outline_circle is not None:
             kwargs["outline_circle"] = self.outline_circle
@@ -55,18 +67,27 @@ class Volume4DTemplate(ImplicitDict):
             kwargs["altitude_lower"] = self.altitude_lower
         if self.altitude_upper is not None:
             kwargs["altitude_upper"] = self.altitude_upper
-        volume = Volume3D(**kwargs)
+        return Volume3D(**kwargs)
 
-        # Make 4D volume
-        kwargs = {"volume": volume}
+    def resolve_3d(self) -> Volume3D:
+        """Resolve Volume4DTemplate into concrete Volume3D."""
+        result = self._get_volume()
+        if self.transformations:
+            for xform in self.transformations:
+                result = result.transform(xform)
+        return result
 
+    def resolve_times(
+        self, context: TestTimeContext
+    ) -> tuple[Time | None, Time | None]:
+        """Resolve Volume4DTemplate into concrete temporal bounds (start, end)"""
         if self.start_time is not None:
-            time_start = self.start_time.resolve(times)
+            time_start = self.start_time.resolve(context)
         else:
             time_start = None
 
         if self.end_time is not None:
-            time_end = self.end_time.resolve(times)
+            time_end = self.end_time.resolve(context)
         else:
             time_end = None
 
@@ -84,26 +105,55 @@ class Volume4DTemplate(ImplicitDict):
             if time_end is None:
                 time_end = Time(time_start.datetime + self.duration.timedelta)
 
+        return time_start, time_end
+
+    def resolve(self, context: TestTimeContext) -> Volume4D:
+        """Resolve Volume4DTemplate into concrete Volume4D."""
+        volume = self.resolve_3d()
+
+        # Make 4D volume
+        kwargs = {"volume": volume}
+
+        time_start, time_end = self.resolve_times(context)
+
         if time_start is not None:
             kwargs["time_start"] = time_start
         if time_end is not None:
             kwargs["time_end"] = time_end
 
-        result = Volume4D(**kwargs)
-
-        if self.transformations:
-            for xform in self.transformations:
-                result = result.transform(xform)
-
-        return result
+        return Volume4D(**kwargs)
 
 
 class Volume4D(ImplicitDict):
     """Generic representation of a 4D volume, usable across multiple standards and formats."""
 
     volume: Volume3D
-    time_start: Time | None = None
-    time_end: Time | None = None
+    time_start: Optional[Time] = None
+    time_end: Optional[Time] = None
+
+    def is_equivalent(
+        self,
+        other: Volume4D,
+    ) -> bool:
+        if not self.volume.is_equivalent(other.volume):
+            return False
+
+        if (self.time_start is None) != (other.time_start is None):
+            return False
+        if self.time_start and other.time_start:
+            if (
+                abs(self.time_start.datetime - other.time_start.datetime)
+                > TIME_TOLERANCE
+            ):
+                return False
+
+        if (self.time_end is None) != (other.time_end is None):
+            return False
+        if self.time_end and other.time_end:
+            if abs(self.time_end.datetime - other.time_end.datetime) > TIME_TOLERANCE:
+                return False
+
+        return True
 
     def offset_time(self, dt: timedelta) -> Volume4D:
         kwargs = {"volume": self.volume}
@@ -272,6 +322,26 @@ class Volume4DCollection(list[Volume4D]):
                 f"Cannot iadd {type(other).__name__} to {type(self).__name__}"
             )
 
+    def is_equivalent(
+        self,
+        other: Volume4DCollection,
+    ) -> bool:
+        if len(self) != len(other):
+            return False
+
+        # different order is acceptable
+        other_copy = list(other)
+        for vol in self:
+            found = False
+            for i, other_vol in enumerate(other_copy):
+                if vol.is_equivalent(other_vol):
+                    other_copy.pop(i)
+                    found = True
+                    break
+            if not found:
+                return False
+        return True
+
     @property
     def time_start(self) -> Time | None:
         return (
@@ -286,6 +356,26 @@ class Volume4DCollection(list[Volume4D]):
             Time(max(v.time_end.datetime for v in self))
             if all("time_end" in v and v.time_end for v in self)
             else None
+        )
+
+    @property
+    def altitude_lower(self) -> Altitude | None:
+        return Altitude(
+            value=min(v.volume.altitude_lower_wgs84_m() for v in self)
+            if all(v.volume.altitude_lower_wgs84_m() is not None for v in self)
+            else None,
+            reference=AltitudeDatum.W84,
+            units=DistanceUnits.M,
+        )
+
+    @property
+    def altitude_upper(self) -> Altitude | None:
+        return Altitude(
+            value=min(v.volume.altitude_upper_wgs84_m() for v in self)
+            if all(v.volume.altitude_upper_wgs84_m() is not None for v in self)
+            else None,
+            reference=AltitudeDatum.W84,
+            units=DistanceUnits.M,
         )
 
     def offset_times(self, dt: timedelta) -> Volume4DCollection:

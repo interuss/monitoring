@@ -14,7 +14,7 @@ fi
 cd "${BASEDIR}/.." || exit 1
 
 cd monitoring
-make image
+make image-dev
 cd ..
 
 action=${1:?The action must be specified as --check or --generate}
@@ -24,5 +24,5 @@ docker run --name type_schema_manager \
   --rm \
   -u "$(id -u):$(id -g)" \
   -v "$(pwd):/app" \
-  interuss/monitoring \
+  interuss/monitoring-dev \
   uv run /app/schemas/manage_type_schemas.py "${action}"

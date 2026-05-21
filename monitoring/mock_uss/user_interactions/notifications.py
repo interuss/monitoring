@@ -1,11 +1,11 @@
-from enum import Enum
+from enum import StrEnum
 
 from implicitdict import ImplicitDict, StringBasedDateTime
 
 from monitoring.monitorlib.clients.flight_planning.planning import Conflict
 
 
-class UserNotificationType(str, Enum):
+class UserNotificationType(StrEnum):
     """Type of notification the virtual user received"""
 
     CausedConflict = "CausedConflict"

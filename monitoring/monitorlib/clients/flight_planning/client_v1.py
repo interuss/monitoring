@@ -100,6 +100,9 @@ class V1FlightPlannerClient(FlightPlannerClient):
             ),
         )
 
+        if "as_planned" in resp and resp.as_planned:
+            response.as_planned = FlightInfo.from_flight_plan(resp.as_planned)
+
         # If we know that the flight was successfully not created
         # (the server explicitly refused to), we remove it from set of flights.
         # That the only case when we do this, if we recieve no response after a
