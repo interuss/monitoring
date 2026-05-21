@@ -38,7 +38,7 @@ class NumberGeneratorModifierResource(
 ):
     """Modifier for a NumberGeneratorResource. Used for unit tests."""
 
-    def modify(self, key: int) -> NumberGeneratorResource:
+    def provide_resource_for(self, key: int) -> NumberGeneratorResource:
 
         # 'Clone' the resource with new specs
         return NumberGeneratorResource(
