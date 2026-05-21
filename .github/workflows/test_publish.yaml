@@ -1,0 +1,29 @@
+# Based on https://github.com/denkiwakame/py-tiny-pkg/blob/main/.github/workflows/testpub.yml
+
+name: publish-test
+
+on:
+  push:
+    tags:
+    - "*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: setup-python
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.x"
+        architecture: "x64"
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+    - name: build sdist(tarball) and bdist(wheel) to dist/
+      run: uv build
+    - name: publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
