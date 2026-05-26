@@ -105,6 +105,8 @@ def _find_specifications(
             _find_specifications(member, repo, already_checked)
         elif inspect.isclass(member):
             if issubclass(member, Resource) and member != Resource:
+                if inspect.isabstract(member):
+                    continue
                 spec_type = get_args(member.__orig_bases__[0])[0]
                 repo[fullname(spec_type)] = spec_type
             elif issubclass(member, ActionGenerator) and member != ActionGenerator:
