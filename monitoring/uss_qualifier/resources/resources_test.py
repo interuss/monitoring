@@ -72,7 +72,7 @@ class TestModifierResource(unittest.TestCase):
 
         resource = resources["modifier"]
 
-        assert resource.provide_resource_for(0).build_ids() == [
+        assert resource.provide_resource_for(index=0).build_ids() == [
             42,
             43,
             44,
@@ -84,7 +84,7 @@ class TestModifierResource(unittest.TestCase):
             50,
             51,
         ]
-        assert resource.provide_resource_for(1).build_ids() == [
+        assert resource.provide_resource_for(index=1).build_ids() == [
             52,
             53,
             54,
@@ -106,7 +106,7 @@ class TestModifierResource(unittest.TestCase):
 
         resource = resources["modifier"]
 
-        assert resource.provide_resource_for(0).build_ids() == [
+        assert resource.provide_resource_for(index=0).build_ids() == [
             42,
             43,
             44,
@@ -118,7 +118,7 @@ class TestModifierResource(unittest.TestCase):
             50,
             51,
         ]
-        assert resource.provide_resource_for(1).build_ids() == [
+        assert resource.provide_resource_for(index=1).build_ids() == [
             62,
             63,
             64,

@@ -2,7 +2,7 @@ from implicitdict import ImplicitDict
 
 from monitoring.uss_qualifier.resources.resource import (
     Resource,
-    ResourceModifyingResource,
+    ResourceProvidingResource,
 )
 
 
@@ -32,19 +32,37 @@ class NumberGeneratorModifierSpecification(ImplicitDict):
 
 
 class NumberGeneratorModifierResource(
-    ResourceModifyingResource[
-        NumberGeneratorModifierSpecification, int, NumberGeneratorResource
+    ResourceProvidingResource[
+        NumberGeneratorModifierSpecification, NumberGeneratorResource
     ]
 ):
     """Modifier for a NumberGeneratorResource. Used for unit tests."""
 
-    def provide_resource_for(self, key: int) -> NumberGeneratorResource:
+    _spec: NumberGeneratorModifierSpecification
+    base_resource: NumberGeneratorResource
 
-        # 'Clone' the resource with new specs
+    def __init__(
+        self,
+        specification: NumberGeneratorModifierSpecification,
+        resource_origin: str,
+        base_resource: NumberGeneratorResource,
+    ):
+        super().__init__(specification, resource_origin)
+        self._spec = specification
+        self.base_resource = base_resource
+
+    def _modified_resource_origin(self, index: int) -> str:
+        return f"Modification {index} of {self.base_resource.resource_origin} by {self.resource_origin}"
+
+    def provide_resource_for(self, **kwargs) -> NumberGeneratorResource:
+        index = kwargs["index"]
+        assert isinstance(index, int)
+
+        # 'Clone' the base resource with new specs
         return NumberGeneratorResource(
             NumberGeneratorSpecification(
                 base_id=self.base_resource._spec.base_id
-                + self._spec.shift_interval * key,
+                + self._spec.shift_interval * index,
             ),
-            resource_origin=self._modified_resource_origin(str(key)),
+            resource_origin=self._modified_resource_origin(index),
         )

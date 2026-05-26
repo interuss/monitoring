@@ -41,62 +41,22 @@ class Resource[SpecificationType: ImplicitDict](ABC):
 
 
 ResourceType = TypeVar("ResourceType", bound=Resource)
-SpawnKeyType = TypeVar("SpawnKeyType")
 
 
 class ResourceProvidingResource[
     SpecificationType: ImplicitDict,
-    SpawnKeyType,
     ResourceType: Resource,
 ](Resource[SpecificationType], ABC):
     """Resource capable of spawning ResourceType resources according to a desired key, such as an index."""
 
     @abstractmethod
-    def provide_resource_for(self, key: SpawnKeyType) -> ResourceType:
-        """Provide a resource corresponding with the provided key."""
+    def provide_resource_for(self, **kwargs) -> ResourceType:
+        """Provide a resource corresponding with the provided key(s) (e.g., index, USS pair, etc)."""
         raise NotImplementedError()
 
     def _provided_resource_origin(self, key_name: str) -> str:
         """Method that should generally be used to describe the origin of a resource provided by this resource."""
         return f"Resource for {key_name} provided by {self.resource_origin}"
-
-
-class ResourceModifyingResource[
-    SpecificationType: ImplicitDict,
-    SpawnKeyType,
-    ResourceType: Resource,
-](ResourceProvidingResource[SpecificationType, SpawnKeyType, ResourceType], ABC):
-    """Resource capable of providing ResourceType resources by modifying a template/base
-    ResourceType resource according to a desired key, such as an index.
-
-    Useful for deconflicting multiple copies of a resource so many different variants of the same
-    test can be performed without conflicting with each other.
-    """
-
-    _spec: SpecificationType
-    base_resource: ResourceType
-
-    def __init__(
-        self,
-        specification: SpecificationType,
-        resource_origin: str,
-        base_resource: ResourceType,
-    ):
-        super().__init__(specification, resource_origin)
-        self._spec = specification
-        self.base_resource = base_resource
-
-    def _modified_resource_origin(self, modification_name: str) -> str:
-        """Method that should generally be used to describe the origin of a resource provided by this resource."""
-        return f"Modification {modification_name} of {self.base_resource.resource_origin} by {self.resource_origin}"
-
-    @abstractmethod
-    def provide_resource_for(self, key: SpawnKeyType) -> ResourceType:
-        """Provide a resource formed by modifying the template/base resource according to the provided key.
-
-        Different `key` values generally produce different variants; the same `key` should produce equivalent results.
-        """
-        raise NotImplementedError()
 
 
 class MissingResourceError(ValueError):
