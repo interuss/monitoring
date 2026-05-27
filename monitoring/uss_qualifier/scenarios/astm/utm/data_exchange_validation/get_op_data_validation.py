@@ -1,4 +1,3 @@
-import arrow
 from uas_standards.astm.f3548.v21.api import EntityID
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -52,6 +51,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
 )
 from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioCannotContinueError,
+    ScenarioDidNotStopError,
     TestScenario,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -148,13 +148,25 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         flight_2 = self.flight_2.resolve(self.time_context.evaluate_now())
 
         self.begin_test_step("mock_uss plans flight 2")
+        t0, query = self.mock_uss.get_clock()
+        self.record_query(query)
+        with self.check(
+            "mock_uss clock time retrievable", self.mock_uss.participant_id
+        ) as check:
+            if t0 is None:
+                check.record_failed(
+                    "mock_uss clock time was not retrievable",
+                    f"mock_uss responded {query.response.status_code} without a valid clock time; is mock_uss running the latest version of `monitoring`?",
+                    queries=query,
+                )
+                raise ScenarioDidNotStopError(check)
+        flight_2_planning_time = Time(t0)
         with OpIntentValidator(
             self,
             self.mock_uss_client,
             self.dss,
             flight_2.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
-            flight_2_planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id, as_planned = plan_flight(
                 self,
                 self.mock_uss_client,
@@ -170,13 +182,25 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         flight_1 = self.flight_1.resolve(self.time_context.evaluate_now())
 
         self.begin_test_step("tested_uss plans flight 1")
+        t1, query = self.mock_uss.get_clock()
+        self.record_query(query)
+        with self.check(
+            "mock_uss clock time retrievable", self.mock_uss.participant_id
+        ) as check:
+            if t1 is None:
+                check.record_failed(
+                    "mock_uss clock time was not retrievable",
+                    f"mock_uss responded {query.response.status_code} without a valid clock time; is mock_uss running the latest version of `monitoring`?",
+                    queries=query,
+                )
+                raise ScenarioDidNotStopError(check)
+        flight_1_planning_time = Time(t1)
         with OpIntentValidator(
             self,
             self.tested_uss_client,
             self.dss,
             flight_1.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
-            flight_1_planning_time = Time(arrow.utcnow().datetime)
             plan_res, self.flight_1_id, as_planned = plan_flight(
                 self,
                 self.tested_uss_client,
@@ -239,13 +263,25 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.begin_test_step(
             "mock_uss plans flight 2, sharing invalid operational intent data"
         )
+        t2, query = self.mock_uss.get_clock()
+        self.record_query(query)
+        with self.check(
+            "mock_uss clock time retrievable", self.mock_uss.participant_id
+        ) as check:
+            if t2 is None:
+                check.record_failed(
+                    "mock_uss clock time was not retrievable",
+                    f"mock_uss responded {query.response.status_code} without a valid clock time; is mock_uss running the latest version of `monitoring`?",
+                    queries=query,
+                )
+                raise ScenarioDidNotStopError(check)
+        flight_2_planning_time = Time(t2)
         with OpIntentValidator(
             self,
             self.mock_uss_client,
             self.dss,
             flight_info.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
-            flight_2_planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_2_id, as_planned = plan_flight(
                 self,
                 self.mock_uss_client,
@@ -264,13 +300,25 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
         flight_1 = self.flight_1.resolve(self.time_context.evaluate_now())
         self.begin_test_step("tested_uss attempts to plan flight 1, expect failure")
+        t3, query = self.mock_uss.get_clock()
+        self.record_query(query)
+        with self.check(
+            "mock_uss clock time retrievable", self.mock_uss.participant_id
+        ) as check:
+            if t3 is None:
+                check.record_failed(
+                    "mock_uss clock time was not retrievable",
+                    f"mock_uss responded {query.response.status_code} without a valid clock time; is mock_uss running the latest version of `monitoring`?",
+                    queries=query,
+                )
+                raise ScenarioDidNotStopError(check)
+        flight_1_planning_time = Time(t3)
         with OpIntentValidator(
             self,
             self.tested_uss_client,
             self.dss,
             flight_1.basic_information.area.bounding_volume.to_f3548v21(),
         ) as validator:
-            flight_1_planning_time = Time(arrow.utcnow().datetime)
             _, self.flight_1_id, _ = submit_flight(
                 self,
                 "Plan should fail",

@@ -89,6 +89,10 @@ Notifications of relevant flights will be sent to tested_uss using this subscrip
 
 ### Mock_uss plans Flight 2 test step
 
+#### 🛑 mock_uss clock time retrievable check
+
+We need to know mock_uss's clock time to later request observed interactions after the planning time. If mock_uss's current time isn't retrievable, the mock_uss provider's mock_uss does not meet **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+
 #### [Plan Flight 2](../../../../flight_planning/plan_flight_intent.md)
 
 The test driver successfully plans Flight 2 via the mock uss, as there is no conflict with Flight 1.
@@ -105,6 +109,10 @@ Check a notification was received by tested_uss for Flight 2, with Flight 1's su
 This test case verifies that relevant notifications for modified operational intents are received through subscription of an operational intent in Activated state.
 
 ### Mock_uss modifies planned Flight 2 test step
+
+#### 🛑 mock_uss clock time retrievable check
+
+We need to know mock_uss's clock time to later request observed interactions after the planning time. If mock_uss's current time isn't retrievable, the mock_uss provider's mock_uss does not meet **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
 
 #### [Modify Flight 2](../../../../flight_planning/modify_planned_flight_intent.md)
 

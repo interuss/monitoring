@@ -1,4 +1,5 @@
 from collections.abc import Callable, Iterable
+from datetime import timedelta
 from numbers import Number
 from types import NoneType
 from typing import Any
@@ -6,6 +7,9 @@ from typing import Any
 import arrow
 import bc_jsonpath_ng
 from implicitdict import StringBasedDateTime
+from uas_standards.astm.f3548.v21.constants import (
+    TimeSyncMaxDifferentialSeconds,
+)
 
 from monitoring.monitorlib.clients.flight_planning.flight_info import FlightInfo
 from monitoring.monitorlib.dicts import JSONAddress, JSONPath
@@ -79,7 +83,10 @@ def times_not_later_than_specified_or_now(
         return
     now = arrow.utcnow().datetime
     latest = now if as_requested.datetime < now else as_requested.datetime
-    if as_planned.datetime > latest:
+    # Different servers can have different clocks.  Use max time skew from ASTM F3548-21.
+    if as_planned.datetime > latest + timedelta(
+        seconds=2 * TimeSyncMaxDifferentialSeconds
+    ):
         check.record_failed(
             f"Planned time {as_planned} is too late",
             details=f"Requested time no later than {as_requested} (or now, at {now}) for {address}, but planned time was {as_planned} which is later than the latest time allowed of {latest}",
