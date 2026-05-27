@@ -1,20 +1,24 @@
 from implicitdict import ImplicitDict
 
-from monitoring.uss_qualifier.resources.resource import Resource, ResourceModifier
+from monitoring.uss_qualifier.resources.resource import (
+    Resource,
+    ResourceProvidingResource,
+    SupportedKeysNotSpecifiedError,
+)
 
 
-class TestModifierSpecification(ImplicitDict):
+class NumberGeneratorSpecification(ImplicitDict):
     base_id: int
 
 
-class TestModifierResource(Resource[TestModifierSpecification]):
-    """TestModifierResource is a simple resource returing 10 number, starting from base_id. Used for unit tests."""
+class NumberGeneratorResource(Resource[NumberGeneratorSpecification]):
+    """A simple resource returing 10 numbers, starting from base_id. Used for unit tests."""
 
-    _spec: TestModifierSpecification
+    _spec: NumberGeneratorSpecification
 
     def __init__(
         self,
-        specification: TestModifierSpecification,
+        specification: NumberGeneratorSpecification,
         resource_origin: str,
     ):
         super().__init__(specification, resource_origin)
@@ -24,22 +28,45 @@ class TestModifierResource(Resource[TestModifierSpecification]):
         return list(range(self._spec.base_id, self._spec.base_id + 10))
 
 
-class TestModifierModifierSpecification(ImplicitDict):
+class NumberGeneratorModifierSpecification(ImplicitDict):
     shift_interval: int
 
 
-class TestModifierModifierResource(
-    ResourceModifier[TestModifierModifierSpecification, TestModifierResource]
+class NumberGeneratorModifierResource(
+    ResourceProvidingResource[
+        NumberGeneratorModifierSpecification, NumberGeneratorResource
+    ]
 ):
-    """Modifier for a TestModifierResource. Used for unit tests."""
+    """Modifier for a NumberGeneratorResource. Used for unit tests."""
 
-    def adjust(self, index: int) -> TestModifierResource:
+    _spec: NumberGeneratorModifierSpecification
+    base_resource: NumberGeneratorResource
 
-        # 'Clone' the resource with new specs
-        return TestModifierResource(
-            TestModifierSpecification(
+    def __init__(
+        self,
+        specification: NumberGeneratorModifierSpecification,
+        resource_origin: str,
+        base_resource: NumberGeneratorResource,
+    ):
+        super().__init__(specification, resource_origin)
+        self._spec = specification
+        self.base_resource = base_resource
+
+    def _modified_resource_origin(self, index: int) -> str:
+        return f"Modification {index} of {self.base_resource.resource_origin} by {self.resource_origin}"
+
+    def provide_resource_for(self, **kwargs) -> NumberGeneratorResource:
+        if "index" not in kwargs:
+            raise SupportedKeysNotSpecifiedError("index not specified")
+        index = kwargs["index"]
+        if not isinstance(index, int):
+            raise SupportedKeysNotSpecifiedError("index is not an int")
+
+        # 'Clone' the base resource with new specs
+        return NumberGeneratorResource(
+            NumberGeneratorSpecification(
                 base_id=self.base_resource._spec.base_id
                 + self._spec.shift_interval * index,
             ),
-            resource_origin=self.base_resource.resource_origin,
+            resource_origin=self._modified_resource_origin(index),
         )

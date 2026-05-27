@@ -43,34 +43,26 @@ class Resource[SpecificationType: ImplicitDict](ABC):
 ResourceType = TypeVar("ResourceType", bound=Resource)
 
 
-class ResourceModifier[SpecificationType: ImplicitDict, ResourceType](
-    Resource[SpecificationType], ABC
-):
-    """A specifc type of resources that can return adjusted an resource that shall unique based on a specifc 'index'.
-    The underlying resource shall be a dependency named 'base_resource'.
+class SupportedKeysNotSpecifiedError(ValueError):
+    """Error when a ResourceProvidingResource is asked to provide_resource_for, but the supported key(s) are not specified correctly."""
 
-    Concrete subclass must implement 'adjust' as needed.
-    """
+    pass
 
-    _spec: SpecificationType
-    base_resource: ResourceType
 
-    def __init__(
-        self,
-        specification: SpecificationType,
-        resource_origin: str,
-        base_resource: ResourceType,
-    ):
-        super().__init__(specification, resource_origin)
-        self._spec = specification
-        self.base_resource = base_resource
+class ResourceProvidingResource[
+    SpecificationType: ImplicitDict,
+    ResourceType: Resource,
+](Resource[SpecificationType], ABC):
+    """Resource capable of spawning ResourceType resources according to a desired key, such as an index."""
 
     @abstractmethod
-    def adjust(self, index: int) -> ResourceType:
-        """
-        Return a new instance of the base resource, modified to be unique based on 'index' value.
-        """
-        pass
+    def provide_resource_for(self, **kwargs) -> ResourceType:
+        """Provide a resource corresponding with the provided key(s) (e.g., index, USS pair, etc)."""
+        raise NotImplementedError()
+
+    def _provided_resource_origin(self, key_name: str) -> str:
+        """Method that should generally be used to describe the origin of a resource provided by this resource."""
+        return f"Resource for {key_name} provided by {self.resource_origin}"
 
 
 class MissingResourceError(ValueError):
