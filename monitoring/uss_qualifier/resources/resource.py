@@ -43,6 +43,12 @@ class Resource[SpecificationType: ImplicitDict](ABC):
 ResourceType = TypeVar("ResourceType", bound=Resource)
 
 
+class SupportedKeysNotSpecifiedError(ValueError):
+    """Error when a ResourceProvidingResource is asked to provide_resource_for, but the supported key(s) are not specified correctly."""
+
+    pass
+
+
 class ResourceProvidingResource[
     SpecificationType: ImplicitDict,
     ResourceType: Resource,

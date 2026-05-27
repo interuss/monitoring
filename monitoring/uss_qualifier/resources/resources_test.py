@@ -1,5 +1,7 @@
 import unittest
 
+import pytest
+
 from monitoring.uss_qualifier.resources.definitions import (
     ResourceDeclaration,
     ResourceID,
@@ -8,7 +10,10 @@ from monitoring.uss_qualifier.resources.dev.test_modifier import (
     NumberGeneratorModifierSpecification,
     NumberGeneratorSpecification,
 )
-from monitoring.uss_qualifier.resources.resource import create_resources
+from monitoring.uss_qualifier.resources.resource import (
+    SupportedKeysNotSpecifiedError,
+    create_resources,
+)
 
 
 class TestModifierResource(unittest.TestCase):
@@ -71,6 +76,12 @@ class TestModifierResource(unittest.TestCase):
         assert "modifier" in resources
 
         resource = resources["modifier"]
+
+        with pytest.raises(SupportedKeysNotSpecifiedError):
+            resource.provide_resource_for(key=0)
+
+        with pytest.raises(SupportedKeysNotSpecifiedError):
+            resource.provide_resource_for(index="foo")
 
         assert resource.provide_resource_for(index=0).build_ids() == [
             42,

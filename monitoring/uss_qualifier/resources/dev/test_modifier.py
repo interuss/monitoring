@@ -3,6 +3,7 @@ from implicitdict import ImplicitDict
 from monitoring.uss_qualifier.resources.resource import (
     Resource,
     ResourceProvidingResource,
+    SupportedKeysNotSpecifiedError,
 )
 
 
@@ -55,8 +56,11 @@ class NumberGeneratorModifierResource(
         return f"Modification {index} of {self.base_resource.resource_origin} by {self.resource_origin}"
 
     def provide_resource_for(self, **kwargs) -> NumberGeneratorResource:
+        if "index" not in kwargs:
+            raise SupportedKeysNotSpecifiedError("index not specified")
         index = kwargs["index"]
-        assert isinstance(index, int)
+        if not isinstance(index, int):
+            raise SupportedKeysNotSpecifiedError("index is not an int")
 
         # 'Clone' the base resource with new specs
         return NumberGeneratorResource(
