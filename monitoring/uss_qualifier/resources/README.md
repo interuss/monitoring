@@ -31,3 +31,15 @@ Resources for a given test configuration are all declared in a single global res
     * Example: `netrid.flight_data.nominal_flights`, which would provide flight data for nominal flights which could be injected into Service Providers under test.
 2. Every type of test resource must define a "resource specification", which is a serializable data type that fully defines how to create an instance of that resource type.
 3. Every type of test resource must define how to create an instance of the test resource from an instance of the resource specification.
+
+
+## Resource-modifying resources
+
+A `ResourceModifyingResource` is a resource capable of spawning other resources by modifying a template/base resource according to a desired key, such as an index.  This is useful when a test scenario needs multiple unique-but-related instances of a resource (e.g., distinct flights derived from a single base flight).
+
+To use a `ResourceModifyingResource`:
+
+1. Declare it like any other resource, with its `base_resource` dependency pointing to the resource to be modified.
+2. When a variant of the base/template resource is needed, call `modify(key)` to obtain a modified copy of the base resource. Different `key` values generally produce different variants; the same `key` should produce equivalent results.
+
+The base/template resource itself remains available as `base_resource` on the modifier.

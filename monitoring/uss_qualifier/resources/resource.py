@@ -1,5 +1,5 @@
-from abc import ABC
-from typing import TypeVar, get_type_hints
+from abc import ABC, abstractmethod
+from typing import TypeVar, get_args, get_origin, get_type_hints
 
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -41,6 +41,28 @@ class Resource[SpecificationType: ImplicitDict](ABC):
 
 
 ResourceType = TypeVar("ResourceType", bound=Resource)
+
+
+class SupportedKeysNotSpecifiedError(ValueError):
+    """Error when a ResourceProvidingResource is asked to provide_resource_for, but the supported key(s) are not specified correctly."""
+
+    pass
+
+
+class ResourceProvidingResource[
+    SpecificationType: ImplicitDict,
+    ResourceType: Resource,
+](Resource[SpecificationType], ABC):
+    """Resource capable of spawning ResourceType resources according to a desired key, such as an index."""
+
+    @abstractmethod
+    def provide_resource_for(self, **kwargs) -> ResourceType:
+        """Provide a resource corresponding with the provided key(s) (e.g., index, USS pair, etc)."""
+        raise NotImplementedError()
+
+    def _provided_resource_origin(self, key_name: str) -> str:
+        """Method that should generally be used to describe the origin of a resource provided by this resource."""
+        return f"Resource for {key_name} provided by {self.resource_origin}"
 
 
 class MissingResourceError(ValueError):
@@ -156,6 +178,20 @@ def get_resource_types(
         )
 
     constructor_signature = get_type_hints(resource_type.__init__)
+
+    # Resolve generic type vars
+    typevar_map: dict = {}
+    for base in getattr(resource_type, "__orig_bases__", ()):
+        params = getattr(get_origin(base), "__type_params__", None) or getattr(
+            get_origin(base), "__parameters__", ()
+        )
+        for param, arg in zip(params, get_args(base)):
+            if not isinstance(arg, TypeVar):
+                typevar_map[param] = arg
+    constructor_signature = {
+        name: typevar_map.get(t, t) for name, t in constructor_signature.items()
+    }
+
     specification_type = None
     for arg_name, arg_type in constructor_signature.items():
         if arg_name == "return":
