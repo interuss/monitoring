@@ -1,5 +1,6 @@
 import re
 from collections.abc import Callable, Iterable
+from datetime import datetime
 
 from implicitdict import StringBasedDateTime
 from uas_standards.astm.f3548.v21 import api
@@ -11,11 +12,30 @@ from monitoring.monitorlib.clients.mock_uss.interactions import (
 )
 from monitoring.monitorlib.fetch import Query, QueryError, QueryType
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
+from monitoring.uss_qualifier.scenarios.scenario import (
+    ScenarioDidNotStopError,
+    TestScenario,
+)
+
+
+def get_clock(scenario: TestScenario, mock_uss: MockUSSClient) -> datetime:
+    t0, query = mock_uss.get_clock()
+    scenario.record_query(query)
+    with scenario.check(
+        "mock_uss clock time retrievable", mock_uss.participant_id
+    ) as check:
+        if t0 is None:
+            check.record_failed(
+                "mock_uss clock time was not retrievable",
+                f"mock_uss responded {query.response.status_code} without a valid clock time; is mock_uss running the latest version of `monitoring`?",
+                queries=query,
+            )
+            raise ScenarioDidNotStopError(check)
+    return t0
 
 
 def get_mock_uss_interactions(
-    scenario: TestScenarioType,
+    scenario: TestScenario,
     mock_uss: MockUSSClient,
     since: StringBasedDateTime,
     *is_applicable: Callable[[Interaction], bool],

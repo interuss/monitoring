@@ -49,9 +49,9 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     plan_flight,
     submit_flight,
 )
+from monitoring.uss_qualifier.scenarios.interuss.mock_uss.test_steps import get_clock
 from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioCannotContinueError,
-    ScenarioDidNotStopError,
     TestScenario,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -148,19 +148,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         flight_2 = self.flight_2.resolve(self.time_context.evaluate_now())
 
         self.begin_test_step("mock_uss plans flight 2")
-        t0, query = self.mock_uss.get_clock()
-        self.record_query(query)
-        with self.check(
-            "mock_uss clock time retrievable", self.mock_uss.participant_id
-        ) as check:
-            if t0 is None:
-                check.record_failed(
-                    "mock_uss clock time was not retrievable",
-                    f"mock_uss responded {query.response.status_code} without a valid clock time; is mock_uss running the latest version of `monitoring`?",
-                    queries=query,
-                )
-                raise ScenarioDidNotStopError(check)
-        flight_2_planning_time = Time(t0)
+        flight_2_planning_time = Time(get_clock(self, self.mock_uss))
         with OpIntentValidator(
             self,
             self.mock_uss_client,
@@ -182,19 +170,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         flight_1 = self.flight_1.resolve(self.time_context.evaluate_now())
 
         self.begin_test_step("tested_uss plans flight 1")
-        t1, query = self.mock_uss.get_clock()
-        self.record_query(query)
-        with self.check(
-            "mock_uss clock time retrievable", self.mock_uss.participant_id
-        ) as check:
-            if t1 is None:
-                check.record_failed(
-                    "mock_uss clock time was not retrievable",
-                    f"mock_uss responded {query.response.status_code} without a valid clock time; is mock_uss running the latest version of `monitoring`?",
-                    queries=query,
-                )
-                raise ScenarioDidNotStopError(check)
-        flight_1_planning_time = Time(t1)
+        flight_1_planning_time = Time(get_clock(self, self.mock_uss))
         with OpIntentValidator(
             self,
             self.tested_uss_client,
@@ -263,19 +239,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.begin_test_step(
             "mock_uss plans flight 2, sharing invalid operational intent data"
         )
-        t2, query = self.mock_uss.get_clock()
-        self.record_query(query)
-        with self.check(
-            "mock_uss clock time retrievable", self.mock_uss.participant_id
-        ) as check:
-            if t2 is None:
-                check.record_failed(
-                    "mock_uss clock time was not retrievable",
-                    f"mock_uss responded {query.response.status_code} without a valid clock time; is mock_uss running the latest version of `monitoring`?",
-                    queries=query,
-                )
-                raise ScenarioDidNotStopError(check)
-        flight_2_planning_time = Time(t2)
+        flight_2_planning_time = Time(get_clock(self, self.mock_uss))
         with OpIntentValidator(
             self,
             self.mock_uss_client,
@@ -300,19 +264,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
 
         flight_1 = self.flight_1.resolve(self.time_context.evaluate_now())
         self.begin_test_step("tested_uss attempts to plan flight 1, expect failure")
-        t3, query = self.mock_uss.get_clock()
-        self.record_query(query)
-        with self.check(
-            "mock_uss clock time retrievable", self.mock_uss.participant_id
-        ) as check:
-            if t3 is None:
-                check.record_failed(
-                    "mock_uss clock time was not retrievable",
-                    f"mock_uss responded {query.response.status_code} without a valid clock time; is mock_uss running the latest version of `monitoring`?",
-                    queries=query,
-                )
-                raise ScenarioDidNotStopError(check)
-        flight_1_planning_time = Time(t3)
+        flight_1_planning_time = Time(get_clock(self, self.mock_uss))
         with OpIntentValidator(
             self,
             self.tested_uss_client,

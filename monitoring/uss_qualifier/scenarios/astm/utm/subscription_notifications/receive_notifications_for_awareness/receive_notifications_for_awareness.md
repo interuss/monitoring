@@ -89,9 +89,9 @@ Notifications of relevant flights will be sent to tested_uss using this subscrip
 
 ### Mock_uss plans Flight 2 test step
 
-#### 🛑 mock_uss clock time retrievable check
+#### [Note mock_uss clock](../../../../interuss/mock_uss/get_clock.md)
 
-We need to know mock_uss's clock time to later request observed interactions after the planning time. If mock_uss's current time isn't retrievable, the mock_uss provider's mock_uss does not meet **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+We need to know mock_uss's clock time to later request observed interactions after the planning time.
 
 #### [Plan Flight 2](../../../../flight_planning/plan_flight_intent.md)
 
@@ -110,9 +110,9 @@ This test case verifies that relevant notifications for modified operational int
 
 ### Mock_uss modifies planned Flight 2 test step
 
-#### 🛑 mock_uss clock time retrievable check
+#### [Note mock_uss clock](../../../../interuss/mock_uss/get_clock.md)
 
-We need to know mock_uss's clock time to later request observed interactions after the planning time. If mock_uss's current time isn't retrievable, the mock_uss provider's mock_uss does not meet **[interuss.mock_uss.hosted_instance.ExposeInterface](../../../../../requirements/interuss/mock_uss/hosted_instance.md)**.
+We need to know mock_uss's clock time to later request observed interactions after the planning time.
 
 #### [Modify Flight 2](../../../../flight_planning/modify_planned_flight_intent.md)
 
