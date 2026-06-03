@@ -30,6 +30,10 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 
 ### mock_uss plans flight 2 test step
 
+#### [Note mock_uss clock](../../../interuss/mock_uss/get_clock.md)
+
+We need to know mock_uss's clock time to later request observed interactions after the planning time.
+
 #### [Plan successfully](../../../flight_planning/plan_flight_intent.md)
 
 Flight 2 should be successfully planned by mock_uss.
@@ -37,6 +41,10 @@ Flight 2 should be successfully planned by mock_uss.
 #### [Validate operational intent is shared](../validate_shared_operational_intent.md)
 
 ### tested_uss plans flight 1 test step
+
+#### [Note mock_uss clock](../../../interuss/mock_uss/get_clock.md)
+
+We need to know mock_uss's clock time to later request observed interactions after the planning time.
 
 #### [Plan successfully](../../../flight_planning/plan_flight_intent.md)
 
@@ -67,6 +75,10 @@ In this test case, mock_uss is manipulated to share invalid operational intent d
 
 ### mock_uss plans flight 2, sharing invalid operational intent data test step
 
+#### [Note mock_uss clock](../../../interuss/mock_uss/get_clock.md)
+
+We need to know mock_uss's clock time to later request observed interactions after the planning time.
+
 #### [Plan successfully](../../../flight_planning/plan_flight_intent.md)
 
 Flight 2 should be successfully planned by the mock_uss.
@@ -76,6 +88,10 @@ Flight 2 should be successfully planned by the mock_uss.
 The mock_uss is instructed to share invalid data with other USS, for negative test.
 
 ### tested_uss attempts to plan flight 1, expect failure test step
+
+#### [Note mock_uss clock](../../../interuss/mock_uss/get_clock.md)
+
+We need to know mock_uss's clock time to later request observed interactions after the planning time.
 
 #### [Plan unsuccessfully](test_steps/plan_flight_intent_expect_failed.md)
 

@@ -1,4 +1,3 @@
-import arrow
 from uas_standards.astm.f3548.v21.api import OperationalIntentReference
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -35,7 +34,10 @@ from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     modify_planned_flight,
     plan_flight,
 )
-from monitoring.uss_qualifier.scenarios.scenario import TestScenario
+from monitoring.uss_qualifier.scenarios.interuss.mock_uss.test_steps import get_clock
+from monitoring.uss_qualifier.scenarios.scenario import (
+    TestScenario,
+)
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
@@ -185,13 +187,13 @@ class ReceiveNotificationsForAwareness(TestScenario):
         self.end_test_step()
 
         self.begin_test_step("Mock_uss plans Flight 2")
+        flight_2_planning_time = get_clock(self, self.mock_uss)
         with OpIntentValidator(
             self,
             self.mock_uss_client,
             self.dss,
             resolved_extents,
         ) as validator:
-            flight_2_planning_time = arrow.utcnow().datetime
             _, self.flight_2_id, as_planned = plan_flight(
                 self,
                 self.mock_uss_client,
@@ -222,6 +224,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
         )
 
         self.begin_test_step("Mock_uss modifies planned Flight 2")
+        flight_2_modif_time = get_clock(self, self.mock_uss)
         with OpIntentValidator(
             self,
             self.mock_uss_client,
@@ -229,7 +232,6 @@ class ReceiveNotificationsForAwareness(TestScenario):
             flight_2_planned_modified.basic_information.area.bounding_volume.to_f3548v21(),
             self.flight_2_oi_ref,
         ) as validator:
-            flight_2_modif_time = arrow.utcnow().datetime
             _, as_planned = modify_planned_flight(
                 self,
                 self.mock_uss_client,
