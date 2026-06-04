@@ -11,7 +11,7 @@ This document contains key context, nuances, and troubleshooting tips specifical
   ```
 - **uv run Troubleshooting**: If running commands via `uv run` fails due to multi-platform dependency resolution issues (e.g. missing upload dates/wheels in custom package registries), you can force it to use standard PyPI by specifying the `--index` option:
   ```bash
-  PYTHONPATH=. uv run --index https://pypi.org/simple pytest monitoring/uss_qualifier/reports/test_obfuscation.py
+  PYTHONPATH=. uv run --index https://pypi.org/simple pytest monitoring/uss_qualifier/reports/obfuscation_test.py
   ```
 
 ## 2. Navigating Data Schemas
