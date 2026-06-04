@@ -44,7 +44,7 @@ docker run --rm \
   -v "/path/to/local/input_artifacts:/input" \
   -v "/path/to/local/output_dir:/output" \
   interuss/monitoring \
-  python monitoring/uss_qualifier/reports/obfuscate.py /input /output/obfuscated_artifacts.zip
+  uv run uss_qualifier/reports/obfuscate.py /input /output/obfuscated_artifacts.zip
 ```
 
 Ensure that you mount the correct local directories to access your input artifacts and retrieve your obfuscated output.
