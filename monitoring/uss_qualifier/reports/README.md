@@ -25,3 +25,8 @@ The [sequence view artifact](./sequence_view) is a human-readable description/lo
 ### Globally-expanded report
 
 The [globally-expanded report artifact](./globally_expanded/README.md) assembles procedural information about the test run into a single, flat presentation, mimicking what might be seen as output had the automated test been performed manually.
+
+### Test artifacts obfuscation tool
+
+The [obfuscation tool](./obfuscate.md) can be used to redact and pseudo-anonymize participant IDs, server hostnames, and authorization tokens from a collection of test artifacts before sharing or publishing.
+
