@@ -4,21 +4,27 @@ import re
 import shutil
 import tempfile
 import zipfile
-from dataclasses import dataclass
+from typing import Any
 from urllib.parse import urlparse
+
+from implicitdict import ImplicitDict
 from loguru import logger
 
 WHITELIST_HOSTNAMES = {
+    "127.0.0.1",
     "github.com",
     "localhost",
-    "127.0.0.1",
-    "w3.org",
+    "maps.google.com",
+    "raw.githubusercontent.com",
     "schemas.openapi.org",
+    "w3.org",
+    "www.google.com",
+    "www.opengis.net",
+    "www.w3.org",
 }
 
 
-@dataclass
-class ObfuscatorConfig:
+class ObfuscatorConfig(ImplicitDict):
     obfuscate_participants: bool = True
     obfuscate_hostnames: bool = True
     obfuscate_tokens: bool = True
@@ -45,7 +51,7 @@ def get_hostname(url: str) -> str | None:
         return None
 
 
-def scan_json(obj, participant_ids: set[str], hostnames: set[str]):
+def scan_json(obj, participant_ids: set[str], hostnames: set[str]) -> None:
     if isinstance(obj, dict):
         for k, v in obj.items():
             if k in ("participant_id", "participant") and isinstance(v, str):
@@ -54,7 +60,11 @@ def scan_json(obj, participant_ids: set[str], hostnames: set[str]):
                 for item in v:
                     if isinstance(item, str):
                         participant_ids.add(item)
-            elif k in ("participant_requirements", "aggregate_participants", "participant_verifications") and isinstance(v, dict):
+            elif k in (
+                "participant_requirements",
+                "aggregate_participants",
+                "participant_verifications",
+            ) and isinstance(v, dict):
                 for p_id in v.keys():
                     participant_ids.add(p_id)
                 if k == "aggregate_participants":
@@ -114,7 +124,7 @@ def obfuscate_json_obj(
     participant_map: dict[str, str],
     hostname_map: dict[str, str],
     config: ObfuscatorConfig,
-):
+) -> Any:
     if isinstance(obj, dict):
         new_dict = {}
         for k, v in obj.items():
@@ -165,7 +175,7 @@ def obfuscate_relative_path(
 
 def obfuscate_directory(
     input_dir: str, output_dir: str, config: ObfuscatorConfig
-):
+) -> None:
     # Pass 1: Learn/scan
     participant_ids = set()
     hostnames = set()
@@ -175,28 +185,18 @@ def obfuscate_directory(
             file_path = os.path.join(root, file)
             if file.lower().endswith(".json"):
                 try:
-                    with open(
-                        file_path, "r", encoding="utf-8", errors="replace"
-                    ) as f:
+                    with open(file_path, encoding="utf-8", errors="replace") as f:
                         data = json.load(f)
                     scan_json(data, participant_ids, hostnames)
                 except Exception as e:
-                    logger.warning(
-                        f"Failed to scan JSON file {file_path}: {e}"
-                    )
-            elif file.lower().endswith(
-                (".html", ".kml", ".yaml", ".yml", ".md")
-            ):
+                    logger.warning(f"Failed to scan JSON file {file_path}: {e}")
+            elif file.lower().endswith((".html", ".kml", ".yaml", ".yml", ".md")):
                 try:
-                    with open(
-                        file_path, "r", encoding="utf-8", errors="replace"
-                    ) as f:
+                    with open(file_path, encoding="utf-8", errors="replace") as f:
                         content = f.read()
                     scan_text(content, hostnames)
                 except Exception as e:
-                    logger.warning(
-                        f"Failed to scan text file {file_path}: {e}"
-                    )
+                    logger.warning(f"Failed to scan text file {file_path}: {e}")
 
     # Clean participant IDs and hostnames
     participant_ids = {p for p in participant_ids if p}
@@ -213,30 +213,22 @@ def obfuscate_directory(
     for idx, h in enumerate(sorted(sorted(hostnames), key=len, reverse=True), start=1):
         hostname_map[h] = f"host{idx}"
 
-    logger.info(
-        f"Detected participants to obfuscate: {list(participant_map.keys())}"
-    )
-    logger.info(
-        f"Detected hostnames to obfuscate: {list(hostname_map.keys())}"
-    )
+    logger.info(f"Detected participants to obfuscate: {list(participant_map.keys())}")
+    logger.info(f"Detected hostnames to obfuscate: {list(hostname_map.keys())}")
 
     # Pass 2: Write obfuscated files
     for root, _, files in os.walk(input_dir):
         for file in files:
             input_file_path = os.path.join(root, file)
             rel_path = os.path.relpath(input_file_path, input_dir)
-            obf_rel_path = obfuscate_relative_path(
-                rel_path, participant_map, config
-            )
+            obf_rel_path = obfuscate_relative_path(rel_path, participant_map, config)
             output_file_path = os.path.join(output_dir, obf_rel_path)
 
             os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
 
             if file.lower().endswith(".json"):
                 try:
-                    with open(
-                        input_file_path, "r", encoding="utf-8", errors="replace"
-                    ) as f:
+                    with open(input_file_path, encoding="utf-8", errors="replace") as f:
                         sample = f.read(100)
                         pretty = "\n" in sample
                         f.seek(0)
@@ -253,13 +245,9 @@ def obfuscate_directory(
                     logger.error(
                         f"Failed to obfuscate JSON file {input_file_path}: {e}"
                     )
-            elif file.lower().endswith(
-                (".html", ".kml", ".yaml", ".yml", ".md")
-            ):
+            elif file.lower().endswith((".html", ".kml", ".yaml", ".yml", ".md")):
                 try:
-                    with open(
-                        input_file_path, "r", encoding="utf-8", errors="replace"
-                    ) as f:
+                    with open(input_file_path, encoding="utf-8", errors="replace") as f:
                         content = f.read()
                     obfuscated_content = obfuscate_string(
                         content, participant_map, hostname_map, config
@@ -274,24 +262,21 @@ def obfuscate_directory(
                 try:
                     shutil.copy2(input_file_path, output_file_path)
                 except Exception as e:
-                    logger.error(
-                        f"Failed to copy file {input_file_path}: {e}"
-                    )
+                    logger.error(f"Failed to copy file {input_file_path}: {e}")
 
 
 def obfuscate_artifacts(
     input_path: str, output_path: str, config: ObfuscatorConfig
-):
-    input_is_zip = zipfile.is_zipfile(input_path) or input_path.lower().endswith(
-        ".zip"
-    )
+) -> None:
+    input_is_zip = zipfile.is_zipfile(input_path) or input_path.lower().endswith(".zip")
     output_is_zip = output_path.lower().endswith(".zip")
 
-    with tempfile.TemporaryDirectory() as tmp_in_dir, tempfile.TemporaryDirectory() as tmp_out_dir:
+    with (
+        tempfile.TemporaryDirectory() as tmp_in_dir,
+        tempfile.TemporaryDirectory() as tmp_out_dir,
+    ):
         if input_is_zip:
-            logger.info(
-                f"Extracting input zip {input_path} to temporary directory"
-            )
+            logger.info(f"Extracting input zip {input_path} to temporary directory")
             with zipfile.ZipFile(input_path, "r") as zip_ref:
                 zip_ref.extractall(tmp_in_dir)
             actual_in_dir = tmp_in_dir
@@ -312,9 +297,7 @@ def obfuscate_artifacts(
             if parent_dir:
                 os.makedirs(parent_dir, exist_ok=True)
 
-            with zipfile.ZipFile(
-                output_path, "w", zipfile.ZIP_DEFLATED
-            ) as zip_write:
+            with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as zip_write:
                 for root, _, files in os.walk(actual_out_dir):
                     for file in files:
                         full_path = os.path.join(root, file)

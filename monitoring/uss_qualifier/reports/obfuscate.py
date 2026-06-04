@@ -1,7 +1,12 @@
 import argparse
 import sys
+
 from loguru import logger
-from monitoring.uss_qualifier.reports.obfuscation import ObfuscatorConfig, obfuscate_artifacts
+
+from monitoring.uss_qualifier.reports.obfuscation import (
+    ObfuscatorConfig,
+    obfuscate_artifacts,
+)
 
 
 def main() -> int:
@@ -9,27 +14,26 @@ def main() -> int:
         description="Obfuscate test artifacts by anonymizing participant IDs, hostnames, and tokens."
     )
     parser.add_argument(
-        "input",
-        help="Path to the input folder or .zip file containing test artifacts."
+        "input", help="Path to the input folder or .zip file containing test artifacts."
     )
     parser.add_argument(
         "output",
-        help="Path where the obfuscated folder or .zip file should be written."
+        help="Path where the obfuscated folder or .zip file should be written.",
     )
     parser.add_argument(
         "--no-participants",
         action="store_true",
-        help="Disable obfuscation of participant IDs."
+        help="Disable obfuscation of participant IDs.",
     )
     parser.add_argument(
         "--no-hostnames",
         action="store_true",
-        help="Disable obfuscation of server/hostnames."
+        help="Disable obfuscation of server/hostnames.",
     )
     parser.add_argument(
         "--no-tokens",
         action="store_true",
-        help="Disable redaction of authorization bearer tokens."
+        help="Disable redaction of authorization bearer tokens.",
     )
 
     args = parser.parse_args()
