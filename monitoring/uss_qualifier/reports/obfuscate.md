@@ -24,7 +24,7 @@ It will produce the corresponding output format matching your path (either a loc
 Detailed information on command-line options and toggles can be retrieved using the `--help` flag:
 
 ```bash
-PYTHONPATH=. uv run --index https://pypi.org/simple python monitoring/uss_qualifier/reports/obfuscate.py --help
+PYTHONPATH=. uv run monitoring/uss_qualifier/reports/obfuscate.py --help
 ```
 
 ## Running Locally
@@ -32,7 +32,7 @@ PYTHONPATH=. uv run --index https://pypi.org/simple python monitoring/uss_qualif
 To run the obfuscation tool locally:
 
 ```bash
-PYTHONPATH=. uv run --index https://pypi.org/simple python monitoring/uss_qualifier/reports/obfuscate.py <input-folder-or-zip> <output-folder-or-zip>
+PYTHONPATH=. uv run monitoring/uss_qualifier/reports/obfuscate.py <input-folder-or-zip> <output-folder-or-zip>
 ```
 
 ## Running via Docker

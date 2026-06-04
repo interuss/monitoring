@@ -76,10 +76,7 @@ def scan_json(obj, participant_ids: set[str], hostnames: set[str]) -> None:
             elif k == "manager" and isinstance(v, str):
                 participant_ids.add(v)
             elif isinstance(v, str):
-                for url in find_urls(v):
-                    h = get_hostname(url)
-                    if h:
-                        hostnames.add(h)
+                scan_text(v, hostnames)
             scan_json(v, participant_ids, hostnames)
     elif isinstance(obj, list):
         for item in obj:
@@ -104,12 +101,12 @@ def obfuscate_string(
 
     # 1. Obfuscate tokens
     if config.obfuscate_tokens:
-        s = re.sub(r"(?i)\bBearer\s+\S+", "Bearer REDACTED", s)
+        s = re.sub(r"(?i)\bBearer\s+\S+", "Bearer REDACTED", s, flags=re.IGNORECASE)
 
     # 2. Obfuscate hostnames
     if config.obfuscate_hostnames:
         for h, mapped_h in hostname_map.items():
-            s = re.sub(rf"\b{re.escape(h)}\b", mapped_h, s)
+            s = re.sub(rf"\b{re.escape(h)}\b", mapped_h, s, flags=re.IGNORECASE)
 
     # 3. Obfuscate participants
     if config.obfuscate_participants:

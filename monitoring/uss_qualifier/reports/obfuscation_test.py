@@ -8,29 +8,51 @@ from monitoring.uss_qualifier.reports.obfuscation import (
     obfuscate_directory,
     obfuscate_json_obj,
     obfuscate_string,
+    scan_text,
 )
 
 
 def test_find_urls():
-    text = "Check http://dss1.uss1.localutm/dss/v1, or go to https://github.com/interuss. Also see (http://localhost:8082/status)."
+    text = (
+        "Check http://dss1.uss1.localutm/dss/v1, or go to https://github.com/interuss. "
+        + "Also see (http://localhost:8082/status). And https://UPPERCASEHOST.com/foo. "
+        + "With a user, we have http://user@localhost and a password too with http://user:password@localhost. "
+        + "A query parameter like http://localhost?q=a2 shouldnt' hurt."
+    )
     urls = find_urls(text)
     assert "http://dss1.uss1.localutm/dss/v1" in urls
     assert "https://github.com/interuss" in urls
     assert "http://localhost:8082/status" in urls
+    assert "https://UPPERCASEHOST.com/foo" in urls
+    assert "http://user@localhost" in urls
+    assert "http://user:password@localhost" in urls
+    assert "http://localhost?q=a2" in urls
+
+
+def test_scan_text():
+    text = "A plain url at https://UPPERCASEHOST.com/foo"
+    hostnames = set()
+    scan_text(text, hostnames)
+    assert "uppercasehost.com" in hostnames  # urlparse converts to lowercase
 
 
 def test_obfuscate_string():
     participant_map = {"uss1": "participant1", "mock_uss": "participant2"}
-    hostname_map = {"scdsc.uss1.localutm": "host1", "dss1.uss1.localutm": "host2"}
+    hostname_map = {
+        "scdsc.uss1.localutm": "host1",
+        "dss1.uss1.localutm": "host2",
+        "uppercasehost.com": "host3",
+    }
     config = ObfuscatorConfig()
 
-    text = "Authorization: Bearer eyJhbGci.eyJzdWIiOiJ1c3MifQ.abc-def. Also call http://scdsc.uss1.localutm/mock/scd for mock_uss and uss1."
+    text = "Authorization: Bearer eyJhbGci.eyJzdWIiOiJ1c3MifQ.abc-def. Also call http://scdsc.uss1.localutm/mock/scd for mock_uss and uss1. And https://UPPERCASEHOST.com/foo"
     obf = obfuscate_string(text, participant_map, hostname_map, config)
 
     assert "Bearer REDACTED" in obf
     assert "http://host1/mock/scd" in obf
     assert "participant2" in obf
     assert "participant1" in obf
+    assert "https://host3/foo" in obf
 
 
 def test_obfuscate_json_obj():
