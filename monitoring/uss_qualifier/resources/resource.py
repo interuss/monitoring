@@ -179,15 +179,21 @@ def get_resource_types(
 
     constructor_signature = get_type_hints(resource_type.__init__)
 
-    # Resolve generic type vars
+    # Resolve generic type vars, walking up the inheritance chain
+    def _collect(cls: type, mapping: dict) -> None:
+        for base in getattr(cls, "__orig_bases__", ()):
+            origin = get_origin(base)
+            if origin is None:
+                continue
+            params = getattr(origin, "__parameters__", ())
+            for param, arg in zip(params, get_args(base)):
+                resolved = mapping.get(arg, arg)
+                if not isinstance(resolved, TypeVar):
+                    mapping[param] = resolved
+            _collect(origin, mapping)
+
     typevar_map: dict = {}
-    for base in getattr(resource_type, "__orig_bases__", ()):
-        params = getattr(get_origin(base), "__type_params__", None) or getattr(
-            get_origin(base), "__parameters__", ()
-        )
-        for param, arg in zip(params, get_args(base)):
-            if not isinstance(arg, TypeVar):
-                typevar_map[param] = arg
+    _collect(resource_type, typevar_map)
     constructor_signature = {
         name: typevar_map.get(t, t) for name, t in constructor_signature.items()
     }
