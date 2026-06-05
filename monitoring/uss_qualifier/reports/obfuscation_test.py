@@ -8,6 +8,7 @@ from monitoring.uss_qualifier.reports.obfuscation import (
     obfuscate_directory,
     obfuscate_json_obj,
     obfuscate_string,
+    scan_json,
     scan_text,
 )
 
@@ -34,6 +35,36 @@ def test_scan_text():
     hostnames = set()
     scan_text(text, hostnames)
     assert "uppercasehost.com" in hostnames  # urlparse converts to lowercase
+
+
+def test_scan_json():
+    obj = {
+        "participant_id": "uss1_core",
+        "participants": ["uss1_core", "uss2_core"],
+        "url": "http://dss1.uss3.localutm/dss/v1",
+        "urls": ["http://dss1.uss4.localutm/dss/v1"],
+        "report": {
+            "queries": [
+                {
+                    "request": {
+                        "url": "http://dss1.uss1.localutm/dss/v1",
+                        "urls": ["http://dss1.uss2.localutm/dss/v1"],
+                        "headers": {"Authorization": "Bearer mytoken"},
+                    }
+                }
+            ]
+        },
+    }
+    participant_ids = set()
+    hostnames = set()
+    scan_json(obj, participant_ids, hostnames)
+    assert participant_ids == {"uss1_core", "uss2_core"}
+    assert hostnames == {
+        "dss1.uss3.localutm",
+        "dss1.uss4.localutm",
+        "dss1.uss1.localutm",
+        "dss1.uss2.localutm",
+    }
 
 
 def test_obfuscate_string():

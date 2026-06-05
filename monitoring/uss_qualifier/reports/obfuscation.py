@@ -75,12 +75,12 @@ def scan_json(obj, participant_ids: set[str], hostnames: set[str]) -> None:
                                     participant_ids.add(p_id)
             elif k == "manager" and isinstance(v, str):
                 participant_ids.add(v)
-            elif isinstance(v, str):
-                scan_text(v, hostnames)
             scan_json(v, participant_ids, hostnames)
     elif isinstance(obj, list):
         for item in obj:
             scan_json(item, participant_ids, hostnames)
+    elif isinstance(obj, str):
+        scan_text(obj, hostnames)
 
 
 def scan_text(text: str, hostnames: set[str]):
