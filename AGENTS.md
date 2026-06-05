@@ -9,6 +9,10 @@ This document contains key context, nuances, and troubleshooting tips specifical
   ```bash
   uv run python -c "from uas_standards.astm.f3548.v21.api import OperationalIntentReference; print(OperationalIntentReference.__annotations__)"
   ```
+- **uv run Troubleshooting**: If running commands via `uv run` fails due to multi-platform dependency resolution issues (e.g. missing upload dates/wheels in custom package registries), you can force it to use standard PyPI by specifying the `--index` option:
+  ```bash
+  PYTHONPATH=. uv run --index https://pypi.org/simple pytest monitoring/uss_qualifier/reports/obfuscation_test.py
+  ```
 
 ## 2. Navigating Data Schemas
 - **Implicit Types**: Many schema objects inherit from `ImplicitDict`. This means that reading their raw Python class definitions may not reveal all their expected structure. Rely on their `__annotations__` or their OpenAPI documentation.
