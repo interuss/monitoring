@@ -354,6 +354,12 @@ class QueryType(StrEnum):
     # InterUSS automated testing versioning interface
     InterUSSVersioningGetVersion = "interuss.automated_testing.versioning.GetVersion"
 
+    # InterUSS DSS aux interface
+    InterUSSDSSGetPool = "interuss.dss.aux.GetPool"
+    InterUSSDSSGetDSSInstances = "interuss.dss.aux.GetDSSInstances"
+    InterUSSDSSGetAcceptedCAs = "interuss.dss.aux.GetAcceptedCAs"
+    InterUSSDSSGetInstanceCAs = "interuss.dss.aux.GetInstanceCAs"
+
     # InterUSS automated testing flight_planning interface
     InterUSSFlightPlanningV1GetStatus = (
         "interuss.automated_testing.flight_planning.v1.GetStatus"

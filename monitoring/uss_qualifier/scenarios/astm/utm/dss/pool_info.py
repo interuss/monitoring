@@ -11,3 +11,4 @@ class PoolInfo(TestScenario, CommonPoolInfo):
         dss_instances: DSSInstancesResource,
     ):
         super().__init__()
+        self._dss_instances = dss_instances.dss_instances
