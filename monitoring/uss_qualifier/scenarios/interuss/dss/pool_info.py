@@ -84,9 +84,9 @@ class PoolInfo(GenericTestScenario):
 
         # Compare DAR IDs
         reported_dar_ids = {pid: dar_id for pid, dar_id in dar_ids.items() if dar_id}
-        if len(set(reported_dar_ids.values())) > 1:
-            participants = list(reported_dar_ids.keys())
-            with self.check("DAR ID matches", participants) as check:
+        with self.check("DAR ID matches", participants) as check:
+            if len(set(reported_dar_ids.values())) > 1:
+                participants = list(reported_dar_ids.keys())
                 details = "\n".join(f"- {pid}: {dar_id}" for pid, dar_id in reported_dar_ids.items())
                 check.record_failed(
                     summary="Differing DAR IDs reported by DSS instances in the same pool",
