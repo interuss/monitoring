@@ -1,5 +1,5 @@
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstancesResource
-from monitoring.uss_qualifier.scenarios.astm.dss.pool_info import (
+from monitoring.uss_qualifier.scenarios.interuss.dss.pool_info import (
     PoolInfo as CommonPoolInfo,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
