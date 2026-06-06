@@ -9,15 +9,17 @@ from monitoring.monitorlib.clients.versioning.client_interuss import (
     VersionQueryError,
 )
 from monitoring.monitorlib.fetch import QueryError
+from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstanceResource
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class PoolInfo(GenericTestScenario):
-    def __init__(
-        self,
-    ):
+    _dss_instances: list[DSSInstanceResource]
+
+    def __init__(self, dss_instances: list[DSSInstanceResource]):
         super().__init__()
+        self._dss_instances = dss_instances
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
@@ -37,18 +39,22 @@ class PoolInfo(GenericTestScenario):
 
     def _examine_versions(self):
         for dss_instance in self._dss_instances:
-            versioning_instance = dss_instance.get_instance({
-                VersioningScope.ReadSystemVersions: "Read system version"
-            })
+            versioning_instance = dss_instance.get_instance(
+                {VersioningScope.ReadSystemVersions: "Read system version"}
+            )
             versioning_client = InterUSSVersioningClient(
                 session=versioning_instance.client,
                 participant_id=dss_instance.participant_id,
             )
-            with self.check("Version obtained successfully", [dss_instance.participant_id]) as check:
+            with self.check(
+                "Version obtained successfully", [dss_instance.participant_id]
+            ) as check:
                 try:
                     version_resp = versioning_client.get_version("dss")
                     self.record_query(version_resp.query)
-                    self.record_note(f"{dss_instance.participant_id} version", version_resp.version)
+                    self.record_note(
+                        f"{dss_instance.participant_id} version", version_resp.version
+                    )
                 except VersionQueryError as e:
                     self.record_queries(e.queries)
                     check.record_failed(
@@ -60,20 +66,28 @@ class PoolInfo(GenericTestScenario):
     def _examine_pool(self):
         dar_ids = {}
         for dss_instance in self._dss_instances:
-            aux_instance = dss_instance.get_instance({
-                AuxScope.PoolStatusRead: "Read DSS pool status"
-            })
+            aux_instance = dss_instance.get_instance(
+                {AuxScope.PoolStatusRead: "Read DSS pool status"}
+            )
             dss_client = InterUSSDSSClient(
                 session=aux_instance.client,
                 participant_id=dss_instance.participant_id,
             )
-            with self.check("Pool information obtained successfully", [dss_instance.participant_id]) as check:
+            with self.check(
+                "Pool information obtained successfully", [dss_instance.participant_id]
+            ) as check:
                 try:
                     pool_resp, query = dss_client.get_pool()
                     self.record_query(query)
-                    dar_id = pool_resp.dar_id if pool_resp.has_field_with_value("dar_id") else None
+                    dar_id = (
+                        pool_resp.dar_id
+                        if pool_resp.has_field_with_value("dar_id")
+                        else None
+                    )
                     dar_ids[dss_instance.participant_id] = dar_id
-                    self.record_note(f"{dss_instance.participant_id} DAR ID", dar_id or "None")
+                    self.record_note(
+                        f"{dss_instance.participant_id} DAR ID", dar_id or "None"
+                    )
                 except QueryError as e:
                     self.record_queries(e.queries)
                     check.record_failed(
@@ -84,10 +98,12 @@ class PoolInfo(GenericTestScenario):
 
         # Compare DAR IDs
         reported_dar_ids = {pid: dar_id for pid, dar_id in dar_ids.items() if dar_id}
+        participants = list(reported_dar_ids.keys())
         with self.check("DAR ID matches", participants) as check:
             if len(set(reported_dar_ids.values())) > 1:
-                participants = list(reported_dar_ids.keys())
-                details = "\n".join(f"- {pid}: {dar_id}" for pid, dar_id in reported_dar_ids.items())
+                details = "\n".join(
+                    f"- {pid}: {dar_id}" for pid, dar_id in reported_dar_ids.items()
+                )
                 check.record_failed(
                     summary="Differing DAR IDs reported by DSS instances in the same pool",
                     details=f"The following DSS instances reported different DAR IDs:\n{details}",

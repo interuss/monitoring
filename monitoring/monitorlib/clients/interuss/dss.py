@@ -1,12 +1,3 @@
-# Monkeypatch StringBasedDateTime in implicitdict before importing uas_standards.interuss.dss.aux.api
-import implicitdict
-_orig_stringbaseddatetime_new = implicitdict.StringBasedDateTime.__new__
-def _patched_stringbaseddatetime_new(cls, value):
-    if not value:
-        value = "1970-01-01T00:00:00Z"
-    return _orig_stringbaseddatetime_new(cls, value)
-implicitdict.StringBasedDateTime.__new__ = _patched_stringbaseddatetime_new
-
 from implicitdict import ImplicitDict
 from uas_standards.interuss.dss.aux import api
 from uas_standards.interuss.dss.aux.constants import Scope
@@ -38,6 +29,8 @@ class InterUSSDSSClient:
                 f"Attempt to get pool info returned status {query.status_code} rather than 200 as expected",
                 query,
             )
+        if query.response.json is None:
+            raise QueryError("Attempt to get pool info returned no JSON body")
         try:
             resp: api.PoolResponse = ImplicitDict.parse(
                 query.response.json, api.PoolResponse
@@ -65,6 +58,8 @@ class InterUSSDSSClient:
                 f"Attempt to get DSS instances returned status {query.status_code} rather than 200 as expected",
                 query,
             )
+        if query.response.json is None:
+            raise QueryError("Attempt to get pool info returned no JSON body")
         try:
             resp: api.DSSInstancesResponse = ImplicitDict.parse(
                 query.response.json, api.DSSInstancesResponse
@@ -92,13 +87,16 @@ class InterUSSDSSClient:
                 f"Attempt to get accepted CA certs returned status {query.status_code} rather than 200 as expected",
                 query,
             )
+        if query.response.json is None:
+            raise QueryError("Attempt to get pool info returned no JSON body")
         try:
             resp: api.CAsResponse = ImplicitDict.parse(
                 query.response.json, api.CAsResponse
             )
         except ValueError as e:
             raise QueryError(
-                f"Response to get accepted CA certs could not be parsed: {str(e)}", query
+                f"Response to get accepted CA certs could not be parsed: {str(e)}",
+                query,
             )
         return resp, query
 
@@ -119,12 +117,15 @@ class InterUSSDSSClient:
                 f"Attempt to get instance CA certs returned status {query.status_code} rather than 200 as expected",
                 query,
             )
+        if query.response.json is None:
+            raise QueryError("Attempt to get pool info returned no JSON body")
         try:
             resp: api.CAsResponse = ImplicitDict.parse(
                 query.response.json, api.CAsResponse
             )
         except ValueError as e:
             raise QueryError(
-                f"Response to get instance CA certs could not be parsed: {str(e)}", query
+                f"Response to get instance CA certs could not be parsed: {str(e)}",
+                query,
             )
         return resp, query
