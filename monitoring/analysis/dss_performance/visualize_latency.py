@@ -87,6 +87,36 @@ def match_route(method, path, routes):
     return None
 
 
+def obfuscate_ip(ip_str, ip_map):
+    if not ip_str:
+        return "null"
+    host = ip_str
+    port = None
+    if ":" in ip_str:
+        parts = ip_str.rsplit(":", 1)
+        if parts[1].isdigit():
+            host = parts[0]
+            port = parts[1]
+            if host.startswith("[") and host.endswith("]"):
+                host = host[1:-1]
+
+    if host not in ip_map:
+        ip_map[host] = f"ip{len(ip_map) + 1}"
+
+    obfuscated_host = ip_map[host]
+    if port:
+        return f"{obfuscated_host}:{port}"
+    return obfuscated_host
+
+
+def obfuscate_req_sub(sub_val, sub_map):
+    if not sub_val:
+        return "null"
+    if sub_val not in sub_map:
+        sub_map[sub_val] = f"sub{len(sub_map) + 1}"
+    return sub_map[sub_val]
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Visualize DSS latency performance logs."
@@ -102,6 +132,12 @@ def main():
         nargs="?",
         default="latency_visualization.html",
         help="Path to write the standalone HTML output",
+    )
+    parser.add_argument(
+        "--obfuscate",
+        action="append",
+        choices=["peer_address", "req_sub"],
+        help="Keys to obfuscate in the output (can be specified multiple times)",
     )
     args = parser.parse_args()
 
@@ -142,6 +178,11 @@ def main():
     # where handler_full_name is e.g. "PUT /rid/v2/dss/identification_service_areas/{id}"
     trace_groups = {}
 
+    # Mappings for obfuscation
+    ip_map = {}
+    sub_map = {}
+    obfuscate_keys = args.obfuscate or []
+
     origins = log_data.get("origins", {})
     total_logs = 0
     matched_logs = 0
@@ -170,19 +211,51 @@ def main():
             if group_key not in trace_groups:
                 trace_groups[group_key] = {"x": [], "y": [], "text": []}
 
-            status_code = log.get("status_code", "N/A")
-            req_sub = log.get("req_sub") or "N/A"
-            peer_address = log.get("peer_address") or "N/A"
+            hover_parts = [
+                f"Origin: {origin}",
+                f"Handler: {handler_name}",
+            ]
 
-            hover = (
-                f"Origin: {origin}<br>"
-                f"Handler: {handler_name}<br>"
-                f"Time: {timestamp}<br>"
-                f"Latency: {duration_ms:.3f} ms<br>"
-                f"Status: {status_code}<br>"
-                f"Client: {req_sub}<br>"
-                f"Peer: {peer_address}"
-            )
+            standard_fields = [
+                "timestamp",
+                "method",
+                "path",
+                "proto",
+                "status_code",
+                "duration_ms",
+                "peer_address",
+                "req_sub",
+            ]
+
+            for field in standard_fields:
+                if field in log:
+                    val = log[field]
+                    if (
+                        field == "peer_address"
+                        and "peer_address" in obfuscate_keys
+                        and val
+                    ):
+                        val = obfuscate_ip(val, ip_map)
+                    elif field == "req_sub" and "req_sub" in obfuscate_keys and val:
+                        val = obfuscate_req_sub(val, sub_map)
+
+                    if val is None:
+                        val_str = "null"
+                    elif isinstance(val, float):
+                        val_str = f"{val:.3f}"
+                    elif isinstance(val, bool):
+                        val_str = "true" if val else "false"
+                    else:
+                        val_str = str(val)
+
+                    hover_parts.append(f"{field}: {val_str}")
+
+            for k, v in log.items():
+                if k not in standard_fields:
+                    val_str = "null" if v is None else str(v)
+                    hover_parts.append(f"{k}: {val_str}")
+
+            hover = "<br>".join(hover_parts)
 
             trace_groups[group_key]["x"].append(timestamp)
             trace_groups[group_key]["y"].append(duration_ms)

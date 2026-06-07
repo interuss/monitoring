@@ -92,10 +92,11 @@ To include container name or namespace in the origin key (e.g. `core-service/pod
 Once logs have been acquired in `acquired_logs.json`, you can generate an interactive standalone HTML dashboard to analyze DSS handler latency over time:
 
 ```shell
-uv run monitoring/analysis/dss_performance/visualize_latency.py [INPUT_JSON] [OUTPUT_HTML]
+uv run monitoring/analysis/dss_performance/visualize_latency.py [INPUT_JSON] [OUTPUT_HTML] [OPTIONS]
 ```
 
 ### Arguments
 
 - `INPUT_JSON`: Optional. Path to the input JSON file (default: `acquired_logs.json`).
 - `OUTPUT_HTML`: Optional. Path to the output HTML file (default: `latency_visualization.html`).
+- `--obfuscate`: (Optional) Keys to obfuscate in the output (can be specified multiple times). `peer_address` and `req_sub` are supported.
