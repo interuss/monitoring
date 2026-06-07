@@ -1,18 +1,15 @@
 import asyncio
+import importlib
 from datetime import UTC, datetime
 
-import aiohttp
-import requests
 from uas_standards.astm.f3411 import v19, v22a
 
 from monitoring.monitorlib.fetch import (
     Query,
     QueryType,
-    describe_aiohttp_response,
-    describe_failed_aiohttp_response,
-    describe_request,
 )
 from monitoring.monitorlib.fetch.rid import FetchedISA
+fetch_async = importlib.import_module("monitoring.monitorlib.fetch.async")
 from monitoring.monitorlib.infrastructure import AsyncUTMTestSession
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.mutate.rid import ChangedISA
@@ -198,36 +195,14 @@ class HeavyTrafficConcurrent(GenericTestScenario):
     async def _get_isa(self, isa_id):
         async with SEMAPHORE:
             (_, url) = mutate.build_isa_url(self._dss.rid_version, isa_id)
-            # Build a `Request` object to register the query later on,
-            # although we don't need it to do the effective request here on the async_session
-            # This one is quite barebone and we need to check if anything needs to be added
-            r = requests.Request(
+            rq = await fetch_async.query_and_describe(
+                self._async_session,
                 "GET",
                 url,
-            )
-            # TODO: Do not rely on a prepared request that is not actually used in order to create the Query RequestDescription; instead build it from the request actually made
-            prep = self._dss.client.prepare_request(r)
-            t0 = datetime.now(UTC)
-            req_descr = describe_request(prep, t0)
-            try:
-                status, headers, resp_json = await self._async_session.get(
-                    url=url, scope=self._read_scope()
-                )
-                duration = datetime.now(UTC) - t0
-                response = describe_aiohttp_response(
-                    status, headers, resp_json, duration
-                )
-            except (TimeoutError, aiohttp.ClientError) as e:
-                duration = datetime.now(UTC) - t0
-                response = describe_failed_aiohttp_response(e, duration)
-
-            rq = Query(
-                request=req_descr,
-                response=response,
+                scope=self._read_scope(),
                 participant_id=self._dss.participant_id,
                 query_type=QueryType.dss_get_isa(self._dss.rid_version),
             )
-
             return isa_id, self._wrap_isa_get_query(rq)
 
     async def _create_isa(self, isa_id):
@@ -237,30 +212,12 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 rid_version=self._dss.rid_version,
             )
             (_, url) = mutate.build_isa_url(self._dss.rid_version, isa_id)
-            r = requests.Request(
+            rq = await fetch_async.query_and_describe(
+                self._async_session,
                 "PUT",
                 url,
                 json=payload,
-            )
-            # TODO: Do not rely on a prepared request that is not actually used in order to create the Query RequestDescription; instead build it from the request actually made
-            prep = self._dss.client.prepare_request(r)
-            t0 = datetime.now(UTC)
-            req_descr = describe_request(prep, t0)
-            try:
-                status, headers, resp_json = await self._async_session.put(
-                    url=url, json=payload, scope=self._write_scope()
-                )
-                duration = datetime.now(UTC) - t0
-                response = describe_aiohttp_response(
-                    status, headers, resp_json, duration
-                )
-            except (TimeoutError, aiohttp.ClientError) as e:
-                duration = datetime.now(UTC) - t0
-                response = describe_failed_aiohttp_response(e, duration)
-
-            rq = Query(
-                request=req_descr,
-                response=response,
+                scope=self._write_scope(),
                 participant_id=self._dss.participant_id,
                 query_type=QueryType.dss_create_isa(self._dss.rid_version),
             )
@@ -269,33 +226,14 @@ class HeavyTrafficConcurrent(GenericTestScenario):
     async def _delete_isa(self, isa_id, isa_version):
         async with SEMAPHORE:
             (_, url) = mutate.build_isa_url(self._dss.rid_version, isa_id, isa_version)
-            r = requests.Request(
+            rq = await fetch_async.query_and_describe(
+                self._async_session,
                 "DELETE",
                 url,
-            )
-            # TODO: Do not rely on a prepared request that is not actually used in order to create the Query RequestDescription; instead build it from the request actually made
-            prep = self._dss.client.prepare_request(r)
-            t0 = datetime.now(UTC)
-            req_descr = describe_request(prep, t0)
-            try:
-                status, headers, resp_json = await self._async_session.delete(
-                    url=url, scope=self._write_scope()
-                )
-                duration = datetime.now(UTC) - t0
-                response = describe_aiohttp_response(
-                    status, headers, resp_json, duration
-                )
-            except (TimeoutError, aiohttp.ClientError) as e:
-                duration = datetime.now(UTC) - t0
-                response = describe_failed_aiohttp_response(e, duration)
-
-            rq = Query(
-                request=req_descr,
-                response=response,
+                scope=self._write_scope(),
                 participant_id=self._dss.participant_id,
                 query_type=QueryType.dss_delete_isa(self._dss.rid_version),
             )
-
             return isa_id, self._wrap_isa_put_query(rq, "delete")
 
     def _write_scope(self):
