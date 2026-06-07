@@ -1,25 +1,23 @@
-import asyncio
 import copy
-from datetime import UTC, datetime
 import json
 import os
 import uuid
+from datetime import UTC, datetime
 
 import aiohttp
+from implicitdict import StringBasedDateTime
 from loguru import logger
 
-from implicitdict import StringBasedDateTime
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.fetch import (
+    Query,
+    QueryType,
     RequestDescription,
     ResponseDescription,
     describe_aiohttp_response,
-    describe_failed_aiohttp_response,
     get_traceback_location,
     is_fake_netloc,
     settings,
-    Query,
-    QueryType,
 )
 
 
@@ -119,9 +117,7 @@ async def query_and_describe(
                 body=desc_kwargs.get("data"),
                 initiated_at=StringBasedDateTime(t0),
             )
-            response = describe_aiohttp_response(
-                status, headers, resp_json, duration
-            )
+            response = describe_aiohttp_response(status, headers, resp_json, duration)
             query = Query(
                 request=req_descr,
                 response=response,
@@ -132,7 +128,7 @@ async def query_and_describe(
                 query.query_type = query_type
             return query
 
-        except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+        except (TimeoutError, aiohttp.ClientError) as e:
             t1 = datetime.now(UTC)
             duration = t1 - t0
             failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with exception {type(e).__name__}: {str(e)}\nAt {get_traceback_location()}"

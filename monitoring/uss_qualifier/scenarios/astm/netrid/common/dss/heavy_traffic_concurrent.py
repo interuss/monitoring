@@ -1,15 +1,13 @@
 import asyncio
-import importlib
-from datetime import UTC, datetime
 
 from uas_standards.astm.f3411 import v19, v22a
 
 from monitoring.monitorlib.fetch import (
     Query,
     QueryType,
+    fetch_async,
 )
 from monitoring.monitorlib.fetch.rid import FetchedISA
-fetch_async = importlib.import_module("monitoring.monitorlib.fetch.async")
 from monitoring.monitorlib.infrastructure import AsyncUTMTestSession
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.mutate.rid import ChangedISA

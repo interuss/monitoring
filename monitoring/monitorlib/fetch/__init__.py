@@ -740,7 +740,7 @@ def query_and_describe(
                 retryable = True
             else:
                 retryable = False
-            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with {'' if retryable else 'non-'}retryable ConnectionError: {str(e)}\nAt {get_location()}"
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with {'' if retryable else 'non-'}retryable ConnectionError: {str(e)}\nAt {get_traceback_location()}"
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
@@ -749,7 +749,7 @@ def query_and_describe(
                 return build_failing_query(t0)
 
         except requests.RequestException as e:
-            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with non-retryable RequestException {type(e).__name__}: {str(e)}\nAt {get_location()}"
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with non-retryable RequestException {type(e).__name__}: {str(e)}\nAt {get_traceback_location()}"
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
