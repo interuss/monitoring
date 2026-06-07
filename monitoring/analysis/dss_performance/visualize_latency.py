@@ -1,82 +1,26 @@
 #!/usr/bin/env python3
 
 import argparse
-import glob
 import json
 import os
 import re
+import sys
 
 from jinja2 import Environment, FileSystemLoader
 
 
-def find_workspace_root():
-    curr = os.path.abspath(os.path.dirname(__file__))
-    while curr and curr != "/":
-        if os.path.exists(os.path.join(curr, "dss")) and os.path.exists(
-            os.path.join(curr, "monitoring")
-        ):
-            return curr
-        curr = os.path.dirname(curr)
-    raise RuntimeError(
-        "Could not find workspace root containing dss and monitoring directories"
+def load_routes():
+    routes_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "dss_routes.json"
     )
-
-
-def load_dss_routes(dss_dir):
-    go_files = glob.glob(os.path.join(dss_dir, "pkg/api/*/server.gen.go"))
-    routes = []
-
-    # Add healthy endpoint implicitly
-    routes.append(
-        {
-            "category": "auxv1",
-            "method": "GET",
-            "pattern": "^/healthy$",
-            "path_template": "/healthy",
-            "compiled": re.compile(r"^/healthy$"),
-        }
-    )
-
-    for go_file in go_files:
-        category = os.path.basename(os.path.dirname(go_file))
-        with open(go_file) as f:
-            content = f.read()
-
-        router_func_match = re.search(
-            r"func MakeAPIRouter\(.*?\).*?{(.*?)^}", content, re.MULTILINE | re.DOTALL
+    if not os.path.exists(routes_path):
+        raise RuntimeError(
+            f"Routes file {routes_path} not found. Please run enumerate_dss_routes.py first."
         )
-        if not router_func_match:
-            continue
-
-        func_content = router_func_match.group(1)
-        parts = re.split(r"pattern\s*(?::)?=\s*regexp\.MustCompile\(", func_content)
-        for part in parts[1:]:
-            pattern_match = re.match(r"^\"([^\"]+)\"", part)
-            if not pattern_match:
-                continue
-            pattern_str = pattern_match.group(1)
-
-            method_match = re.search(r"Method:\s*http\.Method(\w+)", part)
-            if not method_match:
-                continue
-            method = method_match.group(1).upper()
-
-            path_match = re.search(r"Path:\s*\"([^\"]+)\"", part)
-            if path_match:
-                path_template = path_match.group(1)
-            else:
-                clean_path = pattern_str.lstrip("^").rstrip("$")
-                path_template = re.sub(r"\(\?P<([^>]+)>[^)]+\)", r"{\1}", clean_path)
-
-            routes.append(
-                {
-                    "category": category,
-                    "method": method,
-                    "pattern": pattern_str,
-                    "path_template": path_template,
-                    "compiled": re.compile(pattern_str),
-                }
-            )
+    with open(routes_path) as f:
+        routes = json.load(f)
+    for r in routes:
+        r["compiled"] = re.compile(r["pattern"])
     return routes
 
 
@@ -85,6 +29,15 @@ def match_route(method, path, routes):
         if r["method"] == method and r["compiled"].match(path):
             return r
     return None
+
+
+def resolve_path(cli_path):
+    if os.path.isabs(cli_path):
+        return cli_path
+    if os.path.exists(cli_path):
+        return os.path.abspath(cli_path)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(script_dir, cli_path)
 
 
 def obfuscate_ip(ip_str, ip_map):
@@ -141,29 +94,15 @@ def main():
     )
     args = parser.parse_args()
 
-    workspace_root = find_workspace_root()
-    dss_dir = os.path.join(workspace_root, "dss")
+    input_path = resolve_path(args.input)
+    output_path = resolve_path(args.output)
 
-    # Resolve paths relative to workspace root if they are not absolute
-    input_path = (
-        args.input
-        if os.path.isabs(args.input)
-        else os.path.join(
-            workspace_root, "monitoring/monitoring/analysis/dss_performance", args.input
-        )
-    )
-    output_path = (
-        args.output
-        if os.path.isabs(args.output)
-        else os.path.join(
-            workspace_root,
-            "monitoring/monitoring/analysis/dss_performance",
-            args.output,
-        )
-    )
-
-    print("Loading routes from DSS Go router code...")
-    routes = load_dss_routes(dss_dir)
+    print("Loading DSS routes from dss_routes.json...")
+    try:
+        routes = load_routes()
+    except Exception as e:
+        print(f"Error loading routes: {e}", file=sys.stderr)
+        return
     print(f"Loaded {len(routes)} handlers/routes.")
 
     print(f"Loading logs from {input_path}...")
@@ -313,7 +252,7 @@ def main():
 
     # Load Jinja template
     templates_dir = os.path.abspath(
-        os.path.join(workspace_root, "monitoring/monitoring/analysis/templates")
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "../templates")
     )
     env = Environment(loader=FileSystemLoader(templates_dir))
     template = env.get_template("visualize_latency.html")
