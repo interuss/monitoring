@@ -10,9 +10,9 @@ import argparse
 import json
 import os
 import statistics
-from typing import List
 
 from implicitdict import ImplicitDict
+
 from monitoring.uss_qualifier.reports import jinja_env
 from monitoring.uss_qualifier.reports.report import (
     TestRunReport,
@@ -23,7 +23,7 @@ from monitoring.uss_qualifier.reports.report import (
 
 def find_heavy_traffic_concurrent_scenarios(
     action_report: TestSuiteActionReport,
-) -> List[TestScenarioReport]:
+) -> list[TestScenarioReport]:
     """Recursively search for HeavyTrafficConcurrent scenarios in the action report."""
     scenarios = []
     if "test_scenario" in action_report and action_report.test_scenario:
@@ -45,7 +45,9 @@ def get_dss_participant_id(scenario: TestScenarioReport) -> str:
     # Attempt to extract participant ID from recorded queries
     for case in scenario.cases:
         for step in case.steps:
-            queries = step.queries if ("queries" in step and step.queries is not None) else []
+            queries = (
+                step.queries if ("queries" in step and step.queries is not None) else []
+            )
 
             for q in queries:
                 if q.participant_id:
@@ -84,7 +86,11 @@ def extract_metrics(scenario: TestScenarioReport) -> dict:
         for step in case.steps:
             if step.name in step_mapping:
                 op = step_mapping[step.name]
-                queries = step.queries if ("queries" in step and step.queries is not None) else []
+                queries = (
+                    step.queries
+                    if ("queries" in step and step.queries is not None)
+                    else []
+                )
                 if not queries:
                     continue
 
@@ -144,7 +150,7 @@ def main():
     args = parser.parse_args()
 
     print(f"Loading report from: {args.report}")
-    with open(args.report, "r") as f:
+    with open(args.report) as f:
         raw_report = json.load(f)
     report = ImplicitDict.parse(raw_report, TestRunReport)
 
