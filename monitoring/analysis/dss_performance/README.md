@@ -1,4 +1,6 @@
-# DSS Performance Log Acquisition
+# DSS Performance Analysis
+
+## Acquisition
 
 This utility acquires, normalizes, and combines HTTP server performance logs from Zap-based DSS servers into a standardized JSON format. The output is structured to group logs by their container/server origin and is sorted chronologically.
 
@@ -22,7 +24,7 @@ The normalized JSON format is:
 }
 ```
 
-## Running the tool
+### Running the tool
 
 Run the script using the `uv` project workspace in the `monitoring` directory:
 
@@ -30,7 +32,7 @@ Run the script using the `uv` project workspace in the `monitoring` directory:
 uv run monitoring/analysis/dss_performance/acquire_logs.py [ARGS]
 ```
 
-### Command-line Arguments
+#### Command-line Arguments
 
 - `--style`: (Required) Either `docker` or `gcloud`.
 - `--output`: (Required) The path to the output JSON file. The tool will automatically create directories, load the existing file if present, append new entries, sort them chronologically, and deduplicate identical logs.
@@ -42,9 +44,9 @@ uv run monitoring/analysis/dss_performance/acquire_logs.py [ARGS]
 
 ---
 
-## Acquisition Examples
+### Acquisition Examples
 
-### 1. Local Docker Container
+#### 1. Local Docker Container
 
 To acquire logs from a local container named `local_infra_1-1-dss-1`:
 
@@ -56,11 +58,11 @@ docker logs local_infra_1-1-dss-1 2>&1 | \
     --output monitoring/analysis/dss_performance/acquired_logs.json
 ```
 
-### 2. Google Cloud Logging (gcloud)
+#### 2. Google Cloud Logging (gcloud)
 
 To acquire logs from Google Cloud, you **must** specify `--format="json(jsonPayload, resource.labels)"` in your `gcloud` command. This ensures the output is valid JSON containing both the log payload and the Kubernetes labels required to distinguish container instances.
 
-Here is an example acquiring logs from a cluster named `my-cluster` within a time range, filtering out health checks, and labeling logs by pod name:
+Here is an example acquiring logs from a cluster named `my-cluster` in a project named `my-project-id` within a time range, filtering out health checks, and labeling logs by pod name:
 
 ```shell
 gcloud logging read '
@@ -71,7 +73,7 @@ gcloud logging read '
   timestamp >= "2026-06-07T00:00:00Z"
   timestamp <= "2026-06-07T23:59:59Z"
 ' \
-  --project="your-project-id" \
+  --project="my-project-id" \
   --format="json(jsonPayload, resource.labels)" | \
   uv run monitoring/analysis/dss_performance/acquire_logs.py \
     --style gcloud \
