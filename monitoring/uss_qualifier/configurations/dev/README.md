@@ -30,6 +30,9 @@ Demonstration of a test where a list of expected geospatial map feature queries 
 
 Exercise of automated tests for message signing (not well-developed yet).
 
+## [netrid_concurrency](netrid_concurrency.jsonnet)
+
+Exercises a mini NetRID load test scenario.  See comments in configuration for details.
 
 ## [netrid_v19](netrid_v19.yaml)
 
