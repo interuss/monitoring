@@ -1,5 +1,4 @@
 import asyncio
-import typing
 from datetime import UTC, datetime
 
 import aiohttp
@@ -150,8 +149,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
         )
 
-        results = typing.cast(dict[str, FetchedISA], results)
-
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
 
@@ -163,6 +160,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                     main_check.record_failed(
                         f"ISA retrieval query failed for {isa_id}",
                         details=f"ISA retrieval query for {isa_id} yielded code {fetched_isa.status_code}",
+                        queries=fetched_isa.query,
                     )
 
             isa_validator = ISAValidator(
@@ -174,9 +172,10 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             )
 
             for isa_id, fetched_isa in results:
-                isa_validator.validate_fetched_isa(
-                    isa_id, fetched_isa, expected_version=self._isa_versions[isa_id]
-                )
+                if fetched_isa.status_code == 200:
+                    isa_validator.validate_fetched_isa(
+                        isa_id, fetched_isa, expected_version=self._isa_versions[isa_id]
+                    )
 
     def _wrap_isa_get_query(self, q: Query) -> FetchedISA:
         """Wrap things into the correct utility class"""
@@ -218,7 +217,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 response = describe_aiohttp_response(
                     status, headers, resp_json, duration
                 )
-            except aiohttp.ClientError as e:
+            except (TimeoutError, aiohttp.ClientError) as e:
                 duration = datetime.now(UTC) - t0
                 response = describe_failed_aiohttp_response(e, duration)
 
@@ -255,7 +254,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 response = describe_aiohttp_response(
                     status, headers, resp_json, duration
                 )
-            except aiohttp.ClientError as e:
+            except (TimeoutError, aiohttp.ClientError) as e:
                 duration = datetime.now(UTC) - t0
                 response = describe_failed_aiohttp_response(e, duration)
 
@@ -286,7 +285,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 response = describe_aiohttp_response(
                     status, headers, resp_json, duration
                 )
-            except aiohttp.ClientError as e:
+            except (TimeoutError, aiohttp.ClientError) as e:
                 duration = datetime.now(UTC) - t0
                 response = describe_failed_aiohttp_response(e, duration)
 
@@ -321,8 +320,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             asyncio.gather(*[self._create_isa(isa_id) for isa_id in self._isa_ids])
         )
 
-        results = typing.cast(dict[str, ChangedISA], results)
-
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
 
@@ -337,12 +334,13 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                         sub_check.record_failed(
                             summary="PUT ISA returned technically-incorrect 201",
                             details="DSS should return 200 from PUT ISA, but instead returned the reasonable-but-technically-incorrect code 201",
-                            query_timestamps=[changed_isa.timestamp],
+                            queries=changed_isa.query,
                         )
                 if changed_isa.status_code not in [200, 201]:
                     main_check.record_failed(
                         f"ISA creation failed for {isa_id}",
-                        details=f"ISA creation for {isa_id} returned {changed_isa.query.response.code}",
+                        details=f"ISA creation for {isa_id} returned {changed_isa.status_code}",
+                        queries=changed_isa.query,
                     )
                 else:
                     self._isa_versions[isa_id] = changed_isa.isa.version
@@ -356,9 +354,10 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             )
 
             for isa_id, changed_isa in results:
-                isa_validator.validate_mutated_isa(
-                    isa_id, changed_isa, previous_version=None
-                )
+                if changed_isa.status_code in [200, 201]:
+                    isa_validator.validate_mutated_isa(
+                        isa_id, changed_isa, previous_version=None
+                    )
 
     def _search_area_step(self):
         with self.check(
@@ -377,7 +376,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                         sub_check.record_failed(
                             f"ISAs search did not return ISA {isa_id} that was just created",
                             details=f"Search in area {self._isa_area} returned ISAs {isas.isas.keys()} and is missing some of the created ISAs",
-                            query_timestamps=[isas.dss_query.query.request.timestamp],
+                            queries=isas.query,
                         )
 
             isa_validator = ISAValidator(
@@ -403,8 +402,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             )
         )
 
-        results = typing.cast(dict[str, ChangedISA], results)
-
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
 
@@ -412,10 +409,11 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             "ISAs deletion query success", [self._dss_wrapper.participant_id]
         ) as main_check:
             for isa_id, deleted_isa in results:
-                if deleted_isa.query.response.code != 200:
+                if deleted_isa.status_code != 200:
                     main_check.record_failed(
                         f"ISA deletion failed for {isa_id}",
-                        details=f"ISA deletion for {isa_id} returned {deleted_isa.query.response.code}",
+                        details=f"ISA deletion for {isa_id} returned {deleted_isa.status_code}",
+                        queries=deleted_isa.query,
                     )
 
             isa_validator = ISAValidator(
@@ -427,17 +425,16 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             )
 
             for isa_id, changed_isa in results:
-                isa_validator.validate_deleted_isa(
-                    isa_id, changed_isa, expected_version=self._isa_versions[isa_id]
-                )
+                if changed_isa.status_code == 200:
+                    isa_validator.validate_deleted_isa(
+                        isa_id, changed_isa, expected_version=self._isa_versions[isa_id]
+                    )
 
     def _get_deleted_isas(self):
         loop = asyncio.get_event_loop()
         results = loop.run_until_complete(
             asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
         )
-
-        results = typing.cast(dict[str, ChangedISA], results)
 
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
@@ -448,7 +445,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                     check.record_failed(
                         f"ISA retrieval succeeded for {isa_id}",
                         details=f"ISA retrieval for {isa_id} returned {fetched_isa.status_code}",
-                        query_timestamps=[fetched_isa.query.request.timestamp],
+                        queries=fetched_isa.query,
                     )
 
     def _search_deleted_isas(self):
@@ -468,7 +465,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                     check.record_failed(
                         f"ISAs search returned deleted ISA {isa_id}",
                         details=f"Search in area {self._isa_area} returned ISAs {isas.isas.keys()} that contained some of the ISAs we had previously deleted.",
-                        query_timestamps=[isas.dss_query.query.request.timestamp],
+                        queries=isas.query,
                     )
 
     def cleanup(self):
