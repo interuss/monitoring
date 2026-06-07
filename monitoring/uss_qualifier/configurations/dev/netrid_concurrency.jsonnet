@@ -132,7 +132,7 @@ local NUM_NODES = 3;
               volume: 'service_area_volume',
             },
             specification: {
-              base_url: 'https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/kentland_service_area',
+              base_url: 'https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/netrid_concurrency/resources/service_area',
             },
           },
           dss_instances: {
