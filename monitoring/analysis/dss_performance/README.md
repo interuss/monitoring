@@ -27,7 +27,7 @@ The normalized JSON format is:
 Run the script using the `uv` project workspace in the `monitoring` directory:
 
 ```shell
-uv run --index https://pypi.org/simple monitoring/analysis/dss_performance/acquire_logs.py [ARGS]
+uv run monitoring/analysis/dss_performance/acquire_logs.py [ARGS]
 ```
 
 ### Command-line Arguments
@@ -50,7 +50,7 @@ To acquire logs from a local container named `local_infra_1-1-dss-1`:
 
 ```shell
 docker logs local_infra_1-1-dss-1 2>&1 | \
-  uv run --index https://pypi.org/simple monitoring/analysis/dss_performance/acquire_logs.py \
+  uv run monitoring/analysis/dss_performance/acquire_logs.py \
     --style docker \
     --origin local_infra_1-1-dss-1 \
     --output monitoring/analysis/dss_performance/acquired_logs.json
@@ -71,8 +71,9 @@ gcloud logging read '
   timestamp >= "2026-06-07T00:00:00Z"
   timestamp <= "2026-06-07T23:59:59Z"
 ' \
+  --project="your-project-id" \
   --format="json(jsonPayload, resource.labels)" | \
-  uv run --index https://pypi.org/simple monitoring/analysis/dss_performance/acquire_logs.py \
+  uv run monitoring/analysis/dss_performance/acquire_logs.py \
     --style gcloud \
     --origin-format "{pod_name}" \
     --output monitoring/analysis/dss_performance/acquired_logs.json
@@ -91,20 +92,10 @@ To include container name or namespace in the origin key (e.g. `core-service/pod
 Once logs have been acquired in `acquired_logs.json`, you can generate an interactive standalone HTML dashboard to analyze DSS handler latency over time:
 
 ```shell
-uv run --index https://pypi.org/simple monitoring/analysis/dss_performance/visualize_latency.py [INPUT_JSON] [OUTPUT_HTML]
+uv run monitoring/analysis/dss_performance/visualize_latency.py [INPUT_JSON] [OUTPUT_HTML]
 ```
 
 ### Arguments
 
 - `INPUT_JSON`: Optional. Path to the input JSON file (default: `acquired_logs.json`).
 - `OUTPUT_HTML`: Optional. Path to the output HTML file (default: `latency_visualization.html`).
-
-### Key Features of the Dashboard
-
-- **Interactive Scatterplot**: Displays handler latency (Y-axis) against wall time (X-axis) using WebGL for high performance.
-- **Navigable X-axis**: Zoom in/out, pan, and select specific time ranges directly on the plot.
-- **Hierarchical Sidebar Controls**: Check or uncheck datasets grouped by origin, handler category (e.g. `ridv2`, `scdv1`, `auxv1`), and individual handler.
-- **Apply to All Origins**: Easily toggle a handler across all origins with a single click.
-- **Search Filtering**: Filter handlers in the sidebar by name or HTTP method.
-- **Live Statistics**: Computes dynamic statistics (total requests, average latency, 95th and 99th percentiles) for the currently visible datasets.
-
