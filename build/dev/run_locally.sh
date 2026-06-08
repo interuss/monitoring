@@ -2,20 +2,8 @@
 
 set -eo pipefail
 
-# This script will deploy an interoperability ecosystem consisting of a chosen number of DSS instances and a dummy OAuth
-# server (all accessible on the interop_ecosystem_network) with docker compose using the DSS image from Docker Hub.
-# Run `./run_locally.sh up -d` to start two DSS instances using CockroachDB.
-#
-# The following environment variables may be used to simulate different conditions:
-# - NUM_USS: number of USSs (default: 2); note that the standard local mock ecosystem requires at least 2 USSs
-# - NUM_NODES: number of nodes per USS (default: 1)
-# - DB_TYPE: crdb or ybdb (default: crdb)
-# - INTRA_USS_NETEM_CONF: tc netem configuration to apply to traffic between DB nodes of an USS (default: <none>)
-#   sensible value (low latency/jitter, very low loss (e.g., within same availability DC)):
-#   "delay 250us 25us 25% distribution normal loss 0.0025% 10%"
-# - INTER_USS_NETEM_CONF: tc netem configuration to apply to traffic between DB nodes of different USS (default: <none>)
-#   sensible value (higher latency/jitter, moderate loss (e.g., cross-country)):
-#   "delay 25ms 7.5ms 50% distribution paretonormal loss 0.025% 25%"
+# This script deploys a local UTM interoperability ecosystem.
+# For full documentation on parameters, usage, sizing limits, and troubleshooting, please refer to README.md.
 
 if [[ -z $(command -v docker) ]]; then
   echo "docker is required but not installed.  Visit https://docs.docker.com/install/ to install."
@@ -40,16 +28,20 @@ DC_COMMAND=$*
 
 if [[ ! "$DC_COMMAND" ]]; then
   DC_COMMAND="up"
-  DC_OPTIONS="--build --wait"
+  DC_OPTIONS="--build -d"
 elif [[ "$DC_COMMAND" == "down" ]]; then
   DC_OPTIONS="--volumes --remove-orphans"
 elif [[ "$DC_COMMAND" == "debug" ]]; then
   DC_COMMAND=up
-  DC_OPTIONS="--wait"
+  DC_OPTIONS="-d"
   export DEBUG_ON=1
 fi
 
 if [[ "$DC_COMMAND" == up* ]]; then
+  DC_COMMAND=${DC_COMMAND//--wait/}
+  if [[ ! "$DC_COMMAND" =~ "-d" && ! "$DC_OPTIONS" =~ "-d" ]]; then
+    DC_OPTIONS="${DC_OPTIONS} -d"
+  fi
   echo "Creating networks..."
   docker network create --subnet=172.27.0.0/16 \
                         --ip-range=172.27.0.0/24 \
@@ -105,6 +97,58 @@ if [[ "$DC_COMMAND" == up* ]]; then
 
   check_and_connect "local_infra_1-1-oauth-1" "interop_ecosystem_network"
   echo "Network verification complete."
+
+  echo "Waiting for all containers to become healthy..."
+  timeout=240
+  interval=5
+  elapsed=0
+  all_healthy=true
+
+  while [ $elapsed -lt $timeout ]; do
+    all_healthy=true
+    unhealthy_containers=()
+
+    check_container_health() {
+      local container=$1
+      if ! docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
+        all_healthy=false
+        unhealthy_containers+=("$container (not running)")
+        return
+      fi
+
+      local health_status=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$container")
+      if [[ "$health_status" == "unhealthy" || "$health_status" == "starting" ]]; then
+        all_healthy=false
+        unhealthy_containers+=("$container ($health_status)")
+      fi
+    }
+
+    for ((i=1; i<=NUM_USS; i++)); do
+      for ((j=1; j<=NUM_NODES; j++)); do
+        check_container_health "local_infra_${i}-${j}-dss-1"
+        check_container_health "local_infra_${i}-${j}-${DB_TYPE}-1"
+      done
+    done
+    check_container_health "local_infra_1-1-oauth-1"
+
+    if [ "$all_healthy" = true ]; then
+      echo "All containers are healthy!"
+      break
+    fi
+
+    echo "Still waiting (elapsed ${elapsed}s)... Unhealthy/starting/not-running:"
+    for uc in "${unhealthy_containers[@]}"; do
+      echo "  - $uc"
+    done
+
+    sleep $interval
+    elapsed=$((elapsed + interval))
+  done
+
+  if [ "$all_healthy" != true ]; then
+    echo "Error: Timeout waiting for containers to become healthy."
+    exit 1
+  fi
 fi
 
 if [[ "$DC_COMMAND" == "down" ]]; then
