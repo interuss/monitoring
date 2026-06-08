@@ -68,7 +68,7 @@ for ((i=1; i<=NUM_USS; i++)); do
 
     # shellcheck disable=SC2086
     docker compose -f docker-compose.yaml -p "local_infra_${USS_IDX}-${USS_NODE_IDX}" $DC_COMMAND $DC_OPTIONS &
-    sleep 0.1
+    sleep 0.1 # reduce probability of race condition in joining network at container start
   done
 done
 wait
