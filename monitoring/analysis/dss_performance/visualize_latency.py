@@ -11,7 +11,7 @@ from jinja2 import Environment, FileSystemLoader
 
 def load_routes():
     routes_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "dss_routes.json"
+        os.path.dirname(os.path.abspath(__file__)), "dss_routes.gen.json"
     )
     if not os.path.exists(routes_path):
         raise RuntimeError(

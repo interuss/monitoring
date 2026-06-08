@@ -96,7 +96,7 @@ def main():
     print(f"Found {len(routes)} routes.")
 
     output_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "dss_routes.json"
+        os.path.dirname(os.path.abspath(__file__)), "dss_routes.gen.json"
     )
     print(f"Writing routes to {output_path}...")
     with open(output_path, "w") as f:
