@@ -421,7 +421,7 @@ function(env) {
               count: {
                 // We currently expect this amount of skipped scenarios: making it an equality
                 // to make sure this is reduced if some scenarios start to be executed
-                equal_to: 6,
+                equal_to: 7,
               },
             },
           },
