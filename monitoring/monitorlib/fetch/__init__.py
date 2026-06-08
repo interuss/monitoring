@@ -601,6 +601,22 @@ def describe_query(
     return query
 
 
+def is_fake_netloc(url: str) -> bool:
+    try:
+        return urlparse(url).netloc in settings.fake_netlocs
+    except ValueError:
+        return False
+
+
+def get_traceback_location() -> str:
+    """Get the closest call site outside of the fetch module"""
+    stack = traceback.extract_stack()
+    for frame in reversed(stack):
+        if "monitoring/monitorlib/fetch" not in frame.filename:
+            return traceback.format_list([frame])[0].split("\n")[0].strip()
+    return traceback.format_list([stack[-1]])[0].split("\n")[0].strip()
+
+
 def query_and_describe(
     client: infrastructure.UTMClientSession | None,
     verb: str,
@@ -651,18 +667,7 @@ def query_and_describe(
 
     failures = []
 
-    is_netloc_fake = False
-    try:
-        is_netloc_fake = urlparse(url).netloc in settings.fake_netlocs
-    except ValueError:
-        pass
-
-    def get_location() -> str:
-        return (
-            traceback.format_list([traceback.extract_stack()[-3]])[0]
-            .split("\n")[0]
-            .strip()
-        )
+    is_netloc_fake = is_fake_netloc(url)
 
     previous_query = None
 
@@ -701,7 +706,7 @@ def query_and_describe(
         t0 = datetime.datetime.now(datetime.UTC)
         try:
             if is_netloc_fake:
-                failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} was not attempted because network location of {url} was identified as fake: {settings.fake_netlocs}\nAt {get_location()}"
+                failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} was not attempted because network location of {url} was identified as fake: {settings.fake_netlocs}\nAt {get_traceback_location()}"
                 failures.append(failure_message)
                 return build_failing_query(t0)
 
@@ -713,7 +718,7 @@ def query_and_describe(
                 previous_query=previous_query,
             )
         except (requests.Timeout, urllib3.exceptions.ReadTimeoutError) as e:
-            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with timeout {type(e).__name__}: {str(e)}\nAt {get_location()}"
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with timeout {type(e).__name__}: {str(e)}\nAt {get_traceback_location()}"
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
@@ -736,7 +741,7 @@ def query_and_describe(
                 retryable = True
             else:
                 retryable = False
-            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with {'' if retryable else 'non-'}retryable ConnectionError: {str(e)}\nAt {get_location()}"
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with {'' if retryable else 'non-'}retryable ConnectionError: {str(e)}\nAt {get_traceback_location()}"
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
@@ -745,7 +750,7 @@ def query_and_describe(
                 return build_failing_query(t0)
 
         except requests.RequestException as e:
-            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with non-retryable RequestException {type(e).__name__}: {str(e)}\nAt {get_location()}"
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with non-retryable RequestException {type(e).__name__}: {str(e)}\nAt {get_traceback_location()}"
             if not expect_failure:
                 logger.warning(failure_message)
             failures.append(failure_message)
