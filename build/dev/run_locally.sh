@@ -76,9 +76,36 @@ for ((i=1; i<=NUM_USS; i++)); do
 
     # shellcheck disable=SC2086
     docker compose -f docker-compose.yaml -p "local_infra_${USS_IDX}-${USS_NODE_IDX}" $DC_COMMAND $DC_OPTIONS &
+    sleep 0.1
   done
 done
 wait
+
+if [[ "$DC_COMMAND" == up* ]]; then
+  echo "Verifying and repairing docker network connections..."
+
+  check_and_connect() {
+    local container=$1
+    local network=$2
+    if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
+      if ! docker inspect "${container}" --format '{{json .NetworkSettings.Networks}}' | grep -q "\"${network}\""; then
+        echo "Warning: Container ${container} is not connected to ${network}. Reconnecting..."
+        docker network connect "${network}" "${container}"
+      fi
+    fi
+  }
+
+  for ((i=1; i<=NUM_USS; i++)); do
+    for ((j=1; j<=NUM_NODES; j++)); do
+      check_and_connect "local_infra_${i}-${j}-dss-1" "dss_internal_network"
+      check_and_connect "local_infra_${i}-${j}-dss-1" "interop_ecosystem_network"
+      check_and_connect "local_infra_${i}-${j}-${DB_TYPE}-1" "dss_internal_network"
+    done
+  done
+
+  check_and_connect "local_infra_1-1-oauth-1" "interop_ecosystem_network"
+  echo "Network verification complete."
+fi
 
 if [[ "$DC_COMMAND" == "down" ]]; then
   echo "Removing networks..."
