@@ -609,6 +609,7 @@ def is_fake_netloc(url: str) -> bool:
 
 
 def get_traceback_location() -> str:
+    """Get the closest call site outside of the fetch module"""
     stack = traceback.extract_stack()
     for frame in reversed(stack):
         if "monitoring/monitorlib/fetch" not in frame.filename:
