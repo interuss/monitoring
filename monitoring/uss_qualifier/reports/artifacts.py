@@ -87,10 +87,15 @@ def generate_artifacts(
     def make_templated_reports() -> None:
         if not artifacts.templated_reports:
             return
+        logger.info(f"Writing templated report to {output_path}")
+        t0 = time.monotonic()
         render_templates(
             output_path,
             artifacts.templated_reports,
             redacted_report,
+        )
+        logger.info(
+            f"Wrote templated report in {time.monotonic() - t0:.1f}s"
         )
 
     def make_tested_requirements() -> None:
