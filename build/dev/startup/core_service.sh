@@ -12,10 +12,19 @@ JWT_AUDIENCES="localhost,host.docker.internal,${JWT_AUDIENCES}"
 if [ "${COMPOSE_PROFILES#*"ybdb"}" != "${COMPOSE_PROFILES}" ]; then
   echo "Using Yugabyte"
   DATASTORE_CONNECTION="-datastore_host ${DATASTORE_HOST} -datastore_user yugabyte --datastore_port 5433"
+  DB_PORT=5433
 else
   echo "Using CockroachDB"
   DATASTORE_CONNECTION="-datastore_host ${DATASTORE_HOST}"
+  DB_PORT=26257
 fi
+
+echo "Waiting for datastore ${DATASTORE_HOST}:${DB_PORT}..."
+until nc -z -w 2 "${DATASTORE_HOST}" "${DB_PORT}" 2>/dev/null; do
+  echo "Datastore ${DATASTORE_HOST}:${DB_PORT} is not available yet, sleeping..."
+  sleep 2
+done
+echo "Datastore ${DATASTORE_HOST}:${DB_PORT} is online!"
 
 if [ "$DEBUG_ON" = "1" ]; then
   echo "Debug Mode: on"

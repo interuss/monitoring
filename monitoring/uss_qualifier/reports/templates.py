@@ -50,7 +50,13 @@ class TemplateRenderer:
         if path.exists():
             logger.debug(f"{url} already in cache ({path}). Skip download.")
         else:
-            req = requests.get(url)
+            try:
+                req = requests.get(url)
+                req.raise_for_status()
+            except Exception as e:
+                raise RuntimeError(
+                    f"Failed to download template from {url}: {e}"
+                ) from e
             z = zipfile.ZipFile(io.BytesIO(req.content))
             z.extractall(path)
             logger.debug(f"{url} extracted to {path}")

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HeavyTrafficConcurrent Performance Summary</title>
+  <style>
+    body {
+      margin: 2em;
+      color: #24292f;
+      background-color: #ffffff;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    h1 {
+      margin-bottom: 0.5em;
+    }
+    table {
+      border-spacing: 0;
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 1em;
+    }
+    th {
+      padding: 10px;
+      text-align: left;
+      background-color: #f6f8fa;
+      border: 1px solid #d0d7de;
+      font-weight: 600;
+    }
+    td {
+      padding: 10px;
+      vertical-align: middle;
+      border: 1px solid #d0d7de;
+    }
+    tr:nth-child(2n) {
+      background-color: #fafbfc;
+    }
+    .metric-group {
+      font-size: 13px;
+    }
+    .metric-label {
+      color: #57606a;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .metric-value {
+      font-weight: 500;
+      color: #0969da;
+    }
+    .latency-stats {
+      font-family: monospace;
+      color: #24292f;
+    }
+    .success-rate-good {
+      color: #1a7f37;
+      font-weight: bold;
+    }
+    .success-rate-bad {
+      color: #cf222e;
+      font-weight: bold;
+    }
+    .no-data {
+      color: #57606a;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>HeavyTrafficConcurrent Performance Summary</h1>
+  <p>This report summarizes the performance metrics of <code>HeavyTrafficConcurrent</code> test scenario instances extracted from the test run report.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2">DSS Participant ID</th>
+        <th rowspan="2">Scenario Details</th>
+        <th colspan="4" style="text-align: center;">Operation Types (Metrics: QPS, Latency Min/Med/Max, Success Rate)</th>
+      </tr>
+      <tr>
+        <th>ISA Creation</th>
+        <th>Created ISA Query</th>
+        <th>ISA Deletion</th>
+        <th>Deleted ISA Query</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td><strong>{{ row.participant_id }}</strong></td>
+        <td>
+          <div>{{ row.scenario_name }}</div>
+          <div style="font-size: 11px; color: #57606a;">Started: {{ row.start_time }}</div>
+        </td>
+        {% for op in ['isa_creation', 'created_isa_query', 'isa_deletion', 'deleted_isa_query'] %}
+        <td>
+          {% if row.metrics[op] %}
+            {% set m = row.metrics[op] %}
+            <div class="metric-group">
+              <div><span class="metric-label">QPS:</span> <span class="metric-value">{{ "%.2f"|format(m.qps) }}</span></div>
+              <div>
+                <span class="metric-label">Latency:</span>
+                <span class="latency-stats">{{ "%.0f"|format(m.min_ms) }}/{{ "%.0f"|format(m.median_ms) }}/{{ "%.0f"|format(m.max_ms) }} ms</span>
+              </div>
+              <div>
+                <span class="metric-label">Success:</span>
+                <span class="{% if m.success_rate >= 100 %}success-rate-good{% else %}success-rate-bad{% endif %}">
+                  {{ m.success_count }}/{{ m.total_count }} ({{ "%.1f"|format(m.success_rate) }}%)
+                </span>
+              </div>
+            </div>
+          {% else %}
+            <span class="no-data">No data</span>
+          {% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
