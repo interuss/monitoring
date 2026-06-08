@@ -1,17 +1,11 @@
 import asyncio
-import typing
-from datetime import UTC, datetime
 
-import aiohttp
-import requests
 from uas_standards.astm.f3411 import v19, v22a
 
 from monitoring.monitorlib.fetch import (
     Query,
     QueryType,
-    describe_aiohttp_response,
-    describe_failed_aiohttp_response,
-    describe_request,
+    fetch_async,
 )
 from monitoring.monitorlib.fetch.rid import FetchedISA
 from monitoring.monitorlib.infrastructure import AsyncUTMTestSession
@@ -150,8 +144,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
         )
 
-        results = typing.cast(dict[str, FetchedISA], results)
-
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
 
@@ -163,6 +155,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                     main_check.record_failed(
                         f"ISA retrieval query failed for {isa_id}",
                         details=f"ISA retrieval query for {isa_id} yielded code {fetched_isa.status_code}",
+                        queries=fetched_isa.query,
                     )
 
             isa_validator = ISAValidator(
@@ -174,9 +167,10 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             )
 
             for isa_id, fetched_isa in results:
-                isa_validator.validate_fetched_isa(
-                    isa_id, fetched_isa, expected_version=self._isa_versions[isa_id]
-                )
+                if fetched_isa.status_code == 200:
+                    isa_validator.validate_fetched_isa(
+                        isa_id, fetched_isa, expected_version=self._isa_versions[isa_id]
+                    )
 
     def _wrap_isa_get_query(self, q: Query) -> FetchedISA:
         """Wrap things into the correct utility class"""
@@ -199,36 +193,14 @@ class HeavyTrafficConcurrent(GenericTestScenario):
     async def _get_isa(self, isa_id):
         async with SEMAPHORE:
             (_, url) = mutate.build_isa_url(self._dss.rid_version, isa_id)
-            # Build a `Request` object to register the query later on,
-            # although we don't need it to do the effective request here on the async_session
-            # This one is quite barebone and we need to check if anything needs to be added
-            r = requests.Request(
+            rq = await fetch_async.query_and_describe(
+                self._async_session,
                 "GET",
                 url,
-            )
-            # TODO: Do not rely on a prepared request that is not actually used in order to create the Query RequestDescription; instead build it from the request actually made
-            prep = self._dss.client.prepare_request(r)
-            t0 = datetime.now(UTC)
-            req_descr = describe_request(prep, t0)
-            try:
-                status, headers, resp_json = await self._async_session.get(
-                    url=url, scope=self._read_scope()
-                )
-                duration = datetime.now(UTC) - t0
-                response = describe_aiohttp_response(
-                    status, headers, resp_json, duration
-                )
-            except aiohttp.ClientError as e:
-                duration = datetime.now(UTC) - t0
-                response = describe_failed_aiohttp_response(e, duration)
-
-            rq = Query(
-                request=req_descr,
-                response=response,
+                scope=self._read_scope(),
                 participant_id=self._dss.participant_id,
                 query_type=QueryType.dss_get_isa(self._dss.rid_version),
             )
-
             return isa_id, self._wrap_isa_get_query(rq)
 
     async def _create_isa(self, isa_id):
@@ -238,30 +210,12 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                 rid_version=self._dss.rid_version,
             )
             (_, url) = mutate.build_isa_url(self._dss.rid_version, isa_id)
-            r = requests.Request(
+            rq = await fetch_async.query_and_describe(
+                self._async_session,
                 "PUT",
                 url,
                 json=payload,
-            )
-            # TODO: Do not rely on a prepared request that is not actually used in order to create the Query RequestDescription; instead build it from the request actually made
-            prep = self._dss.client.prepare_request(r)
-            t0 = datetime.now(UTC)
-            req_descr = describe_request(prep, t0)
-            try:
-                status, headers, resp_json = await self._async_session.put(
-                    url=url, json=payload, scope=self._write_scope()
-                )
-                duration = datetime.now(UTC) - t0
-                response = describe_aiohttp_response(
-                    status, headers, resp_json, duration
-                )
-            except aiohttp.ClientError as e:
-                duration = datetime.now(UTC) - t0
-                response = describe_failed_aiohttp_response(e, duration)
-
-            rq = Query(
-                request=req_descr,
-                response=response,
+                scope=self._write_scope(),
                 participant_id=self._dss.participant_id,
                 query_type=QueryType.dss_create_isa(self._dss.rid_version),
             )
@@ -270,33 +224,14 @@ class HeavyTrafficConcurrent(GenericTestScenario):
     async def _delete_isa(self, isa_id, isa_version):
         async with SEMAPHORE:
             (_, url) = mutate.build_isa_url(self._dss.rid_version, isa_id, isa_version)
-            r = requests.Request(
+            rq = await fetch_async.query_and_describe(
+                self._async_session,
                 "DELETE",
                 url,
-            )
-            # TODO: Do not rely on a prepared request that is not actually used in order to create the Query RequestDescription; instead build it from the request actually made
-            prep = self._dss.client.prepare_request(r)
-            t0 = datetime.now(UTC)
-            req_descr = describe_request(prep, t0)
-            try:
-                status, headers, resp_json = await self._async_session.delete(
-                    url=url, scope=self._write_scope()
-                )
-                duration = datetime.now(UTC) - t0
-                response = describe_aiohttp_response(
-                    status, headers, resp_json, duration
-                )
-            except aiohttp.ClientError as e:
-                duration = datetime.now(UTC) - t0
-                response = describe_failed_aiohttp_response(e, duration)
-
-            rq = Query(
-                request=req_descr,
-                response=response,
+                scope=self._write_scope(),
                 participant_id=self._dss.participant_id,
                 query_type=QueryType.dss_delete_isa(self._dss.rid_version),
             )
-
             return isa_id, self._wrap_isa_put_query(rq, "delete")
 
     def _write_scope(self):
@@ -321,8 +256,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             asyncio.gather(*[self._create_isa(isa_id) for isa_id in self._isa_ids])
         )
 
-        results = typing.cast(dict[str, ChangedISA], results)
-
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
 
@@ -337,12 +270,13 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                         sub_check.record_failed(
                             summary="PUT ISA returned technically-incorrect 201",
                             details="DSS should return 200 from PUT ISA, but instead returned the reasonable-but-technically-incorrect code 201",
-                            query_timestamps=[changed_isa.timestamp],
+                            queries=changed_isa.query,
                         )
                 if changed_isa.status_code not in [200, 201]:
                     main_check.record_failed(
                         f"ISA creation failed for {isa_id}",
-                        details=f"ISA creation for {isa_id} returned {changed_isa.query.response.code}",
+                        details=f"ISA creation for {isa_id} returned {changed_isa.status_code}",
+                        queries=changed_isa.query,
                     )
                 else:
                     self._isa_versions[isa_id] = changed_isa.isa.version
@@ -356,9 +290,10 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             )
 
             for isa_id, changed_isa in results:
-                isa_validator.validate_mutated_isa(
-                    isa_id, changed_isa, previous_version=None
-                )
+                if changed_isa.status_code in [200, 201]:
+                    isa_validator.validate_mutated_isa(
+                        isa_id, changed_isa, previous_version=None
+                    )
 
     def _search_area_step(self):
         with self.check(
@@ -377,7 +312,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                         sub_check.record_failed(
                             f"ISAs search did not return ISA {isa_id} that was just created",
                             details=f"Search in area {self._isa_area} returned ISAs {isas.isas.keys()} and is missing some of the created ISAs",
-                            query_timestamps=[isas.dss_query.query.request.timestamp],
+                            queries=isas.query,
                         )
 
             isa_validator = ISAValidator(
@@ -403,8 +338,6 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             )
         )
 
-        results = typing.cast(dict[str, ChangedISA], results)
-
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
 
@@ -412,10 +345,11 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             "ISAs deletion query success", [self._dss_wrapper.participant_id]
         ) as main_check:
             for isa_id, deleted_isa in results:
-                if deleted_isa.query.response.code != 200:
+                if deleted_isa.status_code != 200:
                     main_check.record_failed(
                         f"ISA deletion failed for {isa_id}",
-                        details=f"ISA deletion for {isa_id} returned {deleted_isa.query.response.code}",
+                        details=f"ISA deletion for {isa_id} returned {deleted_isa.status_code}",
+                        queries=deleted_isa.query,
                     )
 
             isa_validator = ISAValidator(
@@ -427,17 +361,16 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             )
 
             for isa_id, changed_isa in results:
-                isa_validator.validate_deleted_isa(
-                    isa_id, changed_isa, expected_version=self._isa_versions[isa_id]
-                )
+                if changed_isa.status_code == 200:
+                    isa_validator.validate_deleted_isa(
+                        isa_id, changed_isa, expected_version=self._isa_versions[isa_id]
+                    )
 
     def _get_deleted_isas(self):
         loop = asyncio.get_event_loop()
         results = loop.run_until_complete(
             asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
         )
-
-        results = typing.cast(dict[str, ChangedISA], results)
 
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
@@ -448,7 +381,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                     check.record_failed(
                         f"ISA retrieval succeeded for {isa_id}",
                         details=f"ISA retrieval for {isa_id} returned {fetched_isa.status_code}",
-                        query_timestamps=[fetched_isa.query.request.timestamp],
+                        queries=fetched_isa.query,
                     )
 
     def _search_deleted_isas(self):
@@ -468,7 +401,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                     check.record_failed(
                         f"ISAs search returned deleted ISA {isa_id}",
                         details=f"Search in area {self._isa_area} returned ISAs {isas.isas.keys()} that contained some of the ISAs we had previously deleted.",
-                        query_timestamps=[isas.dss_query.query.request.timestamp],
+                        queries=isas.query,
                     )
 
     def cleanup(self):
