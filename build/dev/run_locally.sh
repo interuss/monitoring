@@ -116,7 +116,8 @@ if [[ "$DC_COMMAND" == up* ]]; then
         return
       fi
 
-      local health_status=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$container")
+      local health_status
+      health_status=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$container")
       if [[ "$health_status" == "unhealthy" || "$health_status" == "starting" ]]; then
         all_healthy=false
         unhealthy_containers+=("$container ($health_status)")
