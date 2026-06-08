@@ -94,9 +94,7 @@ def generate_artifacts(
             artifacts.templated_reports,
             redacted_report,
         )
-        logger.info(
-            f"Wrote templated report in {time.monotonic() - t0:.1f}s"
-        )
+        logger.info(f"Wrote templated report in {time.monotonic() - t0:.1f}s")
 
     def make_tested_requirements() -> None:
         if not artifacts.tested_requirements:
