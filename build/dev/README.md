@@ -20,6 +20,7 @@ To tear down the deployment and clean up networks (also via `make down-locally` 
 ```bash
 ./run_locally.sh down
 ```
+Note that to ensure a proper cleanup, the same environment variables used for the `up` should be used for the `down`. 
 
 ## Environment Variables
 
