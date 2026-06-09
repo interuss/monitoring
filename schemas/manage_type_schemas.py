@@ -178,7 +178,7 @@ def main() -> int:
     changes = 0
 
     # Check for non-current schemas that need to be removed
-    for dirpath, _, filenames in os.walk(os.path.join(repo_root, "schemas/monitoring")):
+    for dirpath, _, filenames in os.walk(os.path.join(repo_root, "schemas")):
         for filename in filenames:
             rel_filename = os.path.relpath(
                 os.path.join(dirpath, filename), start=repo_root

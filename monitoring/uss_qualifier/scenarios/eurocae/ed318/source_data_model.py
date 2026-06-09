@@ -26,7 +26,7 @@ class SourceDataModelValidation(TestScenario):
         def retrieve_schema(uri: str) -> referencing.Resource:
             # the $ref in the schemas are relative paths, this function allows resolving them
             repo_root = pathlib.Path(str(monitoring.__file__)).parent.parent
-            schema_path = repo_root / "schemas" / "ed318" / "schema" / uri
+            schema_path = repo_root / "interfaces" / "ed318" / "schema" / uri
             if not schema_path.exists():
                 raise NoSuchResource(ref=str(schema_path))
             with open(schema_path) as schema:
