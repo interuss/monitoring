@@ -28,10 +28,18 @@ RUN if [ "$(uname -m)" = "aarch64" ]; then \
 
 RUN mkdir -p /app/
 
+# This image should be built by passing in `version` and `commit_hash` based on information from git (see `make image`)
+# This version information becomes available in the environment variables specified below
+ARG version
+ARG commit_hash
+ENV MONITORING_VERSION=$version
+ENV GIT_COMMIT_HASH=$commit_hash
+
 # Install dependencies
 ENV UV_LINK_MODE=copy
 ENV UV_PROJECT_ENVIRONMENT=/venv/
 ENV VIRTUAL_ENV=/venv/
+ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_MONITORING=$version
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=./uv.lock,target=/app/uv.lock \
     --mount=type=bind,source=./pyproject.toml,target=/app/pyproject.toml \
@@ -40,6 +48,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # Ensure UV don't check dependencies or lock file, since we installed everything before
 ENV UV_FROZEN=1
+ENV UV_NO_SYNC=1
 
 # Ensure the cache folder is present and writable by anyone
 # (Some command run with limited privileges)
@@ -70,12 +79,6 @@ ENV PYTHONPATH=/app
 # Add venv to path
 ENV PATH="/venv/bin/:$PATH"
 
-# This image should be built by passing in `version` and `commit_hash` based on information from git (see `make image`)
-# This version information becomes available in the environment variables specified below
-ARG version
-ARG commit_hash
-ENV MONITORING_VERSION=$version
-ENV GIT_COMMIT_HASH=$commit_hash
 
 # No entry point maximizes flexibility in the use of this image
 ENTRYPOINT []

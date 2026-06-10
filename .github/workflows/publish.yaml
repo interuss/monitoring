@@ -1,0 +1,28 @@
+# Based on https://github.com/denkiwakame/py-tiny-pkg/blob/main/.github/workflows/pub.yml
+# To create a release, see https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository
+
+name: publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: setup-python
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.x"
+        architecture: "x64"
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+    - name: build sdist(tarball) and bdist(wheel) to dist/
+      run: uv build
+    - name: publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}

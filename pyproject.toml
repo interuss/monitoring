@@ -1,9 +1,12 @@
 [project]
 name = "monitoring"
-version = "0.1.0"
+dynamic = ["version"]
+authors = [
+  { name="InterUSS Platform", email="tsc@lists.interussplatform.org" },
+]
 description = "Monitoring framework to test UAS Service Suppliers"
 readme = "README.md"
-requires-python = "==3.13.11"
+requires-python = ">=3.13"
 dependencies = [
     "aiohttp",
     "arrow",
@@ -93,3 +96,31 @@ exclude = [
   "monitoring/mock_uss/output/*",
   "monitoring/uss_qualifier/output/*",
 ]
+
+[build-system]
+requires = [
+  "setuptools>=77.0.3",
+  "wheel",               # for bdist package distribution
+  "setuptools_scm>=6.4", # for automated versioning
+]
+
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+package-dir = { "monitoring" = "monitoring" }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+  "monitoring.deployment_manager*",
+  "monitoring.mock_uss*",
+  "monitoring.monitorlib*",
+  "monitoring.prober*",
+  "monitoring.uss_qualifier*",
+  "monitoring._version.py"
+]
+namespaces = true
+
+[tool.setuptools_scm]
+write_to = "monitoring/_version.py"
