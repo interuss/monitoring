@@ -137,7 +137,14 @@ def describe_request(
         kwargs["auth_dt"] = StringBasedTimeDelta(
             f"{authorization_dt.total_seconds():.4g}s"
         )
-    body = req.body.decode("utf-8") if req.body else None
+    if isinstance(req.body, bytes):
+        body = req.body.decode("utf-8")
+    elif isinstance(req.body, str):
+        body = req.body
+    elif req.body is None:
+        body = None
+    else:
+        body = str(req.body)
     try:
         if body:
             kwargs["json"] = json.loads(body)
