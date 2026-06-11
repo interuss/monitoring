@@ -9,7 +9,7 @@
 #
 # This image is intended to be built from the repository root context/folder.
 
-FROM ghcr.io/astral-sh/uv:0.11.19-python3.13-trixie-slim AS base
+FROM ghcr.io/astral-sh/uv:0.11.20-python3.13-trixie-slim AS base
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
 # Install system tools
