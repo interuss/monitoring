@@ -15,6 +15,10 @@ from monitoring.monitorlib.rid import RIDVersion
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
+from monitoring.uss_qualifier.resources.interuss.scenarios.astm.netrid.common.dss.heavy_traffic_concurrent import (
+    HeavyTrafficConcurrentBehaviorResource,
+    HeavyTrafficConcurrentBehaviorSpecification,
+)
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss.isa_validator import (
     ISAValidator,
@@ -26,17 +30,13 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrappe
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
-# Semaphore is added to limit the number of simultaneous requests.
-# TODO add these to an optional resource to allow overriding them.
-SEMAPHORE = asyncio.Semaphore(20)
-THREAD_COUNT = 10
-CREATE_ISAS_COUNT = 100
-
 
 class HeavyTrafficConcurrent(GenericTestScenario):
     """Based on prober/rid/v1/test_isa_simple_heavy_traffic_concurrent.py from the legacy prober tool."""
 
     ISA_TYPE = register_resource_type(374, "ISA")
+
+    _isa_count: int
 
     _isa_ids: list[str]
 
@@ -46,17 +46,26 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
     _async_session: AsyncUTMTestSession
 
+    _semaphore: asyncio.Semaphore
+
     def __init__(
         self,
         dss: DSSInstanceResource,
         id_generator: IDGeneratorResource,
         isa: ServiceAreaResource,
+        behavior_adjustment: HeavyTrafficConcurrentBehaviorResource | None = None,
     ):
         super().__init__()
         self._dss = (
             dss.dss_instance
         )  # TODO: delete once _delete_isa_if_exists updated to use dss_wrapper
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
+
+        behavior = (
+            behavior_adjustment.value
+            if behavior_adjustment
+            else HeavyTrafficConcurrentBehaviorSpecification()
+        )
 
         self._isa_versions: dict[str, str] = {}
         self._isa = isa
@@ -69,7 +78,9 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
         isa_base_id = id_generator.id_factory.make_id(HeavyTrafficConcurrent.ISA_TYPE)
         # The base ID ends in 000: we simply increment it to generate the other IDs
-        self._isa_ids = [f"{isa_base_id[:-3]}{i:03d}" for i in range(CREATE_ISAS_COUNT)]
+        self._isa_ids = [
+            f"{isa_base_id[:-3]}{i:03d}" for i in range(behavior.isa_count)
+        ]
 
         # currently all params are the same:
         # we could improve the test by having unique parameters per ISA
@@ -81,6 +92,8 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             alt_lo=self._isa.altitude_min,
             alt_hi=self._isa.altitude_max,
         )
+
+        self._semaphore = asyncio.Semaphore(behavior.concurrency)
 
     def run(self, context: ExecutionContext):
         self._resolve_isa_time_bounds()
@@ -191,7 +204,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             raise ValueError(f"Unsupported RID version '{self._dss.rid_version}'")
 
     async def _get_isa(self, isa_id):
-        async with SEMAPHORE:
+        async with self._semaphore:
             (_, url) = mutate.build_isa_url(self._dss.rid_version, isa_id)
             rq = await fetch_async.query_and_describe(
                 self._async_session,
@@ -204,7 +217,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             return isa_id, self._wrap_isa_get_query(rq)
 
     async def _create_isa(self, isa_id):
-        async with SEMAPHORE:
+        async with self._semaphore:
             payload = mutate.build_isa_request_body(
                 **self._isa_params,
                 rid_version=self._dss.rid_version,
@@ -222,7 +235,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             return isa_id, self._wrap_isa_put_query(rq, "create")
 
     async def _delete_isa(self, isa_id, isa_version):
-        async with SEMAPHORE:
+        async with self._semaphore:
             (_, url) = mutate.build_isa_url(self._dss.rid_version, isa_id, isa_version)
             rq = await fetch_async.query_and_describe(
                 self._async_session,

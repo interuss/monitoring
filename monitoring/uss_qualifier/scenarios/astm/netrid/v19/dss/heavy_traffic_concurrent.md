@@ -18,6 +18,10 @@ Create, query and delete ISAs on the DSS, concurrently.
 
 [`ServiceAreaResource`](../../../../../resources/netrid/service_area.py) describing the ISAs to be created. All created ISAs use the same parameters.
 
+### behavior_adjustment
+
+Optional [`HeavyTrafficConcurrentBehaviorResource`](./heavy_traffic_concurrent.py) overriding default behavioral parameters for this test scenario.
+
 ## Setup test case
 
 ### [Ensure clean workspace test step](test_steps/clean_workspace.md)

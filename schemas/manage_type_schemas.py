@@ -127,6 +127,8 @@ def _find_specifications(
         ):
             _find_specifications(member, repo, already_checked)
         elif inspect.isclass(member):
+            if getattr(member, "__parameters__", ()):
+                continue
             if issubclass(member, Resource) and member != Resource:
                 if inspect.isabstract(member):
                     continue
