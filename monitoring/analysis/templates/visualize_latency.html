@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSS Latency Performance Visualization</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Plotly.js CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f0f11;
+            --sidebar-bg: #16161a;
+            --panel-bg: #1b1b22;
+            --border-color: #2a2a35;
+            --text-color: #e2e8f0;
+            --text-muted: #94a3b8;
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --accent-color: #10b981;
+            --danger-color: #ef4444;
+            --font-display: 'Outfit', sans-serif;
+            --font-sans: 'Roboto', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Sidebar Styling */
+        #sidebar {
+            width: 400px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-header h1 {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #a5b4fc, #818cf8, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-header p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .search-container {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #search-filter {
+            width: 100%;
+            padding: 10px 14px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #search-filter:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .global-controls {
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            background-color: var(--panel-bg);
+            color: var(--text-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--border-color);
+            border-color: var(--text-muted);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+
+        /* Tree Structure */
+        .tree-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px 20px;
+        }
+
+        /* Custom scrollbar */
+        .tree-container::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            width: 6px;
+        }
+        .tree-container::-webkit-scrollbar-track {
+            background: var(--sidebar-bg);
+        }
+        .tree-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+        .tree-container::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        details {
+            margin-bottom: 10px;
+        }
+
+        summary {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 500;
+            font-family: var(--font-display);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            list-style: none;
+            transition: background-color 0.2s;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary:hover {
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        summary::after {
+            content: '▼';
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+
+        details[open] > summary::after {
+            transform: rotate(180deg);
+        }
+
+        .origin-details > summary {
+            font-size: 0.95rem;
+            color: var(--text-color);
+            border-left: 3px solid var(--primary-color);
+            background-color: rgba(99, 102, 241, 0.05);
+            padding-left: 12px;
+        }
+
+        .category-details {
+            margin-left: 15px;
+            margin-top: 5px;
+        }
+
+        .category-details > summary {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-left: 2px solid var(--border-color);
+            padding-left: 10px;
+        }
+
+        .handler-list {
+            margin-left: 25px;
+            margin-top: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .handler-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 8px;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.01);
+            border: 1px solid transparent;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .handler-item:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+            border-color: var(--border-color);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+            font-size: 0.8rem;
+            position: relative;
+            padding-left: 24px;
+            user-select: none;
+            color: var(--text-color);
+            flex-grow: 1;
+            word-break: break-all;
+            line-height: 1.3;
+        }
+
+        .checkbox-container input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 1px;
+            left: 0;
+            height: 15px;
+            width: 15px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .checkbox-container:hover input ~ .checkmark {
+            border-color: var(--primary-color);
+        }
+
+        .checkbox-container input:checked ~ .checkmark {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        .checkbox-container input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .checkbox-container .checkmark:after {
+            left: 4px;
+            top: 1px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .apply-all-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: background-color 0.2s, color 0.2s;
+            margin-left: 8px;
+            flex-shrink: 0;
+            font-weight: 500;
+        }
+
+        .apply-all-btn:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+            color: #818cf8;
+        }
+
+        /* Main Panel Styling */
+        #main-panel {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: var(--bg-color);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            background-color: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 30px;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .stat-value.accent {
+            color: var(--accent-color);
+        }
+
+        /* Chart Area */
+        #chart-container {
+            flex-grow: 1;
+            padding: 20px;
+            position: relative;
+            min-height: 0; /* Important for flex child sizing */
+        }
+
+        #plotly-chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        .no-data-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(15, 15, 17, 0.8);
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            z-index: 10;
+        }
+
+        /* Zoom to selection hint styling */
+        .hint-bar {
+            padding: 8px 30px;
+            background-color: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h1>DSS Latency Monitor</h1>
+            <p>Interactive Performance Analysis</p>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="search-filter" placeholder="Filter handlers (e.g. GET, PUT, ridv2)...">
+        </div>
+
+        <div class="global-controls">
+            <button class="btn btn-primary" onclick="toggleAllCheckboxes(true)">Check All</button>
+            <button class="btn" onclick="toggleAllCheckboxes(false)">Uncheck All</button>
+            <button class="btn" onclick="toggleAllDetails(true)">Expand All</button>
+            <button class="btn" onclick="toggleAllDetails(false)">Collapse All</button>
+        </div>
+
+        <div class="tree-container">
+            {% for origin, origin_data in sidebar_data.origins.items() %}
+            {% set origin_index = loop.index %}
+            <details class="origin-details" open id="details-origin-{{ origin_index }}">
+                <summary>
+                    <span>{{ origin }}</span>
+                </summary>
+                <div class="category-list">
+                    {% for category, handlers in origin_data.categories.items() %}
+                    <details class="category-details" open id="details-cat-{{ origin_index }}-{{ loop.index }}">
+                        <summary>
+                            <span>{{ category }}</span>
+                        </summary>
+                        <div class="handler-list">
+                            {% for handler in handlers %}
+                            <div class="handler-item" data-handler-name="{{ handler.handler_name }}">
+                                <label class="checkbox-container">
+                                    <input type="checkbox" class="handler-checkbox" 
+                                           checked 
+                                           data-trace-index="{{ handler.trace_index }}"
+                                           data-origin="{{ origin }}"
+                                           data-category="{{ category }}"
+                                           data-handler="{{ handler.handler_name }}">
+                                    <span class="checkmark"></span>
+                                    <span class="handler-label-text">{{ handler.handler_name }}</span>
+                                </label>
+                                <button class="apply-all-btn" title="Sync this checked status to all other origins"
+                                        onclick="applyToAll('{{ category }}', '{{ handler.handler_name }}', this)">
+                                    🔗 Apply all
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </details>
+                    {% endfor %}
+                </div>
+            </details>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Main Panel -->
+    <div id="main-panel">
+        <!-- Stats bar -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <span class="stat-label">Total Points</span>
+                <span class="stat-value" id="stats-count">-</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Average Latency</span>
+                <span class="stat-value accent" id="stats-avg">-</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">95th Percentile</span>
+                <span class="stat-value" id="stats-p95">-</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">99th Percentile</span>
+                <span class="stat-value" id="stats-p99">-</span>
+            </div>
+        </div>
+
+        <div class="hint-bar">
+            <span>💡 Click and drag on the chart to zoom to a specific time range. Double-click to reset zoom.</span>
+            <span>Hover over points to inspect metadata.</span>
+        </div>
+
+        <!-- Chart Container -->
+        <div id="chart-container">
+            <div id="plotly-chart"></div>
+            <div id="no-data-overlay" class="no-data-overlay" style="display: none;">
+                No datasets selected. Please select a handler in the sidebar.
+            </div>
+        </div>
+    </div>
+
+    <!-- Inline Script for interactive behavior -->
+    <script>
+        // Load trace data generated by Jinja
+        const traceData = {{ traces_json | safe }};
+        const gd = document.getElementById('plotly-chart');
+        const overlay = document.getElementById('no-data-overlay');
+
+        // Set scatter style properties
+        traceData.forEach(trace => {
+            trace.type = 'scatter';
+            trace.mode = 'markers';
+            trace.marker = {
+                size: 6,
+                opacity: 0.65
+            };
+        });
+
+        // Initialize Plotly layout
+        const layout = {
+            paper_bgcolor: '#16161a',
+            plot_bgcolor: '#0f0f11',
+            margin: { t: 40, r: 40, b: 60, l: 60 },
+            showlegend: false, // We use the sidebar instead of standard legend
+            hovermode: 'closest',
+            xaxis: {
+                title: {
+                    text: 'Time (UTC)',
+                    font: { color: '#94a3b8', family: 'Outfit, sans-serif', size: 12 }
+                },
+                gridcolor: '#2a2a35',
+                tickfont: { color: '#94a3b8', family: 'Roboto, sans-serif' },
+                zeroline: false
+            },
+            yaxis: {
+                title: {
+                    text: 'Latency (ms)',
+                    font: { color: '#94a3b8', family: 'Outfit, sans-serif', size: 12 }
+                },
+                gridcolor: '#2a2a35',
+                tickfont: { color: '#94a3b8', family: 'Roboto, sans-serif' },
+                zeroline: false
+            }
+        };
+
+        // Render chart
+        Plotly.newPlot(gd, traceData, layout, {
+            responsive: true,
+            scrollZoom: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['select2d', 'lasso2d', 'toggleHover']
+        });
+
+        // Search Filter
+        const searchInput = document.getElementById("search-filter");
+        searchInput.addEventListener("input", (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const handlerItems = document.querySelectorAll(".handler-item");
+            
+            handlerItems.forEach(item => {
+                const handlerName = item.dataset.handlerName.toLowerCase();
+                if (handlerName.includes(query)) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+            
+            // Adjust category visibility
+            const categories = document.querySelectorAll(".category-details");
+            categories.forEach(cat => {
+                const visibleHandlers = cat.querySelectorAll(".handler-item:not([style*='display: none'])");
+                if (visibleHandlers.length > 0) {
+                    cat.style.display = "";
+                } else {
+                    cat.style.display = "none";
+                }
+            });
+            
+            // Adjust origin visibility
+            const origins = document.querySelectorAll(".origin-details");
+            origins.forEach(ori => {
+                const visibleCategories = ori.querySelectorAll(".category-details:not([style*='display: none'])");
+                if (visibleCategories.length > 0) {
+                    ori.style.display = "";
+                } else {
+                    ori.style.display = "none";
+                }
+            });
+        });
+
+        // Check/Uncheck all visible checkboxes
+        function toggleAllCheckboxes(checked) {
+            const checkboxes = document.querySelectorAll(".handler-checkbox");
+            checkboxes.forEach(cb => {
+                // If it is hidden by search, do not change its status
+                const item = cb.closest(".handler-item");
+                if (item.style.display !== "none") {
+                    cb.checked = checked;
+                }
+            });
+            syncChartWithCheckboxes();
+        }
+
+        // Expand/Collapse details tags
+        function toggleAllDetails(open) {
+            const details = document.querySelectorAll("details");
+            details.forEach(d => d.open = open);
+        }
+
+        // Apply checked state to other origins
+        function applyToAll(category, handler, btnElement) {
+            const item = btnElement.closest(".handler-item");
+            const checkbox = item.querySelector(".handler-checkbox");
+            const isChecked = checkbox.checked;
+            
+            const selector = `.handler-checkbox[data-category="${category}"][data-handler="${handler}"]`;
+            const checkboxes = document.querySelectorAll(selector);
+            checkboxes.forEach(cb => {
+                // If it is hidden by search, optionally skip. But usually we apply to all.
+                cb.checked = isChecked;
+            });
+            
+            syncChartWithCheckboxes();
+        }
+
+        // Synchronize checkbox state to the Plotly chart
+        function syncChartWithCheckboxes() {
+            const visibility = [];
+            const traceIndices = [];
+            let anyChecked = false;
+            
+            const checkboxes = document.querySelectorAll(".handler-checkbox");
+            checkboxes.forEach(cb => {
+                const idx = parseInt(cb.dataset.traceIndex);
+                if (!isNaN(idx)) {
+                    if (cb.checked) {
+                        visibility.push(true);
+                        anyChecked = true;
+                    } else {
+                        visibility.push(false); // completely hide and disable hover
+                    }
+                    traceIndices.push(idx);
+                }
+            });
+            
+            if (anyChecked) {
+                overlay.style.display = "none";
+            } else {
+                overlay.style.display = "flex";
+            }
+
+            if (traceIndices.length > 0) {
+                // Restyle trace visibility in Plotly
+                Plotly.restyle(gd, 'visible', visibility, traceIndices);
+            }
+            updateStatistics();
+        }
+
+        // Update top stats bar based on checked/visible data
+        function updateStatistics() {
+            let allY = [];
+            
+            const checkboxes = document.querySelectorAll(".handler-checkbox:checked");
+            checkboxes.forEach(cb => {
+                const idx = parseInt(cb.dataset.traceIndex);
+                const trace = gd.data[idx];
+                if (trace && trace.y) {
+                    allY.push(...trace.y);
+                }
+            });
+
+            if (allY.length === 0) {
+                document.getElementById("stats-count").textContent = "0";
+                document.getElementById("stats-avg").textContent = "-";
+                document.getElementById("stats-p95").textContent = "-";
+                document.getElementById("stats-p99").textContent = "-";
+                return;
+            }
+
+            // Numeric sort
+            allY.sort((a, b) => a - b);
+            const count = allY.length;
+            const sum = allY.reduce((a, b) => a + b, 0);
+            const avg = sum / count;
+            
+            const p95Idx = Math.floor(count * 0.95);
+            const p99Idx = Math.floor(count * 0.99);
+            const p95 = allY[p95Idx];
+            const p99 = allY[p99Idx];
+
+            document.getElementById("stats-count").textContent = count.toLocaleString();
+            document.getElementById("stats-avg").textContent = avg.toFixed(2) + " ms";
+            document.getElementById("stats-p95").textContent = p95.toFixed(2) + " ms";
+            document.getElementById("stats-p99").textContent = p99.toFixed(2) + " ms";
+        }
+
+        // Set up event listeners for checkboxes
+        document.querySelectorAll(".handler-checkbox").forEach(cb => {
+            cb.addEventListener("change", syncChartWithCheckboxes);
+        });
+
+        // Initial stats calculation
+        updateStatistics();
+    </script>
+</body>
+</html>
