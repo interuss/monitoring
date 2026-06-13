@@ -96,7 +96,7 @@ ResourceType = int
 resource_type_code_descriptions: dict[ResourceType, str] = {}
 
 
-# Next code: 405
+# Next code: 406
 def register_resource_type(code: int, description: str) -> ResourceType:
     """Register that the specified code refers to the described resource.
 
