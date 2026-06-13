@@ -21,8 +21,10 @@
 
 // Summarize results with uss_qualifier/scenarios/astm/netrid/common/dss/summarize_heavy_traffic_concurrent.py
 
-local NUM_USS = 7;
-local NUM_NODES = 3;
+local NUM_USS = 3;
+local NUM_NODES = 1;
+local NUM_ISAS = 100;
+local CONCURRENCY = 20;
 
 {
   '$content_schema': 'monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json',
@@ -35,6 +37,7 @@ local NUM_NODES = 3;
             dss_instances: 'dss_instances',
             id_generator: 'id_generator',
             service_area: 'service_area',
+            behavior: 'behavior',
           },
           specification: {
             dss_instances_source: 'dss_instances',
@@ -46,6 +49,7 @@ local NUM_NODES = 3;
                   dss: 'dss',
                   id_generator: 'id_generator',
                   isa: 'service_area',
+                  behavior_adjustment: 'behavior',
                 },
               },
             },
@@ -84,6 +88,13 @@ local NUM_NODES = 3;
               client_identity: 'utm_client_identity',
             },
             specification: {},
+          },
+          behavior: {
+            resource_type: 'resources.interuss.scenarios.astm.netrid.common.dss.heavy_traffic_concurrent.HeavyTrafficConcurrentBehaviorResource',
+            specification: {
+              concurrency: CONCURRENCY,
+              isa_count: NUM_ISAS,
+            },
           },
           service_area_volume: {
             resource_type: 'resources.VolumeResource',

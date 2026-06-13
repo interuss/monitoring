@@ -34,16 +34,24 @@ def validate_config(config: dict) -> list[ValidationError]:
             except ValueError as e:
                 result.append(ValidationError(message=str(e), json_path=path))
                 continue
-            for e in validate_implicitdict_object(
-                declaration.specification, specification_type
-            ):
-                subpath = e.json_path
-                if subpath.startswith("$."):
-                    subpath = subpath[2:]
+            if specification_type is not None:
+                for e in validate_implicitdict_object(
+                    declaration.specification, specification_type
+                ):
+                    subpath = e.json_path
+                    if subpath.startswith("$."):
+                        subpath = subpath[2:]
+                    result.append(
+                        ValidationError(
+                            message=e.message,
+                            json_path=path + ".specification." + subpath,
+                        )
+                    )
+            elif declaration.specification:
                 result.append(
                     ValidationError(
-                        message=e.message,
-                        json_path=path + ".specification." + subpath,
+                        message=f"Resource type {declaration.resource_type} does not accept a specification, but one was provided",
+                        json_path=path + ".specification",
                     )
                 )
 

@@ -40,6 +40,14 @@ class Resource[SpecificationType: ImplicitDict](ABC):
         return self.__class__ == specified_type
 
 
+class ValueResource[T: ImplicitDict](Resource[T]):
+    value: T
+
+    def __init__(self, specification: T, resource_origin: str, **dependencies):
+        super().__init__(specification, resource_origin, **dependencies)
+        self.value = specification
+
+
 ResourceType = TypeVar("ResourceType", bound=Resource)
 
 
