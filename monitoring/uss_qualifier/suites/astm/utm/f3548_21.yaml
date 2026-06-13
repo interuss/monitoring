@@ -6,6 +6,7 @@ resources:
   flight_planners_to_clear: resources.flight_planning.FlightPlannersResource
   dss: resources.astm.f3548.v21.DSSInstanceResource
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
+  interuss_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
   conflicting_flights: resources.flight_planning.FlightIntentsResource
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource?
@@ -34,6 +35,10 @@ actions:
       version_providers: test_env_version_providers
       system_identity: system_identity
     on_failure: Continue
+- test_scenario:
+    scenario_type: scenarios.astm.utm.dss.pool_info.PoolInfo
+    resources:
+      dss_instances: interuss_dss_instances
 - test_scenario:
     scenario_type: scenarios.astm.utm.PrepareFlightPlanners
     resources:
