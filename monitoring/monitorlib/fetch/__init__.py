@@ -137,7 +137,14 @@ def describe_request(
         kwargs["auth_dt"] = StringBasedTimeDelta(
             f"{authorization_dt.total_seconds():.4g}s"
         )
-    body = req.body.decode("utf-8") if req.body else None
+    if isinstance(req.body, bytes):
+        body = req.body.decode("utf-8")
+    elif isinstance(req.body, str):
+        body = req.body
+    elif req.body is None:
+        body = None
+    else:
+        body = str(req.body)
     try:
         if body:
             kwargs["json"] = json.loads(body)
@@ -353,6 +360,12 @@ class QueryType(StrEnum):
 
     # InterUSS automated testing versioning interface
     InterUSSVersioningGetVersion = "interuss.automated_testing.versioning.GetVersion"
+
+    # InterUSS DSS aux interface
+    InterUSSDSSGetPool = "interuss.dss.aux.GetPool"
+    InterUSSDSSGetDSSInstances = "interuss.dss.aux.GetDSSInstances"
+    InterUSSDSSGetAcceptedCAs = "interuss.dss.aux.GetAcceptedCAs"
+    InterUSSDSSGetInstanceCAs = "interuss.dss.aux.GetInstanceCAs"
 
     # InterUSS automated testing flight_planning interface
     InterUSSFlightPlanningV1GetStatus = (

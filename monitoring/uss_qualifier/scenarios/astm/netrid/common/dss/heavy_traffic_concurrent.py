@@ -1,5 +1,8 @@
 import asyncio
+from datetime import datetime
 
+import s2sphere
+from implicitdict import ImplicitDict
 from uas_standards.astm.f3411 import v19, v22a
 
 from monitoring.monitorlib.fetch import (
@@ -12,9 +15,14 @@ from monitoring.monitorlib.infrastructure import AsyncUTMTestSession
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
+from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
+from monitoring.uss_qualifier.resources.interuss.scenarios.astm.netrid.common.dss.heavy_traffic_concurrent import (
+    HeavyTrafficConcurrentBehaviorResource,
+    HeavyTrafficConcurrentBehaviorSpecification,
+)
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss.isa_validator import (
     ISAValidator,
@@ -26,37 +34,56 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.dss_wrapper import DSSWrappe
 from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
-# Semaphore is added to limit the number of simultaneous requests.
-# TODO add these to an optional resource to allow overriding them.
-SEMAPHORE = asyncio.Semaphore(20)
-THREAD_COUNT = 10
-CREATE_ISAS_COUNT = 100
+
+class ISAParams(ImplicitDict):
+    area_vertices: list[s2sphere.LatLng]
+    start_time: datetime | None
+    end_time: datetime | None
+    uss_base_url: str
+    alt_lo: float
+    alt_hi: float
 
 
 class HeavyTrafficConcurrent(GenericTestScenario):
     """Based on prober/rid/v1/test_isa_simple_heavy_traffic_concurrent.py from the legacy prober tool."""
 
     ISA_TYPE = register_resource_type(374, "ISA")
+    SUB_TYPE = register_resource_type(405, "Background subscription")
+
+    _sub_id: str
+
+    _isa_count: int
 
     _isa_ids: list[str]
 
-    _isa_params: dict[str, any]
+    _isa_area: list[s2sphere.LatLng]
+
+    _isa_params: ISAParams
 
     _isa_versions: dict[str, str]
 
     _async_session: AsyncUTMTestSession
+
+    _semaphore: asyncio.Semaphore
 
     def __init__(
         self,
         dss: DSSInstanceResource,
         id_generator: IDGeneratorResource,
         isa: ServiceAreaResource,
+        behavior_adjustment: HeavyTrafficConcurrentBehaviorResource | None = None,
     ):
         super().__init__()
         self._dss = (
             dss.dss_instance
         )  # TODO: delete once _delete_isa_if_exists updated to use dss_wrapper
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
+
+        behavior = (
+            behavior_adjustment.value
+            if behavior_adjustment
+            else HeavyTrafficConcurrentBehaviorSpecification()
+        )
 
         self._isa_versions: dict[str, str] = {}
         self._isa = isa
@@ -67,13 +94,17 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             self._dss.base_url, self._dss.client.auth_adapter
         )
 
+        self._sub_id = id_generator.id_factory.make_id(HeavyTrafficConcurrent.SUB_TYPE)
+
         isa_base_id = id_generator.id_factory.make_id(HeavyTrafficConcurrent.ISA_TYPE)
         # The base ID ends in 000: we simply increment it to generate the other IDs
-        self._isa_ids = [f"{isa_base_id[:-3]}{i:03d}" for i in range(CREATE_ISAS_COUNT)]
+        self._isa_ids = [
+            f"{isa_base_id[:-3]}{i:03d}" for i in range(behavior.isa_count)
+        ]
 
         # currently all params are the same:
         # we could improve the test by having unique parameters per ISA
-        self._isa_params = dict(
+        self._isa_params = ISAParams(
             area_vertices=self._isa_area,
             start_time=None,
             end_time=None,
@@ -81,6 +112,8 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             alt_lo=self._isa.altitude_min,
             alt_hi=self._isa.altitude_max,
         )
+
+        self._semaphore = asyncio.Semaphore(behavior.concurrency)
 
     def run(self, context: ExecutionContext):
         self._resolve_isa_time_bounds()
@@ -90,6 +123,9 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         self.begin_test_case("Setup")
         self.begin_test_step("Ensure clean workspace")
         self._delete_isas_if_exists()
+        self.end_test_step()
+        self.begin_test_step("Emplace subscription")
+        self._create_subscription()
         self.end_test_step()
         self.end_test_case()
 
@@ -124,8 +160,30 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
     def _resolve_isa_time_bounds(self):
         start, end = self._isa.resolved_time_bounds(self.time_context.evaluate_now())
-        self._isa_params["start_time"] = start
-        self._isa_params["end_time"] = end
+        self._isa_params.start_time = start
+        self._isa_params.end_time = end
+
+    def _create_subscription(self):
+        with self.check(
+            "Subscription creation succeeds", self._dss_wrapper.participant_id
+        ) as check:
+            cs = self._dss_wrapper.put_sub(
+                check,
+                self._isa_params.area_vertices,
+                self._isa_params.alt_lo,
+                self._isa_params.alt_hi,
+                self._isa_params.start_time,
+                self._isa_params.end_time,
+                make_fake_url("preexisting_sub"),
+                self._sub_id,
+                None,
+            )
+            if not cs.success:
+                check.record_failed(
+                    summary="Error while creating a Subscription in the DSS",
+                    details=f"Error message: {cs.errors}",
+                    query_timestamps=cs.query_timestamps,
+                )
 
     def _delete_isas_if_exists(self):
         """Delete test ISAs if they exist. Done sequentially."""
@@ -191,7 +249,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             raise ValueError(f"Unsupported RID version '{self._dss.rid_version}'")
 
     async def _get_isa(self, isa_id):
-        async with SEMAPHORE:
+        async with self._semaphore:
             (_, url) = mutate.build_isa_url(self._dss.rid_version, isa_id)
             rq = await fetch_async.query_and_describe(
                 self._async_session,
@@ -204,7 +262,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             return isa_id, self._wrap_isa_get_query(rq)
 
     async def _create_isa(self, isa_id):
-        async with SEMAPHORE:
+        async with self._semaphore:
             payload = mutate.build_isa_request_body(
                 **self._isa_params,
                 rid_version=self._dss.rid_version,
@@ -222,7 +280,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             return isa_id, self._wrap_isa_put_query(rq, "create")
 
     async def _delete_isa(self, isa_id, isa_version):
-        async with SEMAPHORE:
+        async with self._semaphore:
             (_, url) = mutate.build_isa_url(self._dss.rid_version, isa_id, isa_version)
             rq = await fetch_async.query_and_describe(
                 self._async_session,
@@ -407,6 +465,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
     def cleanup(self):
         self.begin_cleanup()
 
+        self._dss_wrapper.cleanup_sub(self._sub_id)
         self._delete_isas_if_exists()
         self._async_session.close()
 

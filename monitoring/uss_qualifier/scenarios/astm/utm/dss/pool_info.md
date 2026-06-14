@@ -22,8 +22,6 @@ Each DSS instance is queried for its version at `/aux/v1/version` and the versio
 
 If uss_qualifier cannot successfully obtain version information, the USS hosting the queried DSS instance does not comply with **[interuss.dss.hosting.ExposeAux](../../../../requirements/interuss/dss/hosting.md)**.
 
-TODO: Implement
-
 ### Examine pool test step
 
 Each DSS instance is queried for its understanding of the pool at `/aux/v1/pool`.
@@ -32,13 +30,9 @@ Each DSS instance is queried for its understanding of the pool at `/aux/v1/pool`
 
 If uss_qualifier cannot successfully obtain pool information, the USS hosting the queried DSS instance does not comply with **[interuss.dss.hosting.ExposeAux](../../../../requirements/interuss/dss/hosting.md)**.
 
-TODO: Implement
-
 #### ⚠️ DAR ID matches check
 
 If any two DSS instances who successfully reported their DAR ID in the pool information have differeing DAR IDs, those DSS instances are not part of the same pool and have therefore failed to comply with **[astm.f3548.v21.DSS0020](../../../../requirements/astm/f3548/v21.md)**.
-
-TODO: Implement
 
 ### Examine DSS instances test step
 

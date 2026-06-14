@@ -18,11 +18,23 @@ Create, query and delete ISAs on the DSS, concurrently.
 
 [`ServiceAreaResource`](../../../../../resources/netrid/service_area.py) describing the ISAs to be created. All created ISAs use the same parameters.
 
+### behavior_adjustment
+
+Optional [`HeavyTrafficConcurrentBehaviorResource`](./heavy_traffic_concurrent.py) overriding default behavioral parameters for this test scenario.
+
 ## Setup test case
 
 ### [Ensure clean workspace test step](test_steps/clean_workspace.md)
 
 This scenario creates ISA's with known IDs. This step ensures that no ISA with a known ID is present in the DSS before proceeding with the test.
+
+### Emplace subscription test step
+
+ISA manipulation can be much more resource-intensive when a subscription is present than when it isn't.  Add a subscription covering the area to make sure we're sufficiently stressing the system.
+
+#### 🛑 Subscription creation succeeds check
+
+If the DSS did not create the subscription according to the valid request, the DSS provider does not comply with **[astm.f3411.v19.DSS0030,c](../../../../../requirements/astm/f3411/v19.md)**.
 
 ## Concurrent Requests test case
 
@@ -93,7 +105,15 @@ The ISA search area parameter cover the resource ISA, but it has been previously
 
 ## Cleanup
 
-The cleanup phase of this test scenario attempts to remove any created ISA if the test ended prematurely.
+The cleanup phase of this test scenario attempts to remove the subscription and any created ISA if the test ended prematurely.
+
+### ⚠️ Subscription can be queried by ID check
+
+If the DSS cannot be queried for the existing test ID, the DSS is likely not implementing **[astm.f3411.v19.DSS0030,e](../../../../../requirements/astm/f3411/v19.md)** correctly.
+
+### ⚠️ Subscription can be deleted check
+
+An attempt to delete a subscription when the correct version is provided should succeed, otherwise the DSS is in violation of **[astm.f3411.v19.DSS0030,d](../../../../../requirements/astm/f3411/v19.md)**.
 
 ### ⚠️ Successful ISA query check
 
