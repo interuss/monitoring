@@ -365,31 +365,62 @@ class Volume3D(ImplicitDict):
         )
 
     def translate_relative(self, translation: RelativeTranslation) -> Volume3D:
-        def offset(p0: LatLngPoint, p: LatLngPoint) -> LatLngPoint:
-            s2_p0 = p0.as_s2sphere()
-            xy = flatten(s2_p0, p.as_s2sphere())
-            if "meters_east" in translation and translation.meters_east:
-                xy = (xy[0] + translation.meters_east, xy[1])
-            if "meters_north" in translation and translation.meters_north:
-                xy = (xy[0], xy[1] + translation.meters_north)
-            p1 = LatLngPoint.from_s2(unflatten(s2_p0, xy))
-            if "degrees_east" in translation and translation.degrees_east:
-                p1.lng += translation.degrees_east
-            if "degrees_north" in translation and translation.degrees_north:
-                p1.lat += translation.degrees_north
-            return p1
+        if self.outline_polygon is not None:
+            src_center = self.outline_polygon.vertex_average()
+        elif self.outline_circle is not None:
+            src_center = self.outline_circle.center
+        else:
+            raise ValueError("Neither outline_circle nor outline_polygon specified")
+
+        meters_east = (
+            translation.meters_east
+            if "meters_east" in translation and translation.meters_east is not None
+            else 0.0
+        )
+        meters_north = (
+            translation.meters_north
+            if "meters_north" in translation and translation.meters_north is not None
+            else 0.0
+        )
+        degrees_east = (
+            translation.degrees_east
+            if "degrees_east" in translation and translation.degrees_east is not None
+            else 0.0
+        )
+        degrees_north = (
+            translation.degrees_north
+            if "degrees_north" in translation and translation.degrees_north is not None
+            else 0.0
+        )
+
+        dst_center = src_center.offset(meters_east, meters_north)
+        dst_center.lng += degrees_east
+        dst_center.lat += degrees_north
+
+        r_matrix = make_rotation_matrix(
+            src_center.as_s2sphere(), dst_center.as_s2sphere()
+        )
 
         kwargs = {k: v for k, v in self.items() if v is not None}
         if self.outline_circle is not None:
+            new_circle_center = LatLngPoint.from_s2(
+                apply_rotation(r_matrix, self.outline_circle.center.as_s2sphere())
+            )
             kwargs["outline_circle"] = Circle(
-                center=offset(self.outline_circle.center, self.outline_circle.center),
+                center=new_circle_center,
                 radius=self.outline_circle.radius,
             )
-        if self.outline_polygon is not None:
-            ref0 = self.outline_polygon.vertex_average()
-            vertices = [offset(ref0, p) for p in self.outline_polygon.vertices]
+        if (
+            self.outline_polygon is not None
+            and self.outline_polygon.vertices is not None
+        ):
+            vertices = [
+                LatLngPoint.from_s2(apply_rotation(r_matrix, p.as_s2sphere()))
+                for p in self.outline_polygon.vertices
+            ]
             kwargs["outline_polygon"] = Polygon(vertices=vertices)
         result = Volume3D(**kwargs)
+
         if "meters_up" in translation and translation.meters_up:
             if result.altitude_lower:
                 if result.altitude_lower.units == DistanceUnits.M:
@@ -411,16 +442,34 @@ class Volume3D(ImplicitDict):
         new_center = LatLngPoint(
             lat=translation.new_latitude, lng=translation.new_longitude
         )
+
+        if self.outline_polygon is not None:
+            src_center = self.outline_polygon.vertex_average()
+        elif self.outline_circle is not None:
+            src_center = self.outline_circle.center
+        else:
+            raise ValueError("Neither outline_circle nor outline_polygon specified")
+
+        r_matrix = make_rotation_matrix(
+            src_center.as_s2sphere(), new_center.as_s2sphere()
+        )
+
         kwargs = {k: v for k, v in self.items() if v is not None}
         if self.outline_circle is not None:
-            kwargs["outline_circle"] = Circle(
-                center=new_center, radius=self.outline_circle.radius
+            new_circle_center = LatLngPoint.from_s2(
+                apply_rotation(r_matrix, self.outline_circle.center.as_s2sphere())
             )
-        if self.outline_polygon is not None:
-            ref0 = self.outline_polygon.vertex_average().as_s2sphere()
-            xy = [flatten(ref0, p.as_s2sphere()) for p in self.outline_polygon.vertices]
-            ref1 = new_center.as_s2sphere()
-            vertices = [LatLngPoint.from_s2(unflatten(ref1, p)) for p in xy]
+            kwargs["outline_circle"] = Circle(
+                center=new_circle_center, radius=self.outline_circle.radius
+            )
+        if (
+            self.outline_polygon is not None
+            and self.outline_polygon.vertices is not None
+        ):
+            vertices = [
+                LatLngPoint.from_s2(apply_rotation(r_matrix, p.as_s2sphere()))
+                for p in self.outline_polygon.vertices
+            ]
             kwargs["outline_polygon"] = Polygon(vertices=vertices)
         return Volume3D(**kwargs)
 
@@ -552,7 +601,7 @@ def make_latlng_rect(area) -> s2sphere.LatLngRect:
             lng_max = max(v.lng for v in area.outline_polygon.vertices)
         elif "outline_circle" in area and area.outline_circle:
             p0 = s2sphere.LatLng.from_degrees(
-                area.outline_circle.center.lng, area.outline_circle.center.lat
+                area.outline_circle.center.lat, area.outline_circle.center.lng
             )
             lat_min = (
                 unflatten(p0, (0, -area.outline_circle.radius.value)).lat().degrees
@@ -603,6 +652,50 @@ def validate_lng(lng: str | float) -> float:
     if lng < -180 or lng > 180:
         raise ValueError("Longitude must be in [-180, 180] range")
     return lng
+
+
+def make_rotation_matrix(src: s2sphere.LatLng, dst: s2sphere.LatLng) -> np.ndarray:
+    """Computes the 3D rotation matrix that rotates vector src to vector dst on a unit sphere."""
+    p_src = src.to_point()
+    p_dst = dst.to_point()
+
+    a = np.array([p_src[0], p_src[1], p_src[2]])
+    b = np.array([p_dst[0], p_dst[1], p_dst[2]])
+
+    v = np.cross(a, b)
+    c = np.dot(a, b)
+
+    if np.allclose(v, 0):
+        if c > 0:
+            return np.eye(3)
+        else:
+            # Antipodal rotation. Choose an arbitrary perpendicular axis.
+            if not np.allclose(a[1:], 0):
+                axis = np.cross(a, [1, 0, 0])
+            else:
+                axis = np.cross(a, [0, 1, 0])
+            axis = axis / np.linalg.norm(axis)
+            kmat = np.array(
+                [[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]]
+            )
+            return np.eye(3) + 2 * np.dot(kmat, kmat)
+
+    kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+
+    return np.eye(3) + kmat + np.dot(kmat, kmat) * (1.0 / (1.0 + c))
+
+
+def apply_rotation(r_matrix: np.ndarray, point: s2sphere.LatLng) -> s2sphere.LatLng:
+    """Applies a 3D rotation matrix to a LatLng point on the sphere."""
+    pt = point.to_point()
+    v_arr = np.array([pt[0], pt[1], pt[2]])
+    rotated_arr = r_matrix.dot(v_arr)
+    # Re-normalize to ensure the point is on the unit sphere
+    norm = np.linalg.norm(rotated_arr)
+    if norm > 0:
+        rotated_arr = rotated_arr / norm
+    rotated_pt = s2sphere.Point(rotated_arr[0], rotated_arr[1], rotated_arr[2])
+    return s2sphere.LatLng.from_point(rotated_pt)
 
 
 def flatten(reference: s2sphere.LatLng, point: s2sphere.LatLng) -> tuple[float, float]:
