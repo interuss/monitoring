@@ -19,7 +19,7 @@ class FileLock:
     """A simple zero-dependency file lock implementation for Unix systems."""
 
     def __init__(self, filepath: str, timeout: int = 15):
-        self.lockfile = filepath + ".lock"
+        self.lockfile = f"{filepath}.lock"
         self.timeout = timeout
         self.fd = None
 

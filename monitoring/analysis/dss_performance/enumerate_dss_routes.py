@@ -1,29 +1,76 @@
 #!/usr/bin/env python3
 
-"""Enumerate DSS routes from Go server.gen.go definitions and save them to JSON.
+"""Enumerate DSS routes from Go server.gen.go definitions and save them to JSON."""
 
-Prerequisite:
-    The user must have the 'dss' repository cloned as a sibling to the
-    'monitoring' repository (e.g. at the same parent workspace directory).
-"""
-
-import glob
+import argparse
 import json
 import os
 import re
 import sys
+import urllib.error
+import urllib.request
+
+# Fallback categories to query if the GitHub contents API fails
+FALLBACK_CATEGORIES = ["auxv1", "ridv1", "ridv2", "scdv1", "versioningv1"]
 
 
-def find_sibling_dss_dir():
-    # This script is located in: monitoring/monitoring/analysis/dss_performance/enumerate_dss_routes.py
-    # Sibling dss directory is four levels up, then 'dss'
-    curr_dir = os.path.dirname(os.path.abspath(__file__))
-    dss_dir = os.path.abspath(os.path.join(curr_dir, "../../../../dss"))
-    return dss_dir
+def sanitize_ref_for_filename(ref):
+    return re.sub(r"[^a-zA-Z0-9._-]", "_", ref)
 
 
-def load_dss_routes(dss_dir):
-    go_files = glob.glob(os.path.join(dss_dir, "pkg/api/*/server.gen.go"))
+def parse_server_go_content(content, category):
+    routes = []
+    router_func_match = re.search(
+        r"func MakeAPIRouter\(.*?\).*?{(.*?)^}", content, re.MULTILINE | re.DOTALL
+    )
+    if not router_func_match:
+        return routes
+
+    func_content = router_func_match.group(1)
+    parts = re.split(r"pattern\s*(?::)?=\s*regexp\.MustCompile\(", func_content)
+    for part in parts[1:]:
+        pattern_match = re.match(r"^\"([^\"]+)\"", part)
+        if not pattern_match:
+            continue
+        pattern_str = pattern_match.group(1)
+
+        method_match = re.search(r"Method:\s*http\.Method(\w+)", part)
+        if not method_match:
+            continue
+        method = method_match.group(1).upper()
+
+        path_match = re.search(r"Path:\s*\"([^\"]+)\"", part)
+        if path_match:
+            path_template = path_match.group(1)
+        else:
+            clean_path = pattern_str.lstrip("^").rstrip("$")
+            path_template = re.sub(r"\(\?P<([^>]+)>[^)]+\)", r"{\1}", clean_path)
+
+        routes.append(
+            {
+                "category": category,
+                "method": method,
+                "pattern": pattern_str,
+                "path_template": path_template,
+            }
+        )
+    return routes
+
+
+def get_routes(ref):
+    """Get routes for the given ref, loading from cache if available, otherwise fetching from GitHub."""
+    sanitized_ref = sanitize_ref_for_filename(ref)
+    cache_dir = os.path.dirname(os.path.abspath(__file__))
+    cache_path = os.path.join(cache_dir, f"dss_routes.{sanitized_ref}.json")
+
+    # Try loading from cache first
+    if os.path.exists(cache_path):
+        print(f"Loading DSS routes from cache: {cache_path}")
+        with open(cache_path) as f:
+            return json.load(f)
+
+    # Otherwise fetch from GitHub
+    print(f"Cache not found. Fetching DSS routes from GitHub for ref '{ref}'...")
     routes = []
 
     # Add healthy endpoint implicitly
@@ -36,73 +83,78 @@ def load_dss_routes(dss_dir):
         }
     )
 
-    for go_file in go_files:
-        category = os.path.basename(os.path.dirname(go_file))
-        with open(go_file) as f:
-            content = f.read()
-
-        router_func_match = re.search(
-            r"func MakeAPIRouter\(.*?\).*?{(.*?)^}", content, re.MULTILINE | re.DOTALL
+    # 1. Fetch categories
+    categories = None
+    api_url = f"https://api.github.com/repos/interuss/dss/contents/pkg/api?ref={ref}"
+    req = urllib.request.Request(
+        api_url, headers={"User-Agent": "Interuss-DSS-Route-Enumerator"}
+    )
+    try:
+        with urllib.request.urlopen(req) as response:
+            data = json.loads(response.read().decode("utf-8"))
+            categories = [item["name"] for item in data if item["type"] == "dir"]
+    except Exception as e:
+        print(
+            f"Warning: Failed to fetch categories from GitHub API: {e}. Using fallback categories list.",
+            file=sys.stderr,
         )
-        if not router_func_match:
-            continue
+        categories = FALLBACK_CATEGORIES
 
-        func_content = router_func_match.group(1)
-        parts = re.split(r"pattern\s*(?::)?=\s*regexp\.MustCompile\(", func_content)
-        for part in parts[1:]:
-            pattern_match = re.match(r"^\"([^\"]+)\"", part)
-            if not pattern_match:
+    # 2. Fetch server.gen.go for each category
+    for category in categories:
+        raw_url = f"https://raw.githubusercontent.com/interuss/dss/{ref}/pkg/api/{category}/server.gen.go"
+        req = urllib.request.Request(
+            raw_url, headers={"User-Agent": "Interuss-DSS-Route-Enumerator"}
+        )
+        try:
+            with urllib.request.urlopen(req) as response:
+                content = response.read().decode("utf-8")
+            category_routes = parse_server_go_content(content, category)
+            routes.extend(category_routes)
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                # Silently ignore if server.gen.go does not exist for this category
                 continue
-            pattern_str = pattern_match.group(1)
-
-            method_match = re.search(r"Method:\s*http\.Method(\w+)", part)
-            if not method_match:
-                continue
-            method = method_match.group(1).upper()
-
-            path_match = re.search(r"Path:\s*\"([^\"]+)\"", part)
-            if path_match:
-                path_template = path_match.group(1)
             else:
-                clean_path = pattern_str.lstrip("^").rstrip("$")
-                path_template = re.sub(r"\(\?P<([^>]+)>[^)]+\)", r"{\1}", clean_path)
-
-            routes.append(
-                {
-                    "category": category,
-                    "method": method,
-                    "pattern": pattern_str,
-                    "path_template": path_template,
-                }
+                print(
+                    f"Warning: Failed to fetch routes for category {category}: {e}",
+                    file=sys.stderr,
+                )
+        except Exception as e:
+            print(
+                f"Warning: Failed to fetch routes for category {category}: {e}",
+                file=sys.stderr,
             )
+
+    # Save to cache
+    print(f"Writing routes cache to {cache_path}...")
+    with open(cache_path, "w") as f:
+        json.dump(routes, f, indent=2)
+
     return routes
 
 
 def main():
-    dss_dir = find_sibling_dss_dir()
-    if not os.path.exists(dss_dir):
-        print(
-            f"Error: DSS repository not found at expected sibling location: {dss_dir}",
-            file=sys.stderr,
-        )
-        print(
-            "Please ensure you have cloned the 'dss' repository as a sibling to 'monitoring'.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-    print(f"Parsing DSS routes from sibling dss directory: {dss_dir}")
-    routes = load_dss_routes(dss_dir)
-    print(f"Found {len(routes)} routes.")
-
-    output_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "dss_routes.gen.json"
+    parser = argparse.ArgumentParser(
+        description="Enumerate DSS routes from GitHub repo or local cache."
     )
-    print(f"Writing routes to {output_path}...")
-    with open(output_path, "w") as f:
-        json.dump(routes, f, indent=2)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--tag", help="Git tag in the interuss/dss repo to fetch routes for"
+    )
+    group.add_argument(
+        "--commit",
+        help="Git commit hash in the interuss/dss repo to fetch routes for",
+    )
+    args = parser.parse_args()
 
-    print("Done!")
+    ref = args.tag or args.commit or "master"
+    try:
+        routes = get_routes(ref)
+        print(f"Successfully processed {len(routes)} routes for ref '{ref}'.")
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -6,22 +6,8 @@ import os
 import re
 import sys
 
+from enumerate_dss_routes import get_routes
 from jinja2 import Environment, FileSystemLoader
-
-
-def load_routes():
-    routes_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "dss_routes.gen.json"
-    )
-    if not os.path.exists(routes_path):
-        raise RuntimeError(
-            f"Routes file {routes_path} not found. Please run enumerate_dss_routes.py first."
-        )
-    with open(routes_path) as f:
-        routes = json.load(f)
-    for r in routes:
-        r["compiled"] = re.compile(r["pattern"])
-    return routes
 
 
 def match_route(method, path, routes):
@@ -92,14 +78,24 @@ def main():
         choices=["peer_address", "req_sub"],
         help="Keys to obfuscate in the output (can be specified multiple times)",
     )
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--tag", help="Git tag in the interuss/dss repo to fetch routes for"
+    )
+    group.add_argument(
+        "--commit", help="Git commit hash in the interuss/dss repo to fetch routes for"
+    )
     args = parser.parse_args()
 
     input_path = resolve_path(args.input)
     output_path = resolve_path(args.output)
 
-    print("Loading DSS routes from dss_routes.json...")
+    ref = args.tag or args.commit or "master"
     try:
-        routes = load_routes()
+        routes = get_routes(ref)
+        # compile patterns
+        for r in routes:
+            r["compiled"] = re.compile(r["pattern"])
     except Exception as e:
         print(f"Error loading routes: {e}", file=sys.stderr)
         return
