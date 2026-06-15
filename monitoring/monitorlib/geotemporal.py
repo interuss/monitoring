@@ -20,6 +20,7 @@ from monitoring.monitorlib.geo import (
     DistanceUnits,
     LatLngPoint,
     Polygon,
+    Transformation,
     Volume3D,
 )
 from monitoring.monitorlib.temporal import (
@@ -27,7 +28,6 @@ from monitoring.monitorlib.temporal import (
     TestTimeContext,
     Time,
 )
-from monitoring.monitorlib.transformations import Transformation
 
 TIME_TOLERANCE = timedelta(milliseconds=10)
 

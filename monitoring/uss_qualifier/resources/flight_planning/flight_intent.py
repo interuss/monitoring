@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 
 from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
     FlightInfoTemplate,
 )
-from monitoring.monitorlib.transformations import Transformation
+from monitoring.monitorlib.geo import LatLngPoint, Transformation, bind_transformations
 from monitoring.uss_qualifier.resources.files import ExternalFile
 from monitoring.uss_qualifier.resources.overrides import apply_overrides
 
@@ -37,6 +38,35 @@ class FlightIntentCollectionElement(ImplicitDict):
 
     delta: Optional[DeltaFlightIntent]
     """If specified, a flight planning intent based on another flight intent, but with some changes."""
+
+
+def flight_info_templates_center(
+    templates: Iterable[FlightInfoTemplate],
+) -> LatLngPoint:
+    lats = []
+    lngs = []
+    for template in templates:
+        if (
+            "basic_information" in template
+            and template.basic_information
+            and "area" in template.basic_information
+            and template.basic_information.area
+        ):
+            for v4d_template in template.basic_information.area:
+                if "outline_polygon" in v4d_template and v4d_template.outline_polygon:
+                    for vertex in v4d_template.outline_polygon.vertices:
+                        lats.append(vertex.lat)
+                        lngs.append(vertex.lng)
+                elif "outline_circle" in v4d_template and v4d_template.outline_circle:
+                    lats.append(v4d_template.outline_circle.center.lat)
+                    lngs.append(v4d_template.outline_circle.center.lng)
+
+    if not lats:
+        raise ValueError(
+            "Cannot compute center of FlightInfoTemplates without any geographical information"
+        )
+
+    return LatLngPoint(lat=sum(lats) / len(lats), lng=sum(lngs) / len(lngs))
 
 
 class FlightIntentCollection(ImplicitDict):
@@ -100,6 +130,10 @@ class FlightIntentCollection(ImplicitDict):
                 )
                 xforms.extend(self.transformations)
                 v.transformations = xforms
+
+            # Transform intent elements as a group rather than independently
+            center = flight_info_templates_center(processed_intents.values())
+            bind_transformations(self.transformations, center)
 
         return processed_intents
 
