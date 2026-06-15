@@ -402,6 +402,14 @@ class Volume3D(ImplicitDict):
             f"No supported transformation defined (keys: {', '.join(transformation)})"
         )
 
+    def center_2d(self) -> LatLngPoint:
+        if self.outline_polygon is not None:
+            return self.outline_polygon.vertex_average()
+        elif self.outline_circle is not None:
+            return self.outline_circle.center
+        else:
+            raise ValueError("Neither outline_circle nor outline_polygon specified")
+
     def translate_relative(self, translation: RelativeTranslation) -> Volume3D:
         if (
             "reference_center" in translation
@@ -409,12 +417,7 @@ class Volume3D(ImplicitDict):
         ):
             src_center = translation.reference_center
         else:
-            if self.outline_polygon is not None:
-                src_center = self.outline_polygon.vertex_average()
-            elif self.outline_circle is not None:
-                src_center = self.outline_circle.center
-            else:
-                raise ValueError("Neither outline_circle nor outline_polygon specified")
+            src_center = self.center_2d()
 
         meters_east = (
             translation.meters_east
@@ -493,12 +496,7 @@ class Volume3D(ImplicitDict):
         ):
             src_center = translation.reference_center
         else:
-            if self.outline_polygon is not None:
-                src_center = self.outline_polygon.vertex_average()
-            elif self.outline_circle is not None:
-                src_center = self.outline_circle.center
-            else:
-                raise ValueError("Neither outline_circle nor outline_polygon specified")
+            src_center = self.center_2d()
 
         r_matrix = make_rotation_matrix(
             src_center.as_s2sphere(), new_center.as_s2sphere()
