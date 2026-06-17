@@ -100,7 +100,11 @@ def create_random_flight_path(
 
 
 def create_random_flight_path_volume(
-    lat: float, lng: float, radius: int, max_flight_distance_meters: int, duration_seconds: int = 10
+    lat: float,
+    lng: float,
+    radius: int,
+    max_flight_distance_meters: int,
+    duration_seconds: int = 10,
 ):
     altitude_lower = random.randint(0, 10000)
     altitude_upper = altitude_lower + 1
