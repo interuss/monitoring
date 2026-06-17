@@ -51,18 +51,32 @@ if [[ "$DC_COMMAND" == up* ]]; then
   echo "Starting containers..."
 fi
 
+if [[ "$DB_TYPE" == "raft" ]]; then
+  RAFT_NODES=""
+  for ((i=1; i<=NUM_USS; i++)); do
+    for ((j=1; j<=NUM_NODES; j++)); do
+      NODE_IDX=$(( (i-1) * NUM_NODES + j ))
+      PADDED_NODE_IDX=$(printf "%02d" "$NODE_IDX")
+      RAFT_NODES="${RAFT_NODES},${NODE_IDX}=http://dss${j}.uss${i}.localutm:97${PADDED_NODE_IDX}"
+    done
+  done
+  export RAFT_NODES=${RAFT_NODES#,}
+fi
+
 for ((i=1; i<=NUM_USS; i++)); do
   for ((j=1; j<=NUM_NODES; j++)); do
     export USS_IDX=$i
     export USS_NODE_IDX=$j
-    PADDED_NODE_IDX=$(printf "%02d" $(( (i-1) * NUM_NODES + j)))
+    NODE_IDX=$(( (i-1) * NUM_NODES + j ))
+    export RAFT_ID=$NODE_IDX
+    PADDED_NODE_IDX=$(printf "%02d" "$NODE_IDX")
     export PADDED_NODE_IDX
 
     export COMPOSE_PROFILES=${DB_TYPE}
     if [ "$i" -eq 1 ] && [ "$j" -eq 1 ]; then
       export COMPOSE_PROFILES=${COMPOSE_PROFILES},oauth
     fi
-    if [ "$i" -eq "$NUM_USS" ] && [ "$j" -eq "$NUM_NODES" ]; then
+    if [ "$i" -eq "$NUM_USS" ] && [ "$j" -eq "$NUM_NODES" ] && [ "$DB_TYPE" != "raft" ]; then
       export COMPOSE_PROFILES=${COMPOSE_PROFILES},bootstrap-${DB_TYPE}
     fi
 
@@ -91,7 +105,9 @@ if [[ "$DC_COMMAND" == up* ]]; then
     for ((j=1; j<=NUM_NODES; j++)); do
       check_and_connect "local_infra_${i}-${j}-dss-1" "dss_internal_network"
       check_and_connect "local_infra_${i}-${j}-dss-1" "interop_ecosystem_network"
-      check_and_connect "local_infra_${i}-${j}-${DB_TYPE}-1" "dss_internal_network"
+      if [ "$DB_TYPE" != "raft" ]; then
+        check_and_connect "local_infra_${i}-${j}-${DB_TYPE}-1" "dss_internal_network"
+      fi
     done
   done
 
@@ -127,7 +143,9 @@ if [[ "$DC_COMMAND" == up* ]]; then
     for ((i=1; i<=NUM_USS; i++)); do
       for ((j=1; j<=NUM_NODES; j++)); do
         check_container_health "local_infra_${i}-${j}-dss-1"
-        check_container_health "local_infra_${i}-${j}-${DB_TYPE}-1"
+        if [ "$DB_TYPE" != "raft" ]; then
+          check_container_health "local_infra_${i}-${j}-${DB_TYPE}-1"
+        fi
       done
     done
     check_container_health "local_infra_1-1-oauth-1"
