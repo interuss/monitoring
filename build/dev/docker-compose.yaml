@@ -82,7 +82,7 @@ services:
     networks: [dss_internal_network]
 
   rid_bootstrapper:
-    image: interuss/dss:v0.22.0
+    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
     profiles: [bootstrap-crdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/rid --db_version latest --cockroach_host db1.uss1.localutm"
     depends_on:
@@ -93,7 +93,7 @@ services:
       disable: true
 
   scd_bootstrapper:
-    image: interuss/dss:v0.22.0
+    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
     profiles: [bootstrap-crdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/scd --db_version latest --cockroach_host db1.uss1.localutm"
     depends_on:
@@ -104,7 +104,7 @@ services:
       disable: true
 
   aux_bootstrapper:
-    image: interuss/dss:v0.22.0
+    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
     profiles: [bootstrap-crdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/aux_ --db_version latest --cockroach_host db1.uss1.localutm"
     depends_on:
@@ -115,7 +115,7 @@ services:
       disable: true
 
   rid_bootstrapper-ybdb:
-    image: interuss/dss:v0.22.0
+    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
     profiles: [bootstrap-ybdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/rid --db_version latest --datastore_host db1.uss1.localutm --datastore_user yugabyte --datastore_port 5433"
     restart: on-failure
@@ -124,7 +124,7 @@ services:
       disable: true
 
   scd_bootstrapper-ybdb:
-    image: interuss/dss:v0.22.0
+    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
     profiles: [bootstrap-ybdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/scd --db_version latest --datastore_host db1.uss1.localutm --datastore_user yugabyte --datastore_port 5433"
     restart: on-failure
@@ -133,7 +133,7 @@ services:
       disable: true
 
   aux_bootstrapper-ybdb:
-    image: interuss/dss:v0.22.0
+    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
     profiles: [bootstrap-ybdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/aux_ --db_version latest --datastore_host db1.uss1.localutm --datastore_user yugabyte --datastore_port 5433"
     restart: on-failure
@@ -142,10 +142,11 @@ services:
       disable: true
 
   dss:
-    image: interuss/dss:v0.22.0
+    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
     command: /startup/core_service.sh ${DEBUG_ON:-0}
-    profiles: [ crdb, ybdb ]
+    profiles: [ crdb, ybdb, raft ]
     restart: always
+    cap_add: [ NET_ADMIN ]
     volumes:
       - $PWD/../test-certs:/var/test-certs:ro
       - $PWD/startup/core_service.sh:/startup/core_service.sh:ro
@@ -175,10 +176,17 @@ services:
     ports:
       - "40${PADDED_NODE_IDX:?}:4000"
       - "80${PADDED_NODE_IDX:?}:80"
+      - "97${PADDED_NODE_IDX:?}:97${PADDED_NODE_IDX:?}"
     environment:
       COMPOSE_PROFILES: ${COMPOSE_PROFILES}
       JWT_AUDIENCES: dss${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
       DATASTORE_HOST: db${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
+      INTRA_USS_SUBNET: 172.27.${USS_IDX:?}.0/24
+      INTER_USS_SUBNET: 172.27.0.0/16
+      INTRA_USS_NETEM_CONF: ${INTRA_USS_NETEM_CONF-}
+      INTER_USS_NETEM_CONF: ${INTER_USS_NETEM_CONF-}
+      RAFT_ID: ${RAFT_ID:-1}
+      RAFT_NODES: ${RAFT_NODES-}
     healthcheck:
       test: wget -O - 'http://localhost/healthy' || exit 1
       start_period: 120s # yugabyte may be slow to be ready, and the dss service needs the ybdb service live in order to be healthy
