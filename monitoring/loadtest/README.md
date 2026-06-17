@@ -49,6 +49,9 @@ Clusters are shifted by approimatly 2*Radius on the latitude axe.
 
 There will be one subscriptions per area per client.
 
+Note: One locust user will create subscriptions, the rest create operational
+intents.
+
 Parameters:
 
 * `--uss-base-url`: Base URL of the USS, used to create subscriptions.
