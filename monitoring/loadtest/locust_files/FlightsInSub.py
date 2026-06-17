@@ -54,6 +54,12 @@ def init_parser(parser: argparse.ArgumentParser):
         help="Maximum distance to cover for an individual flight",
         required=True,
     )
+    parser.add_argument(
+      "--oi-duration",
+      type=int,
+      help="Duration (in seconds) of the operational intent",
+      default=10,
+    )
 
 
 class SCD(client.USS):
@@ -63,6 +69,7 @@ class SCD(client.USS):
         self.uss_base_url = self.environment.parsed_options.uss_base_url
         self.radius = self.environment.parsed_options.area_radius
         self.max_flight_distance = self.environment.parsed_options.max_flight_distance
+        self.oi_duration = self.environment.parsed_options.oi_duration
 
         self.clusters = []
 
@@ -142,7 +149,7 @@ class SCD(client.USS):
                 "uss_base_url": self.uss_base_url,
             },
             "extents": create_random_flight_path_volume(
-                cluster.lat, cluster.lng, self.radius, self.max_flight_distance
+                cluster.lat, cluster.lng, self.radius, self.max_flight_distance, self.oi_duration
             ),
         }
         self.client.put(

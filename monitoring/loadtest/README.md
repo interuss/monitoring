@@ -38,6 +38,7 @@ Parameters:
 * `--area-lng`: Longitude of the center of the area in which to create flights
 * `--area-radius`: Radius (in meters) of the area in which to create flights
 * `--area-lat`: Maximum distance to cover for an individual flight
+* `--oi-duration`: Duration (in seconds) of the operational intent
 
 ### FlightsInSub.py
 
@@ -56,6 +57,7 @@ Parameters:
 * `--base-lng`: Longitude of the center of the first cluster
 * `--area-radius`: Radius (in meters) of the area in which to create flights
 * `--area-lat`: Maximum distance to cover for an individual flight
+* `--oi-duration`: Duration (in seconds) of the operational intent
 
 ## Adjusting workload ratio
 For `ISA.py` and `Sub.py`, every action has a weight declared in the `@task(n)` decorator. You can adjust the value of `n` to suite your needs

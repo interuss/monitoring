@@ -40,6 +40,12 @@ def init_parser(parser: argparse.ArgumentParser):
         help="Maximum distance to cover for an individual flight",
         required=True,
     )
+    parser.add_argument(
+      "--oi-duration",
+      type=int,
+      help="Duration (in seconds) of the operational intent",
+      default=10,
+    )
 
 
 class SCD(client.USS):
@@ -51,6 +57,7 @@ class SCD(client.USS):
         self.lng = self.environment.parsed_options.area_lng
         self.radius = self.environment.parsed_options.area_radius
         self.max_flight_distance = self.environment.parsed_options.max_flight_distance
+        self.oi_duration = self.environment.parsed_options.oi_duration
 
     @locust.task
     def task_put_intent(self):
@@ -63,7 +70,7 @@ class SCD(client.USS):
                 "uss_base_url": self.uss_base_url,
             },
             "extents": create_random_flight_path_volume(
-                self.lat, self.lng, self.radius, self.max_flight_distance
+                self.lat, self.lng, self.radius, self.max_flight_distance, self.oi_duration,
             ),
         }
         self.client.put(
