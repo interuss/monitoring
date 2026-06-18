@@ -124,6 +124,19 @@ def test_create_constraint_missing_time_end(ids, scd_api, scd_session):
 
 
 @for_api_versions(scd.API_0_3_17)
+@default_scope(SCOPE_CM)
+@depends_on(test_ensure_clean_workspace)
+def test_create_constraint_time_start_after_time_end(ids, scd_api, scd_session):
+    req = _make_c1_request()
+    e = req["extents"][0]
+    t = e["time_end"]
+    e["time_end"] = e["time_start"]
+    e["time_start"] = t
+    resp = scd_session.put(f"/constraint_references/{ids(CONSTRAINT_TYPE)}", json=req)
+    assert resp.status_code == 400, resp.content
+
+
+@for_api_versions(scd.API_0_3_17)
 @depends_on(test_ensure_clean_workspace)
 def test_create_constraint(ids, scd_api, scd_session):
     id = ids(CONSTRAINT_TYPE)
