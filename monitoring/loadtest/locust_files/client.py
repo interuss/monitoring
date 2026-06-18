@@ -1,6 +1,7 @@
 #!env/bin/python3
 
 import os
+import threading
 
 import requests
 from locust import HttpUser
@@ -15,6 +16,8 @@ class USS(HttpUser):
     abstract = True
     isa_dict: dict[str, str] = {}
     sub_dict: dict[str, str] = {}
+    oi_dict: dict[str, str] = {}
+    lock = threading.Lock()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
