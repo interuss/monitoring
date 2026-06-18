@@ -13,6 +13,8 @@ This document contains key context, nuances, and troubleshooting tips specifical
   ```bash
   PYTHONPATH=. uv run --index https://pypi.org/simple pytest monitoring/uss_qualifier/reports/obfuscation_test.py
   ```
+- **Linter and Formatting**: To verify stylistic correctness/consistency in the monitoring project, run `make format` (to auto-format when possible) or `make lint` (to check correctness/type check) from the root of the `monitoring` directory. Do not run `ruff` or `basedpyright` directly if they fail due to environment/index configuration issues.
+
 
 ## 2. Navigating Data Schemas
 - **Implicit Types**: Many schema objects inherit from `ImplicitDict`. This means that reading their raw Python class definitions may not reveal all their expected structure. Rely on their `__annotations__` or their OpenAPI documentation.
