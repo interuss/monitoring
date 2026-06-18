@@ -22,6 +22,8 @@ To tear down the deployment and clean up networks (also via `make down-locally` 
 ```
 Note that to ensure a proper cleanup, the same environment variables used for the `up` should be used for the `down`.
 
+You can use `make cleanup-locally` to remove all containers. Notice this will perform a very large clean, using network to remove containers, external containers (e.g. locust test runner) will be removed as well: proceed with caution.
+
 ## Environment Variables
 
 The following environment variables can be configured to customize the simulated conditions:

@@ -4,9 +4,9 @@ UPSTREAM_OWNER := $(shell scripts/git/upstream_owner.sh)
 COMMIT := $(shell scripts/git/commit.sh)
 
 ifeq ($(OS),Windows_NT)
-  detected_OS := Windows
+	detected_OS := Windows
 else
-  detected_OS := $(shell uname -s)
+	detected_OS := $(shell uname -s)
 endif
 
 .PHONY: format
@@ -97,6 +97,11 @@ stop-locally:
 .PHONY: down-locally
 down-locally:
 	build/dev/run_locally.sh down
+
+.PHONY: clean-locally
+clean-locally: down-locally
+	-docker ps -aq --filter network=interop_ecosystem_network | xargs -r docker rm -f
+	-docker ps -aq --filter network=dss_internal_network | xargs -r docker rm -f
 
 .PHONY: check-monitoring
 check-monitoring:
