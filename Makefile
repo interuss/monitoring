@@ -98,6 +98,11 @@ stop-locally:
 down-locally:
 	build/dev/run_locally.sh down
 
+.PHONY: clean-locally
+clean-locally: down-locally
+	-docker ps -aq --filter network=interop_ecosystem_network | xargs -r docker rm -f
+	-docker ps -aq --filter network=dss_internal_network | xargs -r docker rm -f
+
 .PHONY: check-monitoring
 check-monitoring:
 	cd monitoring && make test
