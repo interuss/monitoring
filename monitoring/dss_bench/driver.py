@@ -55,6 +55,7 @@ def run_test(
     test: BenchTest, targets: list[tuple[str, str]], cfg: GlobalConfig
 ) -> dict[str, dict]:
     """Return {base_url: {"latencies": [...ms], "error_latencies": [...ms]}}."""
+    test.prepare(cfg, targets)
     q: Queue = Queue()
     procs = []
     for target in targets:
