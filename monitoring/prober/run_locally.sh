@@ -34,7 +34,7 @@ done
 OUTPUT_DIR="monitoring/prober/output"
 mkdir -p "$OUTPUT_DIR"
 
-if ! docker run \
+if ! docker run --rm \
 	-u "$(id -u):$(id -g)" \
 	--network interop_ecosystem_network \
 	-v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \

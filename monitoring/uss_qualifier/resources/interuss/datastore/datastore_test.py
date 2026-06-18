@@ -20,9 +20,10 @@ def good_cockroach(request):
     server.waiting_for(LogMessageWaitStrategy("start_node_query"))
     server.start()
 
-    return CockroachDBNode(
+    yield CockroachDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(26257)
     )
+    server.stop()
 
 
 @pytest.fixture(scope="module")
@@ -45,9 +46,10 @@ def no_tls_cockroach(request):
     server.waiting_for(LogMessageWaitStrategy("start_node_query"))
     server.start()
 
-    return CockroachDBNode(
+    yield CockroachDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(26257)
     )
+    server.stop()
 
 
 @pytest.fixture(scope="module")
@@ -60,9 +62,10 @@ def old_tls_cockroach(request):
     server.waiting_for(LogMessageWaitStrategy("start_node_query"))
     server.start()
 
-    return CockroachDBNode(
+    yield CockroachDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(26257)
     )
+    server.stop()
 
 
 @pytest.fixture(scope="module")
@@ -77,9 +80,10 @@ def good_yugabyte(request):
     )
     server.start()
 
-    return YugabyteDBNode(
+    yield YugabyteDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(7100)
     )
+    server.stop()
 
 
 @pytest.fixture(scope="module")
@@ -94,9 +98,10 @@ def yugabyte_without_client_auth(request):
     )
     server.start()
 
-    return YugabyteDBNode(
+    yield YugabyteDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(7100)
     )
+    server.stop()
 
 
 @pytest.fixture(scope="module")
@@ -111,9 +116,10 @@ def no_tls_yugabyte(request):
     )
     server.start()
 
-    return YugabyteDBNode(
+    yield YugabyteDBNode(
         "test", server.get_container_host_ip(), server.get_exposed_port(7100)
     )
+    server.stop()
 
 
 def test_datastoredbmode_connect_good_cockroach(good_cockroach):
