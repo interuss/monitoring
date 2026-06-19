@@ -22,7 +22,7 @@ jobs:
         docker version
         docker compose version
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         submodules: true
         fetch-tags: true
@@ -65,7 +65,7 @@ jobs:
         docker version
         docker compose version
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         submodules: true
     - name: Load monitoring image
@@ -92,7 +92,7 @@ jobs:
           docker version
           docker compose version
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: true
       - name: Load monitoring image
@@ -372,7 +372,7 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: true
           path: monitoring
