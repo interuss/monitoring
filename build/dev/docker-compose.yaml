@@ -176,6 +176,8 @@ services:
     ports:
       - "40${PADDED_NODE_IDX:?}:4000"
       - "80${PADDED_NODE_IDX:?}:80"
+      - "95${PADDED_NODE_IDX:?}:95${PADDED_NODE_IDX:?}"
+      - "96${PADDED_NODE_IDX:?}:96${PADDED_NODE_IDX:?}"
       - "97${PADDED_NODE_IDX:?}:97${PADDED_NODE_IDX:?}"
     environment:
       COMPOSE_PROFILES: ${COMPOSE_PROFILES}
@@ -186,7 +188,9 @@ services:
       INTRA_USS_NETEM_CONF: ${INTRA_USS_NETEM_CONF-}
       INTER_USS_NETEM_CONF: ${INTER_USS_NETEM_CONF-}
       RAFT_ID: ${RAFT_ID:-1}
-      RAFT_NODES: ${RAFT_NODES-}
+      AUX_RAFT_NODES: ${AUX_RAFT_NODES-}
+      RID_RAFT_NODES: ${RID_RAFT_NODES-}
+      SCD_RAFT_NODES: ${SCD_RAFT_NODES-}
     healthcheck:
       test: wget -O - 'http://localhost/healthy' || exit 1
       start_period: 120s # yugabyte may be slow to be ready, and the dss service needs the ybdb service live in order to be healthy
