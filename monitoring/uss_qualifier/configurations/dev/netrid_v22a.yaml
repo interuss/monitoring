@@ -3,7 +3,7 @@ v1:
   test_run:
     resources:
       resource_declarations:
-        kentland_flights_data: {$ref: 'library/resources.yaml#/kentland_flights_data'}
+        kentland_generated_flights_data: {$ref: 'library/resources.yaml#/kentland_generated_flights_data'}
         netrid_observation_evaluation_configuration: {$ref: 'library/resources.yaml#/netrid_observation_evaluation_configuration'}
         utm_client_identity: {$ref: 'library/resources.yaml#/utm_client_identity'}
         id_generator: {$ref: 'library/resources.yaml#/id_generator'}
@@ -32,7 +32,7 @@ v1:
       test_suite:
         suite_type: suites.astm.netrid.f3411_22a
         resources:
-          flights_data: kentland_flights_data
+          flights_data: kentland_generated_flights_data
           service_providers: netrid_service_providers_v22a
           observers: netrid_observers_v22a
           mock_uss_dp: mock_uss_instance_dp_v22a
