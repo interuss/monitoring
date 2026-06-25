@@ -94,4 +94,54 @@ def test_adjacent_circular_flights_simuation_source():
     specs = FlightDataSpecification(
         adjacent_circular_flights_simulation_source=AdjacentCircularFlightsSimulatorConfiguration()
     )
-    FlightDataResource(specs, "test")
+    resource = FlightDataResource(specs, "test")
+
+    assert len(resource.flight_collection.flights) == 6
+    assert [len(f.states) for f in resource.flight_collection.flights] == [
+        30,
+        30,
+        30,
+        30,
+        30,
+        30,
+    ]
+
+
+def test_adjacent_circular_flights_simulation_source_configuration():
+    specs = FlightDataSpecification(
+        adjacent_circular_flights_simulation_source=AdjacentCircularFlightsSimulatorConfiguration(
+            num_flights=4,
+            duration=61,
+        )
+    )
+
+    resource = FlightDataResource(specs, "test")
+
+    assert len(resource.flight_collection.flights) == 4
+    assert [len(f.states) for f in resource.flight_collection.flights] == [
+        61,
+        61,
+        61,
+        61,
+    ]
+
+
+@pytest.mark.parametrize(
+    "num_flights,duration",
+    [
+        (0, 61),
+        (4, 0),
+    ],
+)
+def test_adjacent_circular_flights_simulation_source_invalid_configuration(
+    num_flights, duration
+):
+    specs = FlightDataSpecification(
+        adjacent_circular_flights_simulation_source=AdjacentCircularFlightsSimulatorConfiguration(
+            num_flights=num_flights,
+            duration=duration,
+        )
+    )
+
+    with pytest.raises(ValueError):
+        FlightDataResource(specs, "test")
