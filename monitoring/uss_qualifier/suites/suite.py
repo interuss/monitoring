@@ -3,7 +3,9 @@ from __future__ import annotations
 import json
 import os
 import re
+import threading
 from collections.abc import Iterator
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
@@ -155,7 +157,9 @@ class TestSuiteAction[T: ActionGenerator]:
         if not scenario:
             raise Exception("Cannot execute _run_test_scenario when no scenario is set")
 
-        logger.info(f'Running "{scenario.documentation.name}" scenario...')
+        logger.info(
+            f'Running "{scenario.documentation.name}" scenario{context.parallel_marker}...'
+        )
         scenario.on_failed_check = _print_failed_check
         scenario.time_context[TimeDuringTest.StartOfTestRun] = Time(context.start_time)
         scenario.time_context[TimeDuringTest.StartOfScenario] = Time(
@@ -185,7 +189,9 @@ class TestSuiteAction[T: ActionGenerator]:
                 "\n".join("  " + line for line in lines),
             )
         else:
-            logger.info(f'"{scenario.documentation.name}" scenario completed')
+            logger.info(
+                f'"{scenario.documentation.name}" scenario{context.parallel_marker} completed'
+            )
         return report
 
     def _run_test_suite(self, context: ExecutionContext) -> TestSuiteReport:
@@ -209,9 +215,93 @@ class TestSuiteAction[T: ActionGenerator]:
             start_time=StringBasedDateTime(arrow.utcnow()),
         )
 
-        _run_actions(self.action_generator.actions(), context, report)
+        _run_generator_actions(self.action_generator.actions(), context, report)
 
         return report
+
+
+def _run_generator_actions(actions, context, report):
+    success = True
+    for item in actions:
+        if isinstance(item, list):
+            sub_reports, branch_success = _run_parallel_branches(item, context)
+            report.actions.extend(sub_reports)
+            if not branch_success:
+                success = False
+                break
+        else:
+            action = item
+            if isinstance(action, SkippedActionReport):
+                action_report = TestSuiteActionReport(skipped_action=action)
+            elif context.should_stop_early_now():
+                assert context.current_frame
+                action_report = TestSuiteActionReport(
+                    skipped_action=SkippedActionReport(
+                        timestamp=StringBasedDateTime(arrow.utcnow().datetime),
+                        reason=TEST_RUN_TIMEOUT_SKIP_REASON,
+                        declaration=context.current_frame.action.declaration,
+                    )
+                )
+            else:
+                action_report = action.run(context)
+            report.actions.append(action_report)
+            if action_report.has_critical_problem():
+                success = False
+                break
+            if not action_report.successful():
+                success = False
+                if action.declaration.on_failure == ReactionToFailure.Abort:
+                    break
+    report.successful = success
+    report.end_time = StringBasedDateTime(datetime.now(UTC))
+
+
+def _run_parallel_branches(branches, context):
+    parent_frame = context.current_frame
+    stop = threading.Event()
+
+    def run_branch(branch):
+        context.current_frame = parent_frame
+        branch_reports = []
+        branch_success = True
+        for action in branch:
+            if stop.is_set():
+                break
+            if isinstance(action, SkippedActionReport):
+                ar = TestSuiteActionReport(skipped_action=action)
+            elif context.should_stop_early_now():
+                assert context.current_frame
+                ar = TestSuiteActionReport(
+                    skipped_action=SkippedActionReport(
+                        timestamp=StringBasedDateTime(arrow.utcnow().datetime),
+                        reason=TEST_RUN_TIMEOUT_SKIP_REASON,
+                        declaration=context.current_frame.action.declaration,
+                    )
+                )
+            else:
+                ar = action.run(context)
+            branch_reports.append(ar)
+            if ar.has_critical_problem():
+                branch_success = False
+                stop.set()
+                break
+            if not ar.successful():
+                branch_success = False
+                if action.declaration.on_failure == ReactionToFailure.Abort:
+                    stop.set()
+                    break
+        return branch_reports, branch_success
+
+    def run_branch_indexed(i, branch):
+        context.parallel_marker = f" [{i + 1}/{len(branches)}]"
+        return run_branch(branch)
+
+    with ThreadPoolExecutor(max_workers=min(len(branches), 8)) as ex:
+        results = list(ex.map(run_branch_indexed, range(len(branches)), branches))
+
+    flat_reports = [r for branch_reports, _ in results for r in branch_reports]
+    overall_success = all(s for _, s in results)
+    return flat_reports, overall_success
 
 
 class TestSuite:
@@ -425,7 +515,7 @@ class ExecutionContext:
     config: ExecutionConfiguration | None
     acceptable_findings: list[FullyQualifiedCheck]
     top_frame: ActionStackFrame | None
-    current_frame: ActionStackFrame | None
+    _current_frame: threading.local
 
     def __init__(
         self,
@@ -435,8 +525,24 @@ class ExecutionContext:
         self.config = config
         self.acceptable_findings = acceptable_findings
         self.top_frame = None
-        self.current_frame = None
         self.start_time = arrow.utcnow().datetime
+        self._current_frame = threading.local()
+
+    @property
+    def current_frame(self) -> ActionStackFrame | None:
+        return getattr(self._current_frame, "value", None)
+
+    @current_frame.setter
+    def current_frame(self, value: ActionStackFrame | None) -> None:
+        self._current_frame.value = value
+
+    @property
+    def parallel_marker(self) -> str:
+        return getattr(self._current_frame, "parallel_marker", "")
+
+    @parallel_marker.setter
+    def parallel_marker(self, value: str) -> None:
+        self._current_frame.parallel_marker = value
 
     def sibling_queries(self) -> Iterator[Query]:
         if self.current_frame is None or self.current_frame.parent is None:

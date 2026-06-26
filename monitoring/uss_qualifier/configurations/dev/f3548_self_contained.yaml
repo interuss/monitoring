@@ -20,9 +20,13 @@ v1:
           flight_planners: flight_planners
           flight_planners_to_clear: flight_planners
           conflicting_flights: conflicting_flights
+          conflicting_flights_parallel: conflicting_flights_parallel
           priority_preemption_flights: conflicting_flights
+          priority_preemption_flights_parallel: conflicting_flights_parallel
           invalid_flight_intents: invalid_flight_intents
+          invalid_flight_intents_parallel: invalid_flight_intents_parallel
           non_conflicting_flights: non_conflicting_flights
+          non_conflicting_flights_parallel: non_conflicting_flights_parallel
           dss: dss
           dss_instances: dss_instances
           interuss_dss_instances: dss_instances
@@ -253,6 +257,11 @@ v1:
                   # Therefore, ground level is at roughly 93m above the WGS84 ellipsoid
                   meters_up: 93
 
+        conflicting_flights_parallel:
+          resource_type: resources.flight_planning.FlightIntentsModifier
+          dependencies:
+            base_resource: conflicting_flights
+
         # Details of flights with invalid operational intents (used in flight intent validation scenario)
         invalid_flight_intents:
           resource_type: resources.flight_planning.FlightIntentsResource
@@ -264,6 +273,12 @@ v1:
                   degrees_north: 32.7181
                   degrees_east: -96.7587
                   meters_up: 93
+
+        invalid_flight_intents_parallel:
+          resource_type: resources.flight_planning.FlightIntentsModifier
+          dependencies:
+            base_resource: invalid_flight_intents
+
 
         # Details of non-conflicting flights (used in data validation scenario)
         non_conflicting_flights:
@@ -277,6 +292,11 @@ v1:
                   degrees_north: 32.7181
                   degrees_east: -96.7587
                   meters_up: 93
+
+        non_conflicting_flights_parallel:
+          resource_type: resources.flight_planning.FlightIntentsModifier
+          dependencies:
+            base_resource: non_conflicting_flights
 
     # How to execute a test run using this configuration
     execution:

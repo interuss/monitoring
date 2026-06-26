@@ -9,9 +9,13 @@ resources:
   interuss_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
   conflicting_flights: resources.flight_planning.FlightIntentsResource
+  conflicting_flights_parallel: resources.flight_planning.FlightIntentsModifier
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource?
+  priority_preemption_flights_parallel: resources.flight_planning.FlightIntentsModifier?
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
+  invalid_flight_intents_parallel: resources.flight_planning.FlightIntentsModifier
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
+  non_conflicting_flights_parallel: resources.flight_planning.FlightIntentsModifier
   nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   priority_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   utm_auth: resources.communications.AuthAdapterResource?
@@ -82,11 +86,11 @@ actions:
       dss_instance_id: dss
     on_failure: Continue
 - action_generator:
-    generator_type: action_generators.flight_planning.FlightPlannerCombinations
+    generator_type: action_generators.flight_planning.ParallelFlightPlannerCombinations
     resources:
       flight_planners: flight_planners
       flight_intent_validation_selector: flight_intent_validation_selector?
-      invalid_flight_intents: invalid_flight_intents
+      invalid_flight_intents: invalid_flight_intents_parallel
       dss: dss
     specification:
       action_to_repeat:
@@ -103,11 +107,11 @@ actions:
         - uss1
   on_failure: Continue
 - action_generator:
-    generator_type: action_generators.flight_planning.FlightPlannerCombinations
+    generator_type: action_generators.flight_planning.ParallelFlightPlannerCombinations
     resources:
       flight_planners: flight_planners
       priority_planning_selector: priority_planning_selector?
-      priority_preemption_flights: priority_preemption_flights
+      priority_preemption_flights: priority_preemption_flights_parallel?
       dss: dss
     specification:
       action_to_repeat:
@@ -126,11 +130,11 @@ actions:
         - uss2
   on_failure: Continue
 - action_generator:
-    generator_type: action_generators.flight_planning.FlightPlannerCombinations
+    generator_type: action_generators.flight_planning.ParallelFlightPlannerCombinations
     resources:
       flight_planners: flight_planners
       nominal_planning_selector: nominal_planning_selector?
-      conflicting_flights: conflicting_flights
+      conflicting_flights: conflicting_flights_parallel
       dss: dss
     specification:
       action_to_repeat:

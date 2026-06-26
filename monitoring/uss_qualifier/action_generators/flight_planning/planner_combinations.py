@@ -17,6 +17,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
 )
 from monitoring.uss_qualifier.resources.resource import (
     MissingResourceError,
+    ResourceProvidingResource,
     ResourceType,
 )
 from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
@@ -40,7 +41,7 @@ class FlightPlannerCombinationsSpecification(ImplicitDict):
 class FlightPlannerCombinations(
     ActionGenerator[FlightPlannerCombinationsSpecification]
 ):
-    _actions: list[TestSuiteAction]
+    _actions_with_participants: list[tuple[TestSuiteAction, frozenset[str]]]
     _current_action: int
 
     @classmethod
@@ -91,8 +92,9 @@ class FlightPlannerCombinations(
                 "default flight planner combination selector",
             )
 
-        self._actions = []
+        self._actions_with_participants = []
         role_assignments = [0] * len(specification.roles)
+        combination_index = 0
         while True:
             participants = flight_planners_resource.make_subset(role_assignments)
             flight_planners_combination = {
@@ -100,13 +102,24 @@ class FlightPlannerCombinations(
             }
 
             if combination_selector.is_valid_combination(flight_planners_combination):
-                modified_resources = {k: v for k, v in resources.items()}
+                modified_resources = {
+                    k: v.provide_resource_for(index=combination_index)
+                    if isinstance(v, ResourceProvidingResource)
+                    else v
+                    for k, v in resources.items()
+                }
                 for k, v in flight_planners_combination.items():
                     modified_resources[k] = v
 
-                self._actions.append(
-                    TestSuiteAction(specification.action_to_repeat, modified_resources)
+                self._actions_with_participants.append(
+                    (
+                        TestSuiteAction(
+                            specification.action_to_repeat, modified_resources
+                        ),
+                        frozenset(p.participant_id for p in participants),
+                    )
                 )
+                combination_index += 1
 
             index_to_increment = len(role_assignments) - 1
             while index_to_increment >= 0:
@@ -121,5 +134,32 @@ class FlightPlannerCombinations(
 
         self._current_action = 0
 
-    def actions(self) -> Iterator[TestSuiteAction]:
-        yield from self._actions
+    def actions(
+        self,
+    ) -> Iterator[TestSuiteAction] | Iterator[list[list[TestSuiteAction]]]:
+        for action, _ in self._actions_with_participants:
+            yield action
+
+
+class ParallelFlightPlannerCombinations(FlightPlannerCombinations):
+    """Like FlightPlannerCombinations, but yields actions grouped so actions
+    sharing no participant run in parallel."""
+
+    @classmethod
+    def get_name(cls) -> str:
+        return "For each appropriate combination of flight planner(s), in parallel where possible"
+
+    def actions(self) -> Iterator[list[list[TestSuiteAction]]]:
+        # Greedy first-fit grouping
+        groups: list[list[tuple[TestSuiteAction, frozenset[str]]]] = []
+        for action, participants in self._actions_with_participants:
+            for group in groups:
+                used = frozenset().union(*(p for _, p in group))
+                if used.isdisjoint(participants):
+                    group.append((action, participants))
+                    break
+            else:
+                groups.append([(action, participants)])
+
+        for group in groups:
+            yield [[action] for action, _ in group]

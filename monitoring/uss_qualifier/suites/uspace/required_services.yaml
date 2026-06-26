@@ -4,10 +4,14 @@ resources:
   prod_env_version_providers: resources.versioning.VersionProvidersResource?
 
   conflicting_flights: resources.flight_planning.FlightIntentsResource
+  conflicting_flights_parallel: resources.flight_planning.FlightIntentsModifier
   priority_preemption_flights: resources.flight_planning.FlightIntentsResource
+  priority_preemption_flights_parallel: resources.flight_planning.FlightIntentsModifier
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
+  invalid_flight_intents_parallel: resources.flight_planning.FlightIntentsModifier
   invalid_flight_auth_flights: resources.flight_planning.FlightIntentsResource
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
+  non_conflicting_flights_parallel: resources.flight_planning.FlightIntentsModifier
   flight_planners: resources.flight_planning.FlightPlannersResource?
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
   mock_uss_dp: resources.interuss.mock_uss.client.MockUSSResource?
@@ -49,10 +53,14 @@ actions:
       test_env_version_providers: test_env_version_providers?
       prod_env_version_providers: prod_env_version_providers?
       conflicting_flights: conflicting_flights
+      conflicting_flights_parallel: conflicting_flights_parallel
       priority_preemption_flights: priority_preemption_flights
+      priority_preemption_flights_parallel: priority_preemption_flights_parallel
       invalid_flight_intents: invalid_flight_intents
+      invalid_flight_intents_parallel: invalid_flight_intents_parallel
       invalid_flight_auth_flights: invalid_flight_auth_flights
       non_conflicting_flights: non_conflicting_flights
+      non_conflicting_flights_parallel: non_conflicting_flights_parallel
       flight_planners: flight_planners?
       mock_uss: mock_uss
       dss: scd_dss
