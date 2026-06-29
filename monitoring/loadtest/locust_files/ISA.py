@@ -27,10 +27,18 @@ def init_parser(parser: argparse.ArgumentParser):
         required=True,
     )
 
+    parser.add_argument(
+        "--with-subscription",
+        type=bool,
+        help="Add a subscription (per client) covering ISA at the start of the test",
+        default=False,
+    )
+
 
 class ISA(client.USS):
     wait_time = locust.between(0.01, 1)
     lock = threading.Lock()
+    sub_uuid = None
 
     @locust.task(10)
     def create_isa(self):
@@ -150,11 +158,65 @@ class ISA(client.USS):
             target_version = self.isa_dict.pop(target_isa, None)
         return target_isa, target_version
 
+    def create_subscription(self):
+
+        time_start = datetime.datetime.now(datetime.UTC)
+        time_end = time_start + datetime.timedelta(minutes=60)
+        self.sub_uuid = str(uuid.uuid4())
+
+        self.client.put(
+            f"/rid/v2/dss/subscriptions/{self.sub_uuid}",
+            json={
+                "extents": {
+                    "volume": {
+                        "outline_polygon": {
+                            "vertices": VERTICES,
+                        },
+                        "altitude_lower": {
+                            "value": 20,
+                            "reference": "W84",
+                            "units": "M",
+                        },
+                        "altitude_upper": {
+                            "value": 400,
+                            "reference": "W84",
+                            "units": "M",
+                        },
+                    },
+                    "time_start": {
+                        "value": format_time(time_start),
+                        "format": "RFC3339",
+                    },
+                    "time_end": {
+                        "value": format_time(time_end),
+                        "format": "RFC3339",
+                    },
+                },
+                "uss_base_url": self.uss_base_url,
+            },
+            name="/subscriptions/[sub_uuid]",
+        )
+
+    def delete_subscription(self):
+
+        if self.sub_uuid:
+            self.client.delete(
+                f"/rid/v2/dss/subscriptions/{self.sub_uuid}",
+                name="/subscriptions/[sub_uuid]",
+            )
+            self.sub_uuid = None
+
     def on_start(self):
         self.uss_base_url = self.environment.parsed_options.uss_base_url
         # insert atleast 1 ISA for update to not fail
         self.create_isa()
 
+        if self.environment.parsed_options.with_subscription:
+            self.create_subscription()
+
     def on_stop(self):
         while self.isa_dict:  # Drain ISAs
             self.delete_isa()
+
+        if self.environment.parsed_options.with_subscription:
+            self.delete_subscription()
