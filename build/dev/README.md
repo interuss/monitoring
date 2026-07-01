@@ -46,6 +46,10 @@ When scaling up the local ecosystem by increasing `NUM_USS` or `NUM_NODES`, ther
 ### Host Port Mapping Limit (Max 99 Total Nodes)
 The script maps container ports to host ports using a two-digit padded index (`PADDED_NODE_IDX` from `01` to `99`).  So, NUM_USS*NUM_NODES may not exceed 99 without adjusting run_locally.sh.
 
+### Static IPs of DSS and DB containers limits (Max 128 Nodes)
+In the `dss_internal_network` network the `dss` and `crdb` or `ybdb` containers get assigned a static IP based on their USS and node IDs. In the last byte of the IP address, the first bit is used as a flag distinguishing the DSS from the DB container. E.g. for USS 3 node 2 the IPs would be `172.27.3.2` for the DSS container and `172.27.3.130` for the DB one. I.e. 7 bits only are available for the IP in the subnet, limiting to 128 the maximum number of nodes. Do note that in any case the previous limitation of 99 nodes would be reached before.
+
+
 ### Dynamic IP Limit (Max ~250 Total Nodes)
 The `dss_internal_network` is created with a dynamic IP pool range of `172.27.0.0/24`.  All DSS containers, bootstrap, and init containers are assigned dynamic IPs from this pool. Since `/24` has **253** usable host IPs (with `172.27.0.1` as gateway), starting more than ~250 containers requiring dynamic IPs will cause Docker to run out of IPs.  In addition to 2 containers per node, there are also bootstrap containers.
 
