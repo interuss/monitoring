@@ -15,7 +15,7 @@ services:
     hostname: db${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
     networks:
       dss_internal_network:
-        ipv4_address: 172.27.${USS_IDX:?}.${USS_NODE_IDX:?}
+        ipv4_address: ${DB_IP:?}
     ports:
       - "81${PADDED_NODE_IDX:?}:8080"
       - "262${PADDED_NODE_IDX:?}:26257"
@@ -43,7 +43,7 @@ services:
     hostname: db${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
     networks:
       dss_internal_network:
-        ipv4_address: 172.27.${USS_IDX:?}.${USS_NODE_IDX:?}
+        ipv4_address: ${DB_IP:?}
     ports:
       - "70${PADDED_NODE_IDX:?}:7000"
       - "90${PADDED_NODE_IDX:?}:9000"
@@ -171,8 +171,9 @@ services:
         required: false
     hostname: dss${USS_NODE_IDX:?}.uss${USS_IDX:?}.localutm
     networks:
-      - dss_internal_network
-      - interop_ecosystem_network
+      dss_internal_network:
+          ipv4_address: ${DSS_IP:?}
+      interop_ecosystem_network:
     ports:
       - "40${PADDED_NODE_IDX:?}:4000"
       - "80${PADDED_NODE_IDX:?}:80"
