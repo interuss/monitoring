@@ -7,7 +7,7 @@ set -e
 # started by docker-compose.yaml, not on a local system.
 
 DEBUG_ON=${1:-0}
-JWT_AUDIENCES="localhost,host.docker.internal,${JWT_AUDIENCES}"
+JWT_AUDIENCES="localhost,host.docker.internal,dss.lb.localutm,${JWT_AUDIENCES}"
 
 # apply netem config for intra/inter-USS subnets, if requested
 if [ -n "$INTRA_USS_NETEM_CONF" ] || [ -n "$INTER_USS_NETEM_CONF" ]; then
