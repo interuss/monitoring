@@ -20,7 +20,7 @@ fi
 
 cd "${BASEDIR}" || exit 1
 
-NUM_USS=${NUM_USS:-2}
+export NUM_USS=${NUM_USS:-2}
 NUM_NODES=${NUM_NODES:-1}
 DB_TYPE=${DB_TYPE:-crdb}
 
