@@ -37,6 +37,12 @@ The following environment variables can be configured to customize the simulated
 * `INTER_USS_NETEM_CONF`: `tc netem` configuration rules applied to traffic between database nodes of *different* USSs (default: `<none>`).
   * *Sensible values (higher latency/jitter, moderate loss):* `"delay 25ms 7.5ms 50% distribution paretonormal loss 0.025% 25%"`
 
+## Load Balancer
+
+A load balancer (powered by HAProxy) is deployed and is available at `http://dss.lb.localutm` within internal networks, or externally at `http://127.0.0.1:8090`.
+
+It targets all DSS instances and can be used to perform balanced load testing.
+
 ---
 
 ## Scaling Limits
