@@ -6,7 +6,7 @@ services:
     image: cockroachdb/cockroach:v24.1.3
     entrypoint: /db-entrypoint.sh
     # 128MB limits allow larger numbers of nodes on a single machine
-    command: /cockroach/cockroach.sh start --insecure --join=db1.uss1.localutm --cache=128MiB --max-sql-memory=128MiB
+    command: /cockroach/cockroach.sh start --insecure --join=db1.uss1.localutm --cache=128MiB --max-sql-memory=128MiB --locality=uss=${USS_IDX:?},node=${USS_IDX:?}-${USS_NODE_IDX:?}
     volumes:
       - $PWD/startup/db-entrypoint.sh:/db-entrypoint.sh:ro
     profiles: [crdb]
@@ -66,11 +66,12 @@ services:
     image: cockroachdb/cockroach:v24.1.3
     profiles: [bootstrap-crdb]
     depends_on: [crdb]
-    entrypoint: >
+    entrypoint: > # note that this sets the CRDB zones to have as many replicas as there are USSs (for all tables), combined with the fact that CRDB will try to distribute replicas uniformly over zones (which are defined by locality), this ensures that each USS has at least a replica
       sh -c "
         out=$$(/cockroach/cockroach.sh init --insecure --host=db1.uss1.localutm 2>&1);
         if [ $$? -eq 0 ]; then
           echo "$$out";
+          /cockroach/cockroach.sh sql --insecure --host=db1.uss1.localutm -e 'ALTER RANGE default CONFIGURE ZONE USING num_replicas = ${NUM_USS:?};';
           exit 0;
         fi;
         echo "$$out";
