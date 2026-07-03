@@ -7,7 +7,7 @@ set -e
 # started by docker-compose.yaml, not on a local system.
 
 DEBUG_ON=${1:-0}
-JWT_AUDIENCES="localhost,host.docker.internal,${JWT_AUDIENCES}"
+JWT_AUDIENCES="localhost,host.docker.internal,dss.lb.localutm,${JWT_AUDIENCES}"
 
 # apply netem config for intra/inter-USS subnets, if requested
 if [ -n "$INTRA_USS_NETEM_CONF" ] || [ -n "$INTER_USS_NETEM_CONF" ]; then
@@ -34,7 +34,7 @@ if [ "${COMPOSE_PROFILES#*"ybdb"}" != "${COMPOSE_PROFILES}" ]; then
   DB_PORT=5433
 elif [ "${COMPOSE_PROFILES#*"raft"}" != "${COMPOSE_PROFILES}" ]; then
   echo "Using raft"
-  DATASTORE_CONNECTION="-store_type raft -raft_node_id=${RAFT_ID} -raft_peers=${RAFT_NODES} -raft_datadir /raftdata"
+  DATASTORE_CONNECTION="-store_type raft -raft_node_id=${RAFT_ID} -rid_raft_peers=${RID_RAFT_NODES} -scd_raft_peers=${SCD_RAFT_NODES} -aux_raft_peers=${AUX_RAFT_NODES} -raft_datadir /raftdata"
   DB_PORT=
 else
   echo "Using CockroachDB"
