@@ -215,6 +215,21 @@ services:
       start_period: 30s
       start_interval: 5s
 
+  dss_loadbalancer:
+    image: haproxy:2.9-alpine
+    profiles: [lb]
+    entrypoint: /startup/lb-entrypoint.sh
+    hostname: dss.lb.localutm
+    volumes:
+      - $PWD/startup/lb-entrypoint.sh:/startup/lb-entrypoint.sh:ro
+    networks:
+      - interop_ecosystem_network
+    ports:
+      - "8090:80"
+    environment:
+      NUM_USS: ${NUM_USS:-1}
+      NUM_NODES: ${NUM_NODES:-1}
+
 networks:
   dss_internal_network:
     name: dss_internal_network

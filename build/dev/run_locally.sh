@@ -81,7 +81,7 @@ for ((i=1; i<=NUM_USS; i++)); do
 
     export COMPOSE_PROFILES=${DB_TYPE}
     if [ "$i" -eq 1 ] && [ "$j" -eq 1 ]; then
-      export COMPOSE_PROFILES=${COMPOSE_PROFILES},oauth
+      export COMPOSE_PROFILES=${COMPOSE_PROFILES},oauth,lb
     fi
     if [ "$i" -eq "$NUM_USS" ] && [ "$j" -eq "$NUM_NODES" ] && [ "$DB_TYPE" != "raft" ]; then
       export COMPOSE_PROFILES=${COMPOSE_PROFILES},bootstrap-${DB_TYPE}
