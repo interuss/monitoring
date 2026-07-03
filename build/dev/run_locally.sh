@@ -87,6 +87,11 @@ for ((i=1; i<=NUM_USS; i++)); do
       export COMPOSE_PROFILES=${COMPOSE_PROFILES},bootstrap-${DB_TYPE}
     fi
 
+    # keep the DSS and the DB in the same subnet by using the first bit of the last byte of the IP
+    # e.g. for USS 3 node 2 the IPs would be 172.27.3.2 for the DSS container and 172.27.3.130 for the DB container
+    export DSS_IP="172.27.$USS_IDX.$USS_NODE_IDX"
+    export DB_IP="172.27.$USS_IDX.$((2#10000000 | USS_NODE_IDX))" # '2#' is the binary syntax for bash arithmetic operations
+
     # shellcheck disable=SC2086
     docker compose -f docker-compose.yaml -p "local_infra_${USS_IDX}-${USS_NODE_IDX}" $DC_COMMAND $DC_OPTIONS &
     sleep 0.1 # reduce probability of race condition in joining network at container start
