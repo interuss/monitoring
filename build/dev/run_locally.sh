@@ -52,15 +52,22 @@ if [[ "$DC_COMMAND" == up* ]]; then
 fi
 
 if [[ "$DB_TYPE" == "raft" ]]; then
-  RAFT_NODES=""
+  RID_RAFT_NODES=""
+  SCD_RAFT_NODES=""
+  AUX_RAFT_NODES=""
   for ((i=1; i<=NUM_USS; i++)); do
     for ((j=1; j<=NUM_NODES; j++)); do
       NODE_IDX=$(( (i-1) * NUM_NODES + j ))
       PADDED_NODE_IDX=$(printf "%02d" "$NODE_IDX")
-      RAFT_NODES="${RAFT_NODES},${NODE_IDX}=http://dss${j}.uss${i}.localutm:97${PADDED_NODE_IDX}"
+      HOST="dss${j}.uss${i}.localutm"
+      RID_RAFT_NODES="${RID_RAFT_NODES},${NODE_IDX}=http://${HOST}:95${PADDED_NODE_IDX}"
+      SCD_RAFT_NODES="${SCD_RAFT_NODES},${NODE_IDX}=http://${HOST}:96${PADDED_NODE_IDX}"
+      AUX_RAFT_NODES="${AUX_RAFT_NODES},${NODE_IDX}=http://${HOST}:97${PADDED_NODE_IDX}"
     done
   done
-  export RAFT_NODES=${RAFT_NODES#,}
+  export RID_RAFT_NODES=${RID_RAFT_NODES#,}
+  export SCD_RAFT_NODES=${SCD_RAFT_NODES#,}
+  export AUX_RAFT_NODES=${AUX_RAFT_NODES#,}
 fi
 
 for ((i=1; i<=NUM_USS; i++)); do
