@@ -95,8 +95,9 @@ if [[ "$DC_COMMAND" == up* ]]; then
     local network=$2
     if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
       if ! docker inspect "${container}" --format '{{json .NetworkSettings.Networks}}' | grep -q "\"${network}\""; then
-        echo "Warning: Container ${container} is not connected to ${network}. Reconnecting..."
+        echo "Warning: Container ${container} is not connected to ${network}. Reconnecting and restarting so the entrypoint reapplies traffic shaping..."
         docker network connect "${network}" "${container}"
+        docker restart "${container}"
       fi
     fi
   }

@@ -13,17 +13,27 @@ JWT_AUDIENCES="localhost,host.docker.internal,dss.lb.localutm,${JWT_AUDIENCES}"
 if [ -n "$INTRA_USS_NETEM_CONF" ] || [ -n "$INTER_USS_NETEM_CONF" ]; then
   apk add iproute2-tc
 
-  # create handle on default interface
-  tc qdisc add dev eth0 root handle 1: prio
+  # Get the first two bytes of the address (/16)
+  NETEM_NET_PREFIX=$(echo "$INTER_USS_SUBNET" | cut -d. -f1-2)
+  # List IP addresses to find the correct interface
+  NETEM_IFACE=$(ip -o -4 addr show | grep -F " inet ${NETEM_NET_PREFIX}." | head -n 1 | awk '{print $2}')
+  if [ -z "$NETEM_IFACE" ]; then
+    echo "ERROR: no interface found in subnet ${INTER_USS_SUBNET}, refusing to start without traffic shaping" >&2
+    exit 1
+  fi
+  echo "Applying netem on interface ${NETEM_IFACE}"
+
+  # create handle on the USS network interface
+  tc qdisc add dev "$NETEM_IFACE" root handle 1: prio
 
   if [ -n "$INTRA_USS_NETEM_CONF" ]; then
-    tc qdisc add dev eth0 parent 1:2 handle 30: netem $INTRA_USS_NETEM_CONF
-    tc filter add dev eth0 parent 1:0 protocol ip prio 1 u32 match ip dst "$INTRA_USS_SUBNET" flowid 1:2
+    tc qdisc add dev "$NETEM_IFACE" parent 1:2 handle 30: netem $INTRA_USS_NETEM_CONF
+    tc filter add dev "$NETEM_IFACE" parent 1:0 protocol ip prio 1 u32 match ip dst "$INTRA_USS_SUBNET" flowid 1:2
   fi
 
   if [ -n "$INTER_USS_NETEM_CONF" ]; then
-    tc qdisc add dev eth0 parent 1:3 handle 31: netem $INTER_USS_NETEM_CONF
-    tc filter add dev eth0 parent 1:0 protocol ip prio 2 u32 match ip dst "$INTER_USS_SUBNET" flowid 1:3
+    tc qdisc add dev "$NETEM_IFACE" parent 1:3 handle 31: netem $INTER_USS_NETEM_CONF
+    tc filter add dev "$NETEM_IFACE" parent 1:0 protocol ip prio 2 u32 match ip dst "$INTER_USS_SUBNET" flowid 1:3
   fi
 fi
 
