@@ -11,16 +11,26 @@ from monitoring.monitorlib.auth import DummyOAuth
 from monitoring.monitorlib.infrastructure import UTMClientSession
 
 
+def _build_session(
+    test: BenchTest,
+    base_url: str,
+    cfg: GlobalConfig,
+) -> UTMClientSession:
+    session = UTMClientSession(
+        base_url, DummyOAuth(cfg.oauth_token_endpoint, cfg.oauth_sub)
+    )
+    session.default_scopes = test.scopes
+    return session
+
+
 def _worker(
     test: BenchTest,
     base_url: str,
     cfg: GlobalConfig,
     q: Queue,
 ) -> None:
-    session = UTMClientSession(
-        base_url, DummyOAuth(cfg.oauth_token_endpoint, cfg.oauth_sub)
-    )
-    session.default_scopes = test.scopes
+
+    session = _build_session(test, base_url, cfg)
 
     try:
         test.setup(session, base_url)
@@ -54,6 +64,10 @@ LB_URL = "http://localhost:8090"
 
 def run_test(test: BenchTest, cfg: GlobalConfig) -> dict[str, dict]:
     """Return {base_url: {"latencies": [...ms], "error_latencies": [...ms]}}."""
+
+    session = _build_session(test, LB_URL, cfg)
+    test.prepare(session, LB_URL)
+
     q: Queue = Queue()
     procs = []
     for _ in range(cfg.processes):

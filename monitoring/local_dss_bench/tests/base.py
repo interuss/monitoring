@@ -16,6 +16,10 @@ class BenchTest:
     def setup(self, session: requests.Session, base_url: str) -> None:
         """Optional one-off prep per worker (e.g. seed data)."""
 
+    def prepare(self, session: requests.Session, base_url: str) -> None:
+        """Optional one-time setup before workers start, run once in the parent
+        (e.g. create a covering subscription)."""
+
     def action(self, session: requests.Session, base_url: str) -> None:
         """A single measured unit of work. Raise on failure."""
         raise NotImplementedError
