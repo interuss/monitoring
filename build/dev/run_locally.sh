@@ -105,10 +105,18 @@ if [[ "$DC_COMMAND" == up* ]]; then
   check_and_connect() {
     local container=$1
     local network=$2
-    if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
+    if docker ps -a --format '{{.Names}}' | grep -q "^${container}$"; then
       if ! docker inspect "${container}" --format '{{json .NetworkSettings.Networks}}' | grep -q "\"${network}\""; then
         echo "Warning: Container ${container} is not connected to ${network}. Reconnecting and restarting so the entrypoint reapplies traffic shaping..."
-        docker network connect "${network}" "${container}"
+        local status
+        status=$(docker inspect --format '{{.State.Status}}' "${container}" 2>/dev/null || true)
+        if [ "$status" = "restarting" ] || [ "$status" = "running" ]; then
+          docker stop -t 2 "${container}" >/dev/null 2>&1 || true
+        fi
+        docker network connect "${network}" "${container}" || {
+          docker stop -t 2 "${container}" >/dev/null 2>&1 || true
+          docker network connect "${network}" "${container}"
+        }
         docker restart "${container}"
       fi
     fi
