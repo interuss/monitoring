@@ -87,7 +87,7 @@ class ASTMNetRIDBehaviorSpecification(ImplicitDict):
     dss_pool: list[ResourceID]
     """Means to interact with the ASTM DSS.
     
-    Benchmark configuration must contain a `resources.astm.f3548.v21.DSSInstanceResource` resource with each of these names."""
+    Benchmark configuration must contain a `resources.astm.f3411.DSSInstanceResource` resource with each of these names."""
 
     dss_selection_strategy: Optional[ASTMDSSSelectionStrategy]
 
