@@ -99,7 +99,7 @@ class StepCompletionCriteria(ImplicitDict):
     any_of: Optional[list[StepCompletionCriteria]]
 
     sampling_duration_at_least: Optional[StringBasedTimeDelta]
-    """Evalutes true when the step has been collecting valid throughput data for at least this long."""
+    """Evaluates true when the step has been collecting valid throughput data for at least this long."""
 
     completed_at_least: Optional[OperationCount]
     """Evaluates true when at least this many operations have completed while the step was collecting valid throughput data."""
