@@ -127,7 +127,7 @@ class LoadCompletionCriteria(ImplicitDict):
     any_of: Optional[list[LoadCompletionCriteria]]
 
     throughput_lower_than_peak: Optional[ThroughputPastPeak]
-    """Evalutes true when the throughput of the specified operations for the most recently-completed step drops below the specified fraction of the maximum throughput of all prior steps."""
+    """Evaluates true when the throughput of the specified operations for the most recently-completed step drops below the specified fraction of the maximum throughput of all prior steps."""
 
     failures_more_than: Optional[OperationCount]
     """Evaluates true when the number of failures for the specified operations exceeds the specified number."""
