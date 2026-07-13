@@ -77,7 +77,7 @@ class OperationCount(ImplicitDict):
 class ThroughputStabilityCriteria(ImplicitDict):
     """Criteria used to determine when it is valid to start collecting throughput data in a step.
 
-    Any specified field that evaluates to false will cause this criteria to evalute to false"""
+    Any specified field that evaluates to false will cause this criteria to evaluate to false"""
 
     each_user_completed_at_least: Optional[OperationCount]
     """Evaluates true when each user has completed at least this many operations since the step started."""
