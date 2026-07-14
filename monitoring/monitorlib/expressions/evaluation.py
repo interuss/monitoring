@@ -24,7 +24,7 @@ def _abbreviate(s: str) -> str:
 def _raise_evaluation_error(msg: str, interpreter: Interpreter) -> None:
     err = interpreter.error[0].get_error()
 
-    detail = "\n".join(_abbreviate(line) for line in err[1].split("/n"))
+    detail = "\n".join(_abbreviate(line) for line in err[1].split("\n"))
 
     default_symbols = make_symbol_table()
     custom_symbols = {}
