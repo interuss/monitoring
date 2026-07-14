@@ -71,7 +71,7 @@ class BenchmarkScenarioReport(ImplicitDict):
     steps: list[BenchmarkScenarioStepReport]
     """Boundaries of steps within this scenario."""
 
-    metadata: dict = {}
+    metadata: Optional[dict]
     """Arbitrary metadata copied from the scenario specification."""
 
 
