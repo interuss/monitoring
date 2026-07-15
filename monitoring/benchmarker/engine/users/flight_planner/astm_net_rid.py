@@ -20,7 +20,6 @@ from monitoring.benchmarker.engine.users.framework import VirtualUser
 from monitoring.monitorlib.fetch.rid import ISA
 from monitoring.monitorlib.geo import get_latlngrect_vertices
 from monitoring.monitorlib.mutate.rid import ISAChange, delete_isa, put_isa
-from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
     DSSInstance,
@@ -70,10 +69,7 @@ class ASTMNetRIDHandler:
             )
 
         if len(self.dss_instances) > 1:
-            if (
-                "dss_selection_strategy" in behavior
-                and behavior.dss_selection_strategy
-            ):
+            if "dss_selection_strategy" in behavior and behavior.dss_selection_strategy:
                 self.dss_selection_strategy = behavior.dss_selection_strategy
             else:
                 raise ValueError(

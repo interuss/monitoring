@@ -81,7 +81,7 @@ class VirtualUser(ABC):
             await self.run_custom_workflow(stop_event)
         except Exception as e:
             logger.error(f"Error during user {self.user_id} workflow: {e}")
-    
+
     @abstractmethod
     async def run_custom_workflow(self, stop_event: asyncio.Event) -> None:
         raise NotImplementedError()
