@@ -17,8 +17,8 @@ def _abbreviate(s: str) -> str:
     max_len = 500
     if len(s) <= max_len:
         return s
-    snippset_len = int(max_len / 2) - 4
-    return f"{s[0:snippset_len]} [...] {s[-snippset_len:]}"
+    snippet_len = int(max_len / 2) - 4
+    return f"{s[0:snippet_len]} [...] {s[-snippet_len:]}"
 
 
 def _raise_evaluation_error(msg: str, interpreter: Interpreter) -> None:

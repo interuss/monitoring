@@ -108,7 +108,6 @@ def check_step_completion_criteria(
             op
             for op in operations
             if op.successful
-            and op.completed_at.datetime >= stability_time
             and op.type in relevant_ops
             and stability_time <= op.completed_at.datetime <= now
         ]
