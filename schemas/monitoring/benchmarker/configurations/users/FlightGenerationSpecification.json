@@ -1,0 +1,22 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/FlightGenerationSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.users.FlightGenerationSpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "independent_time_location_shape": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "IndependentComponentsFlightGenerationSpecification.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

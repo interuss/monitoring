@@ -1,0 +1,57 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/artifacts/matplotlib_figure/SubplotSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.artifacts.matplotlib_figure.SubplotSpecification, as defined in monitoring/benchmarker/configurations/artifacts/matplotlib_figure.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "evaluation_context": {
+      "description": "Symbols available to other expressions in this subplot specification.",
+      "items": {
+        "$ref": "../../../../monitorlib/expressions/types/SymbolExpression.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "x_axis": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AxisSpecification.json"
+        }
+      ]
+    },
+    "xy_plots": {
+      "items": {
+        "$ref": "XYPlotSpecification.json"
+      },
+      "type": "array"
+    },
+    "y_axis": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AxisSpecification.json"
+        }
+      ]
+    }
+  },
+  "required": [
+    "xy_plots"
+  ],
+  "type": "object"
+}

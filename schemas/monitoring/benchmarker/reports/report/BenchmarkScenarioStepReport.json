@@ -1,0 +1,37 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/reports/report/BenchmarkScenarioStepReport.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.reports.report.BenchmarkScenarioStepReport, as defined in monitoring/benchmarker/reports/report.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "end_time": {
+      "description": "Time this step ended.",
+      "format": "date-time",
+      "type": "string"
+    },
+    "load_factor": {
+      "description": "Load factor (e.g., number of users) present during this step.",
+      "type": "number"
+    },
+    "start_time": {
+      "description": "Time this step started.",
+      "format": "date-time",
+      "type": "string"
+    },
+    "throughput_stability_time": {
+      "description": "Time during this step at which activity became sufficiently stable for throughput measurement.",
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "required": [
+    "end_time",
+    "load_factor",
+    "start_time",
+    "throughput_stability_time"
+  ],
+  "type": "object"
+}

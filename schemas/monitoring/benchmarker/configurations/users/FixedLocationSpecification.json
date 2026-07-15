@@ -1,0 +1,22 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/FixedLocationSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.users.FixedLocationSpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "horizontal": {
+      "$ref": "../../../monitorlib/geo/LatLngPoint.json"
+    },
+    "vertical": {
+      "$ref": "../../../monitorlib/geo/Altitude.json"
+    }
+  },
+  "required": [
+    "horizontal",
+    "vertical"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,54 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/loads/LoadCompletionCriteria.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Completion criteria for an entire load.\n\nAny specified field that evaluates to false will cause this criterion to evaluate to false.\n\nmonitoring.benchmarker.configurations.loads.LoadCompletionCriteria, as defined in monitoring/benchmarker/configurations/loads.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "any_of": {
+      "items": {
+        "$ref": "LoadCompletionCriteria.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "failures_more_than": {
+      "description": "Evaluates true when the number of failures for the specified operations exceeds the specified number.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "OperationCount.json"
+        }
+      ]
+    },
+    "most_recent_step": {
+      "description": "Evaluates true when the most recently completed step meets these criteria.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "StepCompletionCriteria.json"
+        }
+      ]
+    },
+    "throughput_lower_than_peak": {
+      "description": "Evaluates true when the throughput of the specified operations for the most recently-completed step drops below the specified fraction of the maximum throughput of all prior steps.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ThroughputPastPeak.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

@@ -1,0 +1,42 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/loads/UserRampLoad.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Ramps up users of a specified type, observing resulting throughput.\n\nmonitoring.benchmarker.configurations.loads.UserRampLoad, as defined in monitoring/benchmarker/configurations/loads.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "additional_users_per_step": {
+      "description": "Additional users to add at each step along the ramp.",
+      "type": "integer"
+    },
+    "initial_users": {
+      "description": "Number of users to start with.",
+      "type": "integer"
+    },
+    "load_completion_criteria": {
+      "$ref": "LoadCompletionCriteria.json",
+      "description": "The load is considered complete if these criteria are met."
+    },
+    "step_completion_criteria": {
+      "$ref": "StepCompletionCriteria.json",
+      "description": "The current step is considered complete once these criteria are met."
+    },
+    "throughput_stability_criteria": {
+      "$ref": "ThroughputStabilityCriteria.json",
+      "description": "Throughput of the current step is considered stable once these criteria are met."
+    },
+    "user_type": {
+      "description": "Type of user to instantiate.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "load_completion_criteria",
+    "step_completion_criteria",
+    "throughput_stability_criteria",
+    "user_type"
+  ],
+  "type": "object"
+}

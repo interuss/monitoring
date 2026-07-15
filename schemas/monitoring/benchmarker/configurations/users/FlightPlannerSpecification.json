@@ -1,0 +1,30 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/FlightPlannerSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "User planning flights coordinated via UTM standards.\n\nmonitoring.benchmarker.configurations.users.FlightPlannerSpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "astm_netrid_behavior": {
+      "description": "How flight planner provides ASTM NetRID service for their flights.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ASTMNetRIDBehaviorSpecification.json"
+        }
+      ]
+    },
+    "flight_generation": {
+      "$ref": "FlightGenerationSpecification.json",
+      "description": "How flight planner generates their flights."
+    }
+  },
+  "required": [
+    "flight_generation"
+  ],
+  "type": "object"
+}

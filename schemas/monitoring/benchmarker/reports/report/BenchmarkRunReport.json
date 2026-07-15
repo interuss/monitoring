@@ -1,0 +1,34 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/reports/report/BenchmarkRunReport.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.reports.report.BenchmarkRunReport, as defined in monitoring/benchmarker/reports/report.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "codebase_version": {
+      "description": "Version of codebase used to run benchmarker.",
+      "type": "string"
+    },
+    "commit_hash": {
+      "description": "Full commit hash of codebase used to run benchmarker.",
+      "type": "string"
+    },
+    "configuration": {
+      "$ref": "../../configurations/configuration/BenchmarkConfiguration.json",
+      "description": "Configuration used to run benchmarker."
+    },
+    "report": {
+      "$ref": "BenchmarkReport.json",
+      "description": "Report produced by benchmarker during this run."
+    }
+  },
+  "required": [
+    "codebase_version",
+    "commit_hash",
+    "configuration",
+    "report"
+  ],
+  "type": "object"
+}

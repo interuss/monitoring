@@ -1,0 +1,28 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/ASTMNetRIDISAPerFlightStrategySpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Create an ISA per flight.\n\nmonitoring.benchmarker.configurations.users.ASTMNetRIDISAPerFlightStrategySpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "after_flight_end": {
+      "description": "Delete the ISA this amount of time after the end of this flight.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "before_flight_start": {
+      "description": "Create the ISA this amount of time before the start of the flight.",
+      "format": "duration",
+      "type": "string"
+    }
+  },
+  "required": [
+    "before_flight_start"
+  ],
+  "type": "object"
+}
