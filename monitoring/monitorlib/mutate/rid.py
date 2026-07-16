@@ -557,9 +557,9 @@ def put_isa(
     (op, url) = build_isa_url(rid_version, isa_id, isa_version)
     if rid_version == RIDVersion.f3411_19:
         query_type = (
-            QueryType.F3411v19DSSUpdateIdentificationServiceArea
+            QueryType.F3411v19DSSCreateIdentificationServiceArea
             if is_creation
-            else QueryType.F3411v19DSSCreateIdentificationServiceArea
+            else QueryType.F3411v19DSSUpdateIdentificationServiceArea
         )
         dss_response = ChangedISA(
             mutation=mutation,
@@ -575,9 +575,9 @@ def put_isa(
         )
     elif rid_version == RIDVersion.f3411_22a:
         query_type = (
-            QueryType.F3411v22aDSSUpdateIdentificationServiceArea
+            QueryType.F3411v22aDSSCreateIdentificationServiceArea
             if is_creation
-            else QueryType.F3411v22aDSSCreateIdentificationServiceArea
+            else QueryType.F3411v22aDSSUpdateIdentificationServiceArea
         )
         dss_response = ChangedISA(
             mutation=mutation,

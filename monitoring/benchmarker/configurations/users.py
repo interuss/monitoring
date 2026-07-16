@@ -91,7 +91,7 @@ class ASTMNetRIDBehaviorSpecification(ImplicitDict):
 
     dss_selection_strategy: Optional[ASTMDSSSelectionStrategy]
 
-    isa_strategy: Optional[ASTMNetRIDISAStrategySpecification]
+    isa_strategy: ASTMNetRIDISAStrategySpecification
 
 
 class FlightPlannerSpecification(ImplicitDict):
