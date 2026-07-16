@@ -15,6 +15,8 @@ from loguru import logger
 import monitoring
 import monitoring.uss_qualifier.action_generators
 import monitoring.uss_qualifier.resources
+from monitoring.benchmarker.configurations.configuration import BenchmarkConfiguration
+from monitoring.benchmarker.reports.report import BenchmarkRunReport
 from monitoring.monitorlib.inspection import fullname, import_submodules
 from monitoring.uss_qualifier.action_generators.action_generator import ActionGenerator
 from monitoring.uss_qualifier.configurations.configuration import (
@@ -185,6 +187,8 @@ def main() -> int:
     schemas = {}
     _make_type_schemas(TestRunReport, schema_vars_resolver, schemas)
     _make_type_schemas(USSQualifierConfiguration, schema_vars_resolver, schemas)
+    _make_type_schemas(BenchmarkRunReport, schema_vars_resolver, schemas)
+    _make_type_schemas(BenchmarkConfiguration, schema_vars_resolver, schemas)
 
     repo = {}
     import_submodules(monitoring.uss_qualifier.resources)

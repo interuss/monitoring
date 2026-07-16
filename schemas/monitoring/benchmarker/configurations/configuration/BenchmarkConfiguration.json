@@ -1,0 +1,69 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/configuration/BenchmarkConfiguration.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.configuration.BenchmarkConfiguration, as defined in monitoring/benchmarker/configurations/configuration.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "actions": {
+      "description": "Actions available to be performed during the benchmarker run.",
+      "items": {
+        "$ref": "../actions/BenchmarkActionSpecification.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "artifacts": {
+      "description": "Artifacts to produce from the data collected during the benchmarker run.",
+      "items": {
+        "$ref": "../artifacts/artifact/ArtifactSpecification.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "loads": {
+      "description": "Loads that can be applied to the system under test during the benchmarker run.",
+      "items": {
+        "$ref": "../loads/BenchmarkLoadSpecification.json"
+      },
+      "type": "array"
+    },
+    "resources": {
+      "description": "Pool of uss_qualifier resources available for use by other resources in this benchmark configuration.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../../../uss_qualifier/resources/definitions/ResourceCollection.json"
+        }
+      ]
+    },
+    "scenarios": {
+      "description": "The sequential list of scenarios to perform in the benchmarker run.",
+      "items": {
+        "$ref": "../scenarios/BenchmarkScenarioSpecification.json"
+      },
+      "type": "array"
+    },
+    "user_types": {
+      "description": "Types of users available to load the system under test during the benchmarker run.",
+      "items": {
+        "$ref": "../users/BenchmarkUserSpecification.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "loads",
+    "scenarios",
+    "user_types"
+  ],
+  "type": "object"
+}

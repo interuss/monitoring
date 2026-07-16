@@ -1,0 +1,59 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/loads/StepCompletionCriteria.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Completion criteria based on a load step.\n\nAny specified field that evaluates to false will cause this criteria to evaluate to false.\n\nmonitoring.benchmarker.configurations.loads.StepCompletionCriteria, as defined in monitoring/benchmarker/configurations/loads.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "any_of": {
+      "items": {
+        "$ref": "StepCompletionCriteria.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "average_duration_more_than": {
+      "description": "Evaluates true when the average duration of operations completed during the step exceeds the specified value.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "OperationLatency.json"
+        }
+      ]
+    },
+    "completed_at_least": {
+      "description": "Evaluates true when at least this many operations have completed while the step was collecting valid throughput data.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "OperationCount.json"
+        }
+      ]
+    },
+    "sampling_duration_at_least": {
+      "description": "Evaluates true when the step has been collecting valid throughput data for at least this long.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "throughput_stability_took_longer_than": {
+      "description": "Evaluates true when reaching throughput stability took longer than this amount of time since the start of the step.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

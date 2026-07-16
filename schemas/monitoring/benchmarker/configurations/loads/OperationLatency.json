@@ -1,0 +1,28 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/loads/OperationLatency.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.loads.OperationLatency, as defined in monitoring/benchmarker/configurations/loads.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "duration": {
+      "description": "Duration of relevant operations.",
+      "format": "duration",
+      "type": "string"
+    },
+    "operations": {
+      "description": "Particular operations to look for.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "duration",
+    "operations"
+  ],
+  "type": "object"
+}

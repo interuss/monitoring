@@ -1,0 +1,50 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/artifacts/matplotlib_figure/XYPlotSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Specification for a plot (artist) to show on a matplotlib Axes.\n\nWhen evaluating expressions, the BenchmarkRunReport will be available as the `report` symbol.\n\nmonitoring.benchmarker.configurations.artifacts.matplotlib_figure.XYPlotSpecification, as defined in monitoring/benchmarker/configurations/artifacts/matplotlib_figure.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "evaluation_context": {
+      "description": "Symbols available to other expressions in this plot specification.",
+      "items": {
+        "$ref": "../../../../monitorlib/expressions/types/SymbolExpression.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "render_expr": {
+      "description": "If specified, whether this plot should be rendered (boolean).  Default true.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "type": {
+      "enum": [
+        "Scatter"
+      ],
+      "type": "string"
+    },
+    "x_data_expr": {
+      "description": "List of X data values for XY points.\n\nMust have the same number of entries as y_data.\nDefaults to 1, 2, 3, ..., N for N y_data values.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "y_data_expr": {
+      "description": "List of Y data values for XY points.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "y_data_expr"
+  ],
+  "type": "object"
+}

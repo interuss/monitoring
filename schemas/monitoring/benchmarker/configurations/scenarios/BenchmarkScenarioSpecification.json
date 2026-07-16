@@ -1,0 +1,52 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/scenarios/BenchmarkScenarioSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.scenarios.BenchmarkScenarioSpecification, as defined in monitoring/benchmarker/configurations/scenarios.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "load": {
+      "description": "How and when to generate load in this scenario.",
+      "type": "string"
+    },
+    "metadata": {
+      "description": "Arbitrary data that may be relevant to the scenario.",
+      "type": "object"
+    },
+    "name": {
+      "type": "string"
+    },
+    "record_query_details": {
+      "description": "When true, include full details in the report for queries made during this scenario.",
+      "type": "boolean"
+    },
+    "setup": {
+      "description": "Actions to perform before beginning load testing in this scenario.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "teardown": {
+      "description": "Actions to perform after completing load testing in this scenario.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "load",
+    "metadata",
+    "name"
+  ],
+  "type": "object"
+}

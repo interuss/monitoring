@@ -1,0 +1,29 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/IndependentComponentsFlightGenerationSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.users.IndependentComponentsFlightGenerationSpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "location": {
+      "$ref": "FlightLocationGenerationSpecification.json",
+      "description": "Means to generate flight locations."
+    },
+    "shape": {
+      "$ref": "FlightShapeGenerationSpecification.json",
+      "description": "Means to generate flight shapes."
+    },
+    "time": {
+      "$ref": "FlightTimeGenerationSpecification.json",
+      "description": "Means to generate the start times of flights."
+    }
+  },
+  "required": [
+    "location",
+    "shape",
+    "time"
+  ],
+  "type": "object"
+}

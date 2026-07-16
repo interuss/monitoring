@@ -1,0 +1,34 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/FixedVolumesSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.users.FixedVolumesSpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "origin_horizontal": {
+      "$ref": "../../../monitorlib/geo/LatLngPoint.json"
+    },
+    "origin_time": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "origin_vertical": {
+      "$ref": "../../../monitorlib/geo/Altitude.json"
+    },
+    "volumes": {
+      "items": {
+        "$ref": "../../../monitorlib/geotemporal/Volume4D.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "origin_horizontal",
+    "origin_time",
+    "origin_vertical",
+    "volumes"
+  ],
+  "type": "object"
+}

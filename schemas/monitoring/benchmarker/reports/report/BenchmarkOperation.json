@@ -1,0 +1,37 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/reports/report/BenchmarkOperation.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Record of an operation of a known type, origin, and outcome executed during a benchmark.\n\nmonitoring.benchmarker.reports.report.BenchmarkOperation, as defined in monitoring/benchmarker/reports/report.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "query": {
+      "description": "The query details for this operation, if this was a query operation and query details are being recorded.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../../../monitorlib/fetch/Query.json"
+        }
+      ]
+    },
+    "t0": {
+      "description": "Time this operation was started/initiated.",
+      "format": "date-time",
+      "type": "string"
+    },
+    "t1": {
+      "description": "Time this operation completed, either successsfully or in failure.",
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "required": [
+    "t0",
+    "t1"
+  ],
+  "type": "object"
+}
