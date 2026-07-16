@@ -21,6 +21,9 @@ class XYPlotSpecification(ImplicitDict):
 
     type: XYPlotType
 
+    label_expr: Optional[ASTExpression]
+    """Expression for the label of this plot/artist (string), primarily used in the plot legend."""
+
     evaluation_context: Optional[list[SymbolExpression]]
     """Symbols available to other expressions in this plot specification."""
 
@@ -37,6 +40,42 @@ class XYPlotSpecification(ImplicitDict):
     """If specified, whether this plot should be rendered (boolean).  Default true."""
 
 
+class LegendLocation(StrEnum):
+    Best = "best"
+    UpperRight = "upper right"
+    UpperLeft = "upper left"
+    LowerLeft = "lower left"
+    LowerRight = "lower right"
+    Right = "right"
+    CenterLeft = "center left"
+    CenterRight = "center right"
+    LowerCenter = "lower center"
+    UpperCenter = "upper center"
+    Center = "center"
+
+
+class LegendFontSize(StrEnum):
+    XXSmall = "xx-small"
+    XSmall = "x-small"
+    Small = "small"
+    Medium = "medium"
+    Large = "large"
+    XLarge = "x-large"
+    XXLarge = "xx-large"
+
+
+class LegendSpecification(ImplicitDict):
+    location: Optional[LegendLocation]
+
+    font_size: Optional[LegendFontSize]
+
+    label_spacing: Optional[float]
+    """The vertical space between the legend entries, in font-size units."""
+
+    border_padding: Optional[float]
+    """The fractional whitespace inside the legend border, in font-size units."""
+
+
 class SubplotSpecification(ImplicitDict):
     title: Optional[str]
 
@@ -46,6 +85,8 @@ class SubplotSpecification(ImplicitDict):
     x_axis: Optional[AxisSpecification]
     y_axis: Optional[AxisSpecification]
     xy_plots: list[XYPlotSpecification]
+
+    legend: Optional[LegendSpecification]
 
 
 class SubfigureSpecification(ImplicitDict):
