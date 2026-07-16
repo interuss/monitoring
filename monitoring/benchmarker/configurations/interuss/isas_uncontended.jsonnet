@@ -132,7 +132,7 @@ local nodeIndex = function(uss, node) std.format('%02d', node + num_nodes * (uss
       user_ramp: {
         user_type: 'FPU%d' % uss,
         initial_users: 10,
-        additional_users_per_step: 5,
+        additional_users_per_step: 10,
         throughput_stability_criteria: {
           each_user_completed_at_least: {
             count: 1,
@@ -240,6 +240,7 @@ local nodeIndex = function(uss, node) std.format('%02d', node + num_nodes * (uss
                 xy_plots: [
                   {
                     type: 'Scatter',
+                    label_expr: '"DSS %d"' % uss,
                     evaluation_context: [
                       {
                         name: 'scenarios',
@@ -248,14 +249,28 @@ local nodeIndex = function(uss, node) std.format('%02d', node + num_nodes * (uss
                           'if s.metadata["latency_ms"] == %(latency)d and s.metadata["dss_instance"] == %(uss)d' +
                         ']') %
                         {latency: latency_ms, uss: uss},
-                      }
+                      },
+                      {
+                        name: 'scale',
+                        value: '[step.load_factor for step in scenarios[0].steps]',
+                      },
+                      {
+                        name: 'throughput',
+                        value: '[throughput_of_step(scenarios[0], s, types=["workflow.flight_planner.flight"])' +
+                               ' for s in range(len(scenarios[0].steps))]',
+                      },
                     ],
                     render_expr: 'scenarios',
-                    x_data_expr: '[step.load_factor for step in scenarios[0].steps]',
-                    y_data_expr: '[throughput_of_step(scenarios[0], s, types=["workflow.flight_planner.flight"])' +
-                                 ' for s in range(len(scenarios[0].steps))]',
+                    x_data_expr: 'scale',
+                    y_data_expr: 'throughput',
                   } for uss in std.range(1, num_uss)
                 ],
+                legend: {
+                  location: 'upper left',
+                  font_size: 'x-small',
+                  label_spacing: 0.2,
+                  border_padding: 0.2,
+                },
               }
             ],
           } for latency_ms in latencies_ms
