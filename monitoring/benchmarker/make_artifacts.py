@@ -73,15 +73,18 @@ def main() -> int:
             f"========== Generating artifacts for configuration {config_name} and report {report_path} =========="
         )
 
+        if config_name != config_in_report:
+            logger.debug("Loading config...")
+            config = load_config(config_name, skip_validation=args.skip_validation)
+        else:
+            config = None
+
         logger.debug("Loading report...")
         report_src = load_dict_with_references(report_path)
         logger.debug("Parsing report...")
         report = ImplicitDict.parse(report_src, BenchmarkRunReport)
 
-        logger.debug("Loading config...")
-        if config_name != config_in_report:
-            config = load_config(config_name, skip_validation=args.skip_validation)
-        else:
+        if config is None:
             config = report.configuration
 
         if "artifacts" in config and config.artifacts:

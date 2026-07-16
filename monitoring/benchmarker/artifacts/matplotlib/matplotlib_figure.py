@@ -145,12 +145,39 @@ def generate_matplotlib_figure(
                 else:
                     x_vals = list(range(1, len(y_vals) + 1))
 
+                label = None
+                if "label_expr" in xy_plot and xy_plot.label_expr is not None:
+                    label_val = evaluate_expression(
+                        xy_plot.label_expr, "label_expr", xyplot_interpreter
+                    )
+                    if label_val is not None:
+                        label = str(label_val)
+
                 if xy_plot.type == XYPlotType.Scatter:
-                    ax.scatter(x_vals, y_vals)
+                    ax.scatter(x_vals, y_vals, label=label)
                 else:
                     raise NotImplementedError(
                         f"XYPlotType '{xy_plot.type}' not implemented"
                     )
+
+            if "legend" in subplot_spec and subplot_spec.legend:
+                legend_spec = subplot_spec.legend
+                legend_kwargs = {}
+                if "location" in legend_spec and legend_spec.location:
+                    legend_kwargs["loc"] = str(legend_spec.location)
+                if "font_size" in legend_spec and legend_spec.font_size:
+                    legend_kwargs["fontsize"] = str(legend_spec.font_size)
+                if (
+                    "label_spacing" in legend_spec
+                    and legend_spec.label_spacing is not None
+                ):
+                    legend_kwargs["labelspacing"] = float(legend_spec.label_spacing)
+                if (
+                    "border_padding" in legend_spec
+                    and legend_spec.border_padding is not None
+                ):
+                    legend_kwargs["borderpad"] = float(legend_spec.border_padding)
+                ax.legend(**legend_kwargs)
 
     plt.tight_layout()
     fig.savefig(out_path, bbox_inches="tight")
