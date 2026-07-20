@@ -2,6 +2,7 @@ import asyncio
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
+from random import Random
 from typing import Any
 
 from implicitdict import StringBasedDateTime
@@ -14,6 +15,7 @@ from monitoring.benchmarker.configurations.users import (
     BenchmarkUserName,
     BenchmarkUserSpecification,
 )
+from monitoring.benchmarker.engine.coordination import Coordinator
 from monitoring.benchmarker.engine.loads.criteria import (
     check_load_completion_criteria,
     check_stability_criteria,
@@ -35,6 +37,7 @@ async def run_user_ramp_load(
     user_specs_map: dict[BenchmarkUserName, BenchmarkUserSpecification],
     resource_pool: dict[ResourceID, Any],
     executor: ThreadPoolExecutor,
+    coordinator: Coordinator,
 ) -> tuple[list[ExecutedOperation], list[BenchmarkScenarioStepReport]]:
     """Apply a load by driving virtual user workflows and monitoring step criteria."""
     ramp_user_type = ramp.user_type
@@ -43,6 +46,12 @@ async def run_user_ramp_load(
             f"User type '{ramp_user_type}' for UserRampLoad.user_type not found in configuration.user_types"
         )
     user_spec = user_specs_map[ramp_user_type]
+
+    random = (
+        Random(ramp.random_seed)
+        if "random_seed" in ramp and ramp.random_seed
+        else Random()
+    )
 
     active_tasks: list[asyncio.Task] = []
     virtual_users: list[VirtualUser] = []
@@ -62,7 +71,8 @@ async def run_user_ramp_load(
         last_status_time[0] = time.monotonic()
 
     def wrapped_record_op(op: ExecutedOperation) -> None:
-        update_status_time()
+        if not op.successful:
+            update_status_time()
         record_operation(op, operations)
 
     logger.info(f"Starting user_ramp load with initial_users={current_load_factor}")
@@ -107,7 +117,9 @@ async def run_user_ramp_load(
                     user_spec,
                     resource_pool,
                     executor,
+                    coordinator,
                     wrapped_record_op,
+                    Random(random.randint(0, 2 << 31)),
                 )
                 virtual_users.append(vu)
                 active_tasks.append(asyncio.create_task(vu.run_workflow(stop_event)))

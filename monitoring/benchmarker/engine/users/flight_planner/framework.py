@@ -25,18 +25,24 @@ class FlightActionType(StrEnum):
     CreateISA = "astm_netrid_behavior.create_isa"
     DeleteISA = "astm_netrid_behavior.delete_isa"
 
+    UpsertSCDSubscription = "scd_behavior.upsert_subscription"
+    DeleteSCDSubscription = "scd_behavior.delete_subscription"
+    UpsertOpIntent = "scd_behavior.upsert_op_intent"
+    DeleteOpIntent = "scd_behavior.delete_op_intent"
+
 
 @dataclass
 class CompletedFlightAction:
     type: FlightActionType
     initiated_at: datetime
-    success: bool
+    causes_flight_failure: bool
 
 
 @dataclass
 class Flight:
     id: FlightID
     volumes: Volume4DCollection
+    actual_end_time: datetime
     completed_actions: list[CompletedFlightAction] = field(default_factory=lambda: [])
 
     @property
@@ -53,7 +59,7 @@ class Flight:
         return t.datetime
 
     @property
-    def end_time(self) -> datetime:
+    def planned_end_time(self) -> datetime:
         t = self.volumes.time_end
         if not t:
             raise ValueError(f"The volumes of flight {id} do not have an end time")
@@ -61,14 +67,16 @@ class Flight:
 
     @property
     def successful(self) -> bool:
-        return all(action.success for action in self.completed_actions)
+        return all(
+            not action.causes_flight_failure for action in self.completed_actions
+        )
 
     async def complete(self) -> list[FlightAction]:
         self.completed_actions.append(
             CompletedFlightAction(
                 type=FlightActionType.CompleteFlight,
                 initiated_at=self.start_time,
-                success=True,
+                causes_flight_failure=False,
             )
         )
         return []

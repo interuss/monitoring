@@ -21,6 +21,17 @@
     "flight_generation": {
       "$ref": "FlightGenerationSpecification.json",
       "description": "How flight planner generates their flights."
+    },
+    "scd_behavior": {
+      "description": "How flight planner provides strategic conflict detection service for their flights.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../user/astm/scd/BehaviorSpecification.json"
+        }
+      ]
     }
   },
   "required": [

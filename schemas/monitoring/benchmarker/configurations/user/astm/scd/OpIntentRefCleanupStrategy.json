@@ -1,0 +1,28 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/user/astm/scd/OpIntentRefCleanupStrategy.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.user.astm.scd.OpIntentRefCleanupStrategy, as defined in monitoring/benchmarker/configurations/user/astm/scd.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "after_actual_flight_end": {
+      "description": "Delete operational intent reference this amount of time after the actual end of the flight.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "after_planned_flight_end": {
+      "description": "Delete operational intent reference this amount of time after the planned end of the flight (end of last volume).",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

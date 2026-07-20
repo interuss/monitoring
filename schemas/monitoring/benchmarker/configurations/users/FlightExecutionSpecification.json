@@ -1,0 +1,28 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/FlightExecutionSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.users.FlightExecutionSpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "end_flight_after_start": {
+      "description": "If specified, the operator ends their flight early this amount of time after the flight began.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "end_flight_before_end": {
+      "description": "If specified, the operator ends their flight early this amount of time before the flight is scheduled to end.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

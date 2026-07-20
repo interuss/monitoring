@@ -38,6 +38,17 @@
         }
       ]
     },
+    "failures_more_than": {
+      "description": "Evaluates true when the number of failures for the specified operations exceeds the specified number during this step.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "OperationCount.json"
+        }
+      ]
+    },
     "sampling_duration_at_least": {
       "description": "Evaluates true when the step has been collecting valid throughput data for at least this long.",
       "format": "duration",
