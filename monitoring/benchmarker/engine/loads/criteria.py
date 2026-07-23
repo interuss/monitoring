@@ -136,7 +136,6 @@ def check_step_completion_criteria(
             if not op.successful
             and op.type in relevant_ops
             and op.completed_at.datetime >= step_start_time
-            and op.type in relevant_ops
             and op.completed_at.datetime <= now
         )
         if fails <= req_count:

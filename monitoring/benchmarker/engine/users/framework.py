@@ -87,7 +87,7 @@ class VirtualUser(ABC):
             await self.run_custom_workflow(stop_event)
         except Exception as e:
             logger.error(
-                f"{type(e)}.__name__ during user {self.user_id} workflow: {str(e)}\n{stacktrace_string(e)}"
+                f"{type(e).__name__} during user {self.user_id} workflow: {str(e)}\n{stacktrace_string(e)}"
             )
 
     @abstractmethod
