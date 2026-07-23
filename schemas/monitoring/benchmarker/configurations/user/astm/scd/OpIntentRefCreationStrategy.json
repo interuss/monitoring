@@ -1,0 +1,49 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/user/astm/scd/OpIntentRefCreationStrategy.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.user.astm.scd.OpIntentRefCreationStrategy, as defined in monitoring/benchmarker/configurations/user/astm/scd.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "accept_before_flight_start": {
+      "description": "Create an operational intent in the Accepted state this long before the flight starts (start of first volume).",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "activate_before_flight_start": {
+      "description": "Create or update an operational intent to the Activated state this long before the flight starts (start of first volume).",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "coordinate_requested_ovns": {
+      "description": "If specified true, use requested OVNs and share them with the coordination group before requesting.",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "ovn_coordination_group": {
+      "description": "If specified, exchange OVNs directly between other virtual users using this coordination group to exchange OVNs.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "retries": {
+      "description": "If specified, number of times to retry failed operational intent operations before giving up.",
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

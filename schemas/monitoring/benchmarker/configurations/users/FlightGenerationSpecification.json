@@ -7,6 +7,17 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
+    "execution": {
+      "description": "How operator actually executes their planned flights.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "FlightExecutionSpecification.json"
+        }
+      ]
+    },
     "independent_time_location_shape": {
       "oneOf": [
         {

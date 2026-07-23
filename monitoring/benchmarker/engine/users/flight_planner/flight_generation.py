@@ -1,7 +1,9 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
+from random import Random
 
 from monitoring.benchmarker.configurations.users import (
+    FlightExecutionSpecification,
     FlightGenerationSpecification,
     IndependentComponentsFlightGenerationSpecification,
 )
@@ -21,37 +23,42 @@ from monitoring.monitorlib.geotemporal import Volume4DCollection
 
 class IndependentTimeLocationShape(FlightGenerator):
     spec: IndependentComponentsFlightGenerationSpecification
+    execution: FlightExecutionSpecification | None = None
+    random: Random
 
     def __init__(
-        self, spec: IndependentComponentsFlightGenerationSpecification, user_id: str
+        self, spec: FlightGenerationSpecification, user_id: str, random: Random
     ):
-        self.spec = spec
-
-        if "fixed_spacing" in spec.time and spec.time.fixed_spacing:
-            pass
-        else:
-            raise NotImplementedError(
-                f"No supported time component is specified in independent_time_location_shape.time for user `{user_id}`"
+        if (
+            "independent_time_location_shape" not in spec
+            or not spec.independent_time_location_shape
+        ):
+            raise ValueError(
+                "`independent_time_location_shape` not specified for IndependentTimeLocationShape FlightGenerator"
             )
 
-        if "fixed_location" in spec.location and spec.location.fixed_location:
+        self.spec = spec.independent_time_location_shape
+        if "execution" in spec and spec.execution:
+            self.execution = spec.execution
+
+        if "fixed_location" in self.spec.location and self.spec.location.fixed_location:
             pass
         else:
             raise NotImplementedError(
                 "No supported location component is specified in independent_time_location_shape.location for user `user_id`"
             )
 
-        if "fixed_volumes" in spec.shape and spec.shape.fixed_volumes:
+        if "fixed_volumes" in self.spec.shape and self.spec.shape.fixed_volumes:
             pass
         else:
             raise NotImplementedError(
                 "No supported shape component specified in independent_time_location_shape.shape for user `user_id`"
             )
 
-        if spec.shape.fixed_volumes and spec.location.fixed_location:
+        if self.spec.shape.fixed_volumes and self.spec.location.fixed_location:
             # Check unit/reference match between fixed_location and fixed_volumes
-            fixed_vols = spec.shape.fixed_volumes
-            fixed_loc = spec.location.fixed_location
+            fixed_vols = self.spec.shape.fixed_volumes
+            fixed_loc = self.spec.location.fixed_location
             origin_vert = fixed_vols.origin_vertical
             if (
                 fixed_loc.vertical.reference != origin_vert.reference
@@ -61,11 +68,18 @@ class IndependentTimeLocationShape(FlightGenerator):
                     "Combining vertical location and shape with different reference or units is not supported"
                 )
 
+        self.random = random
+
     def generate_flight(self, previous_flight_end: datetime) -> Flight:
-        if self.spec.time.fixed_spacing:
-            t0 = previous_flight_end + self.spec.time.fixed_spacing.timedelta
-        else:
-            raise NotImplementedError("Specified time component not implemented")
+        dt = timedelta(seconds=0)
+        if "fixed_spacing" in self.spec.time and self.spec.time.fixed_spacing:
+            dt += self.spec.time.fixed_spacing.timedelta
+        if (
+            "uniform_random_spacing" in self.spec.time
+            and self.spec.time.uniform_random_spacing
+        ):
+            dt += self.spec.time.uniform_random_spacing.timedelta * self.random.random()
+        t0 = previous_flight_end + dt
 
         if self.spec.location.fixed_location:
             xy = self.spec.location.fixed_location.horizontal
@@ -107,19 +121,44 @@ class IndependentTimeLocationShape(FlightGenerator):
         else:
             raise NotImplementedError("Specified shape component not implemented")
 
-        return Flight(id=FlightID(uuid.uuid4()), volumes=volumes)
+        time_end = volumes.time_end_not_none.datetime
+        actual_end_time = time_end
+        if self.execution:
+            time_start = volumes.time_start_not_none.datetime
+            if (
+                "end_flight_after_start" in self.execution
+                and self.execution.end_flight_after_start
+            ):
+                actual_end_time = min(
+                    actual_end_time,
+                    time_start + self.execution.end_flight_after_start.timedelta,
+                )
+            if (
+                "end_flight_before_end" in self.execution
+                and self.execution.end_flight_before_end
+            ):
+                actual_end_time = min(
+                    actual_end_time,
+                    time_end - self.execution.end_flight_before_end.timedelta,
+                )
+            actual_end_time = max(actual_end_time, time_start)
+
+        return Flight(
+            id=FlightID(uuid.uuid4()), volumes=volumes, actual_end_time=actual_end_time
+        )
 
 
 def make_flight_generator(
-    flight_generation: FlightGenerationSpecification, user_id: str
+    flight_generation: FlightGenerationSpecification, user_id: str, random: Random
 ) -> FlightGenerator:
     if (
         "independent_time_location_shape" in flight_generation
         and flight_generation.independent_time_location_shape
     ):
         return IndependentTimeLocationShape(
-            flight_generation.independent_time_location_shape,
+            flight_generation,
             user_id,
+            random,
         )
     else:
         raise ValueError(

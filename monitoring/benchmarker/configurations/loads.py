@@ -110,6 +110,9 @@ class StepCompletionCriteria(ImplicitDict):
     throughput_stability_took_longer_than: Optional[StringBasedTimeDelta]
     """Evaluates true when reaching throughput stability took longer than this amount of time since the start of the step."""
 
+    failures_more_than: Optional[OperationCount]
+    """Evaluates true when the number of failures for the specified operations exceeds the specified number during this step."""
+
 
 class ThroughputPastPeak(ImplicitDict):
     operations: list[OperationType]
@@ -131,6 +134,9 @@ class LoadCompletionCriteria(ImplicitDict):
 
     failures_more_than: Optional[OperationCount]
     """Evaluates true when the number of failures for the specified operations exceeds the specified number."""
+
+    completed_steps: Optional[int]
+    """Evaluates true when this many steps have been completed."""
 
     most_recent_step: Optional[StepCompletionCriteria]
     """Evaluates true when the most recently completed step meets these criteria."""
@@ -156,6 +162,9 @@ class UserRampLoad(ImplicitDict):
 
     load_completion_criteria: LoadCompletionCriteria
     """The load is considered complete if these criteria are met."""
+
+    random_seed: Optional[int]
+    """Seed to use to randomly generate seeds for each user."""
 
 
 class BenchmarkLoadSpecification(ImplicitDict):

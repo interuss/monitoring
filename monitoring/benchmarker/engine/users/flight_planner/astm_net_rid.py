@@ -133,7 +133,7 @@ class ASTMNetRIDHandler:
             alt_lo=altitude_lower.to_w84_m(),
             alt_hi=altitude_upper.to_w84_m(),
             start_time=flight.start_time,
-            end_time=flight.end_time,
+            end_time=flight.planned_end_time,
             uss_base_url=uss_base_url,
             isa_id=isa_id,
             rid_version=dss_instance.rid_version,
@@ -150,14 +150,14 @@ class ASTMNetRIDHandler:
             CompletedFlightAction(
                 type=FlightActionType.CreateISA,
                 initiated_at=t0,
-                success=isa_success,
+                causes_flight_failure=not isa_success,
             )
         )
 
         if isa_success and self.isa_per_flight.after_flight_end:
             new_actions.append(
                 FlightAction(
-                    timestamp=flight.end_time
+                    timestamp=flight.actual_end_time
                     + self.isa_per_flight.after_flight_end.timedelta,
                     flight_id=flight.id,
                     start=partial(
@@ -196,7 +196,7 @@ class ASTMNetRIDHandler:
                 CompletedFlightAction(
                     type=FlightActionType.DeleteISA,
                     initiated_at=t0,
-                    success=del_success,
+                    causes_flight_failure=not del_success,
                 )
             )
 

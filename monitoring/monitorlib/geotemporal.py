@@ -351,12 +351,26 @@ class Volume4DCollection(list[Volume4D]):
         )
 
     @property
+    def time_start_not_none(self) -> Time:
+        t = self.time_start
+        if t is None:
+            raise ValueError("Start times of all volumes must be defined")
+        return t
+
+    @property
     def time_end(self) -> Time | None:
         return (
             Time(max(v.time_end.datetime for v in self))
             if all("time_end" in v and v.time_end for v in self)
             else None
         )
+
+    @property
+    def time_end_not_none(self) -> Time:
+        t = self.time_end
+        if t is None:
+            raise ValueError("End times of all volumes must be defined")
+        return t
 
     @property
     def altitude_lower(self) -> Altitude | None:
@@ -369,6 +383,13 @@ class Volume4DCollection(list[Volume4D]):
         )
 
     @property
+    def altitude_lower_not_none(self) -> Altitude:
+        alt = self.altitude_lower
+        if alt is None:
+            raise ValueError("Lower altitudes of all volumes must be defined")
+        return alt
+
+    @property
     def altitude_upper(self) -> Altitude | None:
         return Altitude(
             value=min(v.volume.altitude_upper_wgs84_m() for v in self)
@@ -377,6 +398,13 @@ class Volume4DCollection(list[Volume4D]):
             reference=AltitudeDatum.W84,
             units=DistanceUnits.M,
         )
+
+    @property
+    def altitude_upper_not_none(self) -> Altitude:
+        alt = self.altitude_upper
+        if alt is None:
+            raise ValueError("Upper altitudes of all volumes must be defined")
+        return alt
 
     def offset_times(self, dt: timedelta) -> Volume4DCollection:
         return Volume4DCollection([v.offset_time(dt) for v in self])

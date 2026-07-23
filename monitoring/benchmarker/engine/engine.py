@@ -5,11 +5,13 @@ from loguru import logger
 
 from monitoring.benchmarker.configurations.configuration import BenchmarkConfiguration
 from monitoring.benchmarker.engine.actions.actions import run_scenario_actions
+from monitoring.benchmarker.engine.coordination import Coordinator
 from monitoring.benchmarker.engine.loads.loads import run_scenario_load
 from monitoring.benchmarker.engine.operations import (
     group_operations,
 )
 from monitoring.benchmarker.engine.resources import instantiate_resources
+from monitoring.benchmarker.engine.users.creation import enumerate_coordination_groups
 from monitoring.benchmarker.reports.report import (
     BenchmarkReport,
     BenchmarkRunReport,
@@ -39,6 +41,9 @@ async def _run_benchmark_async(
     action_list = config.actions if "actions" in config and config.actions else []
     action_specs = {action_spec.name: action_spec for action_spec in action_list}
 
+    coordination_groups = list(enumerate_coordination_groups(config.user_types))
+    coordinator = Coordinator(coordination_groups)
+
     try:
         for scenario_spec in config.scenarios:
             logger.info(
@@ -60,6 +65,7 @@ async def _run_benchmark_async(
                 user_specs_map,
                 resource_pool,
                 executor,
+                coordinator,
             )
 
             # Run teardown actions

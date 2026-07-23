@@ -1,0 +1,44 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/user/astm/scd/BehaviorSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.user.astm.scd.BehaviorSpecification, as defined in monitoring/benchmarker/configurations/user/astm/scd.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "dss_pool": {
+      "description": "Means to interact with the ASTM DSS.\n\nBenchmark configuration must contain a `resources.astm.f3548.v21.DSSInstanceResource` resource with each of these names.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "dss_selection_strategy": {
+      "enum": [
+        "First",
+        "Random"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "op_intent_ref_cleanup_strategy": {
+      "$ref": "OpIntentRefCleanupStrategy.json"
+    },
+    "op_intent_ref_creation_strategy": {
+      "$ref": "OpIntentRefCreationStrategy.json"
+    },
+    "subscription_strategy": {
+      "$ref": "SubscriptionStrategy.json"
+    }
+  },
+  "required": [
+    "dss_pool",
+    "op_intent_ref_cleanup_strategy",
+    "op_intent_ref_creation_strategy",
+    "subscription_strategy"
+  ],
+  "type": "object"
+}

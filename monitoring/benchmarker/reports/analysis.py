@@ -91,7 +91,8 @@ def throughput_of_operations(
       partial work included "for free" of operations started before `start_time` that end within the time window.
     """
     dur = (end_time - start_time).total_seconds()
-    kwargs["outcomes"] = (True,)
+    if "outcomes" not in kwargs:
+        kwargs["outcomes"] = (True,)
     kwargs["completed_after"] = start_time
     kwargs["completed_before"] = end_time
     return (

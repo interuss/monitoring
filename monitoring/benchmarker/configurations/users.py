@@ -1,8 +1,9 @@
-from enum import StrEnum
 from typing import Optional
 
 from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
 
+from monitoring.benchmarker.configurations.user.astm import scd
+from monitoring.benchmarker.configurations.user.astm.dss import ASTMDSSSelectionStrategy
 from monitoring.monitorlib.geo import Altitude, LatLngPoint
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.rid import RIDVersion
@@ -20,7 +21,10 @@ class FixedLocationSpecification(ImplicitDict):
 
 class FlightTimeGenerationSpecification(ImplicitDict):
     fixed_spacing: Optional[StringBasedTimeDelta]
-    """Set delay between the end of the previous flight and the start of the next flight to this value."""
+    """Add this fixed delay between the end of the previous flight and the start of the next flight."""
+
+    uniform_random_spacing: Optional[StringBasedTimeDelta]
+    """Add a random delay uniformly distributed between 0 and this duration between the end of the previous flight and the start of the next flight."""
 
 
 class FlightLocationGenerationSpecification(ImplicitDict):
@@ -47,7 +51,17 @@ class IndependentComponentsFlightGenerationSpecification(ImplicitDict):
     """Means to generate flight locations."""
 
     shape: FlightShapeGenerationSpecification
-    """Means to generate flight shapes."""
+    """Means to generate flight shapes.
+    
+    Note that these volumes represent planned volumes and the flight may be ended before the end of the volumes."""
+
+
+class FlightExecutionSpecification(ImplicitDict):
+    end_flight_before_end: Optional[StringBasedTimeDelta]
+    """If specified, the operator ends their flight early this amount of time before the flight is scheduled to end."""
+
+    end_flight_after_start: Optional[StringBasedTimeDelta]
+    """If specified, the operator ends their flight early this amount of time after the flight began."""
 
 
 class FlightGenerationSpecification(ImplicitDict):
@@ -55,6 +69,9 @@ class FlightGenerationSpecification(ImplicitDict):
         IndependentComponentsFlightGenerationSpecification
     ]
     """The time, location, and shape of flights are generated independently."""
+
+    execution: Optional[FlightExecutionSpecification]
+    """How operator actually executes their planned flights."""
 
 
 class ASTMNetRIDISAPerFlightStrategySpecification(ImplicitDict):
@@ -71,14 +88,6 @@ class ASTMNetRIDISAStrategySpecification(ImplicitDict):
     """Strategy used to ensure at least one ISA covers every flight."""
 
     isa_per_flight: Optional[ASTMNetRIDISAPerFlightStrategySpecification]
-
-
-class ASTMDSSSelectionStrategy(StrEnum):
-    First = "First"
-    """Always use the first DSS in the pool list."""
-
-    Random = "Random"
-    """Use a random DSS from the pool list for every operation."""
 
 
 class ASTMNetRIDBehaviorSpecification(ImplicitDict):
@@ -102,6 +111,9 @@ class FlightPlannerSpecification(ImplicitDict):
 
     astm_netrid_behavior: Optional[ASTMNetRIDBehaviorSpecification]
     """How flight planner provides ASTM NetRID service for their flights."""
+
+    scd_behavior: Optional[scd.BehaviorSpecification]
+    """How flight planner provides strategic conflict detection service for their flights."""
 
 
 class BenchmarkUserSpecification(ImplicitDict):
