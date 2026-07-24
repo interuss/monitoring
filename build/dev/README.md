@@ -36,6 +36,7 @@ The following environment variables can be configured to customize the simulated
   * *Sensible values (low latency/jitter, very low loss):* `"delay 250us 25us 25% distribution normal loss 0.0025% 10%"`
 * `INTER_USS_NETEM_CONF`: `tc netem` configuration rules applied to traffic between database nodes of *different* USSs (default: `<none>`).
   * *Sensible values (higher latency/jitter, moderate loss):* `"delay 25ms 7.5ms 50% distribution paretonormal loss 0.025% 25%"`
+* `CORE_SERVICE_EXTRA_FLAGS`: Extra command-line arguments passed directly to `core-service` within DSS containers (default: `<none>`). E.g., `--enable_time_based_notification_index`.
 
 ## Load Balancer
 
