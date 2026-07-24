@@ -12,6 +12,7 @@ class AxisSpecification(ImplicitDict):
 
 class XYPlotType(StrEnum):
     Scatter = "Scatter"
+    Line = "Line"
 
 
 class XYPlotSpecification(ImplicitDict):
@@ -23,6 +24,11 @@ class XYPlotSpecification(ImplicitDict):
 
     label_expr: Optional[ASTExpression]
     """Expression for the label of this plot/artist (string), primarily used in the plot legend."""
+
+    color: Optional[str]
+    """Matplotlib color string for this plot.
+    
+    See https://matplotlib.org/stable/users/explain/colors/colors.html#colors-def"""
 
     evaluation_context: Optional[list[SymbolExpression]]
     """Symbols available to other expressions in this plot specification."""
@@ -38,6 +44,9 @@ class XYPlotSpecification(ImplicitDict):
 
     render_expr: Optional[ASTExpression]
     """If specified, whether this plot should be rendered (boolean).  Default true."""
+
+    kwargs: Optional[dict]
+    """If specified, pass these additional keyword arguments to the plot function."""
 
 
 class LegendLocation(StrEnum):

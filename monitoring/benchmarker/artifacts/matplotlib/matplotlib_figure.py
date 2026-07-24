@@ -47,12 +47,16 @@ def generate_matplotlib_figure(
     analysis_functions = {
         name: obj for name, obj in inspect.getmembers(analysis, inspect.isfunction)
     }
+    analysis_classes = {
+        name: obj for name, obj in inspect.getmembers(analysis, inspect.isclass)
+    }
 
     figure_symbols, _ = get_updated_context(
         {
             "report": report,
         }
-        | analysis_functions,
+        | analysis_functions
+        | analysis_classes,
         fig_spec.evaluation_context
         if "evaluation_context" in fig_spec and fig_spec.evaluation_context
         else [],
@@ -153,8 +157,16 @@ def generate_matplotlib_figure(
                     if label_val is not None:
                         label = str(label_val)
 
+                kwargs = {"label": label}
+                if "color" in xy_plot and xy_plot.color:
+                    kwargs["color"] = xy_plot.color
+                if "kwargs" in xy_plot and xy_plot.kwargs:
+                    kwargs = kwargs | xy_plot.kwargs
+
                 if xy_plot.type == XYPlotType.Scatter:
-                    ax.scatter(x_vals, y_vals, label=label)
+                    ax.scatter(x_vals, y_vals, **kwargs)
+                elif xy_plot.type == XYPlotType.Line:
+                    ax.plot(x_vals, y_vals, **kwargs)
                 else:
                     raise NotImplementedError(
                         f"XYPlotType '{xy_plot.type}' not implemented"

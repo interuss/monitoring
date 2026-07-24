@@ -7,6 +7,13 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
+    "color": {
+      "description": "Matplotlib color string for this plot.\n\nSee https://matplotlib.org/stable/users/explain/colors/colors.html#colors-def",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "evaluation_context": {
       "description": "Symbols available to other expressions in this plot specification.",
       "items": {
@@ -14,6 +21,13 @@
       },
       "type": [
         "array",
+        "null"
+      ]
+    },
+    "kwargs": {
+      "description": "If specified, pass these additional keyword arguments to the plot function.",
+      "type": [
+        "object",
         "null"
       ]
     },
@@ -33,7 +47,8 @@
     },
     "type": {
       "enum": [
-        "Scatter"
+        "Scatter",
+        "Line"
       ],
       "type": "string"
     },
