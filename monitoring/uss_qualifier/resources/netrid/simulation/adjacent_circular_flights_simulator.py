@@ -40,6 +40,12 @@ class AdjacentCircularFlightsSimulator:
         self.maxx = config.maxx
         self.maxy = config.maxy
         self.utm_zone = config.utm_zone
+        if config.num_flights < 1:
+            raise ValueError("num_flights must be at least 1")
+        if config.duration < 1:
+            raise ValueError("duration must be at least 1 second")
+        self.num_flights = config.num_flights
+        self.duration = config.duration
 
         self.altitude_agl = 50.0
 
@@ -182,15 +188,18 @@ class AdjacentCircularFlightsSimulator:
         self, altitude_of_ground_level_wgs_84: float
     ):
         """Generate a series of boxes (grid) within the given bounding box to have areas for different flight tracks within each box"""
-        # Compute the box where the flights will be created. For a the sample bounds given, over Bern, Switzerland, a division by 2 produces a cell_size of 0.0025212764739985793, a division of 3 is 0.0016808509826657196 and division by 4 0.0012606382369992897. As the cell size goes smaller more number of flights can be accomodated within the grid. For the study area bounds we build a 3x2 box for six flights by creating 3 column 2 row grid.
-        N_COLS = 3
-        N_ROWS = 2
-        cell_size_x = (self.maxx - self.minx) / (N_COLS)  # create three columns
-        cell_size_y = (self.maxy - self.miny) / (N_ROWS)  # create two rows
+        # Arrange cells into a compact grid. The default 6 flights preserves the
+        # previous 3-column by 2-row layout.
+        n_rows = round(self.num_flights**0.5)
+        n_cols = -(-self.num_flights // n_rows)
+        cell_size_x = (self.maxx - self.minx) / n_cols
+        cell_size_y = (self.maxy - self.miny) / n_rows
         grid_cells = []
-        for u0 in range(0, N_COLS):  # 3 columns
+        for u0 in range(0, n_cols):
             x0 = self.minx + (u0 * cell_size_x)
-            for v0 in range(0, N_ROWS):  # 2 rows
+            for v0 in range(0, n_rows):
+                if len(grid_cells) >= self.num_flights:
+                    break
                 y0 = self.miny + (v0 * cell_size_y)
                 x1 = x0 + cell_size_x
                 y1 = y0 + cell_size_y
@@ -356,7 +365,7 @@ def generate_aircraft_states(
     )
     my_path_generator.generate_query_bboxes()
 
-    my_path_generator.generate_rid_state(duration=30)
+    my_path_generator.generate_rid_state(duration=my_path_generator.duration)
     flights = my_path_generator.flights
 
     result = FlightRecordCollection(flights=flights)
