@@ -1,0 +1,27 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/loads/ThroughputPastPeak.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.loads.ThroughputPastPeak, as defined in monitoring/benchmarker/configurations/loads.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "fraction_of_peak": {
+      "description": "Trigger this threshold when throughput drops below this fraction of the peak throughput measured for any past step. [0, 1]",
+      "type": "number"
+    },
+    "operations": {
+      "description": "Operations for which throughput should be calculated.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "fraction_of_peak",
+    "operations"
+  ],
+  "type": "object"
+}

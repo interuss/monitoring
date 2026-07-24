@@ -1,0 +1,27 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/loads/OperationCount.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.loads.OperationCount, as defined in monitoring/benchmarker/configurations/loads.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "count": {
+      "description": "Number of matching operations.",
+      "type": "integer"
+    },
+    "operations": {
+      "description": "Particular operations to look for.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "count",
+    "operations"
+  ],
+  "type": "object"
+}

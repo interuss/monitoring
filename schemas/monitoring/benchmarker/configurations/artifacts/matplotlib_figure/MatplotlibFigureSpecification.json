@@ -1,0 +1,42 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/artifacts/matplotlib_figure/MatplotlibFigureSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.artifacts.matplotlib_figure.MatplotlibFigureSpecification, as defined in monitoring/benchmarker/configurations/artifacts/matplotlib_figure.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "evaluation_context": {
+      "description": "Symbols available to other expressions in this figure specification.",
+      "items": {
+        "$ref": "../../../../monitorlib/expressions/types/SymbolExpression.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "n_subfigure_cols": {
+      "type": "integer"
+    },
+    "n_subfigure_rows": {
+      "type": "integer"
+    },
+    "name": {
+      "description": "Machine-level name for this figure.  Used as the output file name.",
+      "type": "string"
+    },
+    "subfigures": {
+      "items": {
+        "$ref": "SubfigureSpecification.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "subfigures"
+  ],
+  "type": "object"
+}

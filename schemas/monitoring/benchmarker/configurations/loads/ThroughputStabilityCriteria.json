@@ -1,0 +1,23 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/loads/ThroughputStabilityCriteria.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Criteria used to determine when it is valid to start collecting throughput data in a step.\n\nAny specified field that evaluates to false will cause this criteria to evaluate to false\n\nmonitoring.benchmarker.configurations.loads.ThroughputStabilityCriteria, as defined in monitoring/benchmarker/configurations/loads.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "each_user_completed_at_least": {
+      "description": "Evaluates true when each user has completed at least this many operations since the step started.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "OperationCount.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

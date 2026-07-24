@@ -1,0 +1,38 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/actions/RunCommandActionSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Shell command to run as a benchmark action.\n\nmonitoring.benchmarker.configurations.actions.RunCommandActionSpecification, as defined in monitoring/benchmarker/configurations/actions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "command": {
+      "description": "Shell command to run.",
+      "type": "string"
+    },
+    "env": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Override each environment variable key with the specified value before running the command.",
+      "properties": {
+        "$ref": {
+          "description": "Path to content that replaces the $ref",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "path": {
+      "description": "Working folder in which to run the command.  `$REPO_ROOT` will be replaced with the root folder of the repo.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "command",
+    "env",
+    "path"
+  ],
+  "type": "object"
+}

@@ -1,4 +1,7 @@
 from .flight_intents_resource import FlightIntentsResource as FlightIntentsResource
+from .flight_intents_resource import (
+    FlightIntentsTriangularCascadeSoutheastResource as FlightIntentsTriangularCascadeSoutheastResource,
+)
 from .flight_planners import (
     FlightPlannerCombinationSelectorResource as FlightPlannerCombinationSelectorResource,
 )

@@ -1,0 +1,32 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/artifacts/artifact/ArtifactSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.artifacts.artifact.ArtifactSpecification, as defined in monitoring/benchmarker/configurations/artifacts/artifact.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "matplotlib_figure": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../matplotlib_figure/MatplotlibFigureSpecification.json"
+        }
+      ]
+    },
+    "raw_report": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../raw_report/RawReportSpecification.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

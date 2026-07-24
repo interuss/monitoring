@@ -1,0 +1,23 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/FlightLocationGenerationSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.users.FlightLocationGenerationSpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "fixed_location": {
+      "description": "Always choose the same flight location.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "FixedLocationSpecification.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

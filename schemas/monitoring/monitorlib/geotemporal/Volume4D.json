@@ -1,0 +1,32 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/geotemporal/Volume4D.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Generic representation of a 4D volume, usable across multiple standards and formats.\n\nmonitoring.monitorlib.geotemporal.Volume4D, as defined in monitoring/monitorlib/geotemporal.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "time_end": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time_start": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "volume": {
+      "$ref": "../geo/Volume3D.json"
+    }
+  },
+  "required": [
+    "volume"
+  ],
+  "type": "object"
+}

@@ -52,15 +52,22 @@ if [[ "$DC_COMMAND" == up* ]]; then
 fi
 
 if [[ "$DB_TYPE" == "raft" ]]; then
-  RAFT_NODES=""
+  RID_RAFT_NODES=""
+  SCD_RAFT_NODES=""
+  AUX_RAFT_NODES=""
   for ((i=1; i<=NUM_USS; i++)); do
     for ((j=1; j<=NUM_NODES; j++)); do
       NODE_IDX=$(( (i-1) * NUM_NODES + j ))
       PADDED_NODE_IDX=$(printf "%02d" "$NODE_IDX")
-      RAFT_NODES="${RAFT_NODES},${NODE_IDX}=http://dss${j}.uss${i}.localutm:97${PADDED_NODE_IDX}"
+      NODE_IP="172.27.${i}.${j}"
+      RID_RAFT_NODES="${RID_RAFT_NODES},${NODE_IDX}=http://${NODE_IP}:95${PADDED_NODE_IDX}"
+      SCD_RAFT_NODES="${SCD_RAFT_NODES},${NODE_IDX}=http://${NODE_IP}:96${PADDED_NODE_IDX}"
+      AUX_RAFT_NODES="${AUX_RAFT_NODES},${NODE_IDX}=http://${NODE_IP}:97${PADDED_NODE_IDX}"
     done
   done
-  export RAFT_NODES=${RAFT_NODES#,}
+  export RID_RAFT_NODES=${RID_RAFT_NODES#,}
+  export SCD_RAFT_NODES=${SCD_RAFT_NODES#,}
+  export AUX_RAFT_NODES=${AUX_RAFT_NODES#,}
 fi
 
 for ((i=1; i<=NUM_USS; i++)); do
@@ -74,11 +81,16 @@ for ((i=1; i<=NUM_USS; i++)); do
 
     export COMPOSE_PROFILES=${DB_TYPE}
     if [ "$i" -eq 1 ] && [ "$j" -eq 1 ]; then
-      export COMPOSE_PROFILES=${COMPOSE_PROFILES},oauth
+      export COMPOSE_PROFILES=${COMPOSE_PROFILES},oauth,lb
     fi
     if [ "$i" -eq "$NUM_USS" ] && [ "$j" -eq "$NUM_NODES" ] && [ "$DB_TYPE" != "raft" ]; then
       export COMPOSE_PROFILES=${COMPOSE_PROFILES},bootstrap-${DB_TYPE}
     fi
+
+    # keep the DSS and the DB in the same subnet by using the first bit of the last byte of the IP
+    # e.g. for USS 3 node 2 the IPs would be 172.27.3.2 for the DSS container and 172.27.3.130 for the DB container
+    export DSS_IP="172.27.$USS_IDX.$USS_NODE_IDX"
+    export DB_IP="172.27.$USS_IDX.$((2#10000000 | USS_NODE_IDX))" # '2#' is the binary syntax for bash arithmetic operations
 
     # shellcheck disable=SC2086
     docker compose -f docker-compose.yaml -p "local_infra_${USS_IDX}-${USS_NODE_IDX}" $DC_COMMAND $DC_OPTIONS &
@@ -93,10 +105,14 @@ if [[ "$DC_COMMAND" == up* ]]; then
   check_and_connect() {
     local container=$1
     local network=$2
-    if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
+    if docker ps -a --format '{{.Names}}' | grep -q "^${container}$"; then
       if ! docker inspect "${container}" --format '{{json .NetworkSettings.Networks}}' | grep -q "\"${network}\""; then
-        echo "Warning: Container ${container} is not connected to ${network}. Reconnecting..."
-        docker network connect "${network}" "${container}"
+        echo "Warning: Container ${container} is not connected to ${network}. Reconnecting and restarting so the entrypoint reapplies traffic shaping..."
+        docker network connect "${network}" "${container}" || {
+          docker stop -t 2 "${container}" >/dev/null 2>&1 || true
+          docker network connect "${network}" "${container}"
+        }
+        docker restart "${container}"
       fi
     fi
   }

@@ -1,0 +1,28 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/FlightTimeGenerationSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.users.FlightTimeGenerationSpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "fixed_spacing": {
+      "description": "Add this fixed delay between the end of the previous flight and the start of the next flight.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uniform_random_spacing": {
+      "description": "Add a random delay uniformly distributed between 0 and this duration between the end of the previous flight and the start of the next flight.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

@@ -1,0 +1,22 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/reports/report/BenchmarkReport.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.reports.report.BenchmarkReport, as defined in monitoring/benchmarker/reports/report.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "scenarios": {
+      "description": "Results of scenarios, corresponding to the scenarios defined in the configuration.",
+      "items": {
+        "$ref": "BenchmarkScenarioReport.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "scenarios"
+  ],
+  "type": "object"
+}

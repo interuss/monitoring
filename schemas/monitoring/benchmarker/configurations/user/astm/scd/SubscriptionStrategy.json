@@ -1,0 +1,34 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/user/astm/scd/SubscriptionStrategy.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.user.astm.scd.SubscriptionStrategy, as defined in monitoring/benchmarker/configurations/user/astm/scd.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "implicit_subscription": {
+      "description": "Planner has the DSS establish an implicit subscription for each individual flight.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ImplicitSubscription.json"
+        }
+      ]
+    },
+    "single_subscription": {
+      "description": "Planner ensures there is a single subscription, established at the start of operations, covering all their flights.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "SingleSubscription.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

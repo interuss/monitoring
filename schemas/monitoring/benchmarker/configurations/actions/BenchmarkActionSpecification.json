@@ -1,0 +1,28 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/actions/BenchmarkActionSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.actions.BenchmarkActionSpecification, as defined in monitoring/benchmarker/configurations/actions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "run_command": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "RunCommandActionSpecification.json"
+        }
+      ]
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "type": "object"
+}

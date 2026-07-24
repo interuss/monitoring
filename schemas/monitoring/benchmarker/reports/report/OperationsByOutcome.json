@@ -1,0 +1,32 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/reports/report/OperationsByOutcome.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Record of operations grouped by whether they were successful.\n\nmonitoring.benchmarker.reports.report.OperationsByOutcome, as defined in monitoring/benchmarker/reports/report.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "successful": {
+      "description": "Operations that were successful (yielded successful user journeys).",
+      "items": {
+        "$ref": "BenchmarkOperation.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "unsuccessful": {
+      "description": "Operations that were unsuccessful (did not yield successful user journeys due to errors, timeouts, aborts, etc)",
+      "items": {
+        "$ref": "BenchmarkOperation.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

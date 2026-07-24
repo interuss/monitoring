@@ -1,0 +1,27 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/reports/report/OperationsByOrigin.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Record of operations from a particular origin.\n\nmonitoring.benchmarker.reports.report.OperationsByOrigin, as defined in monitoring/benchmarker/reports/report.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "origin": {
+      "description": "Source/originator of the operations in this record; e.g., the user that initiated these operations.",
+      "type": "string"
+    },
+    "outcomes": {
+      "description": "Operations originating from this origin.",
+      "items": {
+        "$ref": "OperationsByOutcome.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "origin",
+    "outcomes"
+  ],
+  "type": "object"
+}

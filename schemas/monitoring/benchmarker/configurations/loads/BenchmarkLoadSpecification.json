@@ -1,0 +1,29 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/loads/BenchmarkLoadSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Specification of how load will be applied.\n\nmonitoring.benchmarker.configurations.loads.BenchmarkLoadSpecification, as defined in monitoring/benchmarker/configurations/loads.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "user_ramp": {
+      "description": "Load will be provided by ramping up the number of virtual users of a particular type/behavior.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "UserRampLoad.json"
+        }
+      ]
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "type": "object"
+}

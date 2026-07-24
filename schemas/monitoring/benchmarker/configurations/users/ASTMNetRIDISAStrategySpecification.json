@@ -1,0 +1,22 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/ASTMNetRIDISAStrategySpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Strategy used to ensure at least one ISA covers every flight.\n\nmonitoring.benchmarker.configurations.users.ASTMNetRIDISAStrategySpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "isa_per_flight": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ASTMNetRIDISAPerFlightStrategySpecification.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

@@ -1,0 +1,52 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/geo/Volume3D.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.monitorlib.geo.Volume3D, as defined in monitoring/monitorlib/geo.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "altitude_lower": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "Altitude.json"
+        }
+      ]
+    },
+    "altitude_upper": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "Altitude.json"
+        }
+      ]
+    },
+    "outline_circle": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "Circle.json"
+        }
+      ]
+    },
+    "outline_polygon": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "Polygon.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

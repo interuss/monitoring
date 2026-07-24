@@ -1,0 +1,27 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/reports/report/OperationsByType.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Record of operations of a particular type.\n\nmonitoring.benchmarker.reports.report.OperationsByType, as defined in monitoring/benchmarker/reports/report.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "origins": {
+      "description": "Operations of this particular type.",
+      "items": {
+        "$ref": "OperationsByOrigin.json"
+      },
+      "type": "array"
+    },
+    "type": {
+      "description": "The type of the operations in this record.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "origins",
+    "type"
+  ],
+  "type": "object"
+}
