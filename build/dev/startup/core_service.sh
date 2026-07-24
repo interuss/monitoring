@@ -77,7 +77,8 @@ if [ "$DEBUG_ON" = "1" ]; then
   -enable_scd \
   -allow_http_base_urls \
   -locality local_dev \
-  -public_endpoint http://127.0.0.1:80
+  -public_endpoint http://127.0.0.1:80 \
+  ${CORE_SERVICE_EXTRA_FLAGS}
 else
   echo "Debug Mode: off"
 
@@ -93,5 +94,6 @@ else
   -enable_scd \
   -allow_http_base_urls \
   -locality local_dev \
-  -public_endpoint http://127.0.0.1:80
+  -public_endpoint http://127.0.0.1:80 \
+  ${CORE_SERVICE_EXTRA_FLAGS}
 fi
