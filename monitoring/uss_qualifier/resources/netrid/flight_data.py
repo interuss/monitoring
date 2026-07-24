@@ -59,6 +59,12 @@ class AdjacentCircularFlightsSimulatorConfiguration(ImplicitDict):
     flight_start_shift: int = 0
     """Delay generated flight starts from the reference time to spread flights over time. Expressed in seconds. Use 0 to disable."""
 
+    num_flights: int = 6
+    """Number of adjacent circular flights to generate."""
+
+    duration: int = 30
+    """Number of seconds of telemetry to generate for each flight."""
+
 
 class FlightDataKMLFileConfiguration(ImplicitDict):
     reference_time: StringBasedDateTime = StringBasedDateTime("2022-01-01T00:00:00Z")
