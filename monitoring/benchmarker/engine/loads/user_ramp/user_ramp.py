@@ -11,6 +11,7 @@ from loguru import logger
 from monitoring.benchmarker.configurations.loads import (
     UserRampLoad,
 )
+from monitoring.benchmarker.configurations.scenarios import BenchmarkScenarioName
 from monitoring.benchmarker.configurations.users import (
     BenchmarkUserName,
     BenchmarkUserSpecification,
@@ -38,6 +39,7 @@ async def run_user_ramp_load(
     resource_pool: dict[ResourceID, Any],
     executor: ThreadPoolExecutor,
     coordinator: Coordinator,
+    scenario_name: BenchmarkScenarioName,
 ) -> tuple[list[ExecutedOperation], list[BenchmarkScenarioStepReport]]:
     """Apply a load by driving virtual user workflows and monitoring step criteria."""
     ramp_user_type = ramp.user_type
@@ -119,15 +121,20 @@ async def run_user_ramp_load(
                     executor,
                     coordinator,
                     wrapped_record_op,
-                    Random(random.randint(0, 2 << 31)),
+                    Random(random.randint(0, 1 << 30)),
                 )
                 virtual_users.append(vu)
                 active_tasks.append(asyncio.create_task(vu.run_workflow(stop_event)))
             if first_user_spawned and last_user_spawned:
-                logger.info(
-                    f"Spawned virtual users '{first_user_spawned}' to '{last_user_spawned}'"
-                )
-                update_status_time()
+                if first_user_spawned == last_user_spawned:
+                    logger.info(f"Spawned virtual user '{first_user_spawned}'")
+                else:
+                    logger.info(
+                        f"Spawned virtual users '{first_user_spawned}' to '{last_user_spawned}'"
+                    )
+            else:
+                logger.warning("Spawned no additional virtual users")
+            update_status_time()
 
             # Wait for throughput to become stable for this step
             stability_time = None
@@ -144,6 +151,8 @@ async def run_user_ramp_load(
                     )
                     update_status_time()
                     break
+                if all(t.done() for t in active_tasks):
+                    stop_event.set()
                 await asyncio.sleep(0.5)
 
             if stop_event.is_set() or stability_time is None:
@@ -163,6 +172,8 @@ async def run_user_ramp_load(
                 ):
                     step_end_time = now
                     break
+                if all(t.done() for t in active_tasks):
+                    stop_event.set()
                 await asyncio.sleep(0.5)
 
             # Summarize activity during step
@@ -217,10 +228,10 @@ async def run_user_ramp_load(
             )
 
             logger.info(
-                f"Step {step_index} completed (load_factor={current_load_factor}, operations of interest: [{ops_interest_str}]):\n"
-                f"  • Validity Period Throughput: {tp_valid:.2f} ops/s across validity duration ({throughput_duration_s:.1f}s)\n"
-                f"  • Operations of Interest Completed: {valid_count} in validity period ({throughput_duration_s:.1f}s), {step_count} started since step began; full step duration ({step_duration_s:.1f}s)\n"
-                f"  • Failures during step: {failures_str}"
+                f"User ramp step {step_index} for scenario '{scenario_name}' completed (load_factor={current_load_factor}, operations of interest: [{ops_interest_str}]):\n"
+                f"  • Operations of Interest Completed: {valid_count} ({tp_valid:.2f} ops/s) in validity period ({throughput_duration_s:.1f}s), {step_count} started since step began; full step duration ({step_duration_s:.1f}s)\n"
+                f"  • Failures during step: {failures_str}\n"
+                f"  • Tasks: {len(active_tasks)} total, {sum(1 if t.done() else 0 for t in active_tasks)} ended"
             )
             update_status_time()
 
@@ -251,7 +262,7 @@ async def run_user_ramp_load(
             step_index += 1
             current_load_factor += ramp.additional_users_per_step
             logger.info(
-                f"Advancing to step {step_index} with load_factor={current_load_factor}"
+                f"Advancing to step {step_index} for scenario '{scenario_name}' with load_factor={current_load_factor}"
             )
             update_status_time()
     finally:

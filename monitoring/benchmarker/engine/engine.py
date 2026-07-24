@@ -66,6 +66,7 @@ async def _run_benchmark_async(
                 resource_pool,
                 executor,
                 coordinator,
+                scenario_spec.name,
             )
 
             # Run teardown actions
