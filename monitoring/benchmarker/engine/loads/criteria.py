@@ -57,6 +57,7 @@ def check_step_completion_criteria(
         "throughput_stability_took_longer_than" in criteria
         and criteria.throughput_stability_took_longer_than
     )
+    has_failures = "failures_more_than" in criteria and criteria.failures_more_than
 
     if (
         not has_any_of
@@ -64,6 +65,7 @@ def check_step_completion_criteria(
         and not has_completed_ops
         and not has_min_average
         and not has_stability_duration
+        and not has_failures
     ):
         raise NotImplementedError("StepCompletionCriteria has no specified conditions")
 
@@ -125,6 +127,20 @@ def check_step_completion_criteria(
         if stability_time - step_start_time <= required_duration:
             return False
 
+    if has_failures and criteria.failures_more_than:
+        req_count = criteria.failures_more_than.count
+        relevant_ops = set(criteria.failures_more_than.operations)
+        fails = sum(
+            1
+            for op in operations
+            if not op.successful
+            and op.type in relevant_ops
+            and op.completed_at.datetime >= step_start_time
+            and op.completed_at.datetime <= now
+        )
+        if fails <= req_count:
+            return False
+
     return True
 
 
@@ -138,12 +154,14 @@ def check_load_completion_criteria(
         "throughput_lower_than_peak" in criteria and criteria.throughput_lower_than_peak
     )
     has_failures = "failures_more_than" in criteria and criteria.failures_more_than
+    has_step_count = "completed_steps" in criteria and criteria.completed_steps
     has_most_recent_step = "most_recent_step" in criteria and criteria.most_recent_step
 
     if (
         not has_any_of
         and not has_throughput
         and not has_failures
+        and not has_step_count
         and not has_most_recent_step
     ):
         raise NotImplementedError(
@@ -175,6 +193,10 @@ def check_load_completion_criteria(
         op_types = set(criteria.failures_more_than.operations)
         fails = sum(1 for op in operations if not op.successful and op.type in op_types)
         if fails <= req_count:
+            return False
+
+    if has_step_count and criteria.completed_steps:
+        if len(steps) < criteria.completed_steps:
             return False
 
     if has_most_recent_step and criteria.most_recent_step:

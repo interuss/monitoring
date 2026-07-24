@@ -27,5 +27,5 @@ class BenchmarkScenarioSpecification(ImplicitDict):
     record_query_details: bool = False
     """When true, include full details in the report for queries made during this scenario."""
 
-    metadata: dict
+    metadata: Optional[dict]
     """Arbitrary data that may be relevant to the scenario."""

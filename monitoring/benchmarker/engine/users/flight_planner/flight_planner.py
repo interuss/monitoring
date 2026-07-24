@@ -1,8 +1,9 @@
 import asyncio
 import heapq
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
+from random import Random
 from typing import Any
 
 from implicitdict import StringBasedDateTime
@@ -11,7 +12,9 @@ from loguru import logger
 from monitoring.benchmarker.configurations.loads import OperationType, WorkflowType
 from monitoring.benchmarker.configurations.users import (
     BenchmarkUserSpecification,
+    FlightPlannerSpecification,
 )
+from monitoring.benchmarker.engine.coordination import CoordinationGroupID, Coordinator
 from monitoring.benchmarker.engine.operations import ExecutedOperation
 from monitoring.benchmarker.engine.users.flight_planner.astm_net_rid import (
     ASTMNetRIDHandler,
@@ -25,6 +28,7 @@ from monitoring.benchmarker.engine.users.flight_planner.framework import (
     FlightAction,
     FlightID,
 )
+from monitoring.benchmarker.engine.users.flight_planner.scd import SCDHandler
 from monitoring.benchmarker.engine.users.framework import VirtualUser
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 
@@ -38,6 +42,9 @@ class FlightPlannerUser(VirtualUser):
     net_rid: ASTMNetRIDHandler | None = None
     """Means by which this user performs ASTM network remote ID (if any)."""
 
+    scd: SCDHandler | None = None
+    """Means by which this user perform strategic conflict detection (if any)."""
+
     flights: dict[FlightID, Flight]
     """Flights originating from this user with outstanding actions."""
 
@@ -50,16 +57,20 @@ class FlightPlannerUser(VirtualUser):
         user_spec: BenchmarkUserSpecification,
         resource_pool: dict[ResourceID, Any],
         executor: ThreadPoolExecutor,
+        coordinator: Coordinator,
         record_operation: Callable[[ExecutedOperation], None],
+        random: Random,
     ):
-        super().__init__(user_id, user_spec.name, executor, record_operation)
+        super().__init__(
+            user_id, user_spec.name, executor, coordinator, record_operation
+        )
         if "flight_planner" not in user_spec or not user_spec.flight_planner:
             raise ValueError(
                 f"User specification '{user_spec.name}' has no flight_planner definition"
             )
 
         self.flight_generator = make_flight_generator(
-            user_spec.flight_planner.flight_generation, user_id
+            user_spec.flight_planner.flight_generation, user_id, random
         )
 
         if (
@@ -70,25 +81,33 @@ class FlightPlannerUser(VirtualUser):
                 user_spec.flight_planner.astm_netrid_behavior, resource_pool, self
             )
 
+        if (
+            "scd_behavior" in user_spec.flight_planner
+            and user_spec.flight_planner.scd_behavior
+        ):
+            self.scd = SCDHandler(
+                user_spec.flight_planner.scd_behavior, resource_pool, self
+            )
+
         self.flights = {}
 
     async def _make_next_flight(self) -> list[FlightAction]:
         if not self.most_recent_flight:
             t_prev_flight = datetime.now(UTC)
         else:
-            t_prev_flight = self.most_recent_flight.end_time
+            t_prev_flight = self.most_recent_flight.planned_end_time
 
         flight = self.flight_generator.generate_flight(t_prev_flight)
 
         new_actions: list[FlightAction] = [
             FlightAction(
-                timestamp=flight.end_time,
+                timestamp=flight.actual_end_time,
                 flight_id=flight.id,
                 start=flight.complete,
                 run_on_shutdown=False,
             ),
             FlightAction(
-                timestamp=flight.end_time,
+                timestamp=flight.actual_end_time,
                 start=self._make_next_flight,
                 run_on_shutdown=False,
             ),
@@ -96,6 +115,9 @@ class FlightPlannerUser(VirtualUser):
 
         if self.net_rid:
             new_actions.extend(self.net_rid.get_utm_actions(flight))
+
+        if self.scd:
+            new_actions.extend(self.scd.get_utm_actions(flight))
 
         self.flights[flight.id] = flight
         self.most_recent_flight = flight
@@ -162,3 +184,12 @@ class FlightPlannerUser(VirtualUser):
             next_action = heapq.heappop(action_queue)
             if next_action.run_on_shutdown:
                 await next_action.start()
+
+    @staticmethod
+    def enumerate_coordination_groups(
+        flight_planner: FlightPlannerSpecification,
+    ) -> Iterable[CoordinationGroupID]:
+        if "scd_behavior" in flight_planner and flight_planner.scd_behavior:
+            yield from SCDHandler.enumerate_coordination_groups(
+                flight_planner.scd_behavior
+            )

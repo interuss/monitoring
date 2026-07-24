@@ -8,7 +8,15 @@
       "type": "string"
     },
     "fixed_spacing": {
-      "description": "Set delay between the end of the previous flight and the start of the next flight to this value.",
+      "description": "Add this fixed delay between the end of the previous flight and the start of the next flight.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uniform_random_spacing": {
+      "description": "Add a random delay uniformly distributed between 0 and this duration between the end of the previous flight and the start of the next flight.",
       "format": "duration",
       "type": [
         "string",

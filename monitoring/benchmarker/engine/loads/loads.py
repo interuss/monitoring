@@ -8,6 +8,7 @@ from monitoring.benchmarker.configurations.users import (
     BenchmarkUserName,
     BenchmarkUserSpecification,
 )
+from monitoring.benchmarker.engine.coordination import Coordinator
 from monitoring.benchmarker.engine.loads.user_ramp.user_ramp import run_user_ramp_load
 from monitoring.benchmarker.engine.operations import ExecutedOperation
 from monitoring.benchmarker.reports.report import BenchmarkScenarioStepReport
@@ -19,6 +20,7 @@ async def run_scenario_load(
     user_specs_map: dict[BenchmarkUserName, BenchmarkUserSpecification],
     resource_pool: dict[ResourceID, Any],
     executor: ThreadPoolExecutor,
+    coordinator: Coordinator,
 ) -> tuple[list[ExecutedOperation], list[BenchmarkScenarioStepReport]]:
     """Execute a scenario load."""
     if "user_ramp" in load_spec and load_spec.user_ramp:
@@ -27,6 +29,7 @@ async def run_scenario_load(
             user_specs_map,
             resource_pool,
             executor,
+            coordinator,
         )
     else:
         raise NotImplementedError(
