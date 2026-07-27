@@ -148,7 +148,7 @@ local shape = {
             },
             {
               failures_more_than: {
-                count: 100,
+                count: 30,
                 operations: ['workflow.flight_planner.flight'],
               },
             },
@@ -169,7 +169,7 @@ local shape = {
             },
             {
               failures_more_than: {
-                count: 400,
+                count: 75,
                 operations: ['workflow.flight_planner.flight'],
               }
             },
@@ -228,6 +228,10 @@ local shape = {
                     value: '[throughput_of_step(scenario, s, types=["workflow.flight_planner.flight"], outcomes=[False])' +
                            ' for s in range(len(scenario.steps))]',
                   },
+                  {
+                    name: 'usl',
+                    value: 'USLFit.from_data(scale, throughput)',
+                  },
                 ],
                 x_axis: {
                   label: 'Flight planners',
@@ -236,6 +240,16 @@ local shape = {
                   label: 'Throughput\n(Flights/s)',
                 },
                 xy_plots: [
+                  {
+                    type: 'Line',
+                    color: 'lightgray',
+                    label_expr: 'f"USL: $\\\\gamma$={usl.parameters.scaling_factor:.2g} $\\\\alpha$={usl.parameters.contention_factor:.2g} $\\\\beta$={usl.parameters.coherency_factor:.2g}"',
+                    x_data_expr: 'scale',
+                    y_data_expr: 'list(usl.compute_throughput(scale))',
+                    kwargs: {
+                      zorder: -1,
+                    },
+                  },
                   {
                     type: 'Scatter',
                     label_expr: '"Successes"',
