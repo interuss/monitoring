@@ -55,6 +55,9 @@ class SCDHandler(CoordinationSubscriber):
     op_intent_ref_creation_strategy: OpIntentRefCreationStrategy
     """All fields guaranteed to be present."""
 
+    timely_clearance_expected: bool
+    """Whether op intent actions are expected to be completed before the start of the flight."""
+
     op_intent_ref_cleanup_strategy: OpIntentRefCleanupStrategy
     """All fields guaranteed to be present."""
 
@@ -133,7 +136,14 @@ class SCDHandler(CoordinationSubscriber):
         if "implicit_subscription" not in self.subscription_strategy:
             self.subscription_strategy.implicit_subscription = None
 
-        self.op_intent_ref_creation_strategy = behavior.op_intent_ref_creation_strategy
+        strategy = behavior.op_intent_ref_creation_strategy
+        self.op_intent_ref_creation_strategy = strategy
+        self.timely_clearance_expected = (
+            True
+            if "expect_timely_clearance" in strategy
+            and strategy.expect_timely_clearance
+            else False
+        )
 
         self.op_intent_ref_cleanup_strategy = behavior.op_intent_ref_cleanup_strategy
 
@@ -335,6 +345,7 @@ class SCDHandler(CoordinationSubscriber):
         old_ovn = op_intent_ref.ovn if op_intent_ref else None
         ovn_suffix = None
         requested_ovn = None
+        query = None
 
         attempts = 1
         if (
@@ -413,6 +424,10 @@ class SCDHandler(CoordinationSubscriber):
             raise RuntimeError(
                 "op_intent_ref cannot be None upon successful op intent ref upsertion"
             )
+        if query is None:
+            raise RuntimeError(
+                "query cannot be None upon successful op intent ref upsertion"
+            )
 
         flight.completed_actions.append(
             CompletedFlightAction(
@@ -469,33 +484,64 @@ class SCDHandler(CoordinationSubscriber):
             and "activate_before_flight_start" in self.op_intent_ref_creation_strategy
             and self.op_intent_ref_creation_strategy.activate_before_flight_start
         ):
-            return list(self.get_activate_actions(flight, op_intent_id))
+            if (
+                self.timely_clearance_expected
+                and datetime.now(UTC) >= flight.start_time
+            ):
+                # Acceptance was already too late; no reason to try to activate
+                flight.completed_actions.append(
+                    CompletedFlightAction(
+                        type=FlightActionType.SCDTakeoffClearance,
+                        initiated_at=t0,
+                        causes_flight_failure=True,
+                    )
+                )
+                return list(self.get_delete_actions(flight, op_intent_id, True))
+            else:
+                return list(self.get_activate_actions(flight, op_intent_id))
         else:
-            return list(self.get_delete_actions(flight, op_intent_id))
+            # Check to see if SCD actions were completed too late
+            flight_aborted = False
+            if self.timely_clearance_expected:
+                timely_clearance = query.response.reported.datetime <= flight.start_time
+                flight.completed_actions.append(
+                    CompletedFlightAction(
+                        type=FlightActionType.SCDTakeoffClearance,
+                        initiated_at=t0,
+                        causes_flight_failure=timely_clearance,
+                    )
+                )
+                flight_aborted = not timely_clearance
+
+            # Queue op intent deletion action
+            return list(self.get_delete_actions(flight, op_intent_id, flight_aborted))
 
     def get_delete_actions(
-        self, flight: Flight, op_intent_id: api.EntityID
+        self, flight: Flight, op_intent_id: api.EntityID, delete_now: bool
     ) -> Iterable[FlightAction]:
         deletion_time = None
-        if (
-            "after_actual_flight_end" in self.op_intent_ref_cleanup_strategy
-            and self.op_intent_ref_cleanup_strategy.after_actual_flight_end
-        ):
-            deletion_time = (
-                flight.actual_end_time
-                + self.op_intent_ref_cleanup_strategy.after_actual_flight_end.timedelta
-            )
-        if (
-            "after_planned_flight_end" in self.op_intent_ref_cleanup_strategy
-            and self.op_intent_ref_cleanup_strategy.after_planned_flight_end
-        ):
-            new_time = (
-                flight.volumes.time_end_not_none.datetime
-                + self.op_intent_ref_cleanup_strategy.after_planned_flight_end.timedelta
-            )
-            deletion_time = (
-                new_time if deletion_time is None else max(deletion_time, new_time)
-            )
+        if delete_now:
+            deletion_time = datetime.now(UTC)
+        else:
+            if (
+                "after_actual_flight_end" in self.op_intent_ref_cleanup_strategy
+                and self.op_intent_ref_cleanup_strategy.after_actual_flight_end
+            ):
+                deletion_time = (
+                    flight.actual_end_time
+                    + self.op_intent_ref_cleanup_strategy.after_actual_flight_end.timedelta
+                )
+            if (
+                "after_planned_flight_end" in self.op_intent_ref_cleanup_strategy
+                and self.op_intent_ref_cleanup_strategy.after_planned_flight_end
+            ):
+                new_time = (
+                    flight.volumes.time_end_not_none.datetime
+                    + self.op_intent_ref_cleanup_strategy.after_planned_flight_end.timedelta
+                )
+                deletion_time = (
+                    new_time if deletion_time is None else max(deletion_time, new_time)
+                )
         if deletion_time is not None:
             yield FlightAction(
                 timestamp=deletion_time,
