@@ -69,7 +69,7 @@ local shape = {
         flight_generation: {
           independent_time_location_shape: {
             time: {
-              fixed_spacing: '19s',
+              fixed_spacing: '29s',
               uniform_random_spacing: '2s',
             },
             location: {
@@ -104,8 +104,9 @@ local shape = {
             ovn_coordination_group: 'cluster1',
             coordinate_requested_ovns: true,
             retries: 2,
-            accept_before_flight_start: '5s',
-            activate_before_flight_start: null,
+            accept_before_flight_start: '20s',
+            activate_before_flight_start: '10s',
+            expect_timely_clearance: true,
           },
           op_intent_ref_cleanup_strategy: {
             after_actual_flight_end: '1s',
@@ -120,8 +121,8 @@ local shape = {
       name: 'Flight planner ramp for USS %d' % uss,
       user_ramp: {
         user_type: 'FPU%d' % uss,
-        initial_users: 2,
-        additional_users_per_step: 2,
+        initial_users: 5,
+        additional_users_per_step: 5,
         random_seed: 1234,
         throughput_stability_criteria: {
           each_user_completed_at_least: {
