@@ -1,5 +1,5 @@
 from collections.abc import Iterable, Sequence
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import numpy as np
 import scipy.optimize
@@ -73,33 +73,34 @@ def select_operations(
 
 def throughput_of_operations(
     operations: OperationsHierarchyMember,
-    start_time: datetime,
-    end_time: datetime,
+    completed_after: datetime,
+    completed_before: datetime,
     **kwargs,
 ) -> float:
-    """Determine the achieved throughput during a specified time range from a list of completed operations.
+    """Determine the achieved throughput during a specified time range from selected operations.
 
     Args:
-      * operations: List of relevant operations over all time.
-      * start_time: Beginning of time window in which to inspect throughput.
-      * end_time: End of time window in which to inspect throughput.
+      * operations: All operations.
+      * completed_after: Beginning of time window in which to inspect throughput.
+      * completed_before: End of time window in which to inspect throughput.
+      * kwargs: Arguments to be passed to select_operations to select operations of interest.
 
     Returns: Throughput in operations of interest per second.
 
     Notes:
-      Operation flux must have already been in steady-state at `start_time` for this throughput calculation to be
-      valid.  What happens after `end_time` does not affect this calculation.  "Partial credit" is not given for
-      eventually-successful operations in progress at `end_time` as attempting to do so would require operation
-      flux to remain in steady-state after `end_time` until completion of the last operation started before
-      `end_time` for the throughput calculation to be valid.  Instead, the partial work of operations in progress
-      at `end_time` effectively discarded by this approach should be (statistically) exactly balanced by the
-      partial work included "for free" of operations started before `start_time` that end within the time window.
+      Operation flux must have already been in steady-state at `completed_after` for this throughput calculation to be
+      valid.  What happens after `completed_before` does not affect this calculation.  "Partial credit" is not given for
+      eventually-successful operations in progress at `completed_before` as attempting to do so would require operation
+      flux to remain in steady-state after `completed_before` until completion of the last operation started before
+      `completed_before` for the throughput calculation to be valid.  Instead, the partial work of operations in progress
+      at `completed_before` effectively discarded by this approach should be (statistically) exactly balanced by the
+      partial work included "for free" of operations started before `completed_after` that end within the time window.
     """
-    dur = (end_time - start_time).total_seconds()
+    dur = (completed_before - completed_after).total_seconds()
     if "outcomes" not in kwargs:
         kwargs["outcomes"] = (True,)
-    kwargs["completed_after"] = start_time
-    kwargs["completed_before"] = end_time
+    kwargs["completed_after"] = completed_after
+    kwargs["completed_before"] = completed_before
     return (
         sum(1 for _ in select_operations(operations, **kwargs)) / dur
         if dur > 0
@@ -115,6 +116,38 @@ def throughput_of_step(
         report.operations,
         step.throughput_stability_time.datetime,
         step.end_time.datetime,
+        **kwargs,
+    )
+
+
+def latency_of_operations(
+    operations: OperationsHierarchyMember,
+    **kwargs,
+) -> timedelta:
+    """Determine the average latency during a specified time range from selected operations.
+
+    Args:
+      * operations: All operations.
+      * kwargs: Arguments to be passed to select_operations to select operations of interest.
+
+    Returns: Latency of operations of interest as a timedelta.
+    """
+    total_duration = timedelta(seconds=0)
+    n = 0
+    for op in select_operations(operations, **kwargs):
+        total_duration += op.t1.datetime - op.t0.datetime
+        n += 1
+    return total_duration / n if n > 0 else timedelta(0)
+
+
+def latency_of_step(
+    report: BenchmarkScenarioReport, step_index: int, **kwargs
+) -> timedelta:
+    step = report.steps[step_index]
+    return latency_of_operations(
+        report.operations,
+        completed_after=step.throughput_stability_time.datetime,
+        completed_before=step.end_time.datetime,
         **kwargs,
     )
 

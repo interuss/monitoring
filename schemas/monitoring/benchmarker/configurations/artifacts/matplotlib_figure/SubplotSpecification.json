@@ -18,6 +18,7 @@
       ]
     },
     "legend": {
+      "description": "Characteristics of the legend for this subplot.",
       "oneOf": [
         {
           "type": "null"
@@ -28,12 +29,14 @@
       ]
     },
     "title": {
+      "description": "Title of this subplot.",
       "type": [
         "string",
         "null"
       ]
     },
     "x_axis": {
+      "description": "Characteristics of the X axis of this subplot.",
       "oneOf": [
         {
           "type": "null"
@@ -44,12 +47,24 @@
       ]
     },
     "xy_plots": {
+      "description": "Plots of XY data for this subplot.",
       "items": {
         "$ref": "XYPlotSpecification.json"
       },
       "type": "array"
     },
+    "y_axes": {
+      "description": "Characteristics of the secondry, tertiary, etc Y axes of this subplot.",
+      "items": {
+        "$ref": "AxisSpecification.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
     "y_axis": {
+      "description": "Characteristics of the primary Y axis of this subplot.",
       "oneOf": [
         {
           "type": "null"
