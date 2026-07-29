@@ -158,6 +158,15 @@ class FlightPlannerUser(VirtualUser):
             ):
                 # This was the last action for this flight
                 flight = self.flights.pop(next_action.flight_id)
+                if not flight.successful:
+                    logger.warning(
+                        f"Flight {flight.id} from {self.user_id} failed "
+                        + ", ".join(
+                            a.type
+                            for a in flight.completed_actions
+                            if a.causes_flight_failure
+                        )
+                    )
                 flight_op = ExecutedOperation(
                     type=OperationType(WorkflowType.FlightPlannerFlight),
                     origin=self.user_id,

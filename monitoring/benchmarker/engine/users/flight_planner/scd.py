@@ -320,8 +320,12 @@ class SCDHandler(CoordinationSubscriber):
         ):
             raise NotImplementedError(f"Cannot transition op intent to state {state}")
 
-        if self.timely_clearance_expected and t0 >= flight.start_time:
+        dt_s = (t0 - flight.start_time).total_seconds()
+        if self.timely_clearance_expected and dt_s > 0:
             # The start time of the flight has already passed; no point in establishing an operational intent because we're already too late to fly on time
+            logger.debug(
+                f"Transition to {state.value} not attempted for flight {flight.id} because start time already passed {dt_s:.1f}s ago"
+            )
             flight.completed_actions.append(
                 CompletedFlightAction(
                     type=FlightActionType.SCDTakeoffClearance,
@@ -406,7 +410,7 @@ class SCDHandler(CoordinationSubscriber):
                             "missing_operational_intents"
                         )
                         if missing_op_intents:
-                            logger.warning(
+                            logger.debug(
                                 f"{self.user.user_id} missing OVNs for OI {op_intent_id}:\n"
                                 + "\n".join(
                                     f"OI {oi.get('id', None)}: OVN {oi.get('ovn', None)}"
@@ -464,7 +468,7 @@ class SCDHandler(CoordinationSubscriber):
                     old_ovn,
                 )
             if requested_ovn and op_intent_ref.ovn != requested_ovn:
-                logger.warning(
+                logger.debug(
                     f"Requested OVN {requested_ovn} was not accepted; returned {op_intent_ref.ovn} instead for user {self.user.user_id}"
                 )
                 self.user.coordinator.publish(
@@ -495,11 +499,12 @@ class SCDHandler(CoordinationSubscriber):
             and "activate_before_flight_start" in self.op_intent_ref_creation_strategy
             and self.op_intent_ref_creation_strategy.activate_before_flight_start
         ):
-            if (
-                self.timely_clearance_expected
-                and datetime.now(UTC) >= flight.start_time
-            ):
+            dt_s = (datetime.now(UTC) - flight.start_time).total_seconds()
+            if self.timely_clearance_expected and dt_s > 0:
                 # Acceptance was already too late; no reason to try to activate
+                logger.debug(
+                    f"Transition to {state.value} for flight {flight.id} completed {dt_s:.1f}s too late; aborting rather than activating"
+                )
                 flight.completed_actions.append(
                     CompletedFlightAction(
                         type=FlightActionType.SCDTakeoffClearance,
@@ -514,15 +519,21 @@ class SCDHandler(CoordinationSubscriber):
             # Check to see if SCD actions were completed too late
             flight_aborted = False
             if self.timely_clearance_expected:
-                timely_clearance = query.response.reported.datetime <= flight.start_time
+                dt_s = (
+                    query.response.reported.datetime - flight.start_time
+                ).total_seconds()
+                flight_aborted = dt_s > 0
                 flight.completed_actions.append(
                     CompletedFlightAction(
                         type=FlightActionType.SCDTakeoffClearance,
                         initiated_at=t0,
-                        causes_flight_failure=timely_clearance,
+                        causes_flight_failure=flight_aborted,
                     )
                 )
-                flight_aborted = not timely_clearance
+                if flight_aborted:
+                    logger.debug(
+                        f"Transition to {state.value} for flight {flight.id} completed {dt_s:.1f}s too late; removing op intent early"
+                    )
 
             # Queue op intent deletion action
             return list(self.get_delete_actions(flight, op_intent_id, flight_aborted))

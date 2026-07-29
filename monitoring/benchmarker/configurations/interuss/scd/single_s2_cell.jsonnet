@@ -121,8 +121,8 @@ local shape = {
       name: 'Flight planner ramp for USS %d' % uss,
       user_ramp: {
         user_type: 'FPU%d' % uss,
-        initial_users: 10,
-        additional_users_per_step: 10,
+        initial_users: 5,
+        additional_users_per_step: 5,
         random_seed: 1234,
         throughput_stability_criteria: {
           each_user_completed_at_least: {
