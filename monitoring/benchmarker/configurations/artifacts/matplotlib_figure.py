@@ -121,7 +121,7 @@ class SubplotSpecification(ImplicitDict):
     """Characteristics of the primary Y axis of this subplot."""
 
     y_axes: Optional[list[AxisSpecification]]
-    """Characteristics of the secondry, tertiary, etc Y axes of this subplot."""
+    """Characteristics of the secondary, tertiary, etc Y axes of this subplot."""
 
     xy_plots: list[XYPlotSpecification]
     """Plots of XY data for this subplot."""
