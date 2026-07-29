@@ -9,6 +9,22 @@ from monitoring.monitorlib.expressions.types import ASTExpression, SymbolExpress
 class AxisSpecification(ImplicitDict):
     label: Optional[str]
 
+    min_value: Optional[float]
+    """If specified, the minimum value of this axis."""
+
+    min_value_expr: Optional[ASTExpression]
+    """If specified, an expression for the minimum value of this axis.
+    
+    Takes precedence over min_value."""
+
+    max_value: Optional[float]
+    """If specified, the maximum value of this axis."""
+
+    max_value_expr: Optional[ASTExpression]
+    """If specified, an expression for the maximum value of this axis.
+    
+    Takes precedence over max_value."""
+
 
 class XYPlotType(StrEnum):
     Scatter = "Scatter"
@@ -41,6 +57,12 @@ class XYPlotSpecification(ImplicitDict):
 
     y_data_expr: ASTExpression
     """List of Y data values for XY points."""
+
+    y_axis: Optional[int]
+    """Which Y axis to associate this data with.
+    
+    0 is the primary Y axis (default), 1 is secondary Y axis, 2 is tertiary, etc.
+    Additional axes are created <primary axes>.twinx()."""
 
     render_expr: Optional[ASTExpression]
     """If specified, whether this plot should be rendered (boolean).  Default true."""
@@ -87,15 +109,25 @@ class LegendSpecification(ImplicitDict):
 
 class SubplotSpecification(ImplicitDict):
     title: Optional[str]
+    """Title of this subplot."""
 
     evaluation_context: Optional[list[SymbolExpression]]
     """Symbols available to other expressions in this subplot specification."""
 
     x_axis: Optional[AxisSpecification]
+    """Characteristics of the X axis of this subplot."""
+
     y_axis: Optional[AxisSpecification]
+    """Characteristics of the primary Y axis of this subplot."""
+
+    y_axes: Optional[list[AxisSpecification]]
+    """Characteristics of the secondary, tertiary, etc Y axes of this subplot."""
+
     xy_plots: list[XYPlotSpecification]
+    """Plots of XY data for this subplot."""
 
     legend: Optional[LegendSpecification]
+    """Characteristics of the legend for this subplot."""
 
 
 class SubfigureSpecification(ImplicitDict):
@@ -113,6 +145,9 @@ class SubfigureSpecification(ImplicitDict):
 class MatplotlibFigureSpecification(ImplicitDict):
     name: str
     """Machine-level name for this figure.  Used as the output file name."""
+
+    title: Optional[str]
+    """Title (suptitle) of figure."""
 
     n_subfigure_rows: int = 1
     n_subfigure_cols: int = 1

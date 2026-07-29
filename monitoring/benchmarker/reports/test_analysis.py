@@ -1,6 +1,13 @@
-import pytest
+from datetime import timedelta
 
-from monitoring.benchmarker.reports.analysis import USLFit
+import pytest
+from implicitdict import StringBasedDateTime
+
+from monitoring.benchmarker.reports.analysis import USLFit, latency_of_operations
+from monitoring.benchmarker.reports.report import (
+    BenchmarkOperation,
+    OperationsByOutcome,
+)
 
 
 def test_usl_fit_exact():
@@ -104,3 +111,25 @@ def test_usl_outlier_rejection_invariant_with_scale():
     # In both small and large sets, only the true outlier is rejected
     assert sum(fit_small.inlier_mask) == len(scale_small) - 1
     assert sum(fit_large.inlier_mask) == len(scale_large) - 1
+
+
+def test_latency_of_operations():
+    ops = [
+        BenchmarkOperation(
+            t0=StringBasedDateTime("2026-07-28T16:00:00Z"),
+            t1=StringBasedDateTime("2026-07-28T16:00:02Z"),
+        ),
+        BenchmarkOperation(
+            t0=StringBasedDateTime("2026-07-28T16:00:03Z"),
+            t1=StringBasedDateTime("2026-07-28T16:00:07Z"),
+        ),
+    ]
+
+    avg_latency = latency_of_operations(
+        OperationsByOutcome(successful=ops, unsuccessful=[])
+    )
+    assert avg_latency == timedelta(seconds=3)
+
+    assert latency_of_operations(
+        OperationsByOutcome(successful=[], unsuccessful=[])
+    ) == timedelta(0)
