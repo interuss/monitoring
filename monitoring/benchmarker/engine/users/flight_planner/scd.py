@@ -320,6 +320,17 @@ class SCDHandler(CoordinationSubscriber):
         ):
             raise NotImplementedError(f"Cannot transition op intent to state {state}")
 
+        if self.timely_clearance_expected and t0 >= flight.start_time:
+            # The start time of the flight has already passed; no point in establishing an operational intent because we're already too late to fly on time
+            flight.completed_actions.append(
+                CompletedFlightAction(
+                    type=FlightActionType.SCDTakeoffClearance,
+                    initiated_at=t0,
+                    causes_flight_failure=True,
+                )
+            )
+            return []
+
         dss_instance = self.select_dss_instance()
         uss_base_url = make_fake_url()
         coordination_group = (
