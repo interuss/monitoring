@@ -30,6 +30,9 @@ class FlightActionType(StrEnum):
     UpsertOpIntent = "scd_behavior.upsert_op_intent"
     DeleteOpIntent = "scd_behavior.delete_op_intent"
 
+    SCDTakeoffClearance = "scd_behavior.takeoff_clearance"
+    """The required SCD actions were completed before the start time of the flight (earliest volume start time)."""
+
 
 @dataclass
 class CompletedFlightAction:

@@ -54,6 +54,9 @@ class OpIntentRefCreationStrategy(ImplicitDict):
     activate_before_flight_start: Optional[StringBasedTimeDelta]
     """Create or update an operational intent to the Activated state this long before the flight starts (start of first volume)."""
 
+    expect_timely_clearance: Optional[bool]
+    """If true, fail the flight if acceptance and activation (when specified) are not complete by the start time of the flight."""
+
 
 class OpIntentRefCleanupStrategy(ImplicitDict):
     after_actual_flight_end: Optional[StringBasedTimeDelta]

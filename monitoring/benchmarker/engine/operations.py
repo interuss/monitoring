@@ -104,8 +104,8 @@ def record_operation(
                 or op.query.response.failure
                 or f"HTTP {op.query.status_code}"
             )
-            logger.warning(
+            logger.debug(
                 f"Operation '{op.type}' from origin '{op.origin}' failed on {op.query.request.method} {op.query.request.url} ({op.query.status_code}): {details}"
             )
         else:
-            logger.warning(f"Operation '{op.type}' from origin '{op.origin}' failed.")
+            logger.debug(f"Operation '{op.type}' from origin '{op.origin}' failed.")

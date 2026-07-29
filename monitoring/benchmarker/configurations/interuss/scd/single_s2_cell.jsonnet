@@ -108,6 +108,7 @@ local shape = {
             retries: 2,
             accept_before_flight_start: '20s',
             activate_before_flight_start: '10s',
+            expect_timely_clearance: true,
           },
           op_intent_ref_cleanup_strategy: {
             after_actual_flight_end: '1s',
