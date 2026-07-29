@@ -276,6 +276,9 @@ class SCDHandler(CoordinationSubscriber):
                 run_on_shutdown=False,
             )
 
+    def get_activate_actions(
+        self, flight: Flight, op_intent_id: api.EntityID
+    ) -> Iterable[FlightAction]:
         if (
             "activate_before_flight_start" in self.op_intent_ref_creation_strategy
             and self.op_intent_ref_creation_strategy.activate_before_flight_start
@@ -461,7 +464,14 @@ class SCDHandler(CoordinationSubscriber):
                     )
                 )
 
-        return list(self.get_delete_actions(flight, op_intent_id))
+        if (
+            state == api.OperationalIntentState.Accepted
+            and "activate_before_flight_start" in self.op_intent_ref_creation_strategy
+            and self.op_intent_ref_creation_strategy.activate_before_flight_start
+        ):
+            return list(self.get_activate_actions(flight, op_intent_id))
+        else:
+            return list(self.get_delete_actions(flight, op_intent_id))
 
     def get_delete_actions(
         self, flight: Flight, op_intent_id: api.EntityID
