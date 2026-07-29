@@ -958,7 +958,7 @@ def egm96_geoid_offset(p: s2sphere.LatLng) -> float:
     # degrees latitude, but Splines must have increasing X so latitudes must be
     # listed -90 to 90.  Since latitude data are symmetric, we can simply
     # convert "-90 to 90" to "90 to -90" by inverting the requested latitude.
-    return _egm96.ev(-lat, lng)
+    return _egm96.ev(-lat, lng).item()
 
 
 def egm2008_geoid_offset(p: s2sphere.LatLng) -> float:
