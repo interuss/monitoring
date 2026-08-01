@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from loguru import logger
 
+from monitoring.benchmarker.configurations.actions import BenchmarkActionName
 from monitoring.benchmarker.configurations.configuration import BenchmarkConfiguration
 from monitoring.benchmarker.engine.actions.actions import run_scenario_actions
 from monitoring.benchmarker.engine.coordination import Coordinator
@@ -24,6 +25,7 @@ async def _run_benchmark_async(
     config: BenchmarkConfiguration,
     codebase_version: str,
     commit_hash: str,
+    output_dir: str = "output",
 ) -> BenchmarkRunReport:
     logger.info("Instantiating declared resources...")
     resource_pool = instantiate_resources(config)
@@ -40,6 +42,7 @@ async def _run_benchmark_async(
 
     action_list = config.actions if "actions" in config and config.actions else []
     action_specs = {action_spec.name: action_spec for action_spec in action_list}
+    action_invocations: dict[BenchmarkActionName, int] = {}
 
     coordination_groups = list(enumerate_coordination_groups(config.user_types))
     coordinator = Coordinator(coordination_groups)
@@ -52,7 +55,16 @@ async def _run_benchmark_async(
 
             # Run setup actions
             setup_actions = scenario_spec.setup if "setup" in scenario_spec else None
-            run_scenario_actions(setup_actions, action_specs)
+            run_scenario_actions(
+                setup_actions,
+                action_specs,
+                action_invocations,
+                config,
+                scenarios_reports,
+                output_dir,
+                codebase_version,
+                commit_hash,
+            )
 
             # Run load
             if scenario_spec.load not in loads_map:
@@ -69,12 +81,6 @@ async def _run_benchmark_async(
                 scenario_spec.name,
             )
 
-            # Run teardown actions
-            teardown_actions = (
-                scenario_spec.teardown if "teardown" in scenario_spec else None
-            )
-            run_scenario_actions(teardown_actions, action_specs)
-
             # Generate and record scenario report
             scenario_report = BenchmarkScenarioReport(
                 operations=group_operations(scenario_ops),
@@ -87,6 +93,21 @@ async def _run_benchmark_async(
                     else None
                 )
             scenarios_reports.append(scenario_report)
+
+            # Run teardown actions
+            teardown_actions = (
+                scenario_spec.teardown if "teardown" in scenario_spec else None
+            )
+            run_scenario_actions(
+                teardown_actions,
+                action_specs,
+                action_invocations,
+                config,
+                scenarios_reports,
+                output_dir,
+                codebase_version,
+                commit_hash,
+            )
 
             logger.info(
                 f"========== Completed Scenario '{scenario_spec.name}' =========="
@@ -104,8 +125,12 @@ async def _run_benchmark_async(
     return run_report
 
 
-def run_benchmark(config: BenchmarkConfiguration) -> BenchmarkRunReport:
+def run_benchmark(
+    config: BenchmarkConfiguration, output_dir: str = "output"
+) -> BenchmarkRunReport:
     """Execute the benchmarker engine for the provided configuration and return the resulting report."""
     codebase_version = get_code_version()
     commit_hash = get_commit_hash()
-    return asyncio.run(_run_benchmark_async(config, codebase_version, commit_hash))
+    return asyncio.run(
+        _run_benchmark_async(config, codebase_version, commit_hash, output_dir)
+    )

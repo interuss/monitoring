@@ -45,7 +45,7 @@ def run_config(
 ) -> int:
     config = load_config(config_name, skip_validation)
 
-    run_report = run_benchmark(config)
+    run_report = run_benchmark(config, output_dir)
 
     if "artifacts" in config and config.artifacts:
         logger.info("Generating configured artifacts...")
