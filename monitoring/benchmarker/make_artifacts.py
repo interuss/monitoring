@@ -9,6 +9,7 @@ from implicitdict import ImplicitDict
 from loguru import logger
 
 from monitoring.benchmarker.artifacts.generation import (
+    default_output_path,
     generate_artifacts,
 )
 from monitoring.benchmarker.reports.report import BenchmarkRunReport
@@ -91,6 +92,8 @@ def main() -> int:
             logger.debug("Generating artifacts...")
             if args.output_path:
                 output_path = args.output_path
+            elif config_name != config_in_report:
+                output_path = default_output_path(config_name)
             else:
                 output_path = str(Path(resolve_filename(report_path)).parent)
             generate_artifacts(config.artifacts, report, output_path)

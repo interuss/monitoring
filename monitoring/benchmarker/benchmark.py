@@ -6,7 +6,10 @@ import sys
 
 from loguru import logger
 
-from monitoring.benchmarker.artifacts.generation import generate_artifacts
+from monitoring.benchmarker.artifacts.generation import (
+    default_output_path,
+    generate_artifacts,
+)
 from monitoring.benchmarker.engine.engine import run_benchmark
 from monitoring.benchmarker.validation import load_config
 
@@ -25,8 +28,8 @@ def parseArgs() -> argparse.Namespace:
         "--output",
         "--output-dir",
         dest="output_dir",
-        default=os.path.join(os.path.dirname(__file__), "output"),
-        help="Folder to which output artifacts should be written (default: monitoring/benchmarker/output)",
+        default=None,
+        help="Folder to which output artifacts should be written (default: monitoring/benchmarker/output/<name of config>)",
     )
 
     parser.add_argument(
@@ -60,13 +63,15 @@ def run_config(
 def main() -> int:
     args = parseArgs()
 
+    output_dir = args.output_dir or default_output_path(args.config)
+
     logger.info(
         f"========== Running benchmarker for configuration {args.config} =========="
     )
     exit_code = run_config(
         args.config,
         args.skip_validation,
-        args.output_dir,
+        output_dir,
     )
     if exit_code != os.EX_OK:
         return exit_code
