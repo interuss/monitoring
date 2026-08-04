@@ -10,6 +10,34 @@ from monitoring.benchmarker.configurations.artifacts.artifact import (
 from monitoring.benchmarker.reports.report import BenchmarkRunReport
 
 
+def default_output_path(config_name: str) -> str:
+    """Determine default output directory for a given configuration name.
+
+    Args:
+        config_name: Configuration string or file reference (e.g. file://path/to/config.jsonnet)
+
+    Returns: Path to output directory under output/<name of config>
+    """
+    if any(
+        config_name.lower().endswith(ext)
+        for ext in (
+            ".jsonnet",
+            ".json",
+            ".yaml",
+            ".yml",
+            ".kml",
+        )
+    ):
+        simple_config_name = os.path.splitext(config_name)[0]
+    else:
+        simple_config_name = config_name
+    simple_config_name = simple_config_name.split(".")[-1]
+    simple_config_name = os.path.split(simple_config_name)[-1]
+
+    benchmarker_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    return os.path.join(benchmarker_dir, "output", simple_config_name)
+
+
 def generate_artifacts(
     artifacts_specs: list[ArtifactSpecification],
     report: BenchmarkRunReport,
