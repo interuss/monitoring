@@ -30,6 +30,17 @@
       "$ref": "StepCompletionCriteria.json",
       "description": "The current step is considered complete once these criteria are met."
     },
+    "throughput_instability_criteria": {
+      "description": "If these criteria are met, throughput is considered to be unstable and step will not continue.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ThroughputStabilityCriteria.json"
+        }
+      ]
+    },
     "throughput_stability_criteria": {
       "$ref": "ThroughputStabilityCriteria.json",
       "description": "Throughput of the current step is considered stable once these criteria are met."

@@ -75,12 +75,25 @@ class OperationCount(ImplicitDict):
 
 
 class ThroughputStabilityCriteria(ImplicitDict):
-    """Criteria used to determine when it is valid to start collecting throughput data in a step.
+    """Criteria used to determine when it is valid to start collecting throughput data in a step
+    (throughput is stable), or whether there is too much load to collect valid throughput data
+    (throughput is unstable).
 
-    Any specified field that evaluates to false will cause this criteria to evaluate to false"""
+    Any specified field that evaluates to false will cause this criteria to evaluate to false."""
+
+    any_of: Optional[list[ThroughputStabilityCriteria]]
 
     each_user_completed_at_least: Optional[OperationCount]
-    """Evaluates true when each user has completed at least this many operations since the step started."""
+    """Evaluates true when each user has completed at least this many operations in the step's current phase."""
+
+    phase_duration_at_least: Optional[StringBasedTimeDelta]
+    """Evaluates true when the step has been in its current phase for at least this long."""
+
+    average_duration_more_than: Optional[OperationLatency]
+    """Evaluates true when the average duration of operations completed in the step's current phase exceeds the specified value."""
+
+    failures_more_than: Optional[OperationCount]
+    """Evaluates true when the number of failures for the specified operations exceeds the specified number in the step's current phase."""
 
 
 class OperationLatency(ImplicitDict):
@@ -156,6 +169,9 @@ class UserRampLoad(ImplicitDict):
 
     throughput_stability_criteria: ThroughputStabilityCriteria
     """Throughput of the current step is considered stable once these criteria are met."""
+
+    throughput_instability_criteria: Optional[ThroughputStabilityCriteria]
+    """If these criteria are met, throughput is considered to be unstable and step will not continue."""
 
     step_completion_criteria: StepCompletionCriteria
     """The current step is considered complete once these criteria are met."""

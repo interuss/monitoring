@@ -27,7 +27,10 @@ from monitoring.benchmarker.engine.loads.user_ramp.status import format_waiting_
 from monitoring.benchmarker.engine.operations import ExecutedOperation, record_operation
 from monitoring.benchmarker.engine.users.creation import create_virtual_user
 from monitoring.benchmarker.engine.users.framework import VirtualUser
-from monitoring.benchmarker.reports.report import BenchmarkScenarioStepReport
+from monitoring.benchmarker.reports.report import (
+    BenchmarkScenarioStepReport,
+    StepTerminationReason,
+)
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 
 PERIODIC_STATUS_PERIOD_S = 30.0
@@ -138,43 +141,89 @@ async def run_user_ramp_load(
 
             # Wait for throughput to become stable for this step
             stability_time = None
+            is_unstable = False
+            step_end_time = datetime.now(UTC)
             while not stop_event.is_set():
+                now = datetime.now(UTC)
+                if (
+                    "throughput_instability_criteria" in ramp
+                    and ramp.throughput_instability_criteria
+                    and check_stability_criteria(
+                        ramp.throughput_instability_criteria,
+                        operations,
+                        virtual_users,
+                        step_start_time,
+                        now,
+                    )
+                ):
+                    logger.warning(
+                        f"Step {step_index} became unstable during throughput stability phase after {(now - step_start_time).total_seconds():.1f}s"
+                    )
+                    is_unstable = True
+                    step_end_time = now
+                    break
+
                 if check_stability_criteria(
                     ramp.throughput_stability_criteria,
                     operations,
                     virtual_users,
                     step_start_time,
+                    now,
                 ):
-                    stability_time = datetime.now(UTC)
+                    stability_time = now
                     logger.info(
                         f"Step {step_index} reached throughput stability after {(stability_time - step_start_time).total_seconds():.1f}s"
                     )
                     update_status_time()
                     break
+
                 if all(t.done() for t in active_tasks):
                     stop_event.set()
                 await asyncio.sleep(0.5)
 
-            if stop_event.is_set() or stability_time is None:
-                break
+            if (
+                not stop_event.is_set()
+                and stability_time is not None
+                and not is_unstable
+            ):
+                step_end_time = datetime.now(UTC)
 
-            step_end_time = datetime.now(UTC)
+                # Wait for step to complete
+                while not stop_event.is_set():
+                    now = datetime.now(UTC)
+                    if (
+                        "throughput_instability_criteria" in ramp
+                        and ramp.throughput_instability_criteria
+                        and check_stability_criteria(
+                            ramp.throughput_instability_criteria,
+                            operations,
+                            virtual_users,
+                            stability_time,
+                            now,
+                        )
+                    ):
+                        logger.warning(
+                            f"Step {step_index} became unstable during sampling phase after {(now - stability_time).total_seconds():.1f}s"
+                        )
+                        is_unstable = True
+                        step_end_time = now
+                        break
 
-            # Wait for step to complete
-            while not stop_event.is_set():
-                now = datetime.now(UTC)
-                if check_step_completion_criteria(
-                    ramp.step_completion_criteria,
-                    step_start_time,
-                    stability_time,
-                    now,
-                    operations,
-                ):
-                    step_end_time = now
-                    break
-                if all(t.done() for t in active_tasks):
-                    stop_event.set()
-                await asyncio.sleep(0.5)
+                    if check_step_completion_criteria(
+                        ramp.step_completion_criteria,
+                        step_start_time,
+                        stability_time,
+                        now,
+                        operations,
+                    ):
+                        step_end_time = now
+                        break
+
+                    if all(t.done() for t in active_tasks):
+                        stop_event.set()
+                    await asyncio.sleep(0.5)
+            elif stability_time is None:
+                step_end_time = datetime.now(UTC)
 
             # Summarize activity during step
             step_ops = [
@@ -193,12 +242,16 @@ async def run_user_ramp_load(
             )
             step_duration_s = (step_end_time - step_start_time).total_seconds()
 
-            valid_count = sum(
-                1
-                for op in step_ops
-                if op.completed_at.datetime >= stability_time
-                and op.type in ops_of_interest
-                and op.successful
+            valid_count = (
+                sum(
+                    1
+                    for op in step_ops
+                    if op.completed_at.datetime >= stability_time
+                    and op.type in ops_of_interest
+                    and op.successful
+                )
+                if stability_time
+                else 0
             )
             tp_valid = (
                 valid_count / throughput_duration_s
@@ -227,25 +280,43 @@ async def run_user_ramp_load(
                 else "all operations"
             )
 
+            if stability_time is None:
+                termination_reason = StepTerminationReason.StabilityNotAchieved
+            elif is_unstable:
+                termination_reason = StepTerminationReason.Unstable
+            else:
+                termination_reason = StepTerminationReason.Completed
+
             logger.info(
-                f"User ramp step {step_index} for scenario '{scenario_name}' completed (load_factor={current_load_factor}, operations of interest: [{ops_interest_str}]):\n"
+                f"User ramp step {step_index} for scenario '{scenario_name}' ended with termination_reason='{termination_reason}' (load_factor={current_load_factor}, operations of interest: [{ops_interest_str}]):\n"
                 f"  • Operations of Interest Completed: {valid_count} ({tp_valid:.2f} ops/s) in validity period ({throughput_duration_s:.1f}s), {step_count} started since step began; full step duration ({step_duration_s:.1f}s)\n"
                 f"  • Failures during step: {failures_str}\n"
                 f"  • Tasks: {len(active_tasks)} total, {sum(1 if t.done() else 0 for t in active_tasks)} ended"
             )
             update_status_time()
 
-            if stop_event.is_set():
-                break
-
             # Report step
             step_report = BenchmarkScenarioStepReport(
                 load_factor=float(current_load_factor),
                 start_time=StringBasedDateTime(step_start_time),
-                throughput_stability_time=StringBasedDateTime(stability_time),
+                throughput_stability_time=StringBasedDateTime(stability_time)
+                if stability_time
+                else None,
                 end_time=StringBasedDateTime(step_end_time),
+                termination_reason=termination_reason,
             )
             steps.append(step_report)
+
+            if termination_reason != StepTerminationReason.Completed:
+                logger.info(
+                    f"Step {step_index} terminated with reason '{termination_reason}'. Stopping load."
+                )
+                update_status_time()
+                stop_event.set()
+                break
+
+            if stop_event.is_set():
+                break
 
             # Check if load is complete
             if check_load_completion_criteria(

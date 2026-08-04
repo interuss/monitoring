@@ -10,9 +10,11 @@ from monitoring.benchmarker.configurations.loads import OperationType
 from monitoring.benchmarker.reports.report import (
     BenchmarkOperation,
     BenchmarkScenarioReport,
+    BenchmarkScenarioStepReport,
     OperationsByOrigin,
     OperationsByOutcome,
     OperationsByType,
+    StepTerminationReason,
 )
 
 OperationsHierarchyMember = (
@@ -110,13 +112,17 @@ def throughput_of_operations(
 
 def throughput_of_step(
     report: BenchmarkScenarioReport, step_index: int, **kwargs
-) -> float:
+) -> float | None:
     step = report.steps[step_index]
-    return throughput_of_operations(
-        report.operations,
-        step.throughput_stability_time.datetime,
-        step.end_time.datetime,
-        **kwargs,
+    return (
+        throughput_of_operations(
+            report.operations,
+            step.throughput_stability_time.datetime,
+            step.end_time.datetime,
+            **kwargs,
+        )
+        if step.throughput_stability_time
+        else None
     )
 
 
@@ -142,14 +148,34 @@ def latency_of_operations(
 
 def latency_of_step(
     report: BenchmarkScenarioReport, step_index: int, **kwargs
-) -> timedelta:
+) -> timedelta | None:
     step = report.steps[step_index]
-    return latency_of_operations(
-        report.operations,
-        completed_after=step.throughput_stability_time.datetime,
-        completed_before=step.end_time.datetime,
-        **kwargs,
+    return (
+        latency_of_operations(
+            report.operations,
+            completed_after=step.throughput_stability_time.datetime,
+            completed_before=step.end_time.datetime,
+            **kwargs,
+        )
+        if step.throughput_stability_time
+        else None
     )
+
+
+def completed_step_indices(
+    steps: Iterable[BenchmarkScenarioStepReport],
+) -> Iterable[int]:
+    for i, step in enumerate(steps):
+        if step.termination_reason == StepTerminationReason.Completed:
+            yield i
+
+
+def completed_steps(
+    steps: Iterable[BenchmarkScenarioStepReport],
+) -> Iterable[BenchmarkScenarioStepReport]:
+    for step in steps:
+        if step.termination_reason == StepTerminationReason.Completed:
+            yield step
 
 
 class USLParameters(ImplicitDict):
