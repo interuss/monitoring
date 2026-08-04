@@ -144,11 +144,14 @@ Specifically:
    E.g.:
    ```python
    from monitoring.prober.infrastructure import register_resource_type
+
    [...]
    CONFLICTING_OI_TYPE = register_resource_type(103, "OI that conflicts with first OI")
    [...]
+
+
    def test_create_conflict(ids):
-     conflicting_id = ids(CONFLICTING_OI_TYPE)
+       conflicting_id = ids(CONFLICTING_OI_TYPE)
    ```
    The resource type code must be unique among all prober tests. To determine
    an appropriate resource type code for a new resource, see the comment above
