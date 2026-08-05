@@ -67,8 +67,8 @@ services:
     profiles: [bootstrap-crdb]
     depends_on: [crdb]
     # The entrypoint below sets the CRDB zones to have as many replicas as there are USSs (for all tables), combined with the fact that CRDB will try to distribute replicas uniformly over zones (which are defined by locality), this ensures that each USS has at least a replica.
-    # On a real production deployment such a configuration would be made to meet the survivability objectives (https://interuss.github.io/dss/latest/architecture/#survivability), either manually or automatically (https://github.com/interuss/dss/issues/482).
-    entrypoint: > 
+    # On a real production deployment such a configuration would be made to meet the survivability objectives (https://interuss.github.io/dss/latest/operations/survivability-crdb).
+    entrypoint: >
       sh -c "
         out=$$(/cockroach/cockroach.sh init --insecure --host=db1.uss1.localutm 2>&1);
         if [ $$? -eq 0 ]; then
