@@ -57,7 +57,7 @@ Parameters:
 * `--base-lat`: Latitude of the center of the first cluster
 * `--base-lng`: Longitude of the center of the first cluster
 * `--area-radius`: Radius (in meters) of the area in which to create flights
-* `--area-lat`: Maximum distance to cover for an individual flight
+* `--max-flight-distance`: Maximum distance to cover for an individual flight
 * `--oi-duration`: Duration (in seconds) of the operational intent
 
 ## Adjusting workload ratio
