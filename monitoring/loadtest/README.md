@@ -42,15 +42,13 @@ Parameters:
 
 ### FlightsInSub.py
 
-Create subscriptions on N area and then create operational intents in thoses subscriptions using SCD endpoints.
+Create subscriptions on N circular areas and then create operational intents in thoses subscriptions using SCD endpoints.
 
 Flights and subscriptions will be created based on parameters.
 Clusters are shifted by approimatly 2*Radius on the latitude axe.
 
-There will be one subscriptions per area per client.
-
-Note: One locust user will create subscriptions, the rest create operational
-intents.
+First, all N subscriptions are created. Then, each user randomly picks one of those N areas
+and creates a random flight path within the circle.
 
 Parameters:
 
