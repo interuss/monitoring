@@ -121,7 +121,7 @@ def generate_matplotlib_figure(
         name: obj for name, obj in inspect.getmembers(analysis, inspect.isclass)
     }
 
-    figure_symbols, _ = get_updated_context(
+    figure_symbols, figure_interpreter = get_updated_context(
         {
             "report": report,
         }
@@ -138,7 +138,14 @@ def generate_matplotlib_figure(
                 f"More subfigures defined than grid capacity ({len(subfigs)})"
             )
 
-        subfig_symbols, _ = get_updated_context(
+        if "render_expr" in subfig_spec and subfig_spec.render_expr:
+            render = evaluate_expression(
+                subfig_spec.render_expr, "render_expr", figure_interpreter
+            )
+            if not render:
+                continue
+
+        subfig_symbols, subfig_interpreter = get_updated_context(
             figure_symbols,
             subfig_spec.evaluation_context
             if "evaluation_context" in subfig_spec and subfig_spec.evaluation_context
@@ -164,6 +171,13 @@ def generate_matplotlib_figure(
                 raise ValueError(
                     f"More subplots defined than subfigure capacity ({len(axes)})"
                 )
+
+            if "render_expr" in subplot_spec and subplot_spec.render_expr:
+                render = evaluate_expression(
+                    subplot_spec.render_expr, "render_expr", subfig_interpreter
+                )
+                if not render:
+                    continue
 
             subplot_symbols, subplot_interpreter = get_updated_context(
                 subfig_symbols,

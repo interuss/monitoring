@@ -1,0 +1,39 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/actions/GenerateArtifactsActionSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Generate an intermediate artifact (prior to final artifact generation) during benchmarker execution.\n\nmonitoring.benchmarker.configurations.actions.GenerateArtifactsActionSpecification, as defined in monitoring/benchmarker/configurations/actions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "custom_artifacts": {
+      "description": "Generate these custom artifacts when this action is run.",
+      "items": {
+        "$ref": "../artifacts/artifact/ArtifactSpecification.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "defined_artifact_indices": {
+      "description": "Generate the artifacts from the main configuration having the indices listed here when this action is run.",
+      "items": {
+        "type": "integer"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "subfolder": {
+      "description": "If specified, place artifacts in a subfolder (relative to where normal artifacts will be generated) of this name.\n\nIf not specified, artifacts will be generated in the same location as the normal artifacts (and may be overwritten).\nThe variable `action_invocation` will be a 0-based integer indicating the index of the invocation of this action\nand will be available during the evaluation of this expression.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

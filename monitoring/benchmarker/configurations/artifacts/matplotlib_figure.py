@@ -111,6 +111,9 @@ class SubplotSpecification(ImplicitDict):
     title: Optional[str]
     """Title of this subplot."""
 
+    render_expr: Optional[ASTExpression]
+    """If specified and this expression evaluates to false, skip rendering this subplot."""
+
     evaluation_context: Optional[list[SymbolExpression]]
     """Symbols available to other expressions in this subplot specification."""
 
@@ -135,6 +138,9 @@ class SubfigureSpecification(ImplicitDict):
 
     n_subplot_rows: int = 1
     n_subplot_cols: int = 1
+
+    render_expr: Optional[ASTExpression]
+    """If specified and this expression evaluates to false, skip rendering this subfigure."""
 
     evaluation_context: Optional[list[SymbolExpression]]
     """Symbols available to other expressions in this subfigure specification."""
