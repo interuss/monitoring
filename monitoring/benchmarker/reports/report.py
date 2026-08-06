@@ -1,3 +1,4 @@
+from enum import StrEnum
 from typing import Optional
 
 from implicitdict import ImplicitDict, StringBasedDateTime
@@ -50,6 +51,17 @@ class OperationsByType(ImplicitDict):
     """Operations of this particular type."""
 
 
+class StepTerminationReason(StrEnum):
+    StabilityNotAchieved = "StabilityNotAchieved"
+    """The step did not achieve throughput stability, so therefore did not attempt its sampling phase."""
+
+    Completed = "Completed"
+    """The step successfully met its completion criteria."""
+
+    Unstable = "Unstable"
+    """The step successfully achieved throughput stability, but then became unstable during its sampling phase."""
+
+
 class BenchmarkScenarioStepReport(ImplicitDict):
     load_factor: float
     """Load factor (e.g., number of users) present during this step."""
@@ -57,11 +69,14 @@ class BenchmarkScenarioStepReport(ImplicitDict):
     start_time: StringBasedDateTime
     """Time this step started."""
 
-    throughput_stability_time: StringBasedDateTime
+    throughput_stability_time: StringBasedDateTime | None = None
     """Time during this step at which activity became sufficiently stable for throughput measurement."""
 
     end_time: StringBasedDateTime
     """Time this step ended."""
+
+    termination_reason: StepTerminationReason
+    """The reason this step terminated."""
 
 
 class BenchmarkScenarioReport(ImplicitDict):

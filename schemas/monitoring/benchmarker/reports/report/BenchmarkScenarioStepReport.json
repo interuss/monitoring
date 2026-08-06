@@ -21,17 +21,29 @@
       "format": "date-time",
       "type": "string"
     },
+    "termination_reason": {
+      "description": "The reason this step terminated.",
+      "enum": [
+        "StabilityNotAchieved",
+        "Completed",
+        "Unstable"
+      ],
+      "type": "string"
+    },
     "throughput_stability_time": {
       "description": "Time during this step at which activity became sufficiently stable for throughput measurement.",
       "format": "date-time",
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "required": [
     "end_time",
     "load_factor",
     "start_time",
-    "throughput_stability_time"
+    "termination_reason"
   ],
   "type": "object"
 }
