@@ -100,6 +100,15 @@ def pytest_addoption(parser):
         dest="scd_api_version",
     )
 
+    parser.addoption(
+        "--scd-time-based-notification-index",
+        help="True if the DSS under test computes subscription notification indices from time rather than incrementing them",
+        type=str2bool,
+        nargs="?",
+        default=False,
+        dest="scd_time_based_notification_index",
+    )
+
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
@@ -259,3 +268,8 @@ def no_auth_session_ridv2(pytestconfig) -> UTMClientSession:
 def scd_api(pytestconfig) -> str:
     api = pytestconfig.getoption("scd_api_version")
     return VersionString(api)
+
+
+@pytest.fixture(scope="session")
+def time_based_notification_index(pytestconfig) -> bool:
+    return pytestconfig.getoption("scd_time_based_notification_index")
