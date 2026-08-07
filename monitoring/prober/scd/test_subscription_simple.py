@@ -47,11 +47,12 @@ def _make_sub1_req(scd_api):
     return req
 
 
-def _check_sub1(data, sub_id, scd_api):
+def _check_sub1(data, sub_id, scd_api, time_based_notification_index):
     assert data["subscription"]["id"] == sub_id
-    assert ("notification_index" not in data["subscription"]) or (
-        data["subscription"]["notification_index"] == 0
-    )
+    if not time_based_notification_index:
+        assert ("notification_index" not in data["subscription"]) or (
+            data["subscription"]["notification_index"] == 0
+        )
     assert data["subscription"]["uss_base_url"] == make_fake_url()
     assert data["subscription"]["time_start"]["format"] == api.TimeFormat.RFC3339
     assert data["subscription"]["time_end"]["format"] == api.TimeFormat.RFC3339
@@ -109,7 +110,7 @@ def test_create_sub_time_start_after_time_end(ids, scd_api, scd_session):
 
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
-def test_create_sub(ids, scd_api, scd_session):
+def test_create_sub(ids, scd_api, scd_session, time_based_notification_index):
     if scd_session is None:
         return
     req = _make_sub1_req(scd_api)
@@ -124,21 +125,21 @@ def test_create_sub(ids, scd_api, scd_session):
     assert_datetimes_are_equal(
         data["subscription"]["time_end"]["value"], req["extents"]["time_end"]["value"]
     )
-    _check_sub1(data, ids(SUB_TYPE), scd_api)
+    _check_sub1(data, ids(SUB_TYPE), scd_api, time_based_notification_index)
     assert "constraint_references" not in data
     assert isinstance(data["operational_intent_references"], list)
 
 
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
-def test_get_sub_by_id(ids, scd_api, scd_session):
+def test_get_sub_by_id(ids, scd_api, scd_session, time_based_notification_index):
     if scd_session is None:
         return
     resp = scd_session.get(f"/subscriptions/{ids(SUB_TYPE)}")
     assert resp.status_code == 200, resp.content
 
     data = resp.json()
-    _check_sub1(data, ids(SUB_TYPE), scd_api)
+    _check_sub1(data, ids(SUB_TYPE), scd_api, time_based_notification_index)
 
 
 @for_api_versions(scd.API_0_3_17)

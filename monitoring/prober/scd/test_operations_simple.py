@@ -260,7 +260,9 @@ def test_create_op2_no_ovn(ids, scd_api, scd_session, scd_session2):
 # Mutations: Subscription Sub2 created by scd_session2 user
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
-def test_create_op2sub(ids, scd_api, scd_session, scd_session2):
+def test_create_op2sub(
+    ids, scd_api, scd_session, scd_session2, time_based_notification_index
+):
     if scd_session2 is None:
         return
     time_start = datetime.datetime.now(datetime.UTC)
@@ -284,7 +286,8 @@ def test_create_op2sub(ids, scd_api, scd_session, scd_session2):
     op = [op for op in ops if op["id"] == ids(OP1_TYPE)][0]
     assert op.get("ovn", "") in scd.NO_OVN_PHRASES
 
-    assert data["subscription"]["notification_index"] == 0
+    if not time_based_notification_index:
+        assert data["subscription"]["notification_index"] == 0
 
     resp = scd_session2.get(f"/subscriptions/{ids(SUB2_TYPE)}")
     assert resp.status_code == 200, resp.content
@@ -318,7 +321,9 @@ def test_create_op2_no_key(ids, scd_api, scd_session, scd_session2):
 # Mutations: Operation Op2 created by scd_session2 user
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
-def test_create_op2(ids, scd_api, scd_session, scd_session2):
+def test_create_op2(
+    ids, scd_api, scd_session, scd_session2, time_based_notification_index
+):
     req = _make_op2_request()
     req["subscription_id"] = ids(SUB2_TYPE)
     req["key"] = [op1_ovn]
@@ -352,7 +357,8 @@ def test_create_op2(ids, scd_api, scd_session, scd_session2):
     # USS2 should also be instructed to notify USS2's explicit Subscription of the new Operation
     assert URL_SUB2 in subscribers, subscribers
     assert ids(SUB2_TYPE) in subscribers[URL_SUB2], subscribers[URL_SUB2]
-    assert subscribers[URL_SUB2][ids(SUB2_TYPE)] == 1
+    if not time_based_notification_index:
+        assert subscribers[URL_SUB2][ids(SUB2_TYPE)] == 1
 
     global op2_ovn
     op2_ovn = op["ovn"]
@@ -471,7 +477,9 @@ def test_mutate_op1_bad_key(ids, scd_api, scd_session, scd_session2):
 # Mutations: Operation Op1 mutated to second version
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
-def test_mutate_op1(ids, scd_api, scd_session, scd_session2):
+def test_mutate_op1(
+    ids, scd_api, scd_session, scd_session2, time_based_notification_index
+):
     resp = scd_session.get(f"/operational_intent_references/{ids(OP1_TYPE)}")
     assert resp.status_code == 200, resp.content
     existing_op = resp.json().get("operational_intent_reference", None)
@@ -506,7 +514,8 @@ def test_mutate_op1(ids, scd_api, scd_session, scd_session2):
     subscribers = _parse_subscribers(data.get("subscribers", []))
     assert URL_SUB2 in subscribers, subscribers
     assert ids(SUB2_TYPE) in subscribers[URL_SUB2], subscribers[URL_SUB2]
-    assert subscribers[URL_SUB2][ids(SUB2_TYPE)] == 2
+    if not time_based_notification_index:
+        assert subscribers[URL_SUB2][ids(SUB2_TYPE)] == 2
 
     op1_ovn = op["ovn"]
 
@@ -533,7 +542,9 @@ def test_delete_dependent_sub(ids, scd_api, scd_session, scd_session2):
 # Mutations: Subscription Sub2 mutated
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
-def test_mutate_sub2(ids, scd_api, scd_session, scd_session2):
+def test_mutate_sub2(
+    ids, scd_api, scd_session, scd_session2, time_based_notification_index
+):
     if scd_session2 is None:
         return
     time_now = datetime.datetime.now(datetime.UTC)
@@ -602,7 +613,8 @@ def test_mutate_sub2(ids, scd_api, scd_session, scd_session2):
     assert ops[ids(OP1_TYPE)].get("ovn", "") in scd.NO_OVN_PHRASES
     assert ops[ids(OP2_TYPE)].get("ovn", "") not in scd.NO_OVN_PHRASES
 
-    assert data["subscription"]["notification_index"] == 2
+    if not time_based_notification_index:
+        assert data["subscription"]["notification_index"] == 2
 
     # Make sure the Subscription is still retrievable specifically
     resp = scd_session2.get(f"/subscriptions/{ids(SUB2_TYPE)}")
@@ -618,7 +630,9 @@ def test_mutate_sub2(ids, scd_api, scd_session, scd_session2):
 # Mutations: Operation Op1 deleted
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
-def test_delete_op1(ids, scd_api, scd_session, scd_session2):
+def test_delete_op1(
+    ids, scd_api, scd_session, scd_session2, time_based_notification_index
+):
     resp = scd_session.delete(
         f"/operational_intent_references/{ids(OP1_TYPE)}/{op1_ovn}"
     )
@@ -631,7 +645,8 @@ def test_delete_op1(ids, scd_api, scd_session, scd_session2):
     subscribers = _parse_subscribers(data.get("subscribers", []))
     assert URL_SUB2 in subscribers, subscribers
     assert ids(SUB2_TYPE) in subscribers[URL_SUB2], subscribers[URL_SUB2]
-    assert subscribers[URL_SUB2][ids(SUB2_TYPE)] == 3
+    if not time_based_notification_index:
+        assert subscribers[URL_SUB2][ids(SUB2_TYPE)] == 3
 
     resp = scd_session.get("/subscriptions/{}".format(op["subscription_id"]))
     print(resp.content)
@@ -646,7 +661,9 @@ def test_delete_op1(ids, scd_api, scd_session, scd_session2):
 # Mutations: Operation Op2 deleted
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
-def test_delete_op2(ids, scd_api, scd_session, scd_session2):
+def test_delete_op2(
+    ids, scd_api, scd_session, scd_session2, time_based_notification_index
+):
     resp = scd_session2.delete(
         f"/operational_intent_references/{ids(OP2_TYPE)}/{op2_ovn}"
     )
@@ -660,7 +677,8 @@ def test_delete_op2(ids, scd_api, scd_session, scd_session2):
     subscribers = _parse_subscribers(data.get("subscribers", []))
     assert URL_SUB2 in subscribers, subscribers
     assert ids(SUB2_TYPE) in subscribers[URL_SUB2], subscribers[URL_SUB2]
-    assert subscribers[URL_SUB2][ids(SUB2_TYPE)] == 4
+    if not time_based_notification_index:
+        assert subscribers[URL_SUB2][ids(SUB2_TYPE)] == 4
 
     resp = scd_session2.get(f"/subscriptions/{ids(SUB2_TYPE)}")
     assert resp.status_code == 200, resp.content
