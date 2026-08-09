@@ -11,10 +11,9 @@ v1:
         combination_selector:
           resource_type: resources.flight_planning.FlightPlannerCombinationSelectorResource
           specification:
-            must_include:
-              - mock_uss
             maximum_roles:
-              mock_uss: 1
+              uss1: 1
+              uss2: 1
 
         utm_auth: {$ref: 'library/environment.yaml#/utm_auth'}
         second_utm_auth: {$ref: 'library/environment.yaml#/second_utm_auth'}
@@ -29,24 +28,22 @@ v1:
           specification:
             flight_planners:
               - participant_id: uss1
-                scd_injection_base_url: http://host.docker.internal:8074/scdsc
+                scd_injection_base_url: http://scdsc.uss1.localutm/scdsc
               - participant_id: uss2
-                scd_injection_base_url: http://host.docker.internal:8074/scdsc
-              - participant_id: mock_uss
-                scd_injection_base_url: http://host.docker.internal:8074/scdsc
+                scd_injection_base_url: http://scdsc.uss2.localutm/scdsc
         mock_uss:
           resource_type: resources.interuss.mock_uss.client.MockUSSResource
           dependencies:
             auth_adapter: utm_auth
           specification:
             participant_id: mock_uss
-            mock_uss_base_url: http://host.docker.internal:8074
+            mock_uss_base_url: http://scdsc.log.uss6.localutm
         test_exclusions: { $ref: 'library/resources.yaml#/test_exclusions' }
     non_baseline_inputs:
       - v1.test_run.resources.resource_declarations.utm_auth
-      - v1.test_run.resources.resource_declarations.all_flight_planners
+      - v1.test_run.resources.resource_declarations.flight_planners
       - v1.test_run.resources.resource_declarations.scd_dss
-      - v1.test_run.resources.resource_declarations.mock_uss_instance_uss1
+      - v1.test_run.resources.resource_declarations.mock_uss
     action:
       test_suite:
         suite_type: suites.faa.uft.message_signing
@@ -72,3 +69,14 @@ v1:
   artifacts:
     raw_report: {}
     sequence_view: {}
+
+  validation:
+    criteria:
+      - $ref: ./library/validation.yaml#/execution_error_none
+      - $ref: ./library/validation.yaml#/failed_check_severity_max_low
+      - applicability:
+          skipped_actions: {}
+        pass_condition:
+          elements:
+            count:
+              equal_to: 6 # 2 DatastoreAccess, 1 PoolInfo, 1 GetSystemVersions, 1 MakeUssReport, 1 EvaluateSystemVersions
