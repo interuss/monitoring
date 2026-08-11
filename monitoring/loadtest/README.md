@@ -3,6 +3,31 @@
 ## Introduction
 The LoadTest tool is based on [Locust](https://docs.locust.io/en/stable/index.html) which provides a UI for controlling the number of Users to spawn and make random requests.
 
+## General usage guidance
+
+Most systems roughly follow the Universal Scalability Law<sup>[1](https://www.graphiumlabs.com/blog/part2-gunthers-universal-scalability-law),[2](https://raw.githubusercontent.com/VividCortex/ebooks/master/scalability.pdf)</sup> model that includes three effects:
+
+1. At low load, each additional unit of load is handled with the same efficiency.  So, achieved throughput scales linearly with load.  Achieved throughput is successful operations per time.
+2. But, there are likely some shared resources and higher loads increase contention for those shared resources.  This causes throughput to fall away from linear scaling toward an asymptotic maximum throughput.
+3. Even worse, maintaining coherence between processing units may require crosstalk which is a cost that scales with load.  The marginal throughput from additional load falls to zero due to effect 2 above (contention), but then this additional coherency penalty means that throughput eventually decreases with increasing load.
+
+Combining the three effects above means that the graph of throughput versus load usually looks qualitatively similar to this:
+
+![Universal Scalability Law curve](./assets/USL.png)
+
+The max throughput point shown above is an extremely important point. The system should never be operated in the operational regime to the right of the max throughput point. Any performance metrics captured in the regime to the right of this max throughput point are invalid as they could be improved almost for free with load shedding.
+
+Even the max throughput point is not one we want to reach because requests at that point will be served with very high latency compared to requests served at lower load/throughput. Instead, this max throughput point should be the absolute maximum load the system should see when working through a burst of load.
+
+Therefore, load tests should be conducted such that metrics are reported from the left side of this curve.  If DSS latency is consistenly above ~6 seconds, it is very likely the load applied is on the right (wrong) side of the curve above.  When DSS latency averages near 10 seconds (the operation-abort timeout threshold), it is almost certain the applied load is on the right (wrong) side of the curve.
+
+The following techniques may be helpful to ensure valid metrics are measured from the left side of the curve:
+
+1. Consider stepping up the load in small steps, verifying latency hasn't spiked for each step (when latency spikes, determine whether that is because the right side of the curve has been reached) and that throughput (successful operations per time) has not started to decrease appreciably.
+2. Consider drawing the entire left side of the performance curve by applying a load, allowing behavior to stabilize, measuring throughput, recording the (load, throughput) scatter point, marginally increasing the load, and repeating until the curve is sufficiently complete to characterize the behavior of the system in the load regimes of interest.
+3. If latency is high, do not quote metrics at that load until verifying that marginally reducing load does not increase throughput (if it does, continue reducing load until reaching the left side of the curve).
+4. Ensure useful throughput is being measured (successful operations per time) rather than total throughput (total operations per time, including failed operations).
+
 ## Available tests
 
 ### ISA.py
