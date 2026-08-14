@@ -142,6 +142,25 @@ local shape = {
             operations: ['workflow.flight_planner.flight'],
           },
         },
+        throughput_instability_criteria: {
+          any_of: [
+            {
+              failures_more_than: {
+                count: 30,
+                operations: ['workflow.flight_planner.flight'],
+              },
+            },
+            {
+              phase_duration_at_least: '120s',
+            },
+            {
+              average_duration_more_than: {
+                duration: '60s',
+                operations: ['workflow.flight_planner.flight'],
+              },
+            },
+          ],
+        },
         step_completion_criteria: {
           any_of: [
             {
@@ -150,18 +169,6 @@ local shape = {
             {
               completed_at_least: {
                 count: 100,
-                operations: ['workflow.flight_planner.flight'],
-              },
-            },
-            {
-              average_duration_more_than: {
-                duration: '60s',
-                operations: ['workflow.flight_planner.flight'],
-              },
-            },
-            {
-              failures_more_than: {
-                count: 30,
                 operations: ['workflow.flight_planner.flight'],
               },
             },
@@ -178,20 +185,6 @@ local shape = {
               throughput_lower_than_peak: {
                 operations: ['workflow.flight_planner.flight'],
                 fraction_of_peak: 0.7,
-              },
-            },
-            {
-              failures_more_than: {
-                count: 75,
-                operations: ['workflow.flight_planner.flight'],
-              }
-            },
-            {
-              most_recent_step: {
-                average_duration_more_than: {
-                  duration: '60s',
-                  operations: ['workflow.flight_planner.flight'],
-                },
               },
             },
           ],
@@ -226,13 +219,13 @@ local shape = {
           {
             name: 'throughputs',
             value: '[[throughput_of_step(scenario, s, types=["workflow.flight_planner.flight"], outcomes=[True])' +
-                  '  for s in range(len(scenario.steps))]' +
+                  '  for s in completed_step_indices(scenario.steps)]' +
                   ' for scenario in report.report.scenarios]',
           },
           {
             name: 'latencies',
             value: '[[latency_of_step(scenario, s, types=["query.astm.f3548.v21.dss.createOperationalIntentReference"], outcomes=[True, False]).total_seconds() * 1000' +
-                  '  for s in range(len(scenario.steps))]' +
+                  '  for s in completed_step_indices(scenario.steps)]' +
                   ' for scenario in report.report.scenarios]',
           },
         ],
@@ -254,12 +247,12 @@ local shape = {
                     },
                     {
                       name: 'scale',
-                      value: '[step.load_factor for step in scenario.steps]',
+                      value: '[step.load_factor for step in completed_steps(scenario.steps)]',
                     },
                     {
                       name: 'failures',
                       value: '[throughput_of_step(scenario, s, types=["workflow.flight_planner.flight"], outcomes=[False])' +
-                            ' for s in range(len(scenario.steps))]',
+                            ' for s in completed_step_indices(scenario.steps)]',
                     },
                     {
                       name: 'usl',

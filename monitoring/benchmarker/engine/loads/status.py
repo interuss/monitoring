@@ -13,6 +13,8 @@ def throughput_of_step_ops(
     operations: list[ExecutedOperation],
     op_types: set[str] | set[OperationType],
 ) -> float:
+    if not step.throughput_stability_time:
+        return 0
     start_time = step.throughput_stability_time.datetime
     end_time = step.end_time.datetime
     count = sum(
