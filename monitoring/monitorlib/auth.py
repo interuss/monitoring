@@ -606,6 +606,9 @@ def all_subclasses(cls):
     )
 
 
+SPEC_RE = re.compile(r"^\s*([^\s(]+)\s*\(\s*([^)]*)\s*\)\s*$")
+
+
 def make_auth_adapter(spec: AuthSpec) -> AuthAdapter:
     """Make an AuthAdapter according to a string specification.
 
@@ -621,7 +624,8 @@ def make_auth_adapter(spec: AuthSpec) -> AuthAdapter:
       An instance of the appropriate AuthAdapter subclass according to the
       provided spec.
     """
-    m = re.match(r"^\s*([^\s(]+)\s*\(\s*([^)]*)\s*\)\s*$", spec)
+
+    m = SPEC_RE.match(spec)
     if m is None:
         raise ValueError(
             "Auth adapter specification did not match the pattern `AdapterName(param, param, ...)`"

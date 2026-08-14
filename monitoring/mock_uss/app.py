@@ -1,5 +1,6 @@
 import inspect
 import os
+import re
 from collections.abc import Callable
 from typing import Any
 
@@ -132,10 +133,102 @@ if SERVICE_FLIGHT_PLANNING in webapp.config[config.KEY_SERVICES]:
     enabled_services.add(SERVICE_FLIGHT_PLANNING)
     from monitoring.mock_uss.flight_planning import routes as flight_planning_routes  # noqa F401
 
+
+_SECRET_NAME_RE = re.compile(
+    r"API|AUTH|TOKEN|KEY|SECRET|PASS|SIGNATURE|HTTP_COOKIE",
+    flags=re.I,
+)
+_SAFE_KEYS = ["MOCK_USS_PUBLIC_KEY", "MOCK_USS_TOKEN_AUDIENCE"]
+
+# Extract the userinfo part of an URI
+_USERINFO_RE = re.compile(r"(?<=://)[^/@\s]*:[^/@\s]*@")
+
+_ARITY = {
+    "NoAuth": 2,
+    "InvalidTokenSignatureAuth": 1,
+    "DummyOAuth": 2,
+    "ServiceAccount": 2,
+    "ServiceAccountImpersonation": 2,
+    "SignedRequest": 6,
+    "UsernamePassword": 4,
+    "ClientIdClientSecret": 4,
+    "Keycloak": 3,
+    "FlightPassport": 4,
+}
+
+_SECRETS = {
+    "UsernamePassword": (2, "password"),
+    "ClientIdClientSecret": (2, "client_secret"),
+    "Keycloak": (2, "client_secret"),
+    "FlightPassport": (2, "client_secret"),
+}
+
+
+def sanitize_secrets(key, value):
+    """Ensure value is free of sensitive values:
+
+    * Authentication information is removed from URLs
+    * Key names are used to detect secrets and obfuscate the value
+    * MOCK_USS_AUTH_SPEC value secrets are removed
+    * Unrecognized elements are escaped as a safe fallback"""
+
+    if key != "MOCK_USS_AUTH_SPEC":  # Non-auth spec case
+        if (
+            key not in _SAFE_KEYS
+            and _SECRET_NAME_RE.search(  # Name contains key/secret/etc...
+                key,
+            )
+        ):
+            return "***"
+
+        if not isinstance(value, str):  # Value may be non-string
+            return value
+
+        return _USERINFO_RE.sub("***@", value)
+
+    from monitoring.monitorlib.auth import SPEC_RE  # Loaded here due to circular import
+
+    m = SPEC_RE.match(value)  # Try to parse an AuthSpec
+    if m is None:
+        return "***"
+
+    name, param_string = m.group(1), m.group(2)
+    params = [p.strip() for p in param_string.split(",")]
+
+    if (
+        name not in _ARITY or len(params) > _ARITY[name]
+    ):  # Unknown adapter, we escape everything
+        hidden = [
+            p.split("=", 1)[0].strip() + "=***" if "=" in p else "***" for p in params
+        ]
+        return "{}({})".format(name, ", ".join(hidden))
+
+    pos_index, kwarg = _SECRETS.get(name, (None, None))
+    out = []
+    pos = 0
+    for p in params:  # For each parameter
+        if "=" in p:  # Named parameter
+            k, v = p.split("=", 1)
+            k = k.strip()
+            out.append(
+                k + "=***"
+                if k == kwarg
+                else k + "=" + _USERINFO_RE.sub("***@", v.strip())
+            )
+        else:  # Positional parameter
+            out.append("***" if pos == pos_index else _USERINFO_RE.sub("***@", p))
+            pos += 1
+
+    return "{}({})".format(name, ", ".join(out))
+
+
 msg = (
     "################################################################################\n"
     + "################################ Configuration  ################################\n"
-    + "\n".join(f"## {key}: {webapp.config[key]}" for key in webapp.config)
+    + "\n".join(
+        f"## {key}: {sanitize_secrets(key, webapp.config[key])}"
+        for key in webapp.config
+    )
     + "\n"
     + "################################################################################"
 )
