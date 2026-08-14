@@ -157,7 +157,9 @@ def test_constraint_does_not_exist(ids, scd_api, scd_session, scd_session2):
 # Mutations: Constraint ids(CONSTRAINT_ID) created by scd_session user
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_CM)
-def test_create_constraint(ids, scd_api, scd_session, scd_session2):
+def test_create_constraint(
+    ids, scd_api, scd_session, scd_session2, time_based_notification_index
+):
     req = _make_c1_request()
     resp = scd_session.put(f"/constraint_references/{ids(CONSTRAINT_TYPE)}", json=req)
     assert resp.status_code == 201, resp.content
@@ -185,13 +187,15 @@ def test_create_constraint(ids, scd_api, scd_session, scd_session2):
         for subscription in subscriberb["subscriptions"]
         if subscription["subscription_id"] == ids(SUB2_TYPE)
     ][0]
-    assert sub2_index == 1, subscriberb
+    if not time_based_notification_index:
+        assert sub2_index == 1, subscriberb
     sub3_index = [
         subscription["notification_index"]
         for subscription in subscriberb["subscriptions"]
         if subscription["subscription_id"] == ids(SUB3_TYPE)
     ][0]
-    assert sub3_index == 1, subscriberb
+    if not time_based_notification_index:
+        assert sub3_index == 1, subscriberb
 
 
 # Preconditions:
@@ -200,7 +204,9 @@ def test_create_constraint(ids, scd_api, scd_session, scd_session2):
 #   * Constraint ids(CONSTRAINT_ID) created by scd_session user
 # Mutations: Constraint ids(CONSTRAINT_ID) mutated to second version
 @for_api_versions(scd.API_0_3_17)
-def test_mutate_constraint(ids, scd_api, scd_session, scd_session2):
+def test_mutate_constraint(
+    ids, scd_api, scd_session, scd_session2, time_based_notification_index
+):
     # GET current constraint
     resp = scd_session.get(
         f"/constraint_references/{ids(CONSTRAINT_TYPE)}",
@@ -253,13 +259,15 @@ def test_mutate_constraint(ids, scd_api, scd_session, scd_session2):
         for subscription in subscriberb["subscriptions"]
         if subscription["subscription_id"] == ids(SUB2_TYPE)
     ][0]
-    assert sub2_index == 2, subscriberb
+    if not time_based_notification_index:
+        assert sub2_index == 2, subscriberb
     sub3_index = [
         subscription["notification_index"]
         for subscription in subscriberb["subscriptions"]
         if subscription["subscription_id"] == ids(SUB3_TYPE)
     ][0]
-    assert sub3_index == 2, subscriberb
+    if not time_based_notification_index:
+        assert sub3_index == 2, subscriberb
 
 
 # Preconditions: {Sub1, Sub2, Sub3} created by scd_session2 user
@@ -328,7 +336,9 @@ def test_mutate_subs(ids, scd_api, scd_session2, scd_session):
 # Mutations: Constraint ids(CONSTRAINT_ID) mutated to third version
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_CM)
-def test_mutate_constraint2(ids, scd_api, scd_session, scd_session2):
+def test_mutate_constraint2(
+    ids, scd_api, scd_session, scd_session2, time_based_notification_index
+):
     # GET current constraint
     resp = scd_session.get(f"/constraint_references/{ids(CONSTRAINT_TYPE)}")
     assert resp.status_code == 200, resp.content
@@ -376,7 +386,8 @@ def test_mutate_constraint2(ids, scd_api, scd_session, scd_session2):
         for subscription in subscribera["subscriptions"]
         if subscription["subscription_id"] == ids(SUB1_TYPE)
     ][0]
-    assert sub1_index == 1, subscribera
+    if not time_based_notification_index:
+        assert sub1_index == 1, subscribera
 
     subscriberb = [
         subscriber
@@ -396,7 +407,8 @@ def test_mutate_constraint2(ids, scd_api, scd_session, scd_session2):
         for subscription in subscriberb["subscriptions"]
         if subscription["subscription_id"] == ids(SUB2_TYPE)
     ][0]
-    assert sub2_index == 3, subscriberb
+    if not time_based_notification_index:
+        assert sub2_index == 3, subscriberb
 
 
 # Preconditions: Constraint ids(CONSTRAINT_ID) mutated to second version

@@ -136,6 +136,19 @@ class SCDHandler(CoordinationSubscriber):
         if "implicit_subscription" not in self.subscription_strategy:
             self.subscription_strategy.implicit_subscription = None
 
+        has_single = (
+            "single_subscription" in self.subscription_strategy
+            and self.subscription_strategy.single_subscription is not None
+        )
+        has_implicit = (
+            "implicit_subscription" in self.subscription_strategy
+            and self.subscription_strategy.implicit_subscription is not None
+        )
+        if not (has_single ^ has_implicit):
+            raise ValueError(
+                f"Exactly one of single_subscription or implicit_subscription must be specified in scd_behavior.subscription_strategy for user `{user.user_id}`"
+            )
+
         strategy = behavior.op_intent_ref_creation_strategy
         self.op_intent_ref_creation_strategy = strategy
         self.timely_clearance_expected = (
@@ -189,7 +202,7 @@ class SCDHandler(CoordinationSubscriber):
         if (
             not self.subscription_checked
             and "single_subscription" in self.subscription_strategy
-            and self.subscription_strategy.single_subscription
+            and self.subscription_strategy.single_subscription is not None
         ):
             yield FlightAction(
                 timestamp=datetime.now(UTC),
@@ -345,11 +358,17 @@ class SCDHandler(CoordinationSubscriber):
         )
 
         kwargs = {}
-        if self.subscription_strategy.single_subscription:
+        if (
+            "single_subscription" in self.subscription_strategy
+            and self.subscription_strategy.single_subscription is not None
+        ):
             kwargs["subscription_id"] = (
                 self.subscription_strategy.single_subscription.subscription_id
             )
-        elif self.subscription_strategy.implicit_subscription:
+        elif (
+            "implicit_subscription" in self.subscription_strategy
+            and self.subscription_strategy.implicit_subscription is not None
+        ):
             pass
         else:
             raise ValueError(

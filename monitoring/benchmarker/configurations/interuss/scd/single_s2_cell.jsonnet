@@ -64,6 +64,16 @@ local shape = {
     },
   },
 
+  actions: [
+    {
+      name: 'Generate intermediate artifacts',
+      generate_artifacts: {
+        subfolder: 'f"intermediate{action_invocation}"',
+        defined_artifact_indices: [0, 1],
+      },
+    },
+  ],
+
   user_types: [
     {
       name: 'FPU%d' % uss, // Flight planner user using DSS instance from uss
@@ -188,6 +198,7 @@ local shape = {
       {
         name: '%s: %s for USS %d' % [dss_config_names[dss_config - 1], test_name,  uss],
         load: 'Flight planner ramp for USS %d' % uss,
+        [if uss < num_uss || dss_config < std.length(dss_config_names) then "teardown"]: ['Generate intermediate artifacts'],
       } for uss in std.range(1, num_uss)
     ] for dss_config in std.range(1, std.length(dss_config_names))
   ]),
@@ -224,6 +235,7 @@ local shape = {
               title: '%s\nDSS instance %d' % [dss_config_names[dss_config - 1], uss],
               subplots: [
                 {
+                  render_expr: '%d < len(report.report.scenarios)' % (uss - 1),
                   evaluation_context: [
                     {
                       name: 'scenario_index',
