@@ -2,6 +2,7 @@ from typing import Optional
 
 from implicitdict import ImplicitDict
 
+from monitoring.benchmarker.configurations.actions.f3411 import F3411ActionSpecification
 from monitoring.benchmarker.configurations.artifacts.artifact import (
     ArtifactSpecification,
 )
@@ -48,5 +49,7 @@ class BenchmarkActionSpecification(ImplicitDict):
     name: BenchmarkActionName
 
     run_command: Optional[RunCommandActionSpecification]
+
+    f3411: Optional[F3411ActionSpecification]
 
     generate_artifacts: Optional[GenerateArtifactsActionSpecification]

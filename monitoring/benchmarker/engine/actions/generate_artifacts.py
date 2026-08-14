@@ -4,7 +4,7 @@ from asteval import Interpreter
 from loguru import logger
 
 from monitoring.benchmarker.artifacts.generation import generate_artifacts
-from monitoring.benchmarker.configurations.actions import (
+from monitoring.benchmarker.configurations.actions.action import (
     BenchmarkActionName,
     GenerateArtifactsActionSpecification,
 )

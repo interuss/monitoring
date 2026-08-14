@@ -10,7 +10,7 @@
     "actions": {
       "description": "Actions available to be performed during the benchmarker run.",
       "items": {
-        "$ref": "../actions/BenchmarkActionSpecification.json"
+        "$ref": "../actions/action/BenchmarkActionSpecification.json"
       },
       "type": [
         "array",
@@ -51,6 +51,26 @@
         "$ref": "../scenarios/BenchmarkScenarioSpecification.json"
       },
       "type": "array"
+    },
+    "setup_actions": {
+      "description": "Actions to perform before beginning scenarios.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "teardown_actions": {
+      "description": "Actions to perform after completing all scenarios.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
     },
     "user_types": {
       "description": "Types of users available to load the system under test during the benchmarker run.",

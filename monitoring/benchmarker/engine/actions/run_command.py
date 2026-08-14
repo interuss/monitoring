@@ -3,7 +3,9 @@ import subprocess
 
 from loguru import logger
 
-from monitoring.benchmarker.configurations.actions import RunCommandActionSpecification
+from monitoring.benchmarker.configurations.actions.action import (
+    RunCommandActionSpecification,
+)
 from monitoring.monitorlib.versioning import get_repo_root
 
 

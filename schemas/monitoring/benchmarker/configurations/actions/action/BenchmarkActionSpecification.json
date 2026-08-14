@@ -1,11 +1,21 @@
 {
-  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/actions/BenchmarkActionSpecification.json",
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/actions/action/BenchmarkActionSpecification.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "monitoring.benchmarker.configurations.actions.BenchmarkActionSpecification, as defined in monitoring/benchmarker/configurations/actions.py",
+  "description": "monitoring.benchmarker.configurations.actions.action.BenchmarkActionSpecification, as defined in monitoring/benchmarker/configurations/actions/action.py",
   "properties": {
     "$ref": {
       "description": "Path to content that replaces the $ref",
       "type": "string"
+    },
+    "f3411": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../f3411/F3411ActionSpecification.json"
+        }
+      ]
     },
     "generate_artifacts": {
       "oneOf": [

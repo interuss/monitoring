@@ -1,13 +1,17 @@
-from monitoring.benchmarker.configurations.actions import (
+from typing import Any
+
+from monitoring.benchmarker.configurations.actions.action import (
     BenchmarkActionName,
     BenchmarkActionSpecification,
 )
 from monitoring.benchmarker.configurations.configuration import BenchmarkConfiguration
+from monitoring.benchmarker.engine.actions.f3411 import run_f3411_action
 from monitoring.benchmarker.engine.actions.generate_artifacts import (
     generate_intermediate_artifacts,
 )
 from monitoring.benchmarker.engine.actions.run_command import run_command
 from monitoring.benchmarker.reports.report import BenchmarkScenarioReport
+from monitoring.uss_qualifier.resources.definitions import ResourceID
 
 
 def run_scenario_actions(
@@ -19,6 +23,7 @@ def run_scenario_actions(
     output_dir: str,
     codebase_version: str,
     commit_hash: str,
+    resource_pool: dict[ResourceID, Any] | None = None,
 ) -> None:
     """Run a sequence of scenario setup or teardown actions by name."""
     if not action_names:
@@ -27,7 +32,7 @@ def run_scenario_actions(
     for action_name in action_names:
         if action_name not in action_specs:
             raise ValueError(
-                f"Scenario action '{action_name}' not defined in configuration.actions"
+                f"Action '{action_name}' not defined in configuration.actions"
             )
         action_spec = action_specs[action_name]
         invocation = action_invocations.get(action_name, 0)
@@ -50,6 +55,13 @@ def run_scenario_actions(
                 codebase_version,
                 commit_hash,
             )
+            action_performed = True
+        if "f3411" in action_spec and action_spec.f3411 is not None:
+            if resource_pool is None:
+                raise ValueError(
+                    f"Resource pool is required to execute action '{action_name}' with F3411 specification"
+                )
+            run_f3411_action(action_name, action_spec.f3411, resource_pool)
             action_performed = True
 
         if not action_performed:
