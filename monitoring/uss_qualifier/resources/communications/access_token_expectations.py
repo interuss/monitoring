@@ -55,9 +55,7 @@ class AccessTokensExpectationsSpecification(ImplicitDict):
     expectations: list[AccessTokenExpectations]
 
 
-class AccessTokensExpectationsResource(
-    Resource[AccessTokensExpectationsSpecification]
-):
+class AccessTokensExpectationsResource(Resource[AccessTokensExpectationsSpecification]):
     pass
 
     def __init__(

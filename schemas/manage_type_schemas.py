@@ -114,7 +114,6 @@ def _resolve_resource_spec_type(cls: type) -> type:
     return result
 
 
-
 def _find_specifications(
     module,
     repo: dict[str, type[ImplicitDict]],
