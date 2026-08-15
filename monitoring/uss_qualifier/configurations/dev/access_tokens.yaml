@@ -1,0 +1,67 @@
+$content_schema: monitoring/uss_qualifier/configurations/configuration/USSQualifierConfiguration.json
+v1:
+  test_run:
+    resources:
+      resource_declarations:
+        utm_auth: {$ref: 'library/environment.yaml#/utm_auth'}
+        access_token_expectations:
+          resource_type: resources.communications.AccessTokensExpectationsResource
+          specification:
+            expectations:
+              - request:
+                  intended_audience: test_audience
+                  scopes:
+                    - rid.inject_test_data
+                expectations:
+                  alg: RS256
+                  has_header_values:
+                    - claim: typ
+                      equals_string_value: JWT
+                  validates_against_public_key: |
+                    -----BEGIN PUBLIC KEY-----
+                    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtjrMt+vOxuqjOU+hwrVA
+                    gHjBMs9nMw1ONSpiLOpUQSnqvBwB0Zba+8e2tGJeQDWEf8KoVt3PfMa34EomLhWZ
+                    GWEosftV8gZSbneDjUnE+kUTXvZmMFa2Byc9njsl5N7dOC1pT7qHNJOB9RhK/9eh
+                    Pl7XczRuIJR7N/ZFk+XZSlFh5werq7ME7GdhBPFaO30KZRmRhgwVtAP2kA8sSrqg
+                    xXuuyy808UvT3MkzL63Sv/EzQSs8YLVAn/BwiQlmWxKFmtzNk9RJdYkxRJN1E9E2
+                    sS2i6b55j94hiPwwQ16GsAAWUT+ijezlHuGZU+OLYtYfoHy+4Ku31doQc0ujvtYO
+                    JQIDAQAB
+                    -----END PUBLIC KEY-----
+                  expires_in_more_than: 1s
+                  expires_in_less_than: 2h
+                  has_claim_values:
+                    - claim: iss
+                      equals_string_value: dummy
+                    - claim: sub
+                      equals_string_value: uss_qualifier
+
+    action:
+      test_suite:
+        suite_definition:
+          name: Access tokens validation test suite
+          resources:
+            auth_adapter: resources.communications.AuthAdapterResource
+            expectations: resources.communications.AccessTokensExpectationsResource
+          actions:
+            - test_scenario:
+                scenario_type: scenarios.interuss.communications.GetAccessTokens
+                resources:
+                  auth_adapter: auth_adapter
+                  expectations: expectations
+                on_failure: Continue
+        resources:
+          auth_adapter: utm_auth
+          expectations: access_token_expectations
+
+    execution:
+      stop_fast: false
+
+  artifacts:
+    raw_report:
+      indent: 2
+    sequence_view: {}
+    report_html: {}
+    timing_report: {}
+
+  validation:
+    $ref: ./library/validation.yaml#/normal_test
