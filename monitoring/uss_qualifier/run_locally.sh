@@ -37,7 +37,8 @@ configurations.dev.f3548_self_contained,\
 configurations.dev.utm_implementation_us.environments.local.test_1,\
 configurations.dev.netrid_v22a,\
 configurations.dev.netrid_v19,\
-configurations.dev.uspace"
+configurations.dev.uspace,\
+configurations.dev.access_tokens"
 fi
 
 echo "Running configuration(s): ${CONFIG_NAME}"
