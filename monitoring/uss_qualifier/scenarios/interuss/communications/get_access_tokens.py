@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import jwt
 
@@ -43,7 +43,7 @@ class GetAccessTokens(TestScenario):
             token: str | None = None
             header: dict | None = None
             payload: dict | None = None
-            request_time = datetime.now(timezone.utc)
+            request_time = datetime.now(UTC)
 
             with self.check(
                 "Access token retrievable", participants=participants
@@ -90,7 +90,10 @@ class GetAccessTokens(TestScenario):
                             )
 
                 # --- Token Header Values Expectation ---
-                if "has_header_values" in expect.expectations and expect.expectations.has_header_values:
+                if (
+                    "has_header_values" in expect.expectations
+                    and expect.expectations.has_header_values
+                ):
                     with self.check(
                         "Token header value", participants=participants
                     ) as check:
@@ -104,7 +107,10 @@ class GetAccessTokens(TestScenario):
                             )
 
                 # --- Cryptographic Signature Validation Expectation ---
-                if "validates_against_public_key" in expect.expectations and expect.expectations.validates_against_public_key:
+                if (
+                    "validates_against_public_key" in expect.expectations
+                    and expect.expectations.validates_against_public_key
+                ):
                     with self.check(
                         "Token signature validates against public key",
                         participants=participants,
@@ -139,7 +145,10 @@ class GetAccessTokens(TestScenario):
                             )
 
                 # --- Expiration Duration 'More Than' Expectation ---
-                if "expires_in_more_than" in expect.expectations and expect.expectations.expires_in_more_than:
+                if (
+                    "expires_in_more_than" in expect.expectations
+                    and expect.expectations.expires_in_more_than
+                ):
                     with self.check(
                         "Token expiration duration longer than",
                         participants=participants,
@@ -151,7 +160,7 @@ class GetAccessTokens(TestScenario):
                                 details=f"Observed 'exp' in payload: {exp}",
                             )
                         else:
-                            exp_datetime = datetime.fromtimestamp(exp, timezone.utc)
+                            exp_datetime = datetime.fromtimestamp(exp, UTC)
                             min_exp_datetime = (
                                 request_time
                                 + expect.expectations.expires_in_more_than.timedelta
@@ -168,7 +177,10 @@ class GetAccessTokens(TestScenario):
                                 )
 
                 # --- Expiration Duration 'Less Than' Expectation ---
-                if "expires_in_less_than" in expect.expectations and expect.expectations.expires_in_less_than:
+                if (
+                    "expires_in_less_than" in expect.expectations
+                    and expect.expectations.expires_in_less_than
+                ):
                     with self.check(
                         "Token expiration duration shorter than",
                         participants=participants,
@@ -180,7 +192,7 @@ class GetAccessTokens(TestScenario):
                                 details=f"Observed 'exp' in payload: {exp}",
                             )
                         else:
-                            exp_datetime = datetime.fromtimestamp(exp, timezone.utc)
+                            exp_datetime = datetime.fromtimestamp(exp, UTC)
                             max_exp_datetime = (
                                 request_time
                                 + expect.expectations.expires_in_less_than.timedelta
@@ -197,7 +209,10 @@ class GetAccessTokens(TestScenario):
                                 )
 
                 # --- Token Payload Claim Values Expectation ---
-                if "has_claim_values" in expect.expectations and expect.expectations.has_claim_values:
+                if (
+                    "has_claim_values" in expect.expectations
+                    and expect.expectations.has_claim_values
+                ):
                     with self.check(
                         "Token payload claim value", participants=participants
                     ) as check:

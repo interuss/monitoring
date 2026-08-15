@@ -55,9 +55,16 @@ class AccessTokensExpectationsSpecification(ImplicitDict):
     expectations: list[AccessTokenExpectations]
 
 
-class AccessTokensExpectationsResource(Resource):
-    spec: AccessTokensExpectationsSpecification
+class AccessTokensExpectationsResource(
+    Resource[AccessTokensExpectationsSpecification]
+):
+    pass
 
-    def __init__(self, specification: AccessTokensExpectationsSpecification, resource_origin: str, **dependencies):
+    def __init__(
+        self,
+        specification: AccessTokensExpectationsSpecification,
+        resource_origin: str,
+        **dependencies,
+    ):
         self.spec = specification
         super().__init__(specification, resource_origin, **dependencies)

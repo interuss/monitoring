@@ -101,15 +101,18 @@ def _resolve_resource_spec_type(cls: type) -> type:
             args = tuple(subst.get(a, a) for a in get_args(base))
             if origin is Resource:
                 return args[0]
-            result = walk(origin, dict(zip(origin.__parameters__, args)))
-            if result is not None:
-                return result
+            params = getattr(origin, "__parameters__", None)
+            if params is not None:
+                result = walk(origin, dict(zip(params, args)))
+                if result is not None:
+                    return result
         return None
 
     result = walk(cls, {})
     if result is None:
         raise ValueError(f"Could not resolve Resource specification type for {cls}")
     return result
+
 
 
 def _find_specifications(

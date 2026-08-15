@@ -1,0 +1,62 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/communications/access_token_expectations/Expectations.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.communications.access_token_expectations.Expectations, as defined in monitoring/uss_qualifier/resources/communications/access_token_expectations.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "alg": {
+      "description": "JWT `alg` header value must match this value (e.g., RS256).",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "expires_in_less_than": {
+      "description": "The `exp` claim should be prior to the request time plus this delta.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "expires_in_more_than": {
+      "description": "The `exp` claim should be further in the future than the request time plus this delta.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "has_claim_values": {
+      "description": "Particular keys in the payload satisfy these criteria.",
+      "items": {
+        "$ref": "ClaimValuePair.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "has_header_values": {
+      "description": "Particular keys in the header satisfy these criteria.",
+      "items": {
+        "$ref": "ClaimValuePair.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "validates_against_public_key": {
+      "description": "Access token signature should validate against this public key.\n\nCan be a literal public key, or an http(s) URL pointing to a JWKS .json file, or a local PEM file; see fix_key in auth_validation.py.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}
