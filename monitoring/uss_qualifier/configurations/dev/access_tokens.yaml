@@ -9,7 +9,7 @@ v1:
           specification:
             expectations:
               - request:
-                  intended_audience: test_audience
+                  intended_audience: test_audience.example.com
                   scopes:
                     - rid.inject_test_data
                 expectations:
@@ -27,8 +27,8 @@ v1:
                     sS2i6b55j94hiPwwQ16GsAAWUT+ijezlHuGZU+OLYtYfoHy+4Ku31doQc0ujvtYO
                     JQIDAQAB
                     -----END PUBLIC KEY-----
-                  expires_in_more_than: 1s
-                  expires_in_less_than: 2h
+                  expires_in_more_than: 50m
+                  expires_in_less_than: 1h10m
                   has_claim_values:
                     - claim: iss
                       equals_string_value: dummy
@@ -57,11 +57,7 @@ v1:
       stop_fast: false
 
   artifacts:
-    raw_report:
-      indent: 2
     sequence_view: {}
-    report_html: {}
-    timing_report: {}
 
   validation:
     $ref: ./library/validation.yaml#/normal_test
