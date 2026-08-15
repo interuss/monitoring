@@ -12,7 +12,7 @@ An [`AuthAdapterResources`](../../../resources/communications/auth_adapter.py) u
 
 ### expectations
 
-An [`AccessTokensExpectationsResource`](../../../resources/communications/access_tokens_expectations.py) describing what is expected of the access tokens acquired
+An [`AccessTokensExpectationsResource`](../../../resources/communications/access_token_expectations.py) describing what is expected of the access tokens acquired
 
 ## Validate access tokens test case
 
