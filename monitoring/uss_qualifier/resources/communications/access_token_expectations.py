@@ -30,6 +30,8 @@ class Expectations(ImplicitDict):
 
     validates_against_public_key: Optional[str]
     """Access token signature should validate against this public key.
+
+    Note that this check is not algorithm-safe -- that is, the validation will be performed against whichever algorithm is specified in the header.  To ensure an appropriate algorithm was used to generate the access token, checking `alg` against an expected value is recommended.
     
     Can be a literal public key, or an http(s) URL pointing to a JWKS .json file, or a local PEM file; see fix_key in auth_validation.py."""
 
