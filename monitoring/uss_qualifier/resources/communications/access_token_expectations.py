@@ -20,26 +20,24 @@ class ClaimValuePair(ImplicitDict):
     equals_number_value: Optional[float]
     """The claim value is this number."""
 
+    beyond_request_time_offset: Optional[StringBasedTimeDelta]
+    """The claim should specify a numeric timestamp that is further in the future than the request time plus this delta."""
+
+    within_request_time_offset: Optional[StringBasedTimeDelta]
+    """The claim should specify a numeric timestamp that is prior to the request time plus this delta."""
+
 
 class Expectations(ImplicitDict):
-    alg: Optional[str]
-    """JWT `alg` header value must match this value (e.g., RS256)."""
-
     has_header_values: Optional[list[ClaimValuePair]]
     """Particular keys in the header satisfy these criteria."""
 
     validates_against_public_key: Optional[str]
     """Access token signature should validate against this public key.
 
-    Note that this check is not algorithm-safe -- that is, the validation will be performed against whichever algorithm is specified in the header.  To ensure an appropriate algorithm was used to generate the access token, checking `alg` against an expected value is recommended.
+    Note that this check is not algorithm-safe: the validation will be performed against whichever algorithm is specified in the header.
+    To ensure an appropriate algorithm was used to generate the access token, checking header key `alg` against an expected value is highly recommended.
     
     Can be a literal public key, or an http(s) URL pointing to a JWKS .json file, or a local PEM file; see fix_key in auth_validation.py."""
-
-    expires_in_more_than: Optional[StringBasedTimeDelta]
-    """The `exp` claim should be further in the future than the request time plus this delta."""
-
-    expires_in_less_than: Optional[StringBasedTimeDelta]
-    """The `exp` claim should be prior to the request time plus this delta."""
 
     has_claim_values: Optional[list[ClaimValuePair]]
     """Particular keys in the payload satisfy these criteria."""

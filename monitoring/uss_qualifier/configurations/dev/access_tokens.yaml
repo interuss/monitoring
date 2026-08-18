@@ -13,10 +13,11 @@ v1:
                   scopes:
                     - rid.inject_test_data
                 expectations:
-                  alg: RS256
                   has_header_values:
                     - claim: typ
                       equals_string_value: JWT
+                    - claim: alg
+                      equals_string_value: RS256
                   validates_against_public_key: |
                     -----BEGIN PUBLIC KEY-----
                     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtjrMt+vOxuqjOU+hwrVA
@@ -27,9 +28,10 @@ v1:
                     sS2i6b55j94hiPwwQ16GsAAWUT+ijezlHuGZU+OLYtYfoHy+4Ku31doQc0ujvtYO
                     JQIDAQAB
                     -----END PUBLIC KEY-----
-                  expires_in_more_than: 50m
-                  expires_in_less_than: 1h10m
                   has_claim_values:
+                    - claim: exp
+                      beyond_request_time_offset: 50m
+                      within_request_time_offset: 1h10m
                     - claim: iss
                       equals_string_value: dummy
                     - claim: sub

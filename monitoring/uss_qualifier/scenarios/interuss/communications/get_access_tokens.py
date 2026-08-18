@@ -77,18 +77,6 @@ class GetAccessTokens(TestScenario):
             if token and header and payload:
                 self.begin_test_step("Validate access token")
 
-                # --- Token Header Algorithm Expectation ---
-                if "alg" in expect.expectations and expect.expectations.alg:
-                    with self.check(
-                        "Token header algorithm", participants=participants
-                    ) as check:
-                        actual_alg = header.get("alg")
-                        if actual_alg != expect.expectations.alg:
-                            check.record_failed(
-                                summary="JWT 'alg' header claim does not match expectation",
-                                details=f"Expected algorithm: '{expect.expectations.alg}', Observed algorithm in JWT header: '{actual_alg}'.",
-                            )
-
                 # --- Token Header Values Expectation ---
                 if (
                     "has_header_values" in expect.expectations
@@ -98,7 +86,7 @@ class GetAccessTokens(TestScenario):
                         "Token header value", participants=participants
                     ) as check:
                         failures = self._evaluate_claims(
-                            header, expect.expectations.has_header_values
+                            header, expect.expectations.has_header_values, request_time
                         )
                         if failures:
                             check.record_failed(
@@ -144,70 +132,6 @@ class GetAccessTokens(TestScenario):
                                 details=str(e),
                             )
 
-                # --- Expiration Duration 'More Than' Expectation ---
-                if (
-                    "expires_in_more_than" in expect.expectations
-                    and expect.expectations.expires_in_more_than
-                ):
-                    with self.check(
-                        "Token expiration duration longer than",
-                        participants=participants,
-                    ) as check:
-                        exp = payload.get("exp")
-                        if exp is None or not isinstance(exp, (int, float)):
-                            check.record_failed(
-                                summary="JWT payload is missing a valid numeric 'exp' claim",
-                                details=f"Observed 'exp' in payload: {exp}",
-                            )
-                        else:
-                            exp_datetime = datetime.fromtimestamp(exp, UTC)
-                            min_exp_datetime = (
-                                request_time
-                                + expect.expectations.expires_in_more_than.timedelta
-                            )
-                            if exp_datetime < min_exp_datetime:
-                                check.record_failed(
-                                    summary="Access token expiration ('exp') is not sufficiently far in the future",
-                                    details=(
-                                        f"Token Request Time: {request_time}\n"
-                                        f"Minimum required offset: {expect.expectations.expires_in_more_than}\n"
-                                        f"Earliest allowed 'exp' timestamp: {min_exp_datetime}\n"
-                                        f"Observed 'exp' claim: {exp_datetime} (Delta remaining: {exp_datetime - request_time})"
-                                    ),
-                                )
-
-                # --- Expiration Duration 'Less Than' Expectation ---
-                if (
-                    "expires_in_less_than" in expect.expectations
-                    and expect.expectations.expires_in_less_than
-                ):
-                    with self.check(
-                        "Token expiration duration shorter than",
-                        participants=participants,
-                    ) as check:
-                        exp = payload.get("exp")
-                        if exp is None or not isinstance(exp, (int, float)):
-                            check.record_failed(
-                                summary="JWT payload is missing a valid numeric 'exp' claim",
-                                details=f"Observed 'exp' in payload: {exp}",
-                            )
-                        else:
-                            exp_datetime = datetime.fromtimestamp(exp, UTC)
-                            max_exp_datetime = (
-                                request_time
-                                + expect.expectations.expires_in_less_than.timedelta
-                            )
-                            if exp_datetime > max_exp_datetime:
-                                check.record_failed(
-                                    summary="Access token expiration ('exp') exceeds the maximum allowed future duration",
-                                    details=(
-                                        f"Token Request Time: {request_time}\n"
-                                        f"Maximum permitted offset: {expect.expectations.expires_in_less_than}\n"
-                                        f"Latest allowed 'exp' timestamp: {max_exp_datetime}\n"
-                                        f"Observed 'exp' claim: {exp_datetime} (Delta remaining: {exp_datetime - request_time})"
-                                    ),
-                                )
-
                 # --- Token Payload Claim Values Expectation ---
                 if (
                     "has_claim_values" in expect.expectations
@@ -217,7 +141,7 @@ class GetAccessTokens(TestScenario):
                         "Token payload claim value", participants=participants
                     ) as check:
                         failures = self._evaluate_claims(
-                            payload, expect.expectations.has_claim_values
+                            payload, expect.expectations.has_claim_values, request_time
                         )
                         if failures:
                             check.record_failed(
@@ -231,7 +155,10 @@ class GetAccessTokens(TestScenario):
         self.end_test_scenario()
 
     def _evaluate_claims(
-        self, dictionary: dict, expectations: list[ClaimValuePair]
+        self,
+        dictionary: dict,
+        expectations: list[ClaimValuePair],
+        request_time: datetime,
     ) -> list[str]:
         """Evaluates a dictionary against a set of ClaimValuePair expectations.
 
@@ -268,5 +195,33 @@ class GetAccessTokens(TestScenario):
                     failures.append(
                         f"Claim '{claim_name}': Expected numeric value {pair.equals_number_value}, but observed {actual_val}."
                     )
+
+            if "beyond_request_time_offset" in pair and pair.beyond_request_time_offset:
+                if not isinstance(actual_val, (int, float)):
+                    failures.append(
+                        f"Claim '{claim_name}' expected to be numeric time, but observed type '{type(actual_val).__name__}'."
+                    )
+                else:
+                    actual_datetime = datetime.fromtimestamp(actual_val, UTC)
+                    dt_min = pair.beyond_request_time_offset.timedelta
+                    dt_actual = actual_datetime - request_time
+                    if dt_actual < dt_min:
+                        failures.append(
+                            f"Claim '{claim_name}' expected to be at least {dt_min.total_seconds() / 60:.1f} minutes past request time {request_time.timestamp()}, but was {dt_actual.total_seconds() / 60:.1f} minutes past request time at {actual_val} instead."
+                        )
+
+            if "within_request_time_offset" in pair and pair.within_request_time_offset:
+                if not isinstance(actual_val, (int, float)):
+                    failures.append(
+                        f"Claim '{claim_name}' expected to be numeric time, but observed type '{type(actual_val).__name__}'."
+                    )
+                else:
+                    actual_datetime = datetime.fromtimestamp(actual_val, UTC)
+                    dt_max = pair.within_request_time_offset.timedelta
+                    dt_actual = actual_datetime - request_time
+                    if dt_actual > dt_max:
+                        failures.append(
+                            f"Claim '{claim_name}' expected to be more than {dt_max.total_seconds() / 60:.1f} minutes past request time {request_time.timestamp()}, but was {dt_actual.total_seconds() / 60:.1f} minutes past request time at {actual_val} instead."
+                        )
 
         return failures

@@ -7,6 +7,14 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
+    "beyond_request_time_offset": {
+      "description": "The claim should specify a numeric timestamp that is further in the future than the request time plus this delta.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "claim": {
       "description": "The JWT claim that is expected to have a particular value.",
       "type": "string"
@@ -20,6 +28,14 @@
     },
     "equals_string_value": {
       "description": "The claim value is this string.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "within_request_time_offset": {
+      "description": "The claim should specify a numeric timestamp that is prior to the request time plus this delta.",
+      "format": "duration",
       "type": [
         "string",
         "null"
