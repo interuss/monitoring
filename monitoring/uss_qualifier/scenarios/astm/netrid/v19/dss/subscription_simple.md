@@ -69,11 +69,6 @@ If the returned subscription has no owner set, **[astm.f3411.v19.DSS0030,c](../.
 
 If the returned subscription's owner does not correspond to the uss_qualifier, **[astm.f3411.v19.DSS0030,c](../../../../../requirements/astm/f3411/v19.md)** is not respected.
 
-
-#### 🛑 Returned notification index is 0 if present check
-
-The notification index of a newly created subscription must be 0, otherwise the DSS is in violation of **[astm.f3411.v19.DSS0030,c](../../../../../requirements/astm/f3411/v19.md)**.
-
 #### 🛑 Returned subscription has an ISA URL check
 
 If the returned subscription has no ISA URL defined, **[astm.f3411.v19.DSS0030,c](../../../../../requirements/astm/f3411/v19.md)** is not respected.

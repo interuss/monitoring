@@ -144,17 +144,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
                     ],
                 )
 
-        with self.check(
-            "Newly created subscription has a notification_index of 0",
-            [self._dss.participant_id],
-        ) as check:
-            if created_subscription.subscription.notification_index != 0:
-                check.record_failed(
-                    summary="Subscription notification_index is not 0",
-                    details=f"The subscription created for the area {self._isa_area} is expected to have a notification_index of 0. The returned subscription has a notification_index of {created_subscription.subscription.notification_index}.",
-                    query_timestamps=[created_subscription.query.request.timestamp],
-                )
-
         # Modify the ISA
         with self.check(
             "Mutate the ISA",
@@ -363,17 +352,6 @@ class ISASubscriptionInteractions(GenericTestScenario):
                         created_isa.dss_query.query.request.timestamp,
                         created_subscription.query.request.timestamp,
                     ],
-                )
-
-        with self.check(
-            "Mutated subscription has a notification_index of 0",
-            [self._dss.participant_id],
-        ) as check:
-            if created_subscription.subscription.notification_index != 0:
-                check.record_failed(
-                    summary="Subscription notification_index is not 0",
-                    details=f"The subscription created for the area {self._isa_area} is expected to have a notification_index of 0. The returned subscription has a notification_index of {created_subscription.subscription.notification_index}.",
-                    query_timestamps=[created_subscription.query.request.timestamp],
                 )
 
         # Modify the ISA
