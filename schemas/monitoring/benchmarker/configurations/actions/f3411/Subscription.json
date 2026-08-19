@@ -1,0 +1,48 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/actions/f3411/Subscription.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.actions.f3411.Subscription, as defined in monitoring/benchmarker/configurations/actions/f3411.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "area": {
+      "$ref": "../../../../monitorlib/geo/LatLngBoundingBox.json",
+      "description": "Horizontal area this subscription should cover."
+    },
+    "duration": {
+      "description": "Duration of the subscription, from the time it is created.",
+      "format": "duration",
+      "type": "string"
+    },
+    "max_alt": {
+      "$ref": "../../../../monitorlib/geo/Altitude.json",
+      "description": "Altitude above which this subscription should not apply."
+    },
+    "min_alt": {
+      "$ref": "../../../../monitorlib/geo/Altitude.json",
+      "description": "Altitude below which this subscription should not apply."
+    },
+    "rid_version": {
+      "enum": [
+        "F3411-19",
+        "F3411-22a"
+      ],
+      "type": "string"
+    },
+    "subscription_id": {
+      "description": "ID of the single subscription to create.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "area",
+    "duration",
+    "max_alt",
+    "min_alt",
+    "rid_version",
+    "subscription_id"
+  ],
+  "type": "object"
+}

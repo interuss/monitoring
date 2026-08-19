@@ -3,6 +3,8 @@ import os
 
 from monitoring.monitorlib.formatting import make_datetime
 
+TESTDUMMY_URL_PREFIX = "https://testdummy.interuss.org/interuss/"
+
 
 def assert_datetimes_are_equal(t1, t2, tolerance_seconds: float = 0) -> None:
     try:
@@ -34,4 +36,4 @@ def make_fake_url(suffix: str | None = None, frames_above: int = 1) -> str:
         layers = layers[layers.index("monitoring") :]
     if suffix is not None:
         layers.append(suffix)
-    return "https://testdummy.interuss.org/interuss/" + "/".join(layers)
+    return TESTDUMMY_URL_PREFIX + "/".join(layers)

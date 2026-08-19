@@ -2,7 +2,8 @@ from typing import Optional
 
 from implicitdict import ImplicitDict
 
-from monitoring.benchmarker.configurations.actions import (
+from monitoring.benchmarker.configurations.actions.action import (
+    BenchmarkActionName,
     BenchmarkActionSpecification,
 )
 from monitoring.benchmarker.configurations.artifacts.artifact import (
@@ -34,3 +35,9 @@ class BenchmarkConfiguration(ImplicitDict):
 
     artifacts: Optional[list[ArtifactSpecification]]
     """Artifacts to produce from the data collected during the benchmarker run."""
+
+    setup_actions: Optional[list[BenchmarkActionName]]
+    """Actions to perform before beginning scenarios."""
+
+    teardown_actions: Optional[list[BenchmarkActionName]]
+    """Actions to perform after completing all scenarios."""

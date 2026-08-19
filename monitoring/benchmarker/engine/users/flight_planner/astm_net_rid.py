@@ -20,7 +20,7 @@ from monitoring.benchmarker.engine.users.framework import VirtualUser
 from monitoring.monitorlib.fetch.rid import ISA
 from monitoring.monitorlib.geo import get_latlngrect_vertices
 from monitoring.monitorlib.mutate.rid import ISAChange, delete_isa, put_isa
-from monitoring.monitorlib.testing import make_fake_url
+from monitoring.monitorlib.testing import TESTDUMMY_URL_PREFIX, make_fake_url
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
     DSSInstance,
     DSSInstanceResource,
@@ -140,6 +140,7 @@ class ASTMNetRIDHandler:
             utm_client=dss_instance.client,
             isa_version=None,
             participant_id=dss_instance.participant_id,
+            do_not_notify=TESTDUMMY_URL_PREFIX,
         )
 
         isa_success = isa_change.dss_query.success
@@ -186,6 +187,7 @@ class ASTMNetRIDHandler:
                 rid_version=dss_instance.rid_version,
                 utm_client=dss_instance.client,
                 participant_id=dss_instance.participant_id,
+                do_not_notify=TESTDUMMY_URL_PREFIX,
             )
 
             del_success = del_change.dss_query.success
