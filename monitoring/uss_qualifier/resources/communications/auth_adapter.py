@@ -27,7 +27,7 @@ class AuthAdapterSpecification(ImplicitDict):
     """List of scopes the user in the auth spec is authorized to obtain."""
 
     participant_id: Optional[ParticipantID]
-    """Identify of participant responsible for providing the authorization source used by this auth adapter."""
+    """Identifier of participant responsible for providing the authorization source used by this auth adapter."""
 
 
 class AuthAdapterResource(Resource[AuthAdapterSpecification]):
