@@ -203,6 +203,22 @@ jobs:
         cd monitoring/uss_qualifier
         make test
 
+  uss_qualifier-access_tokens-test:
+    name: uss_qualifier configurations.dev.access_tokens tests
+    needs:
+      - build-monitoring-images
+    permissions:
+      contents: read
+    uses: ./.github/workflows/monitoring-test.yml
+    with:
+      name: uss_qualifier-access_tokens-test
+      script: |
+        export CONFIG_NAME="configurations.dev.access_tokens"
+
+        cd monitoring/uss_qualifier
+        make test
+
+
   uss_qualifier-dss_probing-test:
     name: uss_qualifier configurations.dev.dss_probing tests
     needs:
@@ -357,6 +373,7 @@ jobs:
       - uss_qualifier-geospatial_comprehension-test
       - uss_qualifier-general_flight_auth-test
       - uss_qualifier-message_signing-test
+      - uss_qualifier-access_tokens-test
       - uss_qualifier-dss_probing-test
       - uss_qualifier-f3548_self_contained-test
       - uss_qualifier-utm_implementation_us-test

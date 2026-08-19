@@ -5,6 +5,7 @@ from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.auth import make_auth_adapter
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.resource import MissingResourceError, Resource
 
 
@@ -25,10 +26,14 @@ class AuthAdapterSpecification(ImplicitDict):
     scopes_authorized: list[str]
     """List of scopes the user in the auth spec is authorized to obtain."""
 
+    participant_id: Optional[ParticipantID]
+    """Identifier of participant responsible for providing the authorization source used by this auth adapter."""
+
 
 class AuthAdapterResource(Resource[AuthAdapterSpecification]):
     adapter: infrastructure.AuthAdapter
     scopes: set[str]
+    participant_id: ParticipantID | None = None
 
     def __init__(self, specification: AuthAdapterSpecification, resource_origin: str):
         super().__init__(specification, resource_origin)
@@ -50,6 +55,8 @@ class AuthAdapterResource(Resource[AuthAdapterSpecification]):
             raise ValueError("No auth spec was declared")
         self.adapter = make_auth_adapter(spec)
         self.scopes = set(specification.scopes_authorized)
+        if "participant_id" in specification and specification.participant_id:
+            self.participant_id = specification.participant_id
 
     def assert_scopes_available(
         self, scopes_required: dict[str, str], consumer_name: str

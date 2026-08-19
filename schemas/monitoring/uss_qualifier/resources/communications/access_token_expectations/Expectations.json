@@ -1,0 +1,39 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/communications/access_token_expectations/Expectations.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.communications.access_token_expectations.Expectations, as defined in monitoring/uss_qualifier/resources/communications/access_token_expectations.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "has_claim_values": {
+      "description": "Particular keys in the payload satisfy these criteria.",
+      "items": {
+        "$ref": "ClaimValuePair.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "has_header_values": {
+      "description": "Particular keys in the header satisfy these criteria.",
+      "items": {
+        "$ref": "ClaimValuePair.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "validates_against_public_key": {
+      "description": "Access token signature should validate against this public key.\n\nNote that this check is not algorithm-safe: the validation will be performed against whichever algorithm is specified in the header.\nTo ensure an appropriate algorithm was used to generate the access token, checking header key `alg` against an expected value is highly recommended.\n\nCan be a literal public key, or an http(s) URL pointing to a JWKS .json file, or a local PEM file; see fix_key in auth_validation.py.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

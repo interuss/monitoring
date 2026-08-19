@@ -1,0 +1,49 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/communications/access_token_expectations/ClaimValuePair.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.communications.access_token_expectations.ClaimValuePair, as defined in monitoring/uss_qualifier/resources/communications/access_token_expectations.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "beyond_request_time_offset": {
+      "description": "The claim should specify a numeric timestamp that is further in the future than the request time plus this delta.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "claim": {
+      "description": "The JWT claim that is expected to have a particular value.",
+      "type": "string"
+    },
+    "equals_number_value": {
+      "description": "The claim value is this number.",
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "equals_string_value": {
+      "description": "The claim value is this string.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "within_request_time_offset": {
+      "description": "The claim should specify a numeric timestamp that is prior to the request time plus this delta.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "claim"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,24 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/communications/access_token_expectations/AccessTokenExpectations.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.communications.access_token_expectations.AccessTokenExpectations, as defined in monitoring/uss_qualifier/resources/communications/access_token_expectations.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "expectations": {
+      "$ref": "Expectations.json",
+      "description": "...has these expectations."
+    },
+    "request": {
+      "$ref": "AccessTokenRequest.json",
+      "description": "A token requested in this way..."
+    }
+  },
+  "required": [
+    "expectations",
+    "request"
+  ],
+  "type": "object"
+}
