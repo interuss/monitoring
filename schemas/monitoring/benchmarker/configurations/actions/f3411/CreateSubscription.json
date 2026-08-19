@@ -1,0 +1,27 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/actions/f3411/CreateSubscription.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Create a subscription.\n\nmonitoring.benchmarker.configurations.actions.f3411.CreateSubscription, as defined in monitoring/benchmarker/configurations/actions/f3411.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "mode": {
+      "description": "Desired creation behavior.",
+      "enum": [
+        "GetDeleteCreate"
+      ],
+      "type": "string"
+    },
+    "subscription": {
+      "$ref": "Subscription.json",
+      "description": "Characteristics of subscription to create."
+    }
+  },
+  "required": [
+    "mode",
+    "subscription"
+  ],
+  "type": "object"
+}

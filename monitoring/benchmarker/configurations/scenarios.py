@@ -2,7 +2,7 @@ from typing import Optional
 
 from implicitdict import ImplicitDict
 
-from monitoring.benchmarker.configurations.actions import BenchmarkActionName
+from monitoring.benchmarker.configurations.actions.action import BenchmarkActionName
 from monitoring.benchmarker.configurations.loads import BenchmarkLoadName
 
 

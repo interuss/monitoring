@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from loguru import logger
 
-from monitoring.benchmarker.configurations.actions import BenchmarkActionName
+from monitoring.benchmarker.configurations.actions.action import BenchmarkActionName
 from monitoring.benchmarker.configurations.configuration import BenchmarkConfiguration
 from monitoring.benchmarker.engine.actions.actions import run_scenario_actions
 from monitoring.benchmarker.engine.coordination import Coordinator
@@ -48,6 +48,22 @@ async def _run_benchmark_async(
     coordinator = Coordinator(coordination_groups)
 
     try:
+        # Run benchmark setup actions
+        config_setup_actions = (
+            config.setup_actions if "setup_actions" in config else None
+        )
+        run_scenario_actions(
+            config_setup_actions,
+            action_specs,
+            action_invocations,
+            config,
+            scenarios_reports,
+            output_dir,
+            codebase_version,
+            commit_hash,
+            resource_pool,
+        )
+
         for scenario_spec in config.scenarios:
             logger.info(
                 f"========== Starting Scenario '{scenario_spec.name}' =========="
@@ -64,6 +80,7 @@ async def _run_benchmark_async(
                 output_dir,
                 codebase_version,
                 commit_hash,
+                resource_pool,
             )
 
             # Run load
@@ -107,13 +124,31 @@ async def _run_benchmark_async(
                 output_dir,
                 codebase_version,
                 commit_hash,
+                resource_pool,
             )
 
             logger.info(
                 f"========== Completed Scenario '{scenario_spec.name}' =========="
             )
     finally:
-        executor.shutdown(wait=True)
+        try:
+            # Run benchmark teardown actions
+            config_teardown_actions = (
+                config.teardown_actions if "teardown_actions" in config else None
+            )
+            run_scenario_actions(
+                config_teardown_actions,
+                action_specs,
+                action_invocations,
+                config,
+                scenarios_reports,
+                output_dir,
+                codebase_version,
+                commit_hash,
+                resource_pool,
+            )
+        finally:
+            executor.shutdown(wait=True)
 
     run_report = BenchmarkRunReport(
         codebase_version=codebase_version,
