@@ -22,6 +22,7 @@ from monitoring.monitorlib.fetch.rid import (
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.mutate.rid import ChangedSubscription, ISAChange
 from monitoring.monitorlib.rid import RIDVersion
+from monitoring.uss_qualifier.resources.astm.dss import NotificationIndexImplementation
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
 from monitoring.uss_qualifier.scenarios.astm.netrid.common.dss.isa_validator import (
     ISAValidator,
@@ -54,6 +55,10 @@ class DSSWrapper:
     @property
     def base_url(self) -> str:
         return self._dss.base_url
+
+    @property
+    def notification_index_implementation(self) -> NotificationIndexImplementation:
+        return self._dss.notification_index_implementation
 
     # TODO: QueryError is not actually raised for RID functions, this function and its uses should be removed
     def _handle_query_error(
