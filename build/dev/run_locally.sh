@@ -24,6 +24,9 @@ export NUM_USS=${NUM_USS:-2}
 NUM_NODES=${NUM_NODES:-1}
 DB_TYPE=${DB_TYPE:-crdb}
 
+export DSS_IMAGE="${DSS_IMAGE:-interuss/dss:v0.23.0-rc5}"
+export CORE_SERVICE_EXTRA_FLAGS="${CORE_SERVICE_EXTRA_FLAGS:---enable_time_based_notification_index}"
+
 DC_COMMAND=$*
 
 if [[ ! "$DC_COMMAND" ]]; then
