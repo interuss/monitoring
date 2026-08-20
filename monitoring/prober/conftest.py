@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 from collections.abc import Callable
 
 import pytest
@@ -107,6 +108,14 @@ def pytest_addoption(parser):
         nargs="?",
         default=False,
         dest="scd_time_based_notification_index",
+    )
+
+    parser.addoption(
+        "--heavy_traffic_concurrent_workers",
+        help="Number of concurrent workers for heavy traffic tests, 0 to disable them.",
+        type=int,
+        default=10,
+        dest="heavy_traffic_concurrent_workers",
     )
 
 
@@ -273,3 +282,25 @@ def scd_api(pytestconfig) -> str:
 @pytest.fixture(scope="session")
 def time_based_notification_index(pytestconfig) -> bool:
     return pytestconfig.getoption("scd_time_based_notification_index")
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "heavy_traffic: requires --heavy_traffic_concurrent_workers"
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("heavy_traffic_concurrent_workers") > 0:
+        return
+    kept, deselected = [], []
+    for item in items:
+        (deselected if "heavy_traffic" in item.keywords else kept).append(item)
+    if deselected:
+        config.hook.pytest_deselected(items=deselected)
+        items[:] = kept
+
+
+@pytest.fixture(scope="session")
+def heavy_traffic_semaphore(pytestconfig) -> asyncio.Semaphore:
+    return asyncio.Semaphore(pytestconfig.getoption("heavy_traffic_concurrent_workers"))
