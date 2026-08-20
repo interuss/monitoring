@@ -47,8 +47,6 @@ trap on_sigint SIGINT
 
 echo "Start mock system"
 echo "============="
-export DSS_IMAGE="${DSS_IMAGE:-interuss/dss:v0.23.0-rc4}"
-export CORE_SERVICE_EXTRA_FLAGS="${CORE_SERVICE_EXTRA_FLAGS:---enable_time_based_notification_index}"
 make start-locally
 make start-uss-mocks
 
