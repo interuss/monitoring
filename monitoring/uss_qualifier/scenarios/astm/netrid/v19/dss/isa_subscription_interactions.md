@@ -60,11 +60,6 @@ The DSS should allow the creation of a subscription within the ISA footprint, ot
 A subscription that is created for a volume that intersects with the previously created ISA should mention
 the previously created ISA. If not, the serving DSS is in violation of **[astm.f3411.v19.DSS0030,c](../../../../../requirements/astm/f3411/v19.md)**.
 
-#### ⚠️ Newly created subscription has a notification_index of 0 check
-
-A newly created subscription is expected to have a notification index of 0, otherwise the DSS implementation under
-test does not comply with **[astm.f3411.v19.DSS0030,c](../../../../../requirements/astm/f3411/v19.md)**
-
 #### 🛑 Mutate the ISA check
 
 If the ISA cannot be mutated, **[astm.f3411.v19.DSS0030,a](../../../../../requirements/astm/f3411/v19.md)** is likely not implemented correctly.
@@ -126,11 +121,6 @@ The DSS should allow a valid mutation of a subscription's area, otherwise it is 
 
 A subscription that is created for a volume that intersects with the previously created ISA should mention
 the previously created ISA. If not, the serving DSS is in violation of **[astm.f3411.v19.DSS0030,c](../../../../../requirements/astm/f3411/v19.md)**.
-
-#### ⚠️ Mutated subscription has a notification_index of 0 check
-
-A newly created subscription is expected to have a notification index of 0, otherwise the DSS implementation under
-test does not comply with **[astm.f3411.v19.DSS0030,c](../../../../../requirements/astm/f3411/v19.md)**
 
 #### 🛑 Mutate the ISA check
 

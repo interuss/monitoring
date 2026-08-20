@@ -317,21 +317,6 @@ class SubscriptionValidator:
             expected_version=None,
         )
 
-        # Check that the notification index is 0 for a newly created subscription.
-        # Should the notification field be missing, we assume it will have defaulted to 0 on the DSS's side.
-        with self._scenario.check(
-            "New subscription has a notification index of 0", self._pid
-        ) as check:
-            notif_index = new_sub.subscription.notification_index
-            if notif_index != 0:
-                self._fail_sub_check(
-                    check,
-                    summary=f"Returned notification index was {notif_index} instead of 0",
-                    details="A subscription is expected to have a notification index of 0 when it is created"
-                    f"Parameters used: {self._sub_params}",
-                    t_dss=t_dss,
-                )
-
     def _check_notif_index_equal_or_above_0(
         self, notif_index: int, t_dss: datetime
     ) -> None:

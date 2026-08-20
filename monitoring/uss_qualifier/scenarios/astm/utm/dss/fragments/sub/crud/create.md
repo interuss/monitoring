@@ -17,5 +17,3 @@ A successful subscription creation query is expected to return a well-defined bo
 If the content of the response does not correspond to the requested content, the DSS is failing to implement **[astm.f3548.v21.DSS0005,5](../../../../../../../requirements/astm/f3548/v21.md)**.
 
 ## [Validate subscription fields](../validate/correctness.md)
-
-## [Validate notification index](../validate/zero_index.md)

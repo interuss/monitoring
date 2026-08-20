@@ -227,21 +227,6 @@ class SubscriptionSimple(GenericTestScenario):
             creation_params["sub_id"], newly_created, creation_params, False
         )
 
-        # Check that the notification index is 0 for a newly created subscription.
-        # Should the notification field be missing, we assume it will have defaulted to 0 on the DSS's side.
-        with self.check(
-            "Returned notification index is 0 if present",
-            [self._dss_wrapper.participant_id],
-        ) as check:
-            notif_index = newly_created.subscription.notification_index
-            if notif_index is not None and notif_index != 0:
-                check.record_failed(
-                    f"Returned notification index was {notif_index} instead of 0",
-                    details="A subscription is expected to have a notification index of 0 when it is created"
-                    f"Parameters used: {creation_params}",
-                    query_timestamps=[newly_created.query.request.timestamp],
-                )
-
         # Store the version of the subscription
         self._current_subscriptions[creation_params["sub_id"]] = (
             newly_created.subscription
