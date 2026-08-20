@@ -31,7 +31,7 @@ The following environment variables can be configured to customize the simulated
 * `NUM_USS`: Number of simulated USS instances (default: `2`). Note that the standard mock ecosystem requires at least 2 USSs.
 * `NUM_NODES`: Number of nodes per USS database/DSS cluster (default: `1`).
 * `DB_TYPE`: Datastore backend type. Options are `crdb` (CockroachDB), `ybdb` (Yugabyte), or `raft` (built-in raft store, no separate database container) (default: `crdb`).
-* `DSS_IMAGE`: Docker image used for the DSS core service and bootstrappers (default: `interuss/dss:v0.22.0`). Override to test a locally built image, e.g. `interuss-local/dss`.
+* `DSS_IMAGE`: Docker image used for the DSS core service and bootstrappers. Override to test a locally built image, e.g. `interuss-local/dss`.
 * `INTRA_USS_NETEM_CONF`: `tc netem` configuration rules applied to traffic between database nodes of the *same* USS (default: `<none>`).
   * *Sensible values (low latency/jitter, very low loss):* `"delay 250us 25us 25% distribution normal loss 0.0025% 10%"`
 * `INTER_USS_NETEM_CONF`: `tc netem` configuration rules applied to traffic between database nodes of *different* USSs (default: `<none>`).

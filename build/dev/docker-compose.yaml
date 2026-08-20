@@ -1,4 +1,4 @@
-# This Docker Compose file must be used through `./run_locally.sh`.
+# This Docker Compose file is intended to be used through `./run_locally.sh` to supply all required environment variables.
 
 services:
 
@@ -85,7 +85,7 @@ services:
     networks: [dss_internal_network]
 
   rid_bootstrapper:
-    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
+    image: ${DSS_IMAGE:?}
     profiles: [bootstrap-crdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/rid --db_version latest --cockroach_host db1.uss1.localutm"
     depends_on:
@@ -96,7 +96,7 @@ services:
       disable: true
 
   scd_bootstrapper:
-    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
+    image: ${DSS_IMAGE:?}
     profiles: [bootstrap-crdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/scd --db_version latest --cockroach_host db1.uss1.localutm"
     depends_on:
@@ -107,7 +107,7 @@ services:
       disable: true
 
   aux_bootstrapper:
-    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
+    image: ${DSS_IMAGE:?}
     profiles: [bootstrap-crdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/aux_ --db_version latest --cockroach_host db1.uss1.localutm"
     depends_on:
@@ -118,7 +118,7 @@ services:
       disable: true
 
   rid_bootstrapper-ybdb:
-    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
+    image: ${DSS_IMAGE:?}
     profiles: [bootstrap-ybdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/rid --db_version latest --datastore_host db1.uss1.localutm --datastore_user yugabyte --datastore_port 5433"
     restart: on-failure
@@ -127,7 +127,7 @@ services:
       disable: true
 
   scd_bootstrapper-ybdb:
-    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
+    image: ${DSS_IMAGE:?}
     profiles: [bootstrap-ybdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/scd --db_version latest --datastore_host db1.uss1.localutm --datastore_user yugabyte --datastore_port 5433"
     restart: on-failure
@@ -136,7 +136,7 @@ services:
       disable: true
 
   aux_bootstrapper-ybdb:
-    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
+    image: ${DSS_IMAGE:?}
     profiles: [bootstrap-ybdb]
     entrypoint: sh -c "/usr/bin/db-manager migrate --schemas_dir=/db-schemas/yugabyte/aux_ --db_version latest --datastore_host db1.uss1.localutm --datastore_user yugabyte --datastore_port 5433"
     restart: on-failure
@@ -145,7 +145,7 @@ services:
       disable: true
 
   dss:
-    image: ${DSS_IMAGE:-interuss/dss:v0.22.0}
+    image: ${DSS_IMAGE:?}
     command: /startup/core_service.sh ${DEBUG_ON:-0}
     profiles: [ crdb, ybdb, raft ]
     restart: always
