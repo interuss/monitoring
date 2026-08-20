@@ -214,12 +214,13 @@ def _build_mutate_request(idx, op_id, op_map, scd_session, scd_api):
     return req
 
 
-async def _delete_operation_async(op_id, scd_session_async, scd_api):
+async def _delete_operation_async(op_id, scd_session_async, scd_api, semaphore):
     if scd_api == scd.API_0_3_17:
-        result = await scd_session_async.delete(
-            f"/operational_intent_references/{op_id}/{ovn_map[op_id]}",
-            scope=SCOPE_SC,
-        )
+        async with semaphore:
+            result = await scd_session_async.delete(
+                f"/operational_intent_references/{op_id}/{ovn_map[op_id]}",
+                scope=SCOPE_SC,
+            )
     else:
         raise ValueError(f"Unsupported SCD API version: {scd_api}")
     return result
@@ -493,7 +494,7 @@ def test_mutate_ops_concurrent(
 # Mutations: Operations with ids in OP_IDS deleted
 @for_api_versions(scd.API_0_3_17)
 @depends_on(test_mutate_ops_concurrent)
-def test_delete_op_concurrent(ids, scd_api, scd_session_async):
+def test_delete_op_concurrent(ids, scd_api, scd_session_async, heavy_traffic_semaphore):
     start_time = datetime.datetime.now(datetime.UTC)
     op_resp_map = {}
 
@@ -502,7 +503,9 @@ def test_delete_op_concurrent(ids, scd_api, scd_session_async):
     results = loop.run_until_complete(
         asyncio.gather(
             *[
-                _delete_operation_async(op_id, scd_session_async, scd_api)
+                _delete_operation_async(
+                    op_id, scd_session_async, scd_api, heavy_traffic_semaphore
+                )
                 for op_id in map(ids, OP_TYPES)
             ]
         )
