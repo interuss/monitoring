@@ -51,6 +51,7 @@ from monitoring.monitorlib.infrastructure import (
 from monitoring.monitorlib.inspection import calling_function_name, fullname
 from monitoring.monitorlib.mutate import scd as mutate
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
+from monitoring.uss_qualifier.resources.astm.dss import NotificationIndexImplementation
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.resource import Resource
 
@@ -70,6 +71,11 @@ class DSSInstanceSpecification(ImplicitDict):
 
     timeout_seconds: Optional[float]
     """If specified, number of seconds to allow before timing out requests to this DSS instance."""
+
+    notification_index_implementation: Optional[NotificationIndexImplementation]
+    """Style of implementation this instance uses for notification index.
+    
+    If not specified, TimeBased is assumed."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)

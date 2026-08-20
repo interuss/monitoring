@@ -11,6 +11,17 @@
       "description": "Base URL for the DSS instance according to the ASTM F3548-21 API",
       "type": "string"
     },
+    "notification_index_implementation": {
+      "description": "Style of implementation this instance uses for notification index.\n\nIf not specified, TimeBased is assumed.",
+      "enum": [
+        "ZeroBasedIncrementPerDispatch",
+        "TimeBased"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "participant_id": {
       "description": "ID of the USS responsible for this DSS instance",
       "type": "string"

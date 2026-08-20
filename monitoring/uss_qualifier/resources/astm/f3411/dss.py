@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
-from implicitdict import ImplicitDict
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.reports.report import ParticipantID
+from monitoring.uss_qualifier.resources.astm.dss import NotificationIndexImplementation
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.resource import Resource
 
@@ -22,6 +23,11 @@ class DSSInstanceSpecification(ImplicitDict):
     base_url: str
     """Base URL for the DSS instance according to the ASTM F3411 API appropriate to the specified rid_version"""
 
+    notification_index_implementation: Optional[NotificationIndexImplementation]
+    """Style of implementation this instance uses for notification index.
+    
+    If not specified, TimeBased is assumed."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         try:
@@ -35,6 +41,7 @@ class DSSInstance:
     rid_version: RIDVersion
     base_url: str
     client: infrastructure.UTMClientSession
+    notification_index_implementation: NotificationIndexImplementation
 
     def __init__(
         self,
@@ -42,17 +49,21 @@ class DSSInstance:
         base_url: str,
         rid_version: RIDVersion,
         client: UTMClientSession,
+        notification_index_implementation: NotificationIndexImplementation,
     ):
         self.participant_id = participant_id
         self.base_url = base_url
         self.rid_version = rid_version
         self.client = client
+        self.notification_index_implementation = notification_index_implementation
 
     def is_same_as(self, other: DSSInstance) -> bool:
         return (
             self.participant_id == other.participant_id
             and self.rid_version == other.rid_version
             and self.base_url == other.base_url
+            and self.notification_index_implementation
+            == other.notification_index_implementation
         )
 
 
@@ -85,6 +96,10 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
             infrastructure.utm_client_session_factory.get_session(
                 specification.base_url, auth_adapter.adapter
             ),
+            specification.notification_index_implementation
+            if "notification_index_implementation" in specification
+            and specification.notification_index_implementation
+            else NotificationIndexImplementation.TimedBased,
         )
 
     @classmethod

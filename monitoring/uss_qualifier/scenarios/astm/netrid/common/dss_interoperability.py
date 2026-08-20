@@ -11,6 +11,7 @@ import s2sphere
 from monitoring.monitorlib.fetch.rid import ISA
 from monitoring.monitorlib.geo import get_latlngrect_vertices, make_latlng_rect
 from monitoring.uss_qualifier.resources import PlanningAreaResource
+from monitoring.uss_qualifier.resources.astm.dss import NotificationIndexImplementation
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
     DSSInstanceResource,
     DSSInstancesResource,
@@ -308,7 +309,7 @@ class DSSInteroperability(GenericTestScenario):
             # check data synchronization
             def get_fail_params(
                 field_name: str,
-                primary_sub_field_value: str,
+                primary_sub_field_value: object,
                 other_sub_field_value: object,
             ) -> dict:
                 return dict(
@@ -371,16 +372,35 @@ class DSSInteroperability(GenericTestScenario):
                 [dss.participant_id],
             ) as check:
                 if (
-                    primary_sub.subscription.raw.notification_index
-                    != other_sub.subscription.raw.notification_index
+                    dss.notification_index_implementation
+                    != self._dss_primary.notification_index_implementation
                 ):
                     check.record_failed(
-                        **get_fail_params(
-                            "notification_index",
-                            primary_sub.subscription.raw.notification_index,
-                            other_sub.subscription.raw.notification_index,
-                        )
+                        summary="Incompatible notification index implementations",
+                        details=f"All DSS instances in a pool must use the same notification index implementation to achieve synchronized notification count behavior, but DSS for {dss.participant_id} uses {dss.notification_index_implementation.value} while DSS for {self._dss_primary.participant_id} uses {self._dss_primary.notification_index_implementation.value}",
                     )
+                elif (
+                    dss.notification_index_implementation
+                    == NotificationIndexImplementation.ZeroBasedIncrementPerDispatch
+                ):
+                    primary_index = (
+                        primary_sub.subscription.raw.notification_index
+                        if primary_sub.subscription
+                        and primary_sub.subscription.raw.notification_index
+                        else 0
+                    )
+                    other_index = (
+                        other_sub.subscription.raw.notification_index
+                        if other_sub.subscription
+                        and other_sub.subscription.raw.notification_index
+                        else 0
+                    )
+                    if primary_index != other_index:
+                        check.record_failed(
+                            **get_fail_params(
+                                "notification_index", primary_index, other_index
+                            )
+                        )
 
             with self.check(
                 "Subscription[P] start/end times are properly synchronized with all DSS",
