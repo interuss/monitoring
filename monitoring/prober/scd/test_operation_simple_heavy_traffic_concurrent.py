@@ -16,6 +16,8 @@ import datetime
 import inspect
 import json
 
+import pytest
+
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.geo import Circle
 from monitoring.monitorlib.geotemporal import Volume4D
@@ -38,9 +40,8 @@ OP_TYPES = [
     register_resource_type(110 + i, f"Operational intent {i}") for i in range(20)
 ]
 GROUP_SIZE = len(OP_TYPES) // 3 + (1 if len(OP_TYPES) % 3 > 0 else 0)
-# Semaphore is added to limit the number of simultaneous requests,
-# default is 100.
-SEMAPHORE = asyncio.Semaphore(10)
+
+pytestmark = pytest.mark.heavy_traffic
 
 ovn_map = {}
 
@@ -145,9 +146,9 @@ def _intersection(list1, list2):
 
 
 async def _put_operation_async(
-    req, op_id, scd_session_async, scd_api, create_new: bool
+    req, op_id, scd_session_async, scd_api, create_new: bool, semaphore
 ):
-    async with SEMAPHORE:
+    async with semaphore:
         if scd_api == scd.API_0_3_17:
             if create_new:
                 req_url = f"/operational_intent_references/{op_id}"
@@ -160,8 +161,8 @@ async def _put_operation_async(
     return result
 
 
-async def _get_operation_async(op_id, scd_session_async, scd_api):
-    async with SEMAPHORE:
+async def _get_operation_async(op_id, scd_session_async, scd_api, semaphore):
+    async with semaphore:
         if scd_api == scd.API_0_3_17:
             result = await scd_session_async.get(
                 f"/operational_intent_references/{op_id}", scope=SCOPE_SC
@@ -171,14 +172,14 @@ async def _get_operation_async(op_id, scd_session_async, scd_api):
     return result
 
 
-async def _query_operation_async(idx, scd_session_async, scd_api):
+async def _query_operation_async(idx, scd_session_async, scd_api, semaphore):
     lat = _calculate_lat(idx)
     req_json = {
         "area_of_interest": Volume4D.from_values(
             None, None, 0, 5000, Circle.from_meters(lat, 178, 12000)
         ).to_f3548v21()
     }
-    async with SEMAPHORE:
+    async with semaphore:
         if scd_api == scd.API_0_3_17:
             result = await scd_session_async.post(
                 "/operational_intent_references/query", json=req_json, scope=SCOPE_SC
@@ -234,7 +235,9 @@ def test_ensure_clean_workspace(ids, scd_api, scd_session):
 # Mutations: Operations with ids in OP_IDS created by scd_session user
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
-def test_create_ops_concurrent(ids, scd_api, scd_session_async):
+def test_create_ops_concurrent(
+    ids, scd_api, scd_session_async, heavy_traffic_semaphore
+):
     start_time = datetime.datetime.now(datetime.UTC)
     assert len(ovn_map) == 0
     op_req_map = {}
@@ -248,7 +251,14 @@ def test_create_ops_concurrent(ids, scd_api, scd_session_async):
     results = loop.run_until_complete(
         asyncio.gather(
             *[
-                _put_operation_async(req, op_id, scd_session_async, scd_api, True)
+                _put_operation_async(
+                    req,
+                    op_id,
+                    scd_session_async,
+                    scd_api,
+                    True,
+                    heavy_traffic_semaphore,
+                )
                 for op_id, req in op_req_map.items()
             ]
         )
@@ -324,7 +334,9 @@ def test_create_ops_concurrent(ids, scd_api, scd_session_async):
 # Mutations: None
 @for_api_versions(scd.API_0_3_17)
 @depends_on(test_create_ops_concurrent)
-def test_get_ops_by_ids_concurrent(ids, scd_api, scd_session_async):
+def test_get_ops_by_ids_concurrent(
+    ids, scd_api, scd_session_async, heavy_traffic_semaphore
+):
     start_time = datetime.datetime.now(datetime.UTC)
     op_resp_map = {}
     # Get operations concurrently
@@ -332,7 +344,9 @@ def test_get_ops_by_ids_concurrent(ids, scd_api, scd_session_async):
     results = loop.run_until_complete(
         asyncio.gather(
             *[
-                _get_operation_async(op_id, scd_session_async, scd_api)
+                _get_operation_async(
+                    op_id, scd_session_async, scd_api, heavy_traffic_semaphore
+                )
                 for op_id in map(ids, OP_TYPES)
             ]
         )
@@ -361,7 +375,9 @@ def test_get_ops_by_ids_concurrent(ids, scd_api, scd_session_async):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 @depends_on(test_create_ops_concurrent)
-def test_get_ops_by_search_concurrent(ids, scd_api, scd_session_async):
+def test_get_ops_by_search_concurrent(
+    ids, scd_api, scd_session_async, heavy_traffic_semaphore
+):
     start_time = datetime.datetime.now(datetime.UTC)
     op_resp_map = {}
     total_found_ids = set()
@@ -371,7 +387,9 @@ def test_get_ops_by_search_concurrent(ids, scd_api, scd_session_async):
     results = loop.run_until_complete(
         asyncio.gather(
             *[
-                _query_operation_async(idx, scd_session_async, scd_api)
+                _query_operation_async(
+                    idx, scd_session_async, scd_api, heavy_traffic_semaphore
+                )
                 for idx in range(len(OP_TYPES))
             ]
         )
@@ -400,7 +418,9 @@ def test_get_ops_by_search_concurrent(ids, scd_api, scd_session_async):
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
 @depends_on(test_create_ops_concurrent)
-def test_mutate_ops_concurrent(ids, scd_api, scd_session, scd_session_async):
+def test_mutate_ops_concurrent(
+    ids, scd_api, scd_session, scd_session_async, heavy_traffic_semaphore
+):
     start_time = datetime.datetime.now(datetime.UTC)
     op_req_map = {}
     op_resp_map = {}
@@ -418,7 +438,14 @@ def test_mutate_ops_concurrent(ids, scd_api, scd_session, scd_session_async):
     results = loop.run_until_complete(
         asyncio.gather(
             *[
-                _put_operation_async(req, op_id, scd_session_async, scd_api, False)
+                _put_operation_async(
+                    req,
+                    op_id,
+                    scd_session_async,
+                    scd_api,
+                    False,
+                    heavy_traffic_semaphore,
+                )
                 for op_id, req in op_req_map.items()
             ]
         )
