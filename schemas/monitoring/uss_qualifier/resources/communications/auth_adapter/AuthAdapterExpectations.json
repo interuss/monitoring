@@ -1,0 +1,29 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/communications/auth_adapter/AuthAdapterExpectations.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.communications.auth_adapter.AuthAdapterExpectations, as defined in monitoring/uss_qualifier/resources/communications/auth_adapter.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "adapter_type": {
+      "description": "The auth adapter is expected to be an instance of the class named by this type (e.g., `ServiceAccountImpersonation`).",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "attribute_values": {
+      "description": "Particular attributes of the auth adapter satisfy these criteria.",
+      "items": {
+        "$ref": "../../../../monitorlib/inspection/AttributeValuePair.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

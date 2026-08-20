@@ -8,11 +8,29 @@ This scenario obtains one or more access tokens using an auth adapter and, optio
 
 ### auth_adapter
 
-An [`AuthAdapterResources`](../../../resources/communications/auth_adapter.py) used to get the access tokens
+An [`AuthAdapterResource`](../../../resources/communications/auth_adapter.py) used to get the access tokens
 
-### expectations
+### token_expectations
 
 An [`AccessTokensExpectationsResource`](../../../resources/communications/access_token_expectations.py) describing what is expected of the access tokens acquired
+
+### adapter_expectations
+
+An [`AuthAdapterExpectationsResource`](../../../resources/communications/auth_adapter.py) describing what is expected of the auth adapter used to acquire access tokens
+
+## Validate auth adapter test case
+
+### Validate auth adapter characteristics test step
+
+In this step, the characteristics of the auth_adapter resource supplied to this scenario are evaluated according to adapter_expectations.
+
+#### ⚠️ Auth adapter type check
+
+If the auth_adapter resource contains an auth adapter that differs from the type specified in adapter_expectations, the provider of the authorization source fails to meet **[interuss.communications.authorization.AuthType](../../../requirements/interuss/communications/authorization.md)**.
+
+#### ⚠️ Auth adapter attribute check
+
+If the auth_adapter resource contains an auth adapter with an attribute that does not match a criterion specified in adapter_expectations, the provider of the authorization source fails to meet **[interuss.communications.authorization.AuthAdapterAttribute](../../../requirements/interuss/communications/authorization.md)**.
 
 ## Validate access tokens test case
 
