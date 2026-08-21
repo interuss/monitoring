@@ -39,7 +39,7 @@ ENV GIT_COMMIT_HASH=$commit_hash
 ENV UV_LINK_MODE=copy
 ENV UV_PROJECT_ENVIRONMENT=/venv/
 ENV VIRTUAL_ENV=/venv/
-ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_MONITORING=$version
+ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_INTERUSS_MONITORING=$version
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=./uv.lock,target=/app/uv.lock \
     --mount=type=bind,source=./pyproject.toml,target=/app/pyproject.toml \
