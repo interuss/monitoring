@@ -1,14 +1,18 @@
 from datetime import UTC, datetime
+from typing import Optional
 
 import jwt
 
 from monitoring.monitorlib.auth import AccessTokenError
 from monitoring.monitorlib.auth_validation import fix_key
+from monitoring.monitorlib.inspection import evaluate_attributes, fullname
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.communications.access_token_expectations import (
     AccessTokensExpectationsResource,
     ClaimValuePair,
 )
 from monitoring.uss_qualifier.resources.communications.auth_adapter import (
+    AuthAdapterExpectationsResource,
     AuthAdapterResource,
 )
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
@@ -21,15 +25,16 @@ class GetAccessTokens(TestScenario):
     def __init__(
         self,
         auth_adapter: AuthAdapterResource,
-        expectations: AccessTokensExpectationsResource,
+        token_expectations: Optional[AccessTokensExpectationsResource] = None,
+        adapter_expectations: Optional[AuthAdapterExpectationsResource] = None,
     ):
         super().__init__()
         self._auth_adapter = auth_adapter
-        self._expectations = expectations
+        self._token_expectations = token_expectations
+        self._adapter_expectations = adapter_expectations
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
-        self.begin_test_case("Validate access tokens")
 
         participants = (
             [self._auth_adapter.participant_id]
@@ -37,7 +42,59 @@ class GetAccessTokens(TestScenario):
             else []
         )
 
-        for expect in self._expectations.spec.expectations:
+        self._validate_auth_adapter(participants)
+        self._validate_token_expectations(participants)
+
+        self.end_test_scenario()
+
+    def _validate_auth_adapter(self, participants: list[ParticipantID]):
+        if not self._adapter_expectations:
+            return
+
+        self.begin_test_case("Validate auth adapter")
+        self.begin_test_step("Validate auth adapter characteristics")
+
+        for expect in self._adapter_expectations.spec.expectations:
+            # --- Adapter Type Expectation ---
+            if "adapter_type" in expect and expect.adapter_type:
+                with self.check(
+                    "Auth adapter type", participants=participants
+                ) as check:
+                    actual_type = type(self._auth_adapter.adapter).__name__
+                    actual_fullname = fullname(type(self._auth_adapter.adapter))
+                    if (
+                        expect.adapter_type != actual_type
+                        and expect.adapter_type != actual_fullname
+                    ):
+                        check.record_failed(
+                            summary=f"Auth adapter is of type '{actual_type}' instead of expected '{expect.adapter_type}'",
+                            details=f"Expected auth adapter to be an instance of '{expect.adapter_type}', but found '{actual_fullname}' ({actual_type})",
+                        )
+
+            # --- Attribute Values Expectation ---
+            if "attribute_values" in expect and expect.attribute_values:
+                with self.check(
+                    "Auth adapter attribute", participants=participants
+                ) as check:
+                    failures = evaluate_attributes(
+                        self._auth_adapter.adapter, expect.attribute_values
+                    )
+                    if failures:
+                        check.record_failed(
+                            summary="One or more auth adapter attribute assertions failed",
+                            details="\n".join(failures),
+                        )
+
+        self.end_test_step()
+        self.end_test_case()
+
+    def _validate_token_expectations(self, participants: list[ParticipantID]):
+        if not self._token_expectations:
+            return
+
+        self.begin_test_case("Validate access tokens")
+
+        for expect in self._token_expectations.spec.expectations:
             # 1. Retrieve the access token and validate structural integrity as a JWT.
             self.begin_test_step("Get access token")
             token: str | None = None
@@ -86,7 +143,9 @@ class GetAccessTokens(TestScenario):
                         "Token header value", participants=participants
                     ) as check:
                         failures = self._evaluate_claims(
-                            header, expect.expectations.has_header_values, request_time
+                            header,
+                            expect.expectations.has_header_values,
+                            request_time,
                         )
                         if failures:
                             check.record_failed(
@@ -141,7 +200,9 @@ class GetAccessTokens(TestScenario):
                         "Token payload claim value", participants=participants
                     ) as check:
                         failures = self._evaluate_claims(
-                            payload, expect.expectations.has_claim_values, request_time
+                            payload,
+                            expect.expectations.has_claim_values,
+                            request_time,
                         )
                         if failures:
                             check.record_failed(
@@ -152,7 +213,6 @@ class GetAccessTokens(TestScenario):
                 self.end_test_step()
 
         self.end_test_case()
-        self.end_test_scenario()
 
     def _evaluate_claims(
         self,

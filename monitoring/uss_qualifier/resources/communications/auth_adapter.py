@@ -5,6 +5,7 @@ from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib import infrastructure
 from monitoring.monitorlib.auth import make_auth_adapter
+from monitoring.monitorlib.inspection import AttributeValuePair
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.resource import MissingResourceError, Resource
 
@@ -78,3 +79,28 @@ class AuthAdapterResource(Resource[AuthAdapterSpecification]):
                     f"AuthAdapterResource provided to {consumer_name} is not declared (in its resource specification) as authorized to obtain scope `{scope}` which it requires to {reason}.  Update `scopes_authorized` to include `{scope}` to provide this authorization.  {len(self.scopes)} scopes currently declared as authorized for AuthAdapterResource: {', '.join(self.scopes)}",
                     "<unknown>",
                 )
+
+
+class AuthAdapterExpectations(ImplicitDict):
+    adapter_type: Optional[str]
+    """The auth adapter is expected to be an instance of the class named by this type (e.g., `ServiceAccountImpersonation`)."""
+
+    attribute_values: Optional[list[AttributeValuePair]]
+    """Particular attributes of the auth adapter satisfy these criteria."""
+
+
+class AuthAdapterExpectationsSpecification(ImplicitDict):
+    expectations: list[AuthAdapterExpectations]
+
+
+class AuthAdapterExpectationsResource(Resource[AuthAdapterExpectationsSpecification]):
+    spec: AuthAdapterExpectationsSpecification
+
+    def __init__(
+        self,
+        specification: AuthAdapterExpectationsSpecification,
+        resource_origin: str,
+        **dependencies,
+    ):
+        self.spec = specification
+        super().__init__(specification, resource_origin, **dependencies)
