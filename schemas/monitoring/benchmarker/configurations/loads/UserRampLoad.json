@@ -1,7 +1,7 @@
 {
   "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/loads/UserRampLoad.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Ramps up users of a specified type, observing resulting throughput.\n\nmonitoring.benchmarker.configurations.loads.UserRampLoad, as defined in monitoring/benchmarker/configurations/loads.py",
+  "description": "Ramps up users of specified type(s), observing resulting throughput.\n\nmonitoring.benchmarker.configurations.loads.UserRampLoad, as defined in monitoring/benchmarker/configurations/loads.py",
   "properties": {
     "$ref": {
       "description": "Path to content that replaces the $ref",
@@ -47,14 +47,26 @@
     },
     "user_type": {
       "description": "Type of user to instantiate.",
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "user_types": {
+      "description": "Types of users to instantiate, cycling through them in order as load increases.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
     }
   },
   "required": [
     "load_completion_criteria",
     "step_completion_criteria",
-    "throughput_stability_criteria",
-    "user_type"
+    "throughput_stability_criteria"
   ],
   "type": "object"
 }

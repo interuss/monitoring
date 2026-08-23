@@ -156,10 +156,13 @@ class LoadCompletionCriteria(ImplicitDict):
 
 
 class UserRampLoad(ImplicitDict):
-    """Ramps up users of a specified type, observing resulting throughput."""
+    """Ramps up users of specified type(s), observing resulting throughput."""
 
-    user_type: BenchmarkUserName
+    user_type: Optional[BenchmarkUserName]
     """Type of user to instantiate."""
+
+    user_types: Optional[list[BenchmarkUserName]]
+    """Types of users to instantiate, cycling through them in order as load increases."""
 
     initial_users: int = 1
     """Number of users to start with."""
