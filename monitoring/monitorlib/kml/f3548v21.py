@@ -25,7 +25,7 @@ def full_op_intent(op_intent: OperationalIntent):
     """Render operational intent information into Placemarks in a KML folder."""
     ref = op_intent.reference
     details = op_intent.details
-    name = f"{ref.manager}'s P{priority_of(details)} {ref.state.value} {ref.id}[{ref.version}] @ {ref.ovn}"
+    name = f"{ref.manager}'s P{priority_of(details)} {ref.state.value} {ref.id}[{ref.version}] @ {ref.get('ovn')}"
     folder = kml.Folder(kml.name(name))
     if "volumes" in details:
         for i, v4_f3548 in enumerate(details.volumes or []):
@@ -56,7 +56,7 @@ def op_intent_refs_query(
 ):
     """Render the area of interest and response from an operational intent references query into a KML Placemark."""
 
-    if not req.area_of_interest:
+    if "area_of_interest" not in req or not req.area_of_interest:
         raise ValueError("req.area_of_interest is not defined")
 
     v4 = Volume4D.from_f3548v21(req.area_of_interest)
