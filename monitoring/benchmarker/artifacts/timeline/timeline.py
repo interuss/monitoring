@@ -17,6 +17,7 @@ from monitoring.benchmarker.reports.report import (
     StepTerminationReason,
 )
 from monitoring.monitorlib.fetch import Query
+from monitoring.monitorlib.formatting import format_duration_shorthand
 
 DEFAULT_PALETTE = [
     "#32aced",
@@ -63,7 +64,10 @@ def _extract_query_summary(query: Query | None) -> dict[str, Any] | None:
         resp = query.response
         if "status_code" in resp and resp.status_code is not None:
             summary["status_code"] = resp.status_code
-        if "elapsed_s" in resp and resp.elapsed_s is not None:
+        if (
+            "elapsed_s" in resp
+            and resp.elapsed_s is not None
+        ):
             summary["elapsed_s"] = resp.elapsed_s
     return summary if summary else None
 
@@ -101,6 +105,7 @@ def compute_scenario_timeline_data(
     scenario_index: int,
     scenario: BenchmarkScenarioReport,
     spec: TimelineSpecification,
+    scenario_name: str | None = None,
 ) -> dict[str, Any]:
     # Operation specifications & colors
     spec_ops_map = {op_spec.type: op_spec for op_spec in spec.operations}
@@ -256,6 +261,9 @@ def compute_scenario_timeline_data(
     if scenario_end <= scenario_start:
         scenario_end = scenario_start + 1.0
 
+    duration = scenario_end - scenario_start
+    duration_shorthand = format_duration_shorthand(duration)
+
     # Sort origins and assign lanes
     sorted_origin_names = sorted(origin_ops.keys(), key=natural_sort_key)
     origins_data = []
@@ -286,9 +294,11 @@ def compute_scenario_timeline_data(
 
     return {
         "scenario_index": scenario_index,
+        "scenario_name": scenario_name or f"Scenario {scenario_index}",
         "scenario_start": scenario_start,
         "scenario_end": scenario_end,
-        "scenario_duration": scenario_end - scenario_start,
+        "scenario_duration": duration,
+        "duration_shorthand": duration_shorthand,
         "steps": steps_data,
         "origins": origins_data,
         "operation_types": operation_types_data,
@@ -313,17 +323,33 @@ def generate_timeline(
     logger.info(f"Generating timeline artifact in {timeline_dir}")
 
     scenarios = report.report.scenarios
+    config_scenarios = (
+        report.configuration.scenarios
+        if "configuration" in report
+        and report.configuration
+        and "scenarios" in report.configuration
+        and report.configuration.scenarios
+        else []
+    )
+
     scenarios_summary = []
     scenarios_timeline_data = []
 
     for idx, scenario in enumerate(scenarios):
-        timeline_data = compute_scenario_timeline_data(idx, scenario, spec)
+        scenario_name = (
+            config_scenarios[idx].name
+            if idx < len(config_scenarios) and "name" in config_scenarios[idx] and config_scenarios[idx].name
+            else f"Scenario {idx}"
+        )
+        timeline_data = compute_scenario_timeline_data(idx, scenario, spec, scenario_name)
         scenarios_timeline_data.append(timeline_data)
         scenarios_summary.append(
             {
                 "index": idx,
+                "name": scenario_name,
                 "filename": f"s{idx}.html",
                 "duration": timeline_data["scenario_duration"],
+                "duration_shorthand": timeline_data["duration_shorthand"],
                 "steps_count": len(timeline_data["steps"]),
                 "origins_count": len(timeline_data["origins"]),
                 "operations_count": timeline_data["stats"]["total_operations"],
@@ -344,6 +370,7 @@ def generate_timeline(
             f.write(
                 scenario_template.render(
                     scenario_index=idx,
+                    scenario_name=timeline_data["scenario_name"],
                     scenario_data_json=json.dumps(timeline_data),
                     timeline_data=timeline_data,
                     spec=spec,

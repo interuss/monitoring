@@ -155,6 +155,7 @@
       font-weight: 500;
       font-size: 0.875rem;
       transition: background-color 0.15s ease-in-out;
+      white-space: nowrap;
     }
 
     .btn:hover {
@@ -169,6 +170,7 @@
       font-weight: 600;
       margin-right: 0.25rem;
       margin-bottom: 0.25rem;
+      white-space: nowrap;
     }
 
     .status-completed {
@@ -204,10 +206,10 @@
         </div>
       </div>
       <div class="meta-badges">
-        {% if report.codebase_version %}
+        {% if "codebase_version" in report and report.codebase_version %}
           <span class="badge">Version: {{ report.codebase_version }}</span>
         {% endif %}
-        {% if report.commit_hash %}
+        {% if "commit_hash" in report and report.commit_hash %}
           <span class="badge">Commit: {{ report.commit_hash[:8] }}</span>
         {% endif %}
       </div>
@@ -237,45 +239,45 @@
       <table>
         <thead>
           <tr>
-            <th>Scenario</th>
-            <th>Duration</th>
+            <th style="white-space: nowrap;">Scenario</th>
+            <th style="white-space: nowrap;">Duration</th>
             <th>Steps / Progression</th>
-            <th>Origins</th>
-            <th>Operations</th>
-            <th>Action</th>
+            <th style="white-space: nowrap;">Origins</th>
+            <th style="white-space: nowrap;">Operations</th>
+            <th style="white-space: nowrap;">Action</th>
           </tr>
         </thead>
         <tbody>
           {% for s in scenarios_summary %}
             <tr>
-              <td>
+              <td style="white-space: nowrap;">
                 <a href="{{ s.filename }}" style="font-weight: 600; color: var(--primary); text-decoration: none;">
-                  Scenario {{ s.index }}
+                  Scenario&nbsp;{{ s.index }}
                 </a>
+                <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.25rem;">
+                  {{ s.name }}
+                </div>
               </td>
-              <td>{{ "%.1f"|format(s.duration) }}s</td>
+              <td style="white-space: nowrap;">{{ s.duration_shorthand }}</td>
               <td>
                 <div class="progress-steps">
                   {% for step in s.steps %}
                     <span class="status-pill status-{{ step.termination_reason|lower }}" title="Step {{ step.step_index }}: LF {{ step.load_factor }}, {{ step.termination_reason }}">
-                      LF {{ step.load_factor }} {{ step.termination_symbol }}
+                      LF&nbsp;{{ step.load_factor }}&nbsp;{{ step.termination_symbol }}
                     </span>
                   {% endfor %}
                 </div>
               </td>
-              <td>{{ s.origins_count }}</td>
-              <td>
-                <div><b>{{ s.operations_count }}</b> total</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">
-                  <span style="color: var(--success); font-weight: 600;">{{ s.successful_operations }} ✔</span>
-                  {% if s.unsuccessful_operations > 0 %}
-                    &nbsp;|&nbsp;<span style="color: var(--danger); font-weight: 600;">{{ s.unsuccessful_operations }} ✖</span>
-                  {% endif %}
+              <td style="white-space: nowrap;">{{ s.origins_count }}</td>
+              <td style="white-space: nowrap;">
+                <div><b>{{ s.operations_count }}</b>&nbsp;total</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;">
+                  <span style="color: var(--success); font-weight: 600;">{{ s.successful_operations }}&nbsp;✔</span>{% if s.unsuccessful_operations > 0 %}&nbsp;|&nbsp;<span style="color: var(--danger); font-weight: 600;">{{ s.unsuccessful_operations }}&nbsp;✖</span>{% endif %}
                 </div>
               </td>
-              <td>
+              <td style="white-space: nowrap;">
                 <a href="{{ s.filename }}" class="btn">
-                  View Timeline &rarr;
+                  View&nbsp;Timeline&nbsp;&rarr;
                 </a>
               </td>
             </tr>
