@@ -210,6 +210,29 @@ local shape = {
       },
     },
     {
+      timeline: {
+        name: 'timeline',
+        operations: [
+          {
+            type: "workflow.flight_planner.flight",
+            color: "#32aced",
+          },
+          {
+            type: "query.astm.f3548.v21.dss.createOperationalIntentReference",
+            color: "#c7c46b",
+          },
+          {
+            type: "query.astm.f3548.v21.dss.updateOperationalIntentReference",
+            color: "#70c76b",
+          },
+          {
+            type: "query.astm.f3548.v21.dss.deleteOperationalIntentReference",
+            color: "#c77f6b",
+          },
+        ],
+      }
+    },
+    {
       matplotlib_figure: {
         name: 'scalability_curve',
         title: test_name,
