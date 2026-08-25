@@ -5,7 +5,7 @@ local dss_config_names = ['Existing local DSS deployment'];
 local users_per_step = 3;
 
 local location = {
-  horizontal: {lat: 34, lng: -118},
+  uniform_box: {lat_min: 34, lat_max: 34.001, lng_max: -118, lng_min: -118.001},
   vertical: {value: 300, reference: 'W84', units: 'M'},
 };
 
@@ -85,7 +85,7 @@ local shape = {
               uniform_random_spacing: '2s',
             },
             location: {
-              fixed_location: location,
+              random_location: location,
             },
             shape: {
                 fixed_volumes: shape,

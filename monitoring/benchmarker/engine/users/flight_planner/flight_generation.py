@@ -15,6 +15,7 @@ from monitoring.benchmarker.engine.users.flight_planner.framework import (
 from monitoring.monitorlib.geo import (
     AltitudeDatum,
     DistanceUnits,
+    LatLngPoint,
     RelativeTranslation,
     Transformation,
 )
@@ -41,28 +42,44 @@ class IndependentTimeLocationShape(FlightGenerator):
         if "execution" in spec and spec.execution:
             self.execution = spec.execution
 
-        if "fixed_location" in self.spec.location and self.spec.location.fixed_location:
+        if (
+            "fixed_location" in self.spec.location and self.spec.location.fixed_location
+        ) or (
+            "random_location" in self.spec.location
+            and self.spec.location.random_location
+        ):
             pass
         else:
             raise NotImplementedError(
-                "No supported location component is specified in independent_time_location_shape.location for user `user_id`"
+                f"No supported location component is specified in independent_time_location_shape.location for user `{user_id}`"
             )
 
         if "fixed_volumes" in self.spec.shape and self.spec.shape.fixed_volumes:
             pass
         else:
             raise NotImplementedError(
-                "No supported shape component specified in independent_time_location_shape.shape for user `user_id`"
+                f"No supported shape component specified in independent_time_location_shape.shape for user `{user_id}`"
             )
 
-        if self.spec.shape.fixed_volumes and self.spec.location.fixed_location:
-            # Check unit/reference match between fixed_location and fixed_volumes
+        if self.spec.shape.fixed_volumes:
+            # Check unit/reference match between location and fixed_volumes
             fixed_vols = self.spec.shape.fixed_volumes
-            fixed_loc = self.spec.location.fixed_location
             origin_vert = fixed_vols.origin_vertical
             if (
-                fixed_loc.vertical.reference != origin_vert.reference
-                or fixed_loc.vertical.units != origin_vert.units
+                "fixed_location" in self.spec.location
+                and self.spec.location.fixed_location
+            ):
+                loc_vert = self.spec.location.fixed_location.vertical
+            elif (
+                "random_location" in self.spec.location
+                and self.spec.location.random_location
+            ):
+                loc_vert = self.spec.location.random_location.vertical
+            else:
+                loc_vert = None
+            if loc_vert and (
+                loc_vert.reference != origin_vert.reference
+                or loc_vert.units != origin_vert.units
             ):
                 raise NotImplementedError(
                     "Combining vertical location and shape with different reference or units is not supported"
@@ -81,7 +98,7 @@ class IndependentTimeLocationShape(FlightGenerator):
             dt += self.spec.time.uniform_random_spacing.timedelta * self.random.random()
         t0 = previous_flight_end + dt
 
-        if self.spec.location.fixed_location:
+        if "fixed_location" in self.spec.location and self.spec.location.fixed_location:
             xy = self.spec.location.fixed_location.horizontal
             z = self.spec.location.fixed_location.vertical
             if z.units != DistanceUnits.M:
@@ -91,6 +108,24 @@ class IndependentTimeLocationShape(FlightGenerator):
             if z.reference != AltitudeDatum.W84:
                 raise NotImplementedError(
                     "Only W84 is supported for fixed_location altitude"
+                )
+        elif (
+            "random_location" in self.spec.location
+            and self.spec.location.random_location
+        ):
+            box = self.spec.location.random_location.uniform_box
+            xy = LatLngPoint(
+                lat=self.random.uniform(box.lat_min, box.lat_max),
+                lng=self.random.uniform(box.lng_min, box.lng_max),
+            )
+            z = self.spec.location.random_location.vertical
+            if z.units != DistanceUnits.M:
+                raise NotImplementedError(
+                    "Only meters are supported for random_location altitude"
+                )
+            if z.reference != AltitudeDatum.W84:
+                raise NotImplementedError(
+                    "Only W84 is supported for random_location altitude"
                 )
         else:
             raise NotImplementedError("Specified location component not implemented")
