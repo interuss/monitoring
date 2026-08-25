@@ -6,6 +6,14 @@ When a test designer requires certain behavior from an authorization source/serv
 
 ## Requirements
 
+### <tt>AuthType</tt>
+
+The authorization source must be of a particular type.
+
+### <tt>AuthAdapterAttribute</tt>
+
+A particular attribute of the AuthAdapter providing authorization must satisfy the criteria specified.
+
 ### <tt>GenerateAccessToken</tt>
 
 When provided with a valid and well-formed request to generate an access token, the provider of an authorization source must ensure that an access token is generated as requested.
