@@ -1,0 +1,27 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/actions/f3548/DeleteSubscription.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.actions.f3548.DeleteSubscription, as defined in monitoring/benchmarker/configurations/actions/f3548.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "mode": {
+      "description": "Desired deletion behavior.",
+      "enum": [
+        "GetDeleteIfExist"
+      ],
+      "type": "string"
+    },
+    "subscription_id": {
+      "description": "ID of the subscription to delete.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "mode",
+    "subscription_id"
+  ],
+  "type": "object"
+}

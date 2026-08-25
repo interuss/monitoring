@@ -1,6 +1,7 @@
 local test_name = 'Single S2 cell';
 local num_uss = 3;
 local num_nodes = 3;
+local num_subscriptions = 8;
 local dss_config_names = ['Existing local DSS deployment'];
 local users_per_step = 3;
 
@@ -72,6 +73,37 @@ local shape = {
         defined_artifact_indices: [0, 1],
       },
     },
+  ] + [
+    {
+      name: 'Create subscription %d' % sub_index,
+      f3548: {
+        create_subscription: {
+          subscription: {
+            subscription_id: '16b87239-6063-47d4-a2ff-%d05086859f32' % (sub_index - 1),
+            duration: '23h',
+            area: {
+              lat_min: 34 - 0.00001,
+              lng_min: -118 - 0.00001,
+              lat_max: 34 + 0.00001,
+              lng_max: -118 + 0.00001,
+            },
+            min_alt: {value: 0, units: 'M', reference: 'W84'},
+            max_alt: {value: 3000, units: 'M', reference: 'W84'},
+          },
+          mode: 'GetDeleteCreate',
+        },
+      },
+    } for sub_index in std.range(1, num_subscriptions)
+  ] + [
+    {
+      name: 'Delete subscription %d' % sub_index,
+      f3548: {
+        delete_subscription: {
+          subscription_id: '16b87239-6063-47d4-a2ff-%d05086859f32' % (sub_index - 1),
+          mode: 'GetDeleteIfExist',
+        },
+      },
+    } for sub_index in std.range(1, num_subscriptions)
   ],
 
   user_types: [
@@ -197,8 +229,11 @@ local shape = {
     [
       {
         name: '%s: %s for USS %d' % [dss_config_names[dss_config - 1], test_name,  uss],
+        [if uss == 1 then "setup"]: ['Create subscription %d' % sub_index for sub_index in std.range(1, num_subscriptions)],
         load: 'Flight planner ramp for USS %d' % uss,
-        [if uss < num_uss || dss_config < std.length(dss_config_names) then "teardown"]: ['Generate intermediate artifacts'],
+        [if uss < num_uss || dss_config < std.length(dss_config_names) || uss == num_uss then "teardown"]:
+          (if uss < num_uss || dss_config < std.length(dss_config_names) then ['Generate intermediate artifacts'] else [])
+          + (if uss == num_uss then ['Delete subscription %d' % sub_index for sub_index in std.range(1, num_subscriptions)] else []),
       } for uss in std.range(1, num_uss)
     ] for dss_config in std.range(1, std.length(dss_config_names))
   ]),
