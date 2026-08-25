@@ -36,6 +36,17 @@ v1:
                       equals_string_value: dummy
                     - claim: sub
                       equals_string_value: uss_qualifier
+        auth_adapter_expectations:
+          resource_type: resources.communications.AuthAdapterExpectationsResource
+          specification:
+            expectations:
+              # See monitoring/monitorlib/auth.py for the set of concrete AuthAdapter types.
+              - adapter_type: DummyOAuth
+                attribute_values:
+                  # Attributes are for the concrete AuthAdapter instance available to the GetAccessTokens scenario.
+                  # See monitoring/monitorlib/auth.py for the definitions of concrete auth adapters and their attributes.
+                  - name: _oauth_token_endpoint
+                    equals_string_value: http://oauth.authority.localutm:8085/token
 
     action:
       test_suite:
@@ -43,17 +54,20 @@ v1:
           name: Access tokens validation test suite
           resources:
             auth_adapter: resources.communications.AuthAdapterResource
-            expectations: resources.communications.AccessTokensExpectationsResource
+            token_expectations: resources.communications.AccessTokensExpectationsResource?
+            adapter_expectations: resources.communications.AuthAdapterExpectationsResource?
           actions:
             - test_scenario:
                 scenario_type: scenarios.interuss.communications.GetAccessTokens
                 resources:
                   auth_adapter: auth_adapter
-                  expectations: expectations
+                  token_expectations: token_expectations
+                  adapter_expectations: adapter_expectations
                 on_failure: Continue
         resources:
           auth_adapter: utm_auth
-          expectations: access_token_expectations
+          token_expectations: access_token_expectations
+          adapter_expectations: auth_adapter_expectations
 
     execution:
       stop_fast: false

@@ -1,0 +1,33 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/monitorlib/inspection/AttributeValuePair.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.monitorlib.inspection.AttributeValuePair, as defined in monitoring/monitorlib/inspection.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "equals_number_value": {
+      "description": "The attribute value is exactly this number.  Note that this may not be the desirable behavior when comparing float values.",
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "equals_string_value": {
+      "description": "The attribute value is this string.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "description": "The attribute that is expected to have a particular value.\n\nNested attributes are accepted (e.g., `\"foo.bar\"`).",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "type": "object"
+}
