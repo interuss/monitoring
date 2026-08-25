@@ -1,4 +1,5 @@
 import base64
+import copy
 import json
 import os
 import re
@@ -160,7 +161,7 @@ def load_dict_with_references(data_file: FileReference) -> dict:
     removed.  This $ref convention is generally compatible with OpenAPI, except
     that other keys may co-exist with $ref.  Multiple $refs may be used when
     enclosed in an allOf key (with an array as a value), again similar to
-    OpenAPI.
+    OpenAPI (nested dictionaries are recursively merged and lists are concatenated).
     """
     base_file_name, anchor = _split_anchor(data_file)
     base_file_name = resolve_filename(base_file_name)
@@ -324,6 +325,19 @@ def _find_refs(content: dict | list, root: str = "$") -> dict[str, str]:
     return paths
 
 
+def _merge_dict(target: dict, source: dict) -> None:
+    for k, v in source.items():
+        if k in target:
+            if isinstance(target[k], dict) and isinstance(v, dict):
+                _merge_dict(target[k], v)
+            elif isinstance(target[k], list) and isinstance(v, list):
+                target[k].extend(copy.deepcopy(v))
+            else:
+                target[k] = copy.deepcopy(v)
+        else:
+            target[k] = copy.deepcopy(v)
+
+
 def _replace_refs(
     content: dict,
     context_file_name: str,
@@ -368,15 +382,14 @@ def _replace_refs(
                 ]
                 if len(allof_parent_content) != 1:
                     raise RuntimeError(
-                        f'Unexpectedly found {len(ref_content)} matches for allOf parent path "{ref_path}"'
+                        f'Unexpectedly found {len(allof_parent_content)} matches for allOf parent path "{allof_parent_path}"'
                     )
                 allof_parent_content = allof_parent_content[0]
                 if all("$ref" not in s for s in allof_parent_content["allOf"]):
                     # This allOf is complete and can be resolved
                     schemas = allof_parent_content.pop("allOf")
                     for schema in schemas:
-                        for k, v in schema.items():
-                            allof_parent_content[k] = v
+                        _merge_dict(allof_parent_content, schema)
 
 
 def _select_path(content: dict, path: str) -> dict:

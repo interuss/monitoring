@@ -4,7 +4,7 @@ from implicitdict import ImplicitDict, StringBasedDateTime, StringBasedTimeDelta
 
 from monitoring.benchmarker.configurations.user.astm import scd
 from monitoring.benchmarker.configurations.user.astm.dss import ASTMDSSSelectionStrategy
-from monitoring.monitorlib.geo import Altitude, LatLngPoint
+from monitoring.monitorlib.geo import Altitude, LatLngBoundingBox, LatLngPoint
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.resources.definitions import ResourceID
@@ -19,6 +19,14 @@ class FixedLocationSpecification(ImplicitDict):
     vertical: Altitude
 
 
+class RandomLocationSpecification(ImplicitDict):
+    uniform_box: LatLngBoundingBox
+    """Selected flight location will be drawn uniformly from this box."""
+
+    vertical: Altitude
+    """Selected flight location will be at exactly this altitude."""
+
+
 class FlightTimeGenerationSpecification(ImplicitDict):
     fixed_spacing: Optional[StringBasedTimeDelta]
     """Add this fixed delay between the end of the previous flight and the start of the next flight."""
@@ -30,6 +38,9 @@ class FlightTimeGenerationSpecification(ImplicitDict):
 class FlightLocationGenerationSpecification(ImplicitDict):
     fixed_location: Optional[FixedLocationSpecification]
     """Always choose the same flight location."""
+
+    random_location: Optional[RandomLocationSpecification]
+    """Choose a flight location at random."""
 
 
 class FixedVolumesSpecification(ImplicitDict):
