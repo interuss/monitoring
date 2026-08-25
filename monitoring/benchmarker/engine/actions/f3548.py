@@ -84,7 +84,8 @@ def create_subscription(
         )
         notify_for_constraints = (
             sub.notify_for_constraints
-            if "notify_for_constraints" in sub and sub.notify_for_constraints is not None
+            if "notify_for_constraints" in sub
+            and sub.notify_for_constraints is not None
             else False
         )
         create_result = dss_instance.upsert_subscription(
