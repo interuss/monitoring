@@ -62,7 +62,7 @@ class AttributeValuePair(ImplicitDict):
     """The attribute value is this string."""
 
     equals_number_value: Optional[float]
-    """The attribute value is this number."""
+    """The attribute value is exactly this number.  Note that this may not be the desirable behavior when comparing float values."""
 
 
 def _has_attr(obj: Any, attr_name: str) -> bool:
