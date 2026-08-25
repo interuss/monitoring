@@ -77,8 +77,8 @@ def _has_attr(obj: Any, attr_name: str) -> bool:
 
 def _get_attr_value(obj: Any, attr_name: str) -> Any:
     if "." in attr_name:
-        levels = attr_name.split(".")
-        return _get_attr_value(getattr(obj, levels[0]), ".".join(levels[1:]))
+        base, remaining = attr_name.split(".", 1)
+        return _get_attr_value(getattr(obj, base), remaining)
     else:
         return getattr(obj, attr_name)
 
