@@ -26,10 +26,10 @@ class Subscription(ImplicitDict):
     max_alt: Altitude
     """Altitude above which this subscription should not apply."""
 
-    notify_for_op_intents: Optional[bool] = None
+    notify_for_op_intents: Optional[bool]
     """Whether to receive notifications for operational intents. Defaults to True if not specified."""
 
-    notify_for_constraints: Optional[bool] = None
+    notify_for_constraints: Optional[bool]
     """Whether to receive notifications for constraints. Defaults to False if not specified."""
 
 
