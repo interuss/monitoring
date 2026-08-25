@@ -188,7 +188,7 @@
       pointer-events: none;
       z-index: 1000;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
-      max-width: 400px;
+      max-width: 420px;
     }
 
     #tooltip strong {
@@ -263,7 +263,7 @@
     <canvas id="timeline-canvas"></canvas>
     <div id="tooltip"></div>
     <div class="help-hint">
-      <strong>Controls:</strong> Left-drag or Mouse wheel to scroll &bull; Shift + Left-drag or Shift + Wheel to zoom
+      <strong>Controls:</strong> Left-drag or Mouse wheel to scroll &bull; Shift + Left-drag or Shift + Wheel to zoom &bull; Hover Time column to inspect active operations
     </div>
   </div>
 
@@ -285,6 +285,27 @@
       const scenarioEnd = data.scenario_end;
       const fullDuration = Math.max(0.1, scenarioEnd - scenarioStart);
       const minDuration = 0.05; // 50ms min zoom window
+
+      // Flatten operations for fast time-based lookup
+      const allOperations = [];
+      data.origins.forEach((origin) => {
+        origin.lanes.forEach((laneOps) => {
+          laneOps.forEach((op) => {
+            allOperations.push(op);
+          });
+        });
+      });
+
+      function getActiveOperationsAt(t) {
+        const activeCounts = {};
+        for (let i = 0; i < allOperations.length; i++) {
+          const op = allOperations[i];
+          if (op.t0 <= t && t <= op.t1) {
+            activeCounts[op.type] = (activeCounts[op.type] || 0) + 1;
+          }
+        }
+        return activeCounts;
+      }
 
       // Visible time window [viewT0, viewT1]
       let viewT0 = scenarioStart;
@@ -579,7 +600,7 @@
               if (hoveredItem && hoveredItem.type === 'op' && hoveredItem.op === op) {
                 ctx.strokeStyle = '#0f172a';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(rectX, y0, rectW, rectH);
+                ctx.strokeRect(rectX - 1, y0 - 1, rectW + 2, rectH + 2);
               }
             });
           });
@@ -620,7 +641,20 @@
           headerOffset += origin.num_lanes;
         });
 
-        // 6. Scroll Bar (Far Right)
+        // 6. Hovered Time Line (Dashed line across full width of display)
+        if (hoveredItem && hoveredItem.type === 'time' && hoveredItem.y >= H_HEADER && hoveredItem.y <= height) {
+          ctx.save();
+          ctx.strokeStyle = '#2563eb';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(0, hoveredItem.y);
+          ctx.lineTo(width - W_SCROLLBAR, hoveredItem.y);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // 7. Scroll Bar (Far Right)
         const sbX = width - W_SCROLLBAR;
         ctx.fillStyle = '#f1f5f9';
         ctx.fillRect(sbX, H_HEADER, W_SCROLLBAR, timelineH);
@@ -657,8 +691,8 @@
         const totalOpLanes = Math.max(1, data.total_operation_lanes);
         const laneW = wOpsAvailable / totalOpLanes;
 
-        // Check if in events lane
-        if (x < xOpsStart) {
+        // Check if in Scenario Events lane
+        if (x < W_EVENTS) {
           for (let step of data.steps) {
             const yStart = timeToY(step.start_time);
             if (Math.abs(y - yStart) < 7) {
@@ -678,7 +712,13 @@
           return null;
         }
 
-        // Check operations
+        // Check if in Time Scale swim lane
+        if (x >= W_EVENTS && x < xOpsStart) {
+          const hoveredTime = yToTime(y);
+          return { type: 'time', time: hoveredTime, y: y, activeCounts: getActiveOperationsAt(hoveredTime) };
+        }
+
+        // Check operations swim lanes
         if (x >= xOpsStart && x < width - W_SCROLLBAR) {
           let currentLaneOffset = 0;
           for (let origin of data.origins) {
@@ -692,13 +732,16 @@
                 for (let op of laneOps) {
                   const y0 = timeToY(op.t0);
                   const y1 = timeToY(op.t1);
-                  const effectiveY0 = Math.min(y0, y1);
-                  const effectiveY1 = Math.max(y0, y1, effectiveY0 + 3);
-                  if (y >= effectiveY0 && y <= effectiveY1) {
+                  const minY = Math.min(y0, y1) - 2;
+                  const maxY = Math.max(y0, y1, y0 + 3) + 2;
+                  if (y >= minY && y <= maxY) {
                     return { type: 'op', op: op, origin: origin.origin, lane: laneIdx };
                   }
                 }
               }
+              // Hovering on timeline lane background without hitting a specific operation
+              const hoveredTime = yToTime(y);
+              return { type: 'time', time: hoveredTime, y: y, activeCounts: getActiveOperationsAt(hoveredTime) };
             }
             currentLaneOffset += origin.num_lanes;
           }
@@ -743,6 +786,27 @@
           } else if (item.eventType === 'end') {
             html += `<div><strong>Event:</strong> Step Termination (${step.termination_reason} ${step.termination_symbol})</div>`;
             html += `<div><strong>Time:</strong> ${formatIsoTimeMs(step.end_time)}</div>`;
+          }
+        } else if (item.type === 'time') {
+          html += `<div><strong>Time:</strong> ${formatIsoTimeMs(item.time)}</div>`;
+          const entries = [];
+          data.operation_types.forEach((op) => {
+            const count = item.activeCounts[op.type];
+            if (count) {
+              entries.push(`${count}x ${op.type}`);
+            }
+          });
+          Object.keys(item.activeCounts).forEach((opType) => {
+            if (!data.operation_types.some((op) => op.type === opType)) {
+              entries.push(`${item.activeCounts[opType]}x ${opType}`);
+            }
+          });
+
+          if (entries.length > 0) {
+            html += `<hr style="border-color: rgba(255,255,255,0.2); margin: 0.3rem 0;">`;
+            html += entries.join('<br>');
+          } else {
+            html += `<div style="color: #94a3b8; margin-top: 0.25rem;">No operations in progress</div>`;
           }
         }
 
@@ -830,15 +894,26 @@
           return;
         }
 
-        // Hover
+        const item = hitTest(x, y);
+
+        // Cursor style
         if (x >= width - W_SCROLLBAR) {
           canvas.style.cursor = 'pointer';
+        } else if (item && (item.type === 'op' || item.type === 'event')) {
+          canvas.style.cursor = 'pointer';
+        } else if (item && item.type === 'time') {
+          canvas.style.cursor = 'crosshair';
         } else {
           canvas.style.cursor = 'grab';
         }
 
-        const item = hitTest(x, y);
-        if (item !== hoveredItem) {
+        const itemChanged = (
+          (item === null && hoveredItem !== null) ||
+          (item !== null && hoveredItem === null) ||
+          (item !== null && hoveredItem !== null && (item.type !== hoveredItem.type || (item.type === 'op' && item.op !== hoveredItem.op) || item.type === 'time'))
+        );
+
+        if (itemChanged) {
           hoveredItem = item;
           draw();
         }

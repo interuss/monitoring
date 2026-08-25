@@ -216,6 +216,7 @@ local shape = {
           {
             type: "workflow.flight_planner.flight",
             color: "#32aced",
+            success_indicator_width: 5,
           },
           {
             type: "query.astm.f3548.v21.dss.createOperationalIntentReference",
