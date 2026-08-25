@@ -45,12 +45,21 @@ async def run_user_ramp_load(
     scenario_name: BenchmarkScenarioName,
 ) -> tuple[list[ExecutedOperation], list[BenchmarkScenarioStepReport]]:
     """Apply a load by driving virtual user workflows and monitoring step criteria."""
-    ramp_user_type = ramp.user_type
-    if ramp_user_type not in user_specs_map:
-        raise ValueError(
-            f"User type '{ramp_user_type}' for UserRampLoad.user_type not found in configuration.user_types"
-        )
-    user_spec = user_specs_map[ramp_user_type]
+    if "user_types" in ramp and ramp.user_types:
+        user_types_list = ramp.user_types
+        for ut in user_types_list:
+            if ut not in user_specs_map:
+                raise ValueError(
+                    f"User type '{ut}' for UserRampLoad.user_types not found in configuration.user_types"
+                )
+    elif "user_type" in ramp and ramp.user_type:
+        if ramp.user_type not in user_specs_map:
+            raise ValueError(
+                f"User type '{ramp.user_type}' for UserRampLoad.user_type not found in configuration.user_types"
+            )
+        user_types_list = [ramp.user_type]
+    else:
+        raise ValueError("Neither user_type nor user_types specified for UserRampLoad")
 
     random = (
         Random(ramp.random_seed)
@@ -113,6 +122,9 @@ async def run_user_ramp_load(
             first_user_spawned = None
             last_user_spawned = None
             while len(virtual_users) < current_load_factor:
+                user_spec = user_specs_map[
+                    user_types_list[len(virtual_users) % len(user_types_list)]
+                ]
                 user_id = f"{user_spec.name}_{len(virtual_users) + 1}"
                 if first_user_spawned is None:
                     first_user_spawned = user_id
