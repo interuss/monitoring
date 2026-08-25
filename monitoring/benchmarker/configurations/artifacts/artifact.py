@@ -8,7 +8,9 @@ from monitoring.benchmarker.configurations.artifacts.matplotlib_figure import (
 from monitoring.benchmarker.configurations.artifacts.raw_report import (
     RawReportSpecification,
 )
-from monitoring.benchmarker.configurations.artifacts.timeline import TimelineSpecification
+from monitoring.benchmarker.configurations.artifacts.timeline import (
+    TimelineSpecification,
+)
 
 
 class ArtifactSpecification(ImplicitDict):

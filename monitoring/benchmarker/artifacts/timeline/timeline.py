@@ -41,8 +41,7 @@ DEFAULT_PALETTE = [
 
 def natural_sort_key(s: str) -> list[int | str]:
     return [
-        int(text) if text.isdigit() else text.lower()
-        for text in re.split(r"(\d+)", s)
+        int(text) if text.isdigit() else text.lower() for text in re.split(r"(\d+)", s)
     ]
 
 
@@ -64,15 +63,14 @@ def _extract_query_summary(query: Query | None) -> dict[str, Any] | None:
         resp = query.response
         if "status_code" in resp and resp.status_code is not None:
             summary["status_code"] = resp.status_code
-        if (
-            "elapsed_s" in resp
-            and resp.elapsed_s is not None
-        ):
+        if "elapsed_s" in resp and resp.elapsed_s is not None:
             summary["elapsed_s"] = resp.elapsed_s
     return summary if summary else None
 
 
-def _assign_lanes_for_origin(operations: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
+def _assign_lanes_for_origin(
+    operations: list[dict[str, Any]],
+) -> list[list[dict[str, Any]]]:
     """Assign operations for a single origin into the minimum non-overlapping swim lanes,
     preferentially placing longer-running operations in lanes further to the left.
     """
@@ -338,10 +336,14 @@ def generate_timeline(
     for idx, scenario in enumerate(scenarios):
         scenario_name = (
             config_scenarios[idx].name
-            if idx < len(config_scenarios) and "name" in config_scenarios[idx] and config_scenarios[idx].name
+            if idx < len(config_scenarios)
+            and "name" in config_scenarios[idx]
+            and config_scenarios[idx].name
             else f"Scenario {idx}"
         )
-        timeline_data = compute_scenario_timeline_data(idx, scenario, spec, scenario_name)
+        timeline_data = compute_scenario_timeline_data(
+            idx, scenario, spec, scenario_name
+        )
         scenarios_timeline_data.append(timeline_data)
         scenarios_summary.append(
             {
@@ -353,8 +355,12 @@ def generate_timeline(
                 "steps_count": len(timeline_data["steps"]),
                 "origins_count": len(timeline_data["origins"]),
                 "operations_count": timeline_data["stats"]["total_operations"],
-                "successful_operations": timeline_data["stats"]["successful_operations"],
-                "unsuccessful_operations": timeline_data["stats"]["unsuccessful_operations"],
+                "successful_operations": timeline_data["stats"][
+                    "successful_operations"
+                ],
+                "unsuccessful_operations": timeline_data["stats"][
+                    "unsuccessful_operations"
+                ],
                 "steps": timeline_data["steps"],
             }
         )

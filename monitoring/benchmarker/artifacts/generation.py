@@ -56,4 +56,3 @@ def generate_artifacts(
 
         if "timeline" in spec and spec.timeline is not None:
             generate_timeline(report, spec.timeline, output_dir)
-

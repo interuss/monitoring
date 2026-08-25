@@ -218,4 +218,3 @@ def format_duration_shorthand(duration: float | datetime.timedelta) -> str:
     if days == 0:
         return f"{weeks}w"
     return f"{weeks}w{days}d"
-

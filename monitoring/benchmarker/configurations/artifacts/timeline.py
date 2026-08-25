@@ -21,4 +21,3 @@ class TimelineSpecification(ImplicitDict):
 
     operations: list[TimelineOperation]
     """Operations to display on the timeline."""
-    
