@@ -231,7 +231,7 @@ local shape = {
         name: '%s: %s for USS %d' % [dss_config_names[dss_config - 1], test_name,  uss],
         [if uss == 1 then "setup"]: ['Create subscription %d' % sub_index for sub_index in std.range(1, num_subscriptions)],
         load: 'Flight planner ramp for USS %d' % uss,
-        [if uss < num_uss || dss_config < std.length(dss_config_names) || uss == num_uss then "teardown"]:
+        [if uss <= num_uss || dss_config < std.length(dss_config_names) then "teardown"]:
           (if uss < num_uss || dss_config < std.length(dss_config_names) then ['Generate intermediate artifacts'] else [])
           + (if uss == num_uss then ['Delete subscription %d' % sub_index for sub_index in std.range(1, num_subscriptions)] else []),
       } for uss in std.range(1, num_uss)
