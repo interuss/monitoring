@@ -22,17 +22,19 @@
 #       • CACHED as long as uv.lock does not change
 #                     │
 #          ┌──────────┴──────────┐
-#          │                     │
+#          │ (default)           │
 #          ▼                     ▼
-#       [base]          [dev-dependencies]
-# • ADD ./monitoring    • RUN uv sync --group dev
-# • Ready for prod      • CACHED as long as uv.lock does not change
-# • (interuss/monitoring)        │
-#                                ▼
-#                     [with-dev-dependencies]
-#                       • ADD ./monitoring
-#                       • Ready for local dev & formatting
-#                       • (interuss/monitoring-dev)
+#     [base-system]     [dev-dependencies]
+#          │            • RUN uv sync --group dev
+#          │            • CACHED as long as uv.lock does not change
+#          │                     │
+#          └──────────┬──────────┘
+#                     ▼
+#                  [final] (FROM ${BASE_STAGE})
+#            • ADD ./monitoring
+#            • Ready for prod/dev
+
+ARG BASE_STAGE=base-system
 
 FROM ghcr.io/astral-sh/uv:0.12.5-python3.13-trixie-slim AS base-system
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
@@ -95,36 +97,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     unset UV_FROZEN && \
     uv sync --locked --no-install-project --compile-bytecode --group dev
 
-FROM base-system AS base
+FROM ${BASE_STAGE} AS final
 
 # This image should be built by passing in `version` and `commit_hash` based on information from git (see `make image`)
-# This version information becomes available in the environment variables specified below
-ARG version
-ARG commit_hash
-ENV MONITORING_VERSION=$version
-ENV GIT_COMMIT_HASH=$commit_hash
-ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_MONITORING=$version
-
-# Add core content from repo
-ADD ./interfaces /app/interfaces
-ADD ./monitoring /app/monitoring
-
-# Add health check to the /app root and make it executable
-COPY ./monitoring/health_check.sh /app/health_check.sh
-RUN chmod 766 /app/health_check.sh
-
-# Additional preparations for uss_qualifier/webapp
-RUN mkdir -p /app/uss-host-files
-
-# This script indicates the status of the container
-HEALTHCHECK --interval=3s CMD sh /app/health_check.sh
-
-FROM dev-dependencies AS with-dev-dependencies
-
-# The operations in this stage should be identical to those in the `base` stage; the only difference is which base image we're starting from.
-# TODO: Consider making more DRY with BASE_STAGE ARG + FROM ${BASE_STAGE} AS final, using BASE_STAGE instead of --target when building (to avoid duplication of these steps)
-
-# This image should be built by passing in `version` and `commit_hash` based on information from git (see `make image-dev`)
 # This version information becomes available in the environment variables specified below
 ARG version
 ARG commit_hash
