@@ -6,6 +6,7 @@ from monitoring.benchmarker.configurations.actions.action import (
 )
 from monitoring.benchmarker.configurations.configuration import BenchmarkConfiguration
 from monitoring.benchmarker.engine.actions.f3411 import run_f3411_action
+from monitoring.benchmarker.engine.actions.f3548 import run_f3548_action
 from monitoring.benchmarker.engine.actions.generate_artifacts import (
     generate_intermediate_artifacts,
 )
@@ -62,6 +63,13 @@ def run_scenario_actions(
                     f"Resource pool is required to execute action '{action_name}' with F3411 specification"
                 )
             run_f3411_action(action_name, action_spec.f3411, resource_pool)
+            action_performed = True
+        if "f3548" in action_spec and action_spec.f3548 is not None:
+            if resource_pool is None:
+                raise ValueError(
+                    f"Resource pool is required to execute action '{action_name}' with F3548 specification"
+                )
+            run_f3548_action(action_name, action_spec.f3548, resource_pool)
             action_performed = True
 
         if not action_performed:
