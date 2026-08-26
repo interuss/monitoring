@@ -154,6 +154,10 @@ class ASTMNetRIDHandler:
                 causes_flight_failure=not isa_success,
             )
         )
+        if isa_success:
+            flight.extend_achieved_start_time(datetime.now(UTC))
+        else:
+            flight.clear_to_fly = False
 
         if isa_success and self.isa_per_flight.after_flight_end:
             new_actions.append(
