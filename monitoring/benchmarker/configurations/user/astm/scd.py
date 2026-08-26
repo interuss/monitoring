@@ -5,25 +5,12 @@ from uas_standards.astm.f3548.v21.api import SubscriptionID
 
 from monitoring.benchmarker.configurations.user.astm.dss import ASTMDSSSelectionStrategy
 from monitoring.benchmarker.engine.coordination import CoordinationGroupID
-from monitoring.monitorlib.geo import Altitude, LatLngBoundingBox
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 
 
 class SingleSubscription(ImplicitDict):
     subscription_id: SubscriptionID
-    """ID of the single subscription to create, or ensure exists."""
-
-    duration: StringBasedTimeDelta
-    """Duration of the subscription, from the time it is created."""
-
-    area: LatLngBoundingBox
-    """Horizontal area this subscription should cover."""
-
-    min_alt: Altitude
-    """Altitude below which this subscription should not apply."""
-
-    max_alt: Altitude
-    """Altitude above which this subscription should not apply."""
+    """ID of the single subscription to use when creating operational intents."""
 
 
 class ImplicitSubscription(ImplicitDict):
@@ -32,7 +19,9 @@ class ImplicitSubscription(ImplicitDict):
 
 class SubscriptionStrategy(ImplicitDict):
     single_subscription: Optional[SingleSubscription]
-    """Planner ensures there is a single subscription, established at the start of operations, covering all their flights."""
+    """Planner expects there to be a single subscription established at the start of operations covering all their flights.
+    
+    A configuration specifying this strategy must separately ensure this subscription exists, such as via an f3548.create_subscription action."""
 
     implicit_subscription: Optional[ImplicitSubscription]
     """Planner has the DSS establish an implicit subscription for each individual flight."""

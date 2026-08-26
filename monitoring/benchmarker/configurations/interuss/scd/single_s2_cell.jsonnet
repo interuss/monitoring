@@ -133,15 +133,6 @@ local shape = {
           subscription_strategy: {
             single_subscription: {
               subscription_id: '3bdb0b88-a522-4286-9499-160e56c953bb',
-              duration: '23h',
-              area: {
-                lat_min: 34 - 0.00001,
-                lng_min: -118 - 0.00001,
-                lat_max: 34 + 0.00001,
-                lng_max: -118 + 0.00001,
-              },
-              min_alt: {value: 0, units: 'M', reference: 'W84'},
-              max_alt: {value: 3000, units: 'M', reference: 'W84'},
             },
           },
           op_intent_ref_creation_strategy: {
