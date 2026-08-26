@@ -1,0 +1,32 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/artifacts/timeline/TimelineOperation.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.configurations.artifacts.timeline.TimelineOperation, as defined in monitoring/benchmarker/configurations/artifacts/timeline.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "color": {
+      "description": "CSS color (e.g., #ff1122) for this operation.  Picked automatically if not specified.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "success_indicator_width": {
+      "description": "Width of the termination line indicating success or failure of each of these operations.",
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "type"
+  ],
+  "type": "object"
+}

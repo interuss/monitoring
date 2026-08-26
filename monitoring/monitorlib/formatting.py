@@ -145,3 +145,76 @@ def make_datetime(t) -> datetime.datetime:
 def limit_resolution(value: float, resolution: float) -> float:
     """Change resolution of a value"""
     return round(value / resolution) * resolution
+
+
+def format_duration_shorthand(duration: float | datetime.timedelta) -> str:
+    """Produce a smart shorthand string describing a duration.
+
+    Has a maximum of two significant units, and tenths of a second only for values <10s.
+    Examples:
+      - 3.8s (<10s)
+      - 48s (>=10s and <60s)
+      - 1m3s (60s <= d < 3600s)
+      - 12m42s
+      - 1h5m (3600s <= d < 86400s)
+      - 4h (if minutes == 0)
+      - 6m (if seconds == 0)
+      - 1d6h
+      - 3w4d
+    """
+    if isinstance(duration, datetime.timedelta):
+        seconds = duration.total_seconds()
+    else:
+        seconds = float(duration)
+
+    if seconds < 0:
+        return f"-{format_duration_shorthand(-seconds)}"
+
+    if seconds < 10.0:
+        rounded = round(seconds, 1)
+        if rounded >= 10.0:
+            return "10s"
+        return f"{rounded:.1f}s"
+
+    if seconds < 60.0:
+        rounded = round(seconds)
+        if rounded >= 60:
+            return "1m"
+        return f"{rounded}s"
+
+    if seconds < 3600.0:
+        total_sec = round(seconds)
+        mins = total_sec // 60
+        secs = total_sec % 60
+        if mins >= 60:
+            return "1h"
+        if secs == 0:
+            return f"{mins}m"
+        return f"{mins}m{secs}s"
+
+    if seconds < 86400.0:
+        total_min = round(seconds / 60.0)
+        hours = total_min // 60
+        mins = total_min % 60
+        if hours >= 24:
+            return "1d"
+        if mins == 0:
+            return f"{hours}h"
+        return f"{hours}h{mins}m"
+
+    if seconds < 604800.0:
+        total_hours = round(seconds / 3600.0)
+        days = total_hours // 24
+        hours = total_hours % 24
+        if days >= 7:
+            return "1w"
+        if hours == 0:
+            return f"{days}d"
+        return f"{days}d{hours}h"
+
+    total_days = round(seconds / 86400.0)
+    weeks = total_days // 7
+    days = total_days % 7
+    if days == 0:
+        return f"{weeks}w"
+    return f"{weeks}w{days}d"
