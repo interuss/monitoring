@@ -9,7 +9,7 @@
 #
 # This image is intended to be built from the repository root context/folder.
 
-FROM ghcr.io/astral-sh/uv:0.12.5-python3.13-trixie-slim AS base
+FROM ghcr.io/astral-sh/uv:0.12.5-python3.13-trixie-slim AS base-system
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
 # Install system tools
@@ -28,18 +28,10 @@ RUN if [ "$(uname -m)" = "aarch64" ]; then \
 
 RUN mkdir -p /app/
 
-# This image should be built by passing in `version` and `commit_hash` based on information from git (see `make image`)
-# This version information becomes available in the environment variables specified below
-ARG version
-ARG commit_hash
-ENV MONITORING_VERSION=$version
-ENV GIT_COMMIT_HASH=$commit_hash
-
 # Install dependencies
 ENV UV_LINK_MODE=copy
 ENV UV_PROJECT_ENVIRONMENT=/venv/
 ENV VIRTUAL_ENV=/venv/
-ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_MONITORING=$version
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=./uv.lock,target=/app/uv.lock \
     --mount=type=bind,source=./pyproject.toml,target=/app/pyproject.toml \
@@ -59,6 +51,44 @@ RUN find /root/ -type d -exec chmod a+rx {} +
 # Start in this folder
 WORKDIR /app/monitoring
 
+# Discover `monitoring` module in Python
+ENV PYTHONPATH=/app
+
+# Add venv to path
+ENV PATH="/venv/bin/:$PATH"
+
+# No entry point maximizes flexibility in the use of this image
+ENTRYPOINT []
+
+FROM base-system AS dev-dependencies
+
+# Install dev dependencies
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=./uv.lock,target=/app/uv.lock \
+    --mount=type=bind,source=./pyproject.toml,target=/app/pyproject.toml \
+    cd /app/ && \
+    unset UV_FROZEN && \
+    uv sync --locked --no-install-project --compile-bytecode --group dev
+
+# Ensure UV don't check dependencies or lock file, since we installed everything before
+ENV UV_FROZEN=1
+ENV UV_NO_SYNC=1
+
+# Ensure the cache folder is present and writable by anyone
+RUN mkdir -p /.cache/uv/ && chmod 777 /.cache/uv/
+# Also fix the root folder where python is downloaded
+RUN find /root/ -type d -exec chmod a+rx {} +
+
+FROM base-system AS base
+
+# This image should be built by passing in `version` and `commit_hash` based on information from git (see `make image`)
+# This version information becomes available in the environment variables specified below
+ARG version
+ARG commit_hash
+ENV MONITORING_VERSION=$version
+ENV GIT_COMMIT_HASH=$commit_hash
+ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_MONITORING=$version
+
 # Add core content from repo
 ADD ./interfaces /app/interfaces
 ADD ./monitoring /app/monitoring
@@ -73,21 +103,26 @@ RUN mkdir -p /app/uss-host-files
 # This script indicates the status of the container
 HEALTHCHECK --interval=3s CMD sh /app/health_check.sh
 
-# Discover `monitoring` module in Python
-ENV PYTHONPATH=/app
+FROM dev-dependencies AS with-dev-dependencies
 
-# Add venv to path
-ENV PATH="/venv/bin/:$PATH"
+# This image should be built by passing in `version` and `commit_hash` based on information from git (see `make image-dev`)
+# This version information becomes available in the environment variables specified below
+ARG version
+ARG commit_hash
+ENV MONITORING_VERSION=$version
+ENV GIT_COMMIT_HASH=$commit_hash
+ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_MONITORING=$version
 
+# Add core content from repo
+ADD ./interfaces /app/interfaces
+ADD ./monitoring /app/monitoring
 
-# No entry point maximizes flexibility in the use of this image
-ENTRYPOINT []
+# Add health check to the /app root and make it executable
+COPY ./monitoring/health_check.sh /app/health_check.sh
+RUN chmod 766 /app/health_check.sh
 
-FROM base AS with-dev-dependencies
+# Additional preparations for uss_qualifier/webapp
+RUN mkdir -p /app/uss-host-files
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=./uv.lock,target=/app/uv.lock \
-    --mount=type=bind,source=./pyproject.toml,target=/app/pyproject.toml \
-    cd /app/ && \
-    unset UV_FROZEN && \
-    uv sync --locked --no-install-project --compile-bytecode --group dev
+# This script indicates the status of the container
+HEALTHCHECK --interval=3s CMD sh /app/health_check.sh
