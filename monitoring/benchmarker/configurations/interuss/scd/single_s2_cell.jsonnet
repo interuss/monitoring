@@ -113,8 +113,8 @@ local shape = {
         flight_generation: {
           independent_time_location_shape: {
             time: {
-              fixed_spacing: '29s',
-              uniform_random_spacing: '2s',
+              fixed_spacing: '36s',
+              uniform_random_spacing: '7.2s',
             },
             location: {
               random_location: location,
@@ -125,7 +125,7 @@ local shape = {
           },
         },
         flight_execution: {
-          end_flight_after_start: '10s',
+          end_flight_after_start: '5s',
         },
         scd_behavior: {
           dss_pool: ['uss%d_dss_pool' % uss],
@@ -243,6 +243,30 @@ local shape = {
       raw_report: {
         name: 'report',
       },
+    },
+    {
+      timeline: {
+        name: 'timeline',
+        operations: [
+          {
+            type: "workflow.flight_planner.flight",
+            color: "#32aced",
+            success_indicator_width: 5,
+          },
+          {
+            type: "query.astm.f3548.v21.dss.createOperationalIntentReference",
+            color: "#c7c46b",
+          },
+          {
+            type: "query.astm.f3548.v21.dss.updateOperationalIntentReference",
+            color: "#70c76b",
+          },
+          {
+            type: "query.astm.f3548.v21.dss.deleteOperationalIntentReference",
+            color: "#c2c2c2",
+          },
+        ],
+      }
     },
     {
       matplotlib_figure: {

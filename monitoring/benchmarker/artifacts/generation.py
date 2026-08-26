@@ -4,6 +4,7 @@ from monitoring.benchmarker.artifacts.matplotlib.matplotlib_figure import (
     generate_matplotlib_figure,
 )
 from monitoring.benchmarker.artifacts.raw_report import generate_raw_report
+from monitoring.benchmarker.artifacts.timeline.timeline import generate_timeline
 from monitoring.benchmarker.configurations.artifacts.artifact import (
     ArtifactSpecification,
 )
@@ -52,3 +53,6 @@ def generate_artifacts(
 
         if "matplotlib_figure" in spec and spec.matplotlib_figure is not None:
             generate_matplotlib_figure(report, spec.matplotlib_figure, output_dir)
+
+        if "timeline" in spec and spec.timeline is not None:
+            generate_timeline(report, spec.timeline, output_dir)

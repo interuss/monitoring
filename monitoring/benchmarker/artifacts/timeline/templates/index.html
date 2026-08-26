@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Benchmarker Timeline - {{ spec.name }}</title>
+  <style>
+    :root {
+      --primary: #1976d2;
+      --primary-hover: #1565c0;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    header {
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 0;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .meta-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      background-color: #f1f5f9;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .legend-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      padding: 0.5rem 0.75rem;
+      background-color: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+    }
+
+    .legend-color-box {
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 0.25rem;
+      border: 1px solid rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 0.875rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-weight: 600;
+      font-size: 0.8125rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      background-color: #f8fafc;
+    }
+
+    tr:hover td {
+      background-color: #f8fafc;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: var(--primary);
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 0.375rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: background-color 0.15s ease-in-out;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 0.25rem;
+      margin-bottom: 0.25rem;
+      white-space: nowrap;
+    }
+
+    .status-completed {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-stabilitynotachieved {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-unstable {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .progress-steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div>
+        <h1>Timeline Artifact: <code>{{ spec.name }}</code></h1>
+        <div style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem;">
+          Benchmark Performance Timelines
+        </div>
+      </div>
+      <div class="meta-badges">
+        {% if "codebase_version" in report and report.codebase_version %}
+          <span class="badge">Version: {{ report.codebase_version }}</span>
+        {% endif %}
+        {% if "commit_hash" in report and report.commit_hash %}
+          <span class="badge">Commit: {{ report.commit_hash[:8] }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h2 class="card-title">Configured Operations of Interest</h2>
+      <div class="legend-grid">
+        {% for op in spec.operations %}
+          <div class="legend-item">
+            <div class="legend-color-box" style="background-color: {{ op.color or '#32aced' }};"></div>
+            <div>
+              <div style="font-weight: 600;">{{ op.type.split('.')[-1] }}</div>
+              <code style="font-size: 0.75rem; color: var(--text-muted);">{{ op.type }}</code>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <div style="padding: 1.5rem 1.5rem 1rem 1.5rem;">
+        <h2 class="card-title" style="margin: 0;">Benchmark Scenarios</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="white-space: nowrap;">Scenario</th>
+            <th style="white-space: nowrap;">Duration</th>
+            <th>Steps / Progression</th>
+            <th style="white-space: nowrap;">Origins</th>
+            <th style="white-space: nowrap;">Operations</th>
+            <th style="white-space: nowrap;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in scenarios_summary %}
+            <tr>
+              <td style="white-space: nowrap;">
+                <a href="{{ s.filename }}" style="font-weight: 600; color: var(--primary); text-decoration: none;">
+                  Scenario&nbsp;{{ s.index }}
+                </a>
+                <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.25rem;">
+                  {{ s.name }}
+                </div>
+              </td>
+              <td style="white-space: nowrap;">{{ s.duration_shorthand }}</td>
+              <td>
+                <div class="progress-steps">
+                  {% for step in s.steps %}
+                    <span class="status-pill status-{{ step.termination_reason|lower }}" title="Step {{ step.step_index }}: LF {{ step.load_factor }}, {{ step.termination_reason }}">
+                      LF&nbsp;{{ step.load_factor }}&nbsp;{{ step.termination_symbol }}
+                    </span>
+                  {% endfor %}
+                </div>
+              </td>
+              <td style="white-space: nowrap;">{{ s.origins_count }}</td>
+              <td style="white-space: nowrap;">
+                <div><b>{{ s.operations_count }}</b>&nbsp;total</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;">
+                  <span style="color: var(--success); font-weight: 600;">{{ s.successful_operations }}&nbsp;✔</span>{% if s.unsuccessful_operations > 0 %}&nbsp;|&nbsp;<span style="color: var(--danger); font-weight: 600;">{{ s.unsuccessful_operations }}&nbsp;✖</span>{% endif %}
+                </div>
+              </td>
+              <td style="white-space: nowrap;">
+                <a href="{{ s.filename }}" class="btn">
+                  View&nbsp;Timeline&nbsp;&rarr;
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
