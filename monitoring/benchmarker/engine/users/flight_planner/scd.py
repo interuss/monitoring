@@ -63,7 +63,6 @@ class SCDHandler(CoordinationSubscriber):
 
     random: Random
 
-    subscription_checked: bool = False
     op_intent_refs: dict[FlightID, api.OperationalIntentReference]
 
     key: list[api.EntityOVN]
@@ -199,85 +198,7 @@ class SCDHandler(CoordinationSubscriber):
             )
 
     def get_utm_actions(self, flight: Flight) -> Iterable[FlightAction]:
-        if (
-            not self.subscription_checked
-            and "single_subscription" in self.subscription_strategy
-            and self.subscription_strategy.single_subscription is not None
-        ):
-            yield FlightAction(
-                timestamp=datetime.now(UTC),
-                start=partial(
-                    self.ensure_subscription_exists,
-                    flight,
-                    self.subscription_strategy.single_subscription.subscription_id,
-                ),
-                run_on_shutdown=False,
-            )
-        else:
-            yield from self.get_create_actions(flight)
-
-    async def ensure_subscription_exists(
-        self,
-        flight: Flight,
-        subscription_id: api.SubscriptionID,
-    ) -> list[FlightAction]:
-        t0 = datetime.now(UTC)
-        if not self.subscription_strategy.single_subscription:
-            raise RuntimeError(
-                "ensure_subscription_exists called even though single_subscription was undefined"
-            )
-
-        start_time = t0
-        end_time = (
-            t0 + self.subscription_strategy.single_subscription.duration.timedelta
-        )
-        area = self.subscription_strategy.single_subscription.area.to_latlngrect()
-        min_alt = self.subscription_strategy.single_subscription.min_alt.to_w84_m()
-        max_alt = self.subscription_strategy.single_subscription.max_alt.to_w84_m()
-
-        dss_instance = self.select_dss_instance()
-        uss_base_url = make_fake_url()
-
-        mutated_sub = dss_instance.upsert_subscription(
-            area_vertices=area,
-            start_time=start_time,
-            end_time=end_time,
-            base_url=uss_base_url,
-            sub_id=subscription_id,
-            notify_for_op_intents=True,
-            notify_for_constraints=False,
-            min_alt_m=min_alt,
-            max_alt_m=max_alt,
-        )
-        success = None
-        self.user.record_query(mutated_sub, True)
-
-        if mutated_sub.status_code == 409:
-            # Subscription already exists
-            success = True
-
-        if success is None and not mutated_sub.success:
-            success = False
-
-        if success is None:
-            try:
-                _ = mutated_sub.subscription
-                success = True
-            except ValueError:
-                success = False
-
-        flight.completed_actions.append(
-            CompletedFlightAction(
-                type=FlightActionType.UpsertSCDSubscription,
-                initiated_at=t0,
-                causes_flight_failure=not success,
-            )
-        )
-        self.subscription_checked = True
-        if success:
-            return list(self.get_create_actions(flight))
-        else:
-            return []
+        yield from self.get_create_actions(flight)
 
     def get_create_actions(self, flight: Flight) -> Iterable[FlightAction]:
         op_intent_id = api.EntityID(uuid.uuid4())
