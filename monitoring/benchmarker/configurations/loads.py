@@ -19,6 +19,9 @@ class WorkflowType(StrEnum):
     FlightPlannerFlight = "flight_planner.flight"
     """An operation consisting of managing a flight from end to end, including all associated UTM actions like establishing an operational intent and deleting it."""
 
+    FlightPlannerActiveFlight = "flight_planner.active_flight"
+    """An operation involving only active flight time from the time the operator starts using the airspace until the time the operator finishes using the airspace."""
+
 
 class OperationType(str):
     """Type of operation providing load to a system being benchmarked."""

@@ -45,7 +45,18 @@ class CompletedFlightAction:
 class Flight:
     id: FlightID
     volumes: Volume4DCollection
+
     actual_end_time: datetime
+    """When the operator actually stopped using the airspace (often before the end of the last volume)."""
+
+    clear_to_fly: bool = True
+    """Whether the operator was cleared for takeoff by UTM activities (all UTM activities have veto power)."""
+
+    achieved_start_time: datetime | None = None
+    """When the operator actually started using the airspace.
+    
+    If None, implies the operator started using the airspace as soon as the first declared volume started."""
+
     completed_actions: list[CompletedFlightAction] = field(default_factory=lambda: [])
 
     @property
@@ -73,6 +84,16 @@ class Flight:
         return all(
             not action.causes_flight_failure for action in self.completed_actions
         )
+
+    def extend_achieved_start_time(self, t: datetime) -> None:
+        """Declare that a takeoff prerequisite was completed at time t."""
+        t_start = self.get_achieved_start_time()
+        if t > t_start:
+            self.achieved_start_time = t
+
+    def get_achieved_start_time(self) -> datetime:
+        """Retrieve the time the operator actually started using the airspace."""
+        return self.achieved_start_time or self.start_time
 
     async def complete(self) -> list[FlightAction]:
         self.completed_actions.append(
