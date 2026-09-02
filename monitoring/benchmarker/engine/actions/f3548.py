@@ -1,7 +1,9 @@
+import json
 from datetime import UTC, datetime
 from typing import Any
 
 from loguru import logger
+from uas_standards.astm.f3548.v21.api import EntityID, Subscription
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.benchmarker.configurations.actions.action import BenchmarkActionName
@@ -14,6 +16,7 @@ from monitoring.benchmarker.configurations.actions.f3548 import (
     DeleteSubscription,
     F3548ActionSpecification,
 )
+from monitoring.monitorlib.inspection import calling_function_name
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
     DSSInstance,
@@ -38,6 +41,42 @@ def get_dss_instances(resource_pool: dict[ResourceID, Any]) -> list[DSSInstance]
     return dss_instances
 
 
+def _remove_operational_intent(
+    op_intent_id: EntityID, dss_instance: DSSInstance
+) -> None:
+    oi_ref, _ = dss_instance.get_op_intent_reference(op_intent_id)
+    if not oi_ref.ovn:
+        raise RuntimeError(
+            f"When attempting to remove operational intent '{op_intent_id}', fetching the operational intent reference did not return an OVN"
+        )
+    dss_instance.delete_op_intent(oi_ref.id, oi_ref.ovn)
+
+
+def _remove_subscription(subscription: Subscription, dss_instance: DSSInstance) -> None:
+    if subscription.dependent_operational_intents:
+        n_oi_refs = len(subscription.dependent_operational_intents)
+        logger.warning(
+            f"Subscription '{subscription.id}' has {n_oi_refs} dependent operational intents; attempting to remove operational intents {', '.join(subscription.dependent_operational_intents)}"
+        )
+        for op_intent_id in subscription.dependent_operational_intents:
+            _remove_operational_intent(op_intent_id, dss_instance)
+        logger.info(
+            f"Removed {n_oi_refs} operational intent references dependent on subscription '{subscription.id}'"
+        )
+
+    del_result = dss_instance.delete_subscription(
+        sub_id=subscription.id,
+        sub_version=subscription.version,
+    )
+    if not del_result.success:
+        logger.error(
+            f"Subscription deletion error:\n{json.dumps(del_result, indent=2)}"
+        )
+        raise RuntimeError(
+            f"Failed to delete existing subscription '{subscription.id}' during {calling_function_name(levels=1)}: {del_result.errors}"
+        )
+
+
 def create_subscription(
     spec: CreateSubscription,
     resource_pool: dict[ResourceID, Any],
@@ -57,19 +96,15 @@ def create_subscription(
             logger.info(
                 f"F3548 Action: Existing subscription '{sub.subscription_id}' found (version {fetched_sub.subscription.version}); deleting it..."
             )
-            del_result = dss_instance.delete_subscription(
-                sub_id=sub.subscription_id,
-                sub_version=fetched_sub.subscription.version,
-            )
-            if not del_result.success:
-                raise RuntimeError(
-                    f"Failed to delete existing subscription '{sub.subscription_id}' during GetDeleteCreate: {del_result.errors}"
-                )
+            _remove_subscription(fetched_sub.subscription, dss_instance)
         elif fetched_sub.status_code == 404:
             logger.info(
                 f"F3548 Action: Subscription '{sub.subscription_id}' does not exist; proceeding to create."
             )
         else:
+            logger.error(
+                f"Subscription query error:\n{json.dumps(fetched_sub, indent=2)}"
+            )
             raise RuntimeError(
                 f"Failed to query subscription '{sub.subscription_id}' during GetDeleteCreate: {fetched_sub.errors}"
             )
@@ -100,6 +135,9 @@ def create_subscription(
             max_alt_m=sub.max_alt.to_w84_m(),
         )
         if not create_result.success:
+            logger.error(
+                f"Subscription creation error:\n{json.dumps(create_result, indent=2)}"
+            )
             raise RuntimeError(
                 f"Failed to create subscription '{sub.subscription_id}': {create_result.errors}"
             )
@@ -119,42 +157,33 @@ def delete_subscription(
     dss_instances = get_dss_instances(resource_pool)
     if not dss_instances:
         raise ValueError("No ASTM F3548 DSS instances found in resource pool")
+    dss_instance = dss_instances[0]
 
     if spec.mode == SubscriptionDeletionMode.GetDeleteIfExist:
         logger.info(
             f"F3548 Action: Checking if subscription '{spec.subscription_id}' exists before deleting..."
         )
-        deleted = False
-        for dss_instance in dss_instances:
-            fetched_sub = dss_instance.get_subscription(spec.subscription_id)
-            if fetched_sub.status_code == 200 and fetched_sub.subscription is not None:
-                logger.info(
-                    f"F3548 Action: Existing subscription '{spec.subscription_id}' found (version {fetched_sub.subscription.version}); deleting it..."
-                )
-                del_result = dss_instance.delete_subscription(
-                    sub_id=spec.subscription_id,
-                    sub_version=fetched_sub.subscription.version,
-                )
-                if not del_result.success:
-                    raise RuntimeError(
-                        f"Failed to delete subscription '{spec.subscription_id}': {del_result.errors}"
-                    )
-                logger.info(
-                    f"F3548 Action: Successfully deleted subscription '{spec.subscription_id}'."
-                )
-                deleted = True
-                break
-            elif fetched_sub.status_code == 404:
-                continue
-            else:
-                raise RuntimeError(
-                    f"Failed to query subscription '{spec.subscription_id}' during GetDeleteIfExist: {fetched_sub.errors}"
-                )
-
-        if not deleted:
+        fetched_sub = dss_instance.get_subscription(spec.subscription_id)
+        if fetched_sub.status_code == 200 and fetched_sub.subscription is not None:
+            logger.info(
+                f"F3548 Action: Existing subscription '{spec.subscription_id}' found (version {fetched_sub.subscription.version}); deleting it..."
+            )
+            _remove_subscription(fetched_sub.subscription, dss_instance)
+            logger.info(
+                f"F3548 Action: Successfully deleted subscription '{spec.subscription_id}'."
+            )
+        elif fetched_sub.status_code == 404:
             logger.info(
                 f"F3548 Action: Subscription '{spec.subscription_id}' did not exist; nothing to delete."
             )
+        else:
+            logger.error(
+                f"Subscription query error:\n{json.dumps(fetched_sub, indent=2)}"
+            )
+            raise RuntimeError(
+                f"Failed to query subscription '{spec.subscription_id}' during GetDeleteIfExist: {fetched_sub.errors}"
+            )
+
     else:
         raise NotImplementedError(
             f"Unsupported subscription deletion mode '{spec.mode}'"
