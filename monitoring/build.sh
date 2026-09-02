@@ -19,7 +19,6 @@ docker image build \
     -t "${TAG}" \
     --build-arg version="$(scripts/git/version.sh monitoring --long)" \
     --build-arg commit_hash="$(git rev-parse HEAD)" \
-    --target base \
     . \
   || exit 1
 
