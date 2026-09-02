@@ -154,6 +154,7 @@ _ARITY = {
     "ClientIdClientSecret": 4,
     "Keycloak": 3,
     "FlightPassport": 4,
+    "PrivateKeyJWT": 5,
 }
 
 _SECRETS = {
@@ -161,6 +162,7 @@ _SECRETS = {
     "ClientIdClientSecret": (2, "client_secret"),
     "Keycloak": (2, "client_secret"),
     "FlightPassport": (2, "client_secret"),
+    "PrivateKeyJWT": (3, "key"),
 }
 
 

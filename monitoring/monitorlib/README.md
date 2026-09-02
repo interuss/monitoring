@@ -30,6 +30,8 @@ AuthAdapter's `__init__` constructor.  Both ordinal (e.g.,
 * `SignedRequest(https://example.interuss.org/oauth/token, client_id=uss1.com,
    key_path=/auth/uss1.key, cert_url=https://uss1.com/uss1.der)`
 * `ClientIdClientSecret(https://example.interuss.org/token, uss1, dXNzMQ==)`
+* `PrivateKeyJWT(https://example.interuss.org/token, uss1, key_path=/auth/uss1.key)`
+* `PrivateKeyJWT(https://example.interuss.org/token, uss1, key=LS0tLS1CRUdJTi<...>, key_id=uss1)`
 
 ### Testing
 
