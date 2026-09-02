@@ -9,6 +9,9 @@ from monitoring.monitorlib.expressions.types import ASTExpression, SymbolExpress
 class AxisSpecification(ImplicitDict):
     label: Optional[str]
 
+    margin: Optional[float]
+    """If specified, margin fraction (e.g. 0.05 for 5%) to apply to this axis."""
+
     min_value: Optional[float]
     """If specified, the minimum value of this axis."""
 
@@ -139,6 +142,12 @@ class SubfigureSpecification(ImplicitDict):
     n_subplot_rows: int = 1
     n_subplot_cols: int = 1
 
+    wspace: Optional[float]
+    """If specified, width space between subplots within this subfigure."""
+
+    hspace: Optional[float]
+    """If specified, height space between subplots within this subfigure."""
+
     render_expr: Optional[ASTExpression]
     """If specified and this expression evaluates to false, skip rendering this subfigure."""
 
@@ -157,6 +166,27 @@ class MatplotlibFigureSpecification(ImplicitDict):
 
     n_subfigure_rows: int = 1
     n_subfigure_cols: int = 1
+
+    width: Optional[float]
+    """Figure width in inches. Defaults based on columns and subplots."""
+
+    height: Optional[float]
+    """Figure height in inches. Defaults based on rows and subplots."""
+
+    wspace: Optional[float]
+    """If specified, width space between subfigures."""
+
+    hspace: Optional[float]
+    """If specified, height space between subfigures."""
+
+    w_pad: Optional[float]
+    """Width padding for layout engine (in inches)."""
+
+    h_pad: Optional[float]
+    """Height padding for layout engine (in inches)."""
+
+    dpi: Optional[int]
+    """Figure DPI when saving to disk."""
 
     evaluation_context: Optional[list[SymbolExpression]]
     """Symbols available to other expressions in this figure specification."""
