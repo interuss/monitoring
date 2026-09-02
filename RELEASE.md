@@ -2,11 +2,31 @@
 
 ## Background
 
-Releases of monitoring are based on git tags in the format `interuss/monitoring/v[0-9]+\.[0-9]+\.[0-9]+`, optionally suffixed with `-[0-9A-Za-z-.]+`.  This tag form follows the pattern `[owner]/[component]/[semantic version]`; see [semantic version](https://semver.org) for more information.
+Releases of `monitoring` utilize Git tags structured precisely as `interuss/monitoring/v[X].[Y].[Z]`, optionally accompanied by strict pre-release/candidate identifiers adhering to **PEP 440 Pre-Release Conventions**. 
+
+This formatting conforms to the InterUSS Component Registry pattern: `[owner]/[component]/[semantic version]`. (See [Semantic Versioning](https://semver.org) and [PEP 440 Version Identification](https://peps.python.org/pep-0440/)).
 
 Keeping track of breaking changes and migration instructions is done through the [NEXT_RELEASE_NOTES.md](NEXT_RELEASE_NOTES.md) file, which is updated as features are added or modified and serves as a basis for release notes.
 
-When either an executable or image is built from a `git` checkout of the source, the most recent tag is used as the version tag. If no such tag exists, the build system defaults to v0.0.0-[commit_hash]. If commits have been added to the tag, the commit hash is appended to the version. If the workspace is not clean, `-dirty` is appended to it. The version tag is computed by [`scripts/git/version.sh`](scripts/git/version.sh).
+### PEP 440 Versioning, Validation, & PyPI Releases
+For compatibility with PyPI (Python Package Index) and Docker registry distributions, versions must follow the conventions below:
+*   **Official Releases (`vX.Y.Z`)**: Output purely as canonical, unmodified Semantic Versions (`X.Y.Z`). These artifacts are fully eligible for publishing to PyPI.
+*   **Release Candidates (`vX.Y.Z-rc[N]`)**: **Strict Pre-Release Identifiers**. 
+    *   Pre-release tags **must** utilize the strictly lowercase, hyphenated `-rc[N]` suffix (e.g., `v0.31.0-rc1`). 
+    *   Build tooling normalizes these delimiters into PEP 440-compliant pre-release strings (`X.Y.Zrc[N]`) for PyPI compatibility.
+    *   Note: Pre-releases containing uppercase identifiers (e.g., `-RC1`), space delimiters, alphabetic metadata, or non-numeric suffixes (e.g., `-alpha`, `-1.2`) are prevented to avoid accidental malformed PyPI publication.
+*   **Development & Branch Builds (`+<metadata>`)**:
+    *   Any image or PyPI artifact generated from a development branch, Pull Request, or commit other than an explicitly tagged release/pre-release boundary automatically appends PEP 440 Local Version Segments utilizing the `+` delimiter (e.g., `0.31.0+gd56bb4d`). 
+    *   Because PyPI rejects package uploads bearing PEP 440 `+` local-version metadata, this provides a safeguard preventing non-release/development builds from accidentally polluting the public package registry.
+
+## PyPI Package Distribution (`interuss_monitoring`)
+As part of broader interoperating improvements for the InterUSS Python ecosystem:
+*   **Distribution Identity**: The `monitoring` Python codebase is published to PyPI under the canonical ecosystem package name **`interuss_monitoring`**. 
+*   **Interim Import Namespace (Phase 1 Phase-in)**: 
+    *   Consumers install the package via `pip install interuss_monitoring`.
+    *   In the current structural phase (Phase 1), internal code modules and external users importing from the PyPI package interact with the Python Import Namespace via **`import monitoring.<submodule>`**. 
+    *   *Warning for Interim Consumers*: Users must ensure their active Python virtual environment does not contain a conflicting top-level `monitoring/` directory from alternative third-party packages to prevent Python import-shadowing and runtime `ModuleNotFoundError` conflicts.
+*   **Future Transition (Phase 2)**: The repository is systematically migrating towards a fully isolated `src/interuss_monitoring` layout and explicit `import interuss_monitoring.<submodule>` namespace, perfectly mirrors the architectural patterns established by `implicitdict` and `uas_standards`.
 
 ## Release procedure
 
@@ -15,21 +35,19 @@ Releasing a monitoring version requires the following steps:
   - `X` is the major release number
   - `Y` is the minor release number
   - `Z` is the patch number
-  - (optionally) `W` is the prerelease
-  - `X.Y.Z[-W]` is according to [semantic versioning](https://semver.org)
-    - Note that valid examples of this form include `0.1.0`, `20.0.0`, `0.5.0-rc`, `0.5.0-1.2`
+  - (optionally) `W` is the pre-release candidate (**must strictly be formatted as `rcN`**, e.g., `rc1`, `rc2`)
   - `X`, `Y`, and `Z` should be selected according to the nature of the changes included in the release
     - See [NEXT_RELEASE_NOTES.md](./NEXT_RELEASE_NOTES.md) for the minimum version increment, and look for any changes that might suggest a more substantial category of release than the intended next version currently tracked in NEXT_RELEASE_NOTES
-- Create a release tag via *one* of the following methods:
-  - On the InterUSS fork, click Releases -> Draft a new release
-    - For **Tag**, enter `interuss/monitoring/vX.Y.Z` (see below for format)
-    - For **Release title**, enter `vX.Y.Z` (corresponding to the tag)
-    - For Release notes, click **Generate release notes**, then add any content from [NEXT_RELEASE_NOTES.md](./NEXT_RELEASE_NOTES.md) to the top of the notes
-  - Create a release tag on main using `make tag VERSION=X.Y.Z[-W]`. The script will push a tag (`release tag`) to the remote origin under the form of `[owner]/monitoring/vX.Y.Z[-W]`, where
-      - `[owner]` is either the organization name or the username of the origin remote url
-      - Official releases are `interuss/monitoring/v#.#.#`.
-      - Add the pending release notes from [NEXT_RELEASE_NOTES.md](NEXT_RELEASE_NOTES.md) to the release notes.
-- The github workflow ([.github/workflows/image-publish.yml](.github/workflows/image-publish.yml)) is triggered for every new release tag. On the canonical interuss fork, it builds and publishes the monitoring image to the [official docker registry](https://hub.docker.com/repository/docker/interuss/monitoring).
+- Create and publish a release in GitHub:
+  - On the repository, navigate to **Releases** -> **Draft a new release**.
+  - For **Choose a tag**, enter `interuss/monitoring/vX.Y.Z` (or `interuss/monitoring/vX.Y.Z-rcN` for pre-releases) and click **Create new tag**.
+  - Ensure the target branch is `main`.
+  - For **Release title**, enter `vX.Y.Z` (or `vX.Y.Z-rcN`).
+  - Click **Generate release notes**, then copy and prepend any pending content from [NEXT_RELEASE_NOTES.md](./NEXT_RELEASE_NOTES.md) to the top of the release notes.
+  - Click **Publish release**.
+- The GitHub workflows are triggered by the published release/tag:
+  - The image publishing workflow ([.github/workflows/image-publish.yml](.github/workflows/image-publish.yml)) is triggered for every new release tag. On the canonical interuss fork, it builds and publishes the monitoring image to the [official docker registry](https://hub.docker.com/repository/docker/interuss/monitoring).
+  - The package publishing workflow ([.github/workflows/publish.yaml](.github/workflows/publish.yaml)) is triggered when a release is published. It builds the `interuss_monitoring` Python distribution packages (`.tar.gz` and `.whl`) and publishes them to PyPI.
 - After completing the release, open a PR to remove the pending release notes from [NEXT_RELEASE_NOTES.md](NEXT_RELEASE_NOTES.md) and update the anticipated next release version number assuming just a bug fix (e.g., v0.18.3 -> v0.18.4)
 - When a PR with a change larger than the current anticipated next release version number in [NEXT_RELEASE_NOTES.md](./NEXT_RELEASE_NOTES.md) is made, it should ideally also adjust the anticipated next release version number in NEXT_RELEASE_NOTES
   - Example 1: if the most recent release was v0.18.3, NEXT_RELEASE_NOTES indicated v0.18.4, and a PR made a change larger than a bug fix, that PR should change the number in NEXT_RELEASE_NOTES to v0.19.0

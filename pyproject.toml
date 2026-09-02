@@ -1,5 +1,5 @@
 [project]
-name = "monitoring"
+name = "interuss_monitoring"
 dynamic = ["version"]
 authors = [
   { name="InterUSS Platform", email="tsc@lists.interussplatform.org" },
@@ -129,5 +129,5 @@ namespaces = true
 
 [tool.setuptools_scm]
 write_to = "monitoring/_version.py"
-tag_regex = "^interuss/monitoring/v(?P<version>\\d+\\.\\d+\\.\\d+)"
-
+# Strictly anchor to the repo-level prefix, 3-part numeric PEP440/SemVer, and optionally PEP440 lowercase '-rcN' suffixes.
+tag_regex = "^interuss/monitoring/v(?P<version>\\d+\\.\\d+\\.\\d+(?:-rc\\d+)?)$"
