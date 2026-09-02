@@ -36,7 +36,7 @@
 
 ARG BASE_STAGE=base-system
 
-FROM ghcr.io/astral-sh/uv:0.12.5-python3.13-trixie-slim AS base-system
+FROM ghcr.io/astral-sh/uv:0.12.9-python3.13-trixie-slim AS base-system
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
 # Install system tools
