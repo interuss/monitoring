@@ -75,7 +75,7 @@ def get_upstream_owner() -> str:
     return "unknown"
 
 
-def get_commit_hash(with_status: bool = True) -> str:
+def get_short_commit_hash(with_status: bool = True) -> str:
     """
     Returns the current short commit hash, optionally suffixed with '-dirty' or '-localcommit'.
     """
@@ -94,6 +94,12 @@ def get_commit_hash(with_status: bool = True) -> str:
         return f"{commit}-localcommit"
 
     return commit
+
+
+def get_full_commit_hash() -> str:
+    """Returns the full commit hash.  Useful for resource/version navigation on GitHub."""
+    res = run_git_cmd(["rev-parse", "HEAD"])
+    return res.stdout.strip()
 
 
 def get_git_tag_metadata(namespace: str, component: str) -> tuple[str, bool, str, bool]:
@@ -231,7 +237,7 @@ def main() -> None:
             "  pep440: Canonical PEP440 version (e.g., '0.31.0', '0.31.0rc1', '0.31.0+gd56bb4d.dirty'); fails for malformed pre-releases (-RC, -1.2, etc.).\n"
             "  imagetag: docker image tag version (e.g., 'v0.31.0', 'v0.31.0-d56bb4d417-dirty').\n"
             "  owner: Repository organization name (e.g., 'interuss', 'Orbitalize').\n"
-            "  commit: Current commit hash with status suffix (e.g., 'd56bb4d-dirty', 'd56bb4d-localcommit')."
+            "  commit: Current commit full hash abbreviation without any status suffix (e.g., 'd56bb4d417242e0c29bd6b64837aa8bf5adad487')."
         ),
     )
 
@@ -242,7 +248,7 @@ def main() -> None:
         sys.exit(0)
 
     elif args.format == "commit":
-        print(get_commit_hash(with_status=True))
+        print(get_full_commit_hash())
         sys.exit(0)
 
     component = "monitoring"
