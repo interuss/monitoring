@@ -11,10 +11,38 @@ import argparse
 import os
 import re
 import subprocess
-import sys
+from dataclasses import dataclass
+from typing import Any
 
 # Base repository root determination relative to the scripts/git directory.
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+
+
+@dataclass
+class GitInfo:
+    upstream_owner: str
+    """Organization/owner of the upstream repository."""
+
+    component: str
+    """Component identifier ("monitoring" for this repository)."""
+
+    baseline_tag: str
+    """Tag content without status information.  E.g., interuss/monitoring/v0.0.0"""
+
+    is_exact_tag_boundary: bool
+    """True when the current state lies exactly on a valid tag (and therefore is suitable for release)."""
+
+    full_commit_hash: str
+    """Full SHAA-1 commit hash."""
+
+    short_commit_hash: str
+    """Current commit hash in short form."""
+
+    is_dirty: bool
+    """True when there are uncommitted changes."""
+
+    is_localcommit: bool
+    """True when the most recent commit is local-only."""
 
 
 def run_git_cmd(args: list[str], check: bool = True) -> subprocess.CompletedProcess:
@@ -29,10 +57,7 @@ def run_git_cmd(args: list[str], check: bool = True) -> subprocess.CompletedProc
 
 
 def get_upstream_owner() -> str:
-    """
-    Determines the organization/owner of the upstream repository.
-    Checks 'origin', 'interuss', tracking upstream branch, or defaults to 'unknown'.
-    """
+    """Determines the organization/owner of the upstream repository."""
     backup_repo = "https://github.com/unknown/_"
     try:
         upstream_branch = run_git_cmd(
@@ -75,89 +100,72 @@ def get_upstream_owner() -> str:
     return "unknown"
 
 
-def get_short_commit_hash(with_status: bool = True) -> str:
-    """
-    Returns the current short commit hash, optionally suffixed with '-dirty' or '-localcommit'.
-    """
-    res = run_git_cmd(["rev-parse", "--short", "HEAD"])
-    commit = res.stdout.strip()
+def get_git_info(component: str) -> GitInfo:
+    """Interrogates git for information relevant to versioning."""
 
-    if not with_status:
-        return commit
+    kwargs: dict[str, Any] = {"component": component}
 
-    status_res = run_git_cmd(["status", "--porcelain"], check=False)
-    if status_res.stdout.strip():
-        return f"{commit}-dirty"
+    upstream_owner = get_upstream_owner()
+    kwargs["upstream_owner"] = upstream_owner
 
-    cherry_res = run_git_cmd(["cherry"], check=False)
-    if cherry_res.returncode == 0 and cherry_res.stdout.strip():
-        return f"{commit}-localcommit"
+    tag_match_pattern = f"{upstream_owner}/{component}/*"
 
-    return commit
-
-
-def get_full_commit_hash() -> str:
-    """Returns the full commit hash.  Useful for resource/version navigation on GitHub."""
-    res = run_git_cmd(["rev-parse", "HEAD"])
-    return res.stdout.strip()
-
-
-def get_git_tag_metadata(namespace: str, component: str) -> tuple[str, bool, str, bool]:
-    """
-    Interrogates Git for component tags, exact boundary matches, commit hash, and workspace state.
-    """
-    tag_match_pattern = f"{namespace}/{component}/*"
-
-    # 1. Resolve Baseline Tag (--abbrev=0 isolates tag boundary without distance markers)
+    # Resolve baseline tag (--abbrev=0 isolates tag boundary without distance markers)
     baseline_res = run_git_cmd(
         ["describe", "--tags", "--abbrev=0", f"--match={tag_match_pattern}"],
         check=False,
     )
     if baseline_res.returncode == 0 and baseline_res.stdout.strip():
-        baseline_tag = baseline_res.stdout.strip()
+        kwargs["baseline_tag"] = baseline_res.stdout.strip()
     else:
-        baseline_tag = f"{namespace}/{component}/v0.0.0"
+        kwargs["baseline_tag"] = f"{upstream_owner}/{component}/v0.0.0"
 
-    # 2. Determine Exact-Match Tag Boundary
+    # Determine exact-match tag boundary
     exact_res = run_git_cmd(
         ["describe", "--tags", f"--match={tag_match_pattern}", "--exact-match"],
         check=False,
     )
-    is_exact_tag_boundary = exact_res.returncode == 0
+    kwargs["is_exact_tag_boundary"] = exact_res.returncode == 0
 
-    # 3. Retrieve Commit-Hash & Workspace Dirtiness
-    hash_res = run_git_cmd(["rev-parse", "--short", "HEAD"])
-    commit_hash = hash_res.stdout.strip()
+    # Retrieve the full commit hash
+    full_hash_res = run_git_cmd(["rev-parse", "HEAD"])
+    kwargs["full_commit_hash"] = full_hash_res.stdout.strip()
 
+    # Retrieve short commit hash
+    short_hash_res = run_git_cmd(["rev-parse", "--short", "HEAD"])
+    kwargs["short_commit_hash"] = short_hash_res.stdout.strip()
+
+    # Retrieve workspace dirtiness
     status_res = run_git_cmd(["status", "--porcelain"], check=False)
-    is_dirty = bool(status_res.stdout.strip())
+    kwargs["is_dirty"] = bool(status_res.stdout.strip())
 
-    return baseline_tag, is_exact_tag_boundary, commit_hash, is_dirty
+    # Retrieve whether commit is local-only
+    cherry_res = run_git_cmd(["cherry"], check=False)
+    kwargs["is_localcommit"] = cherry_res.returncode == 0 and cherry_res.stdout.strip()
+
+    return GitInfo(**kwargs)
 
 
-def derive_pep440_version(namespace: str, component: str) -> str:
+def derive_pep440_version(info: GitInfo) -> str:
     """
     Validates Git tag and metadata against strict InterUSS SemVer and Pre-Release conventions,
     generating a canonical PEP 440 version string.
     """
-    baseline_tag, is_exact_tag_boundary, commit_hash, is_dirty = get_git_tag_metadata(
-        namespace, component
-    )
 
     strict_tag_regex = re.compile(
-        rf"^{re.escape(namespace)}/{re.escape(component)}/v(?P<semver>\d+\.\d+\.\d+)(?P<rc_segment>-rc\d+)?$"
+        rf"^{re.escape(info.upstream_owner)}/{re.escape(info.component)}/v(?P<semver>\d+\.\d+\.\d+)(?P<rc_segment>-rc\d+)?$"
     )
     malformed_prerelease_regex = re.compile(
-        rf"^{re.escape(namespace)}/{re.escape(component)}/v\d+\.\d+\.\d+-(.*)$"
+        rf"^{re.escape(info.upstream_owner)}/{re.escape(info.component)}/v\d+\.\d+\.\d+-(.*)$"
     )
 
-    malformed_match = malformed_prerelease_regex.match(baseline_tag)
-    strict_match = strict_tag_regex.match(baseline_tag)
+    malformed_match = malformed_prerelease_regex.match(info.baseline_tag)
+    strict_match = strict_tag_regex.match(info.baseline_tag)
 
     if malformed_match and not strict_match:
         invalid_suffix = malformed_match.group(1)
         raise ValueError(
-            f"Strict Validation Failure: Tag '{baseline_tag}' contains a non-conforming pre-release "
+            f"Strict Validation Failure: Tag '{info.baseline_tag}' contains a non-conforming pre-release "
             f"or release-candidate identifier ('-{invalid_suffix}'). InterUSS pre-release tags "
             f"must strictly utilize the lowercase, hyphen-prefixed '-rc[N]' convention (e.g., '-rc1'). "
             "Case-insensitivity, arbitrary alpha-segments, or alternative delimiters are prohibited."
@@ -165,8 +173,8 @@ def derive_pep440_version(namespace: str, component: str) -> str:
 
     if not strict_match:
         raise ValueError(
-            f"Strict Validation Failure: Tag '{baseline_tag}' violates InterUSS repository SemVer conventions. "
-            f"Expected Pattern: '{namespace}/{component}/vX.Y.Z[-rcN]'."
+            f"Strict Validation Failure: Tag '{info.baseline_tag}' violates InterUSS repository SemVer conventions. "
+            f"Expected Pattern: '{info.upstream_owner}/{info.component}/vX.Y.Z[-rcN]'."
         )
 
     semver = strict_match.group("semver")
@@ -179,44 +187,36 @@ def derive_pep440_version(namespace: str, component: str) -> str:
 
     # If this is not an exact match on the release tag, or if workspace is dirty, append local version
     metadata_segments = []
-    if not is_exact_tag_boundary:
-        metadata_segments.append(f"g{commit_hash.lstrip('g')}")
-    if is_dirty:
-        metadata_segments.append("dirty")
+    if not info.is_exact_tag_boundary:
+        metadata_segments.append(info.short_commit_hash)
+    if info.is_dirty or info.is_localcommit:
+        metadata_segments.append(
+            ("dirty" if info.is_dirty else "")
+            + ("localcommit" if info.is_localcommit else "")
+        )
 
     if metadata_segments:
         return f"{pep440_base}+{'.'.join(metadata_segments)}"
-
-    return pep440_base
-
-
-def get_git_version(namespace: str, component: str, long_format: bool = False) -> str:
-    """
-    Derives the version string conforming to the legacy version.sh format.
-    """
-    tag_match_pattern = f"{namespace}/{component}/*"
-    describe_res = run_git_cmd(
-        ["describe", "--abbrev=1", "--tags", f"--match={tag_match_pattern}"],
-        check=False,
-    )
-    commit = run_git_cmd(["rev-parse", "--short", "HEAD"]).stdout.strip()
-    status_res = run_git_cmd(["status", "--porcelain"], check=False)
-    dirty_suffix = "-dirty" if status_res.stdout.strip() else ""
-
-    if describe_res.returncode != 0 or not describe_res.stdout.strip():
-        last_version = f"v0.0.0-{commit}"
     else:
-        full_tag = describe_res.stdout.strip()
-        last_version = full_tag.split("/")[-1]
-        if "-" in last_version:
-            # Commits added on top of tag
-            base_part = last_version.split("-")[0]
-            last_version = f"{base_part}-{commit}"
+        return pep440_base
 
-    version_str = f"{last_version}{dirty_suffix}"
-    if long_format:
-        return f"{namespace}/{component}/{version_str}"
-    return version_str
+
+def compute_image_tag(info: GitInfo) -> str:
+    """Computes the semantic version string with which a docker image should be tagged."""
+
+    tag = info.baseline_tag.split("/")[-1]
+
+    build_parts = []
+    if not info.is_exact_tag_boundary:
+        build_parts.append(info.short_commit_hash)
+    if info.is_dirty or info.is_localcommit:
+        build_parts.append(
+            ("dirty" if info.is_dirty else "")
+            + ("localcommit" if info.is_localcommit else "")
+        )
+    if build_parts:
+        tag += "+" + ".".join(build_parts)
+    return tag
 
 
 def main() -> None:
@@ -228,44 +228,29 @@ def main() -> None:
         choices=[
             "pep440",
             "imagetag",
-            "owner",
-            "commit",
+            "commitsha1",
         ],
         default="pep440",
         help=(
             "Explicit output format.\n"
             "  pep440: Canonical PEP440 version (e.g., '0.31.0', '0.31.0rc1', '0.31.0+gd56bb4d.dirty'); fails for malformed pre-releases (-RC, -1.2, etc.).\n"
             "  imagetag: docker image tag version (e.g., 'v0.31.0', 'v0.31.0-d56bb4d417-dirty').\n"
-            "  owner: Repository organization name (e.g., 'interuss', 'Orbitalize').\n"
-            "  commit: Current commit full hash abbreviation without any status suffix (e.g., 'd56bb4d417242e0c29bd6b64837aa8bf5adad487')."
+            "  commitsha1: Current commit full hash abbreviation without any status suffix (e.g., 'd56bb4d417242e0c29bd6b64837aa8bf5adad487')."
         ),
     )
 
     args = parser.parse_args()
 
-    if args.format == "owner":
-        print(get_upstream_owner())
-        sys.exit(0)
+    info = get_git_info("monitoring")
 
-    elif args.format == "commit":
-        print(get_full_commit_hash())
-        sys.exit(0)
+    if args.format == "commitsha1":
+        print(info.full_commit_hash)
 
-    component = "monitoring"
-    owner = get_upstream_owner()
-
-    if args.format == "imagetag":
-        print(get_git_version(owner, component, long_format=False))
-        sys.exit(0)
+    elif args.format == "imagetag":
+        print(compute_image_tag(info))
 
     elif args.format == "pep440":
-        try:
-            pep440_version = derive_pep440_version(owner, component)
-            print(pep440_version)
-            sys.exit(0)
-        except ValueError as e:
-            print(f"[InterUSS Version Validation ERROR] {e}", file=sys.stderr)
-            sys.exit(1)
+        print(derive_pep440_version(info))
 
     else:
         raise ValueError(f"Invalid requested format '{args.format}'")

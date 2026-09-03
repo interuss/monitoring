@@ -23,7 +23,7 @@ else
   TAG="${1:-interuss/monitoring}"
 fi
 VERSION_STR=$(scripts/git/get_version.py --format pep440)
-COMMIT_HASH=$(scripts/git/get_version.py --format commit)
+COMMIT_HASH=$(scripts/git/get_version.py --format commitsha1)
 
 if [[ "${IMAGE_VARIANT}" == "normal" ]]; then
   DOCKER_TAG="${TAG}"

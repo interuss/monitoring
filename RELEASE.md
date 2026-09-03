@@ -2,31 +2,31 @@
 
 ## Background
 
-Releases of `monitoring` utilize Git tags structured precisely as `interuss/monitoring/v[X].[Y].[Z]`, optionally accompanied by strict pre-release/candidate identifiers adhering to **PEP 440 Pre-Release Conventions**. 
+Releases of `monitoring` utilize git tags structured precisely as `interuss/monitoring/v[X].[Y].[Z][-rcN]` to support PEP 440 representations.
 
-This formatting conforms to the InterUSS Component Registry pattern: `[owner]/[component]/[semantic version]`. (See [Semantic Versioning](https://semver.org) and [PEP 440 Version Identification](https://peps.python.org/pep-0440/)).
+This formatting conforms to the InterUSS Component Registry pattern `[owner]/[component]/[semantic version]` where the semantic version is constrained to be easily represented as PEP 440. (See [Semantic Versioning](https://semver.org) and [PEP 440 Version Identification](https://peps.python.org/pep-0440/)).
 
 Keeping track of breaking changes and migration instructions is done through the [NEXT_RELEASE_NOTES.md](NEXT_RELEASE_NOTES.md) file, which is updated as features are added or modified and serves as a basis for release notes.
 
 ### PEP 440 Versioning, Validation, & PyPI Releases
 For compatibility with PyPI (Python Package Index) and Docker registry distributions, versions must follow the conventions below:
 *   **Official Releases (`vX.Y.Z`)**: Output purely as canonical, unmodified Semantic Versions (`X.Y.Z`). These artifacts are fully eligible for publishing to PyPI.
-*   **Release Candidates (`vX.Y.Z-rc[N]`)**: **Strict Pre-Release Identifiers**. 
-    *   Pre-release tags **must** utilize the strictly lowercase, hyphenated `-rc[N]` suffix (e.g., `v0.31.0-rc1`). 
+*   **Release Candidates (`vX.Y.Z-rc[N]`)**:
+    *   Pre-release tags must utilize the strictly lowercase, hyphenated `-rc[N]` suffix (e.g., `v0.31.0-rc1`).
     *   Build tooling normalizes these delimiters into PEP 440-compliant pre-release strings (`X.Y.Zrc[N]`) for PyPI compatibility.
-    *   Note: Pre-releases containing uppercase identifiers (e.g., `-RC1`), space delimiters, alphabetic metadata, or non-numeric suffixes (e.g., `-alpha`, `-1.2`) are prevented to avoid accidental malformed PyPI publication.
+    *   Note: Pre-releases containing uppercase identifiers (e.g., `-RC1`), space delimiters, alphabetic metadata, or non-numeric suffixes (e.g., `-alpha`, `-1.2`) are prevented to avoid accidental malformed PyPI publication attempts.
 *   **Development & Branch Builds (`+<metadata>`)**:
-    *   Any image or PyPI artifact generated from a development branch, Pull Request, or commit other than an explicitly tagged release/pre-release boundary automatically appends PEP 440 Local Version Segments utilizing the `+` delimiter (e.g., `0.31.0+gd56bb4d`). 
+    *   Any image or PyPI artifact generated from a development branch, Pull Request, or commit other than an explicitly tagged release/pre-release boundary automatically appends PEP 440 Local Version Segments utilizing the `+` delimiter (e.g., `0.31.0+d56bb4d`).
     *   Because PyPI rejects package uploads bearing PEP 440 `+` local-version metadata, this provides a safeguard preventing non-release/development builds from accidentally polluting the public package registry.
 
 ## PyPI Package Distribution (`interuss_monitoring`)
 As part of broader interoperating improvements for the InterUSS Python ecosystem:
 *   **Distribution Identity**: The `monitoring` Python codebase is published to PyPI under the canonical ecosystem package name **`interuss_monitoring`**. 
-*   **Interim Import Namespace (Phase 1 Phase-in)**: 
+*   **Current Import Namespace**: 
     *   Consumers install the package via `pip install interuss_monitoring`.
-    *   In the current structural phase (Phase 1), internal code modules and external users importing from the PyPI package interact with the Python Import Namespace via **`import monitoring.<submodule>`**. 
-    *   *Warning for Interim Consumers*: Users must ensure their active Python virtual environment does not contain a conflicting top-level `monitoring/` directory from alternative third-party packages to prevent Python import-shadowing and runtime `ModuleNotFoundError` conflicts.
-*   **Future Transition (Phase 2)**: The repository is systematically migrating towards a fully isolated `src/interuss_monitoring` layout and explicit `import interuss_monitoring.<submodule>` namespace, perfectly mirrors the architectural patterns established by `implicitdict` and `uas_standards`.
+    *   Currently, internal code modules and external users importing from the PyPI package interact with the Python import namespace via **`import monitoring.<submodule>`**. 
+    *   Currently, users must ensure their active Python virtual environment does not contain a conflicting top-level `monitoring/` directory from alternative third-party packages to prevent Python import-shadowing and runtime `ModuleNotFoundError` conflicts.
+*   **Future**: In the future, we anticipate migrating towards a fully isolated `src/interuss_monitoring` layout and explicit `import interuss_monitoring.<submodule>` namespace, mirroring the architectural patterns established by `implicitdict` and `uas_standards`.
 
 ## Release procedure
 
