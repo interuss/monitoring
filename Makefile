@@ -1,8 +1,5 @@
 USER_GROUP := $(shell id -u):$(shell id -g)
 
-UPSTREAM_OWNER := $(shell scripts/git/upstream_owner.sh)
-COMMIT := $(shell scripts/git/commit.sh)
-
 ifeq ($(OS),Windows_NT)
 	detected_OS := Windows
 else
@@ -55,9 +52,6 @@ image:
 .PHONY: image-dev
 image-dev:
 	cd monitoring && make image-dev
-
-tag:
-	scripts/tag.sh $(UPSTREAM_OWNER)/monitoring/v$(VERSION)
 
 .PHONY: start-locally
 start-locally:

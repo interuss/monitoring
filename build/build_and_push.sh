@@ -27,7 +27,7 @@ else
 fi
 cd "${BASEDIR}"
 
-VERSION=$(./scripts/git/version.sh monitoring)
+VERSION=$(./scripts/git/get_version.py --format imagetag)
 LATEST_TAG="latest"
 
 if [[ -z "${DOCKER_URL}" ]]; then
@@ -39,7 +39,7 @@ else
   TAG="${DOCKER_URL}/monitoring:${VERSION}"
 
   echo "Building image ${TAG}"
-  ./monitoring/build.sh "${TAG}"
+  ./monitoring/build.sh normal "${TAG}"
 
   echo "Pushing docker image ${TAG}..."
   docker image push "${TAG}"

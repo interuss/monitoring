@@ -1,5 +1,5 @@
 [project]
-name = "monitoring"
+name = "interuss_monitoring"
 dynamic = ["version"]
 authors = [
   { name="InterUSS Platform", email="tsc@lists.interussplatform.org" },
@@ -100,13 +100,14 @@ exclude = [
   "monitoring/mock_uss/output/*",
   "monitoring/uss_qualifier/output/*",
   "monitoring/benchmarker/output/*",
+  "build/lib/*",
+  "dist/*",
 ]
 
 [build-system]
 requires = [
   "setuptools>=84.0.0",
   "wheel>=0.48.0",               # for bdist package distribution
-  "setuptools_scm>=10.2.1", # for automated versioning
 ]
 
 build-backend = "setuptools.build_meta"
@@ -118,16 +119,14 @@ package-dir = { "monitoring" = "monitoring" }
 [tool.setuptools.packages.find]
 where = ["."]
 include = [
+  "monitoring",
   "monitoring.deployment_manager*",
   "monitoring.mock_uss*",
   "monitoring.monitorlib*",
   "monitoring.prober*",
   "monitoring.uss_qualifier*",
-  "monitoring._version.py"
 ]
 namespaces = true
 
-[tool.setuptools_scm]
-write_to = "monitoring/_version.py"
-tag_regex = "^interuss/monitoring/v(?P<version>\\d+\\.\\d+\\.\\d+)"
-
+[tool.setuptools.dynamic]
+version = {attr = "monitoring._version.__version__"}
