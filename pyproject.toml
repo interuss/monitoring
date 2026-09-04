@@ -100,6 +100,8 @@ exclude = [
   "monitoring/mock_uss/output/*",
   "monitoring/uss_qualifier/output/*",
   "monitoring/benchmarker/output/*",
+  "build/lib/*",
+  "dist/*",
 ]
 
 [build-system]
@@ -117,12 +119,12 @@ package-dir = { "monitoring" = "monitoring" }
 [tool.setuptools.packages.find]
 where = ["."]
 include = [
+  "monitoring",
   "monitoring.deployment_manager*",
   "monitoring.mock_uss*",
   "monitoring.monitorlib*",
   "monitoring.prober*",
   "monitoring.uss_qualifier*",
-  "monitoring._version.py"
 ]
 namespaces = true
 

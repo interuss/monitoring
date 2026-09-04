@@ -213,13 +213,12 @@ def compute_image_tag(info: GitInfo) -> str:
     build_parts = []
     if not info.is_exact_tag_boundary:
         build_parts.append(info.short_commit_hash)
-    if info.is_dirty or info.is_localcommit:
-        build_parts.append(
-            ("dirty" if info.is_dirty else "")
-            + ("localcommit" if info.is_localcommit else "")
-        )
+    if info.is_dirty:
+        build_parts.append("dirty")
+    if info.is_localcommit:
+        build_parts.append("localcommit")
     if build_parts:
-        tag += "+" + ".".join(build_parts)
+        tag += "-" + "-".join(build_parts)
     return tag
 
 
