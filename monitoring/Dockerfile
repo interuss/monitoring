@@ -105,7 +105,6 @@ ARG version
 ARG commit_hash
 ENV MONITORING_VERSION=$version
 ENV GIT_COMMIT_HASH=$commit_hash
-ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_INTERUSS_MONITORING=$version
 
 # Add core content from repo
 ADD ./interfaces /app/interfaces

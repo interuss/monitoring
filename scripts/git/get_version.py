@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-scripts/git/get_version.py
 InterUSS monitoring version representation utility.
 
 This CLI combines and standardizes all repository Git inspection, PEP 440 version derivation,
@@ -16,6 +15,7 @@ from typing import Any
 
 # Base repository root determination relative to the scripts/git directory.
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+VERSION_FILE_PATH = os.path.join(BASE_DIR, "monitoring", "_version.py")
 
 
 @dataclass
@@ -152,6 +152,10 @@ def derive_pep440_version(info: GitInfo) -> str:
     generating a canonical PEP 440 version string.
     """
 
+    env_version = os.environ.get("MONITORING_VERSION")
+    if env_version:
+        return env_version
+
     strict_tag_regex = re.compile(
         rf"^{re.escape(info.upstream_owner)}/{re.escape(info.component)}/v(?P<semver>\d+\.\d+\.\d+)(?P<rc_segment>-rc\d+)?$"
     )
@@ -219,6 +223,49 @@ def compute_image_tag(info: GitInfo) -> str:
     return tag
 
 
+def get_pep440_version(
+    component: str = "monitoring",
+) -> str:
+    """
+    Returns the PEP 440 version string, checking in order:
+    1. MONITORING_VERSION environment variable override.
+    2. Git metadata via get_git_info and derive_pep440_version.
+    3. Existing version file (if Git is unavailable, e.g. in an extracted sdist).
+    4. PKG-INFO metadata (if present).
+    5. Fallback '0.0.0'.
+    """
+    env_version = os.environ.get("MONITORING_VERSION")
+    if env_version:
+        return env_version
+
+    try:
+        info = get_git_info(component)
+        return derive_pep440_version(info)
+    except (subprocess.SubprocessError, FileNotFoundError, OSError):
+        pass
+
+    if os.path.exists(VERSION_FILE_PATH):
+        try:
+            with open(VERSION_FILE_PATH) as f:
+                for line in f:
+                    if line.startswith("__version__ = "):
+                        return line.split('"')[1]
+        except Exception:
+            pass
+
+    pkg_info_file = os.path.join(BASE_DIR, "PKG-INFO")
+    if os.path.exists(pkg_info_file):
+        try:
+            with open(pkg_info_file) as f:
+                for line in f:
+                    if line.startswith("Version: "):
+                        return line.split("Version: ", 1)[1].strip()
+        except Exception:
+            pass
+
+    return "0.0.0"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="InterUSS monitoring version representation utility."
@@ -241,16 +288,16 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    info = get_git_info("monitoring")
-
     if args.format == "commitsha1":
+        info = get_git_info("monitoring")
         print(info.full_commit_hash)
 
     elif args.format == "imagetag":
+        info = get_git_info("monitoring")
         print(compute_image_tag(info))
 
     elif args.format == "pep440":
-        print(derive_pep440_version(info))
+        print(get_pep440_version())
 
     else:
         raise ValueError(f"Invalid requested format '{args.format}'")

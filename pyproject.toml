@@ -106,7 +106,6 @@ exclude = [
 requires = [
   "setuptools>=84.0.0",
   "wheel>=0.48.0",               # for bdist package distribution
-  "setuptools_scm>=10.2.1", # for automated versioning
 ]
 
 build-backend = "setuptools.build_meta"
@@ -127,7 +126,5 @@ include = [
 ]
 namespaces = true
 
-[tool.setuptools_scm]
-write_to = "monitoring/_version.py"
-# Strictly anchor to the repo-level prefix, 3-part numeric PEP440/SemVer, and optionally PEP440 lowercase '-rcN' suffixes.
-tag_regex = "^interuss/monitoring/v(?P<version>\\d+\\.\\d+\\.\\d+(?:-rc\\d+)?)$"
+[tool.setuptools.dynamic]
+version = {attr = "monitoring._version.__version__"}

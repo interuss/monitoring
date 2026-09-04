@@ -24,6 +24,7 @@ else
 fi
 VERSION_STR=$(scripts/git/get_version.py --format pep440)
 COMMIT_HASH=$(scripts/git/get_version.py --format commitsha1)
+scripts/git/write_version_file.py > /dev/null
 
 if [[ "${IMAGE_VARIANT}" == "normal" ]]; then
   DOCKER_TAG="${TAG}"
