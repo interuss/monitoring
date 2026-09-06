@@ -49,7 +49,7 @@ class InterUSSVersioningClient(VersioningClient):
                 "Response to get version didn't return a system identity"
             )
 
-        system_version = query.response.json.get("system_version")
+        system_version = (query.response.json or {}).get("system_version")
         if not isinstance(system_version, str):
             raise VersionQueryError(
                 f"Response to get version expected system version to be a string, but instead found a {type(system_version).__name__}"
