@@ -141,7 +141,9 @@ def get_git_info(component: str) -> GitInfo:
 
     # Retrieve whether commit is local-only
     cherry_res = run_git_cmd(["cherry"], check=False)
-    kwargs["is_localcommit"] = bool(cherry_res.returncode == 0 and cherry_res.stdout.strip())
+    kwargs["is_localcommit"] = bool(
+        cherry_res.returncode == 0 and cherry_res.stdout.strip()
+    )
 
     return GitInfo(**kwargs)
 
