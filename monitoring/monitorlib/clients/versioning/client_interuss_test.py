@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 import pytest
@@ -90,7 +91,39 @@ def test_get_version_no_system_version(mocker, client):
 
     with pytest.raises(
         VersionQueryError,
-        match="Response to get version didn't return a system version",
+        match="Response to get version expected system version to be a string, but instead found a NoneType",
+    ):
+        client.get_version("test")
+
+
+def test_get_version_non_string_system_version(mocker, client):
+    mocker.patch(
+        "monitoring.monitorlib.clients.versioning.client_interuss.query_and_describe",
+        return_value=build_query_response(
+            200, {"system_identity": "test", "system_version": {"version": "test"}}
+        ),
+    )
+
+    with pytest.raises(
+        VersionQueryError,
+        match="Response to get version expected system version to be a string, but instead found a dict",
+    ):
+        client.get_version("test")
+
+
+def test_get_version_blank_system_version(mocker, client):
+    mocker.patch(
+        "monitoring.monitorlib.clients.versioning.client_interuss.query_and_describe",
+        return_value=build_query_response(
+            200, {"system_identity": "test", "system_version": "\r\n\t "}
+        ),
+    )
+
+    with pytest.raises(
+        VersionQueryError,
+        match=re.escape(
+            "Response to get version expected system version to have a value, but instead got '\\r\\n\\t '"
+        ),
     ):
         client.get_version("test")
 

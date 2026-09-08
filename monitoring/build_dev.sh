@@ -17,9 +17,9 @@ TAG="${1:-interuss/monitoring}"
 docker image build \
     -f monitoring/Dockerfile \
     -t "${TAG}-dev" \
+    --build-arg BASE_STAGE=dev-dependencies \
     --build-arg version="$(scripts/git/version.sh monitoring --long)" \
     --build-arg commit_hash="$(git rev-parse HEAD)" \
-    --target with-dev-dependencies \
     . \
   || exit 1
 

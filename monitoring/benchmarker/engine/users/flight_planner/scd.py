@@ -372,7 +372,10 @@ class SCDHandler(CoordinationSubscriber):
                         requested_ovn,
                     )
 
-        if not success:
+        if success:
+            flight.extend_achieved_start_time(datetime.now(UTC))
+        else:
+            flight.clear_to_fly = False
             return []
 
         if op_intent_ref is None:
@@ -471,6 +474,7 @@ class SCDHandler(CoordinationSubscriber):
                     )
                 )
                 if flight_aborted:
+                    flight.clear_to_fly = False
                     logger.debug(
                         f"Transition to {state.value} for flight {flight.id} completed {dt_s:.1f}s too late; removing op intent early"
                     )

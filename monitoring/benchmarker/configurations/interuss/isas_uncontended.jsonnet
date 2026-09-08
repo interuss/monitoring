@@ -44,7 +44,7 @@ local nodeIndex = function(uss, node) std.format('%02d', node + num_nodes * (uss
         env: {
           NUM_USS: std.toString(num_uss),
           NUM_NODES: std.toString(num_nodes),
-          DSS_IMAGE: 'interuss/dss:v0.22.0',
+          DSS_IMAGE: 'interuss/dss:v0.23.0',
           DB_TYPE: 'crdb',
           INTRA_USS_NETEM_CONF: 'delay 600us 40us 25% distribution normal loss 0.0005%',
           INTER_USS_NETEM_CONF: 'delay %(latency)sms %(jitter)sms 50%% distribution paretonormal loss 0.25%% 15%%' % { latency: latency_ms, jitter: latency_ms * jitter_frac },

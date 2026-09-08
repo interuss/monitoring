@@ -167,6 +167,19 @@ class FlightPlannerUser(VirtualUser):
                             if a.causes_flight_failure
                         )
                     )
+
+                # Record the time period where the operator was actually using the airspace, or would have used the airspace
+                active_flight_op = ExecutedOperation(
+                    type=OperationType(WorkflowType.FlightPlannerActiveFlight),
+                    origin=self.user_id,
+                    initiated_at=StringBasedDateTime(flight.get_achieved_start_time()),
+                    completed_at=StringBasedDateTime(flight.actual_end_time),
+                    successful=flight.clear_to_fly,
+                    query=None,
+                )
+                self.record_operation(active_flight_op)
+
+                # Record the whole set of flight activities (including managing the flight with UTM activities)
                 flight_op = ExecutedOperation(
                     type=OperationType(WorkflowType.FlightPlannerFlight),
                     origin=self.user_id,

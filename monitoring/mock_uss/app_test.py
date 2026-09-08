@@ -110,6 +110,24 @@ def test_client_secret_mixed_with_trailing_positional():
     )
 
 
+def test_jwt_bearer_key_args():
+    assert (
+        sanitize_secrets(
+            K, "PrivateKeyJWT(http://host/token,cli,/auth/uss1.key,eyJrdHkiOiJSU0EifQ)"
+        )
+        == "PrivateKeyJWT(http://host/token, cli, /auth/uss1.key, ***)"
+    )
+
+
+def test_jwt_bearer_key_kwarg():
+    assert (
+        sanitize_secrets(
+            K, "PrivateKeyJWT(http://host/token,cli,key=eyJrdHkiOiJSU0EifQ,key_id=k1)"
+        )
+        == "PrivateKeyJWT(http://host/token, cli, key=***, key_id=k1)"
+    )
+
+
 def test_unknown_adapter_hides_everything():
     assert (
         sanitize_secrets(K, "MysteryAuth(http://host/token,cli,whatever,foo=bar)")

@@ -594,6 +594,115 @@ class FlightPassport(ClientIdClientSecret):
         self._send_request_as_data = send_request_as_data
 
 
+class PrivateKeyJWT(AuthAdapter):
+    """Auth adapter that authenticates with a private key JWT client assertion.
+
+    See RFC 7523 section 2.2.
+    """
+
+    def __init__(
+        self,
+        token_endpoint: str,
+        client_id: str,
+        key_path: str | None = None,
+        key: str | None = None,
+        key_id: str | None = None,
+    ):
+        """Create an AuthAdapter that retrieves tokens with a client assertion.
+
+        Args:
+          token_endpoint: URL of the authorization server's token endpoint.
+          client_id: ID of client for which the token is being requested.
+          key_path: Path to a PEM or JWK file containing the private key with which
+            to sign the client assertion.  Mutually exclusive with key.
+          key: base64 encoding of the PEM or JWK content of the private key with
+            which to sign the client assertion.  Mutually exclusive with key_path.
+          key_id: If specified, the specific ID to supply in the JWS header.  If not
+            specified, no key ID is supplied.
+        """
+
+        super().__init__()
+
+        self._oauth_token_endpoint = token_endpoint
+        self._client_id = client_id
+
+        if key_path and key:
+            raise ValueError("Specify only one of key_path or key")
+
+        if key_path:
+            with open(key_path) as f:
+                key_content = f.read()
+        elif key:
+            key_content = base64.b64decode(key + "=" * (-len(key) % 4)).decode("utf-8")
+        else:
+            raise ValueError("Either key_path or key must be specified")
+
+        if key_content.lstrip().startswith("{"):
+            self._key = jwcrypto.jwk.JWK.from_json(key_content)
+        else:
+            self._key = jwcrypto.jwk.JWK.from_pem(key_content.encode("utf-8"))
+
+        kty = self._key["kty"]
+
+        if kty == "RSA":
+            self._alg = "RS256"
+        elif kty == "EC":
+            crv_algs = {"P-256": "ES256", "P-384": "ES384", "P-521": "ES512"}
+            crv = self._key["crv"]
+
+            if crv not in crv_algs:
+                raise ValueError(f"Unsupported EC curve `{crv}`")
+
+            self._alg = crv_algs[crv]
+        elif kty == "OKP":
+            self._alg = "EdDSA"
+        else:
+            raise ValueError(f"Unsupported key type `{kty}`")
+
+        self._kid = key_id
+
+    def issue_token(self, intended_audience: str, scopes: list[str]) -> str:
+
+        timestamp = int(
+            (datetime.datetime.now(datetime.UTC) - _UNIX_EPOCH).total_seconds()
+        )
+
+        header = {"typ": "JWT", "alg": self._alg}
+        if self._kid:
+            header["kid"] = self._kid
+
+        assertion = jwcrypto.jwt.JWT(
+            header=header,
+            claims={
+                "iss": self._client_id,
+                "sub": self._client_id,
+                "aud": self._oauth_token_endpoint,
+                "iat": timestamp,
+                "exp": timestamp + 300,
+                "jti": str(uuid.uuid4()),
+            },
+        )
+
+        assertion.make_signed_token(self._key)
+
+        response = requests.post(
+            self._oauth_token_endpoint,
+            data={
+                "grant_type": "client_credentials",
+                "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+                "client_assertion": assertion.serialize(),
+                "audience": intended_audience,
+                "scope": " ".join(scopes),
+            },
+        )
+
+        if response.status_code != 200:
+            raise AccessTokenError(
+                "Unable to retrieve access token:\n" + response.content.decode("utf-8")
+            )
+        return response.json()["access_token"]
+
+
 class AccessTokenError(RuntimeError):
     def __init__(self, msg):
         super().__init__(msg)
