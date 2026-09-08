@@ -54,6 +54,12 @@ def _configure_axis(
         else:
             ax_obj.set_ylabel(axis_spec.label)
 
+    if "margin" in axis_spec and axis_spec.margin is not None:
+        if is_x:
+            ax_obj.margins(x=axis_spec.margin)
+        else:
+            ax_obj.margins(y=axis_spec.margin)
+
     min_val = None
     if "min_value" in axis_spec and axis_spec.min_value is not None:
         min_val = axis_spec.min_value
@@ -101,12 +107,56 @@ def generate_matplotlib_figure(
         f"Generating Matplotlib figure artifact '{fig_spec.name}' -> {out_path}"
     )
 
-    fig = plt.figure(
-        figsize=(8 * fig_spec.n_subfigure_cols, 5 * fig_spec.n_subfigure_rows)
+    max_sub_rows = max((s.n_subplot_rows for s in fig_spec.subfigures), default=1)
+    max_sub_cols = max((s.n_subplot_cols for s in fig_spec.subfigures), default=1)
+    fig_width = (
+        fig_spec.width
+        if "width" in fig_spec and fig_spec.width is not None
+        else 8 * fig_spec.n_subfigure_cols * max_sub_cols
     )
+    fig_height = (
+        fig_spec.height
+        if "height" in fig_spec and fig_spec.height is not None
+        else 5 * fig_spec.n_subfigure_rows * max_sub_rows
+    )
+
+    fig = plt.figure(
+        figsize=(fig_width, fig_height),
+        layout="constrained",
+    )
+
+    engine = fig.get_layout_engine()
+    if engine is not None:
+        engine_kwargs: dict[str, Any] = {
+            "w_pad": fig_spec.w_pad
+            if "w_pad" in fig_spec and fig_spec.w_pad is not None
+            else 0.08,
+            "h_pad": fig_spec.h_pad
+            if "h_pad" in fig_spec and fig_spec.h_pad is not None
+            else 0.12,
+        }
+        if "wspace" in fig_spec and fig_spec.wspace is not None:
+            engine_kwargs["wspace"] = fig_spec.wspace
+        if "hspace" in fig_spec and fig_spec.hspace is not None:
+            engine_kwargs["hspace"] = fig_spec.hspace
+        engine.set(**engine_kwargs)
+
     if "title" in fig_spec and fig_spec.title:
         fig.suptitle(fig_spec.title)
-    subfigs_res = fig.subfigures(fig_spec.n_subfigure_rows, fig_spec.n_subfigure_cols)
+
+    subfig_kwargs: dict[str, Any] = {}
+    if "wspace" in fig_spec and fig_spec.wspace is not None:
+        subfig_kwargs["wspace"] = fig_spec.wspace
+    elif fig_spec.n_subfigure_cols > 1:
+        subfig_kwargs["wspace"] = 0.08
+    if "hspace" in fig_spec and fig_spec.hspace is not None:
+        subfig_kwargs["hspace"] = fig_spec.hspace
+    elif fig_spec.n_subfigure_rows > 1:
+        subfig_kwargs["hspace"] = 0.08
+
+    subfigs_res = fig.subfigures(
+        fig_spec.n_subfigure_rows, fig_spec.n_subfigure_cols, **subfig_kwargs
+    )
     if isinstance(subfigs_res, np.ndarray):
         subfigs = list(subfigs_res.flatten())
     elif isinstance(subfigs_res, (list, tuple)):
@@ -156,8 +206,16 @@ def generate_matplotlib_figure(
         if "title" in subfig_spec and subfig_spec.title:
             subfig.suptitle(subfig_spec.title)
 
+        gridspec_kw: dict[str, Any] = {}
+        if "wspace" in subfig_spec and subfig_spec.wspace is not None:
+            gridspec_kw["wspace"] = subfig_spec.wspace
+        if "hspace" in subfig_spec and subfig_spec.hspace is not None:
+            gridspec_kw["hspace"] = subfig_spec.hspace
+
         axes_res = subfig.subplots(
-            subfig_spec.n_subplot_rows, subfig_spec.n_subplot_cols
+            subfig_spec.n_subplot_rows,
+            subfig_spec.n_subplot_cols,
+            gridspec_kw=gridspec_kw if gridspec_kw else None,
         )
         if isinstance(axes_res, np.ndarray):
             axes = list(axes_res.flatten())
@@ -192,32 +250,12 @@ def generate_matplotlib_figure(
             if "title" in subplot_spec and subplot_spec.title:
                 ax.set_title(subplot_spec.title)
 
-            if "x_axis" in subplot_spec and subplot_spec.x_axis:
-                _configure_axis(
-                    ax, subplot_spec.x_axis, True, subplot_interpreter, "x_axis"
-                )
-
-            if "y_axis" in subplot_spec and subplot_spec.y_axis:
-                _configure_axis(
-                    subplot_y_axes[0],
-                    subplot_spec.y_axis,
-                    False,
-                    subplot_interpreter,
-                    "y_axis",
-                )
-
             if "y_axes" in subplot_spec and subplot_spec.y_axes:
-                for i, sec_y_spec in enumerate(subplot_spec.y_axes):
-                    y_idx = i + 1
-                    while len(subplot_y_axes) <= y_idx:
-                        subplot_y_axes.append(ax.twinx())
-                    _configure_axis(
-                        subplot_y_axes[y_idx],
-                        sec_y_spec,
-                        False,
-                        subplot_interpreter,
-                        f"y_axes[{i}]",
-                    )
+                for i in range(len(subplot_spec.y_axes)):
+                    sec_ax = ax.twinx()
+                    if i >= 1:
+                        sec_ax.spines["right"].set_position(("outward", 60 * i))
+                    subplot_y_axes.append(sec_ax)
 
             for xy_plot in subplot_spec.xy_plots:
                 _, xyplot_interpreter = get_updated_context(
@@ -271,7 +309,13 @@ def generate_matplotlib_figure(
                 if "y_axis" in xy_plot and xy_plot.y_axis is not None:
                     y_axis_idx = xy_plot.y_axis
                 while len(subplot_y_axes) <= y_axis_idx:
-                    subplot_y_axes.append(ax.twinx())
+                    sec_ax = ax.twinx()
+                    offset_idx = len(subplot_y_axes) - 1
+                    if offset_idx >= 1:
+                        sec_ax.spines["right"].set_position(
+                            ("outward", 60 * offset_idx)
+                        )
+                    subplot_y_axes.append(sec_ax)
                 target_ax = subplot_y_axes[y_axis_idx]
 
                 if xy_plot.type == XYPlotType.Scatter:
@@ -281,6 +325,30 @@ def generate_matplotlib_figure(
                 else:
                     raise NotImplementedError(
                         f"XYPlotType '{xy_plot.type}' not implemented"
+                    )
+
+            if "x_axis" in subplot_spec and subplot_spec.x_axis:
+                _configure_axis(
+                    ax, subplot_spec.x_axis, True, subplot_interpreter, "x_axis"
+                )
+
+            if "y_axis" in subplot_spec and subplot_spec.y_axis:
+                _configure_axis(
+                    subplot_y_axes[0],
+                    subplot_spec.y_axis,
+                    False,
+                    subplot_interpreter,
+                    "y_axis",
+                )
+
+            if "y_axes" in subplot_spec and subplot_spec.y_axes:
+                for i, sec_y_spec in enumerate(subplot_spec.y_axes):
+                    _configure_axis(
+                        subplot_y_axes[i + 1],
+                        sec_y_spec,
+                        False,
+                        subplot_interpreter,
+                        f"y_axes[{i}]",
                     )
 
             if "legend" in subplot_spec and subplot_spec.legend:
@@ -311,6 +379,8 @@ def generate_matplotlib_figure(
                 else:
                     subplot_y_axes[-1].legend(**legend_kwargs)
 
-    plt.tight_layout()
-    fig.savefig(out_path, bbox_inches="tight")
+    save_kwargs: dict[str, Any] = {"bbox_inches": "tight"}
+    if "dpi" in fig_spec and fig_spec.dpi is not None:
+        save_kwargs["dpi"] = fig_spec.dpi
+    fig.savefig(out_path, **save_kwargs)
     plt.close(fig)
