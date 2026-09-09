@@ -33,7 +33,7 @@ class GitInfo:
     """True when the current state lies exactly on a valid tag (and therefore is suitable for release)."""
 
     full_commit_hash: str
-    """Full SHAA-1 commit hash."""
+    """Full SHA-1 commit hash."""
 
     short_commit_hash: str
     """Current commit hash in short form."""
@@ -103,10 +103,7 @@ def get_upstream_owner() -> str:
 def get_git_info(component: str) -> GitInfo:
     """Interrogates git for information relevant to versioning."""
 
-    kwargs: dict[str, Any] = {"component": component}
-
     upstream_owner = get_upstream_owner()
-    kwargs["upstream_owner"] = upstream_owner
 
     tag_match_pattern = f"{upstream_owner}/{component}/*"
 
@@ -116,36 +113,43 @@ def get_git_info(component: str) -> GitInfo:
         check=False,
     )
     if baseline_res.returncode == 0 and baseline_res.stdout.strip():
-        kwargs["baseline_tag"] = baseline_res.stdout.strip()
+        baseline_tag = baseline_res.stdout.strip()
     else:
-        kwargs["baseline_tag"] = f"{upstream_owner}/{component}/v0.0.0"
+        baseline_tag = f"{upstream_owner}/{component}/v0.0.0"
 
     # Determine exact-match tag boundary
     exact_res = run_git_cmd(
         ["describe", "--tags", f"--match={tag_match_pattern}", "--exact-match"],
         check=False,
     )
-    kwargs["is_exact_tag_boundary"] = exact_res.returncode == 0
+    is_exact_tag_boundary = exact_res.returncode == 0
 
     # Retrieve the full commit hash
     full_hash_res = run_git_cmd(["rev-parse", "HEAD"])
-    kwargs["full_commit_hash"] = full_hash_res.stdout.strip()
+    full_commit_hash = full_hash_res.stdout.strip()
 
     # Retrieve short commit hash
     short_hash_res = run_git_cmd(["rev-parse", "--short", "HEAD"])
-    kwargs["short_commit_hash"] = short_hash_res.stdout.strip()
+    short_commit_hash = short_hash_res.stdout.strip()
 
     # Retrieve workspace dirtiness
     status_res = run_git_cmd(["status", "--porcelain"], check=False)
-    kwargs["is_dirty"] = bool(status_res.stdout.strip())
+    is_dirty = bool(status_res.stdout.strip())
 
     # Retrieve whether commit is local-only
     cherry_res = run_git_cmd(["cherry"], check=False)
-    kwargs["is_localcommit"] = bool(
-        cherry_res.returncode == 0 and cherry_res.stdout.strip()
-    )
+    is_localcommit = bool(cherry_res.returncode == 0 and cherry_res.stdout.strip())
 
-    return GitInfo(**kwargs)
+    return GitInfo(
+        upstream_owner=upstream_owner,
+        component=component,
+        baseline_tag=baseline_tag,
+        is_exact_tag_boundary=is_exact_tag_boundary,
+        full_commit_hash=full_commit_hash,
+        short_commit_hash=short_commit_hash,
+        is_dirty=is_dirty,
+        is_localcommit=is_localcommit,
+    )
 
 
 def derive_pep440_version(info: GitInfo) -> str:
