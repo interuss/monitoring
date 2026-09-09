@@ -79,7 +79,7 @@ local shape = {
       f3548: {
         create_subscription: {
           subscription: {
-            subscription_id: '16b87239-6063-47d4-a2ff-%d05086859f32' % (sub_index - 1),
+            subscription_id: '3bdb0b88-a522-4286-9499-%d60e56c953bb' % (sub_index - 1),
             duration: '23h',
             area: {
               lat_min: 34 - 0.00001,
@@ -99,7 +99,7 @@ local shape = {
       name: 'Delete subscription %d' % sub_index,
       f3548: {
         delete_subscription: {
-          subscription_id: '16b87239-6063-47d4-a2ff-%d05086859f32' % (sub_index - 1),
+          subscription_id: '3bdb0b88-a522-4286-9499-%d60e56c953bb' % (sub_index - 1),
           mode: 'GetDeleteIfExist',
         },
       },
@@ -132,16 +132,7 @@ local shape = {
           dss_selection_strategy: 'Random',
           subscription_strategy: {
             single_subscription: {
-              subscription_id: '3bdb0b88-a522-4286-9499-160e56c953bb',
-              duration: '23h',
-              area: {
-                lat_min: 34 - 0.00001,
-                lng_min: -118 - 0.00001,
-                lat_max: 34 + 0.00001,
-                lng_max: -118 + 0.00001,
-              },
-              min_alt: {value: 0, units: 'M', reference: 'W84'},
-              max_alt: {value: 3000, units: 'M', reference: 'W84'},
+              subscription_id: '3bdb0b88-a522-4286-9499-060e56c953bb',
             },
           },
           op_intent_ref_creation_strategy: {
