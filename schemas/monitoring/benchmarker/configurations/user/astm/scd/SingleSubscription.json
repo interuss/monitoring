@@ -7,33 +7,12 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
-    "area": {
-      "$ref": "../../../../../monitorlib/geo/LatLngBoundingBox.json",
-      "description": "Horizontal area this subscription should cover."
-    },
-    "duration": {
-      "description": "Duration of the subscription, from the time it is created.",
-      "format": "duration",
-      "type": "string"
-    },
-    "max_alt": {
-      "$ref": "../../../../../monitorlib/geo/Altitude.json",
-      "description": "Altitude above which this subscription should not apply."
-    },
-    "min_alt": {
-      "$ref": "../../../../../monitorlib/geo/Altitude.json",
-      "description": "Altitude below which this subscription should not apply."
-    },
     "subscription_id": {
-      "description": "ID of the single subscription to create, or ensure exists.",
+      "description": "ID of the single subscription to use when creating operational intents.",
       "type": "string"
     }
   },
   "required": [
-    "area",
-    "duration",
-    "max_alt",
-    "min_alt",
     "subscription_id"
   ],
   "type": "object"
