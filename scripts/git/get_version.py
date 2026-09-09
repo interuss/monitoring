@@ -11,7 +11,6 @@ import os
 import re
 import subprocess
 from dataclasses import dataclass
-from typing import Any
 
 # Base repository root determination relative to the scripts/git directory.
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
@@ -91,9 +90,7 @@ def get_upstream_owner() -> str:
             return owner
 
     # Fallback pattern extraction if not github.com explicitly
-    parts = [
-        p for p in re.split(r"[/:\\]", upstream_repo) if p and not p.endswith(".git")
-    ]
+    parts = [p.removesuffix(".git") for p in re.split(r"[/:\\]", upstream_repo) if p]
     if len(parts) >= 2:
         return parts[-2]
 
