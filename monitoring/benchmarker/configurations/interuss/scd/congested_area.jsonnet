@@ -1,9 +1,14 @@
+/* Dense/overlapping SCD flight operations applied to an existing DSS deployment after adding
+ * subscriptions to cause maximum contention.
+ */
+
 local test_name = 'Single S2 cell';
 local num_uss = 3;
 local num_nodes = 3;
 local num_subscriptions = 8;
-local dss_config_names = ['Existing local DSS deployment'];
 local users_per_step = 3;
+
+local artifacts = import '../artifacts.libsonnet';
 
 local location = {
   uniform_box: {lat_min: 34, lat_max: 34.001, lng_max: -118, lng_min: -118.001},
@@ -70,7 +75,7 @@ local shape = {
       name: 'Generate intermediate artifacts',
       generate_artifacts: {
         subfolder: 'f"intermediate{action_invocation}"',
-        defined_artifact_indices: [0, 1],
+        defined_artifact_indices: [0, 1, 2],
       },
     },
   ] + [
@@ -83,8 +88,8 @@ local shape = {
             duration: '23h',
             area: {
               lat_min: 34 - 0.00001,
-              lng_min: -118 - 0.00001,
-              lat_max: 34 + 0.00001,
+              lng_min: -118.001 - 0.00001,
+              lat_max: 34.001 + 0.00001,
               lng_max: -118 + 0.00001,
             },
             min_alt: {value: 0, units: 'M', reference: 'W84'},
@@ -216,18 +221,16 @@ local shape = {
     } for uss in std.range(1, num_uss)
   ],
 
-  scenarios: std.flattenArrays([
-    [
-      {
-        name: '%s: %s for USS %d' % [dss_config_names[dss_config - 1], test_name,  uss],
-        [if uss == 1 then "setup"]: ['Create subscription %d' % sub_index for sub_index in std.range(1, num_subscriptions)],
-        load: 'Flight planner ramp for USS %d' % uss,
-        [if uss <= num_uss || dss_config < std.length(dss_config_names) then "teardown"]:
-          (if uss < num_uss || dss_config < std.length(dss_config_names) then ['Generate intermediate artifacts'] else [])
-          + (if uss == num_uss then ['Delete subscription %d' % sub_index for sub_index in std.range(1, num_subscriptions)] else []),
-      } for uss in std.range(1, num_uss)
-    ] for dss_config in std.range(1, std.length(dss_config_names))
-  ]),
+  scenarios: [
+    {
+      name: 'DSS instance %d' % uss,
+      [if uss == 1 then "setup"]: ['Create subscription %d' % sub_index for sub_index in std.range(1, num_subscriptions)],
+      load: 'Flight planner ramp for USS %d' % uss,
+      teardown:
+        (if uss < num_uss then ['Generate intermediate artifacts'] else [])
+        + (if uss == num_uss then ['Delete subscription %d' % sub_index for sub_index in std.range(1, num_subscriptions)] else []),
+    } for uss in std.range(1, num_uss)
+  ],
 
   artifacts: [
     {
@@ -235,144 +238,12 @@ local shape = {
         name: 'report',
       },
     },
-    {
-      timeline: {
-        name: 'timeline',
-        operations: [
-          {
-            type: "workflow.flight_planner.flight",
-            color: "#32aced",
-            success_indicator_width: 5,
-          },
-          {
-            type: "query.astm.f3548.v21.dss.createOperationalIntentReference",
-            color: "#c7c46b",
-          },
-          {
-            type: "query.astm.f3548.v21.dss.updateOperationalIntentReference",
-            color: "#70c76b",
-          },
-          {
-            type: "query.astm.f3548.v21.dss.deleteOperationalIntentReference",
-            color: "#c2c2c2",
-          },
-        ],
-      }
-    },
-    {
-      matplotlib_figure: {
-        name: 'scalability_curve',
-        title: test_name,
-        n_subfigure_rows: std.length(dss_config_names),
-        n_subfigure_cols: num_uss,
-        evaluation_context: [
-          {
-            name: 'throughputs',
-            value: '[[throughput_of_step(scenario, s, types=["workflow.flight_planner.flight"], outcomes=[True])' +
-                  '  for s in completed_step_indices(scenario.steps)]' +
-                  ' for scenario in report.report.scenarios]',
-          },
-          {
-            name: 'latencies',
-            value: '[[latency_of_step(scenario, s, types=["query.astm.f3548.v21.dss.createOperationalIntentReference"], outcomes=[True, False]).total_seconds() * 1000' +
-                  '  for s in completed_step_indices(scenario.steps)]' +
-                  ' for scenario in report.report.scenarios]',
-          },
-        ],
-        subfigures: std.flattenArrays([
-          [
-            {
-              title: '%s\nDSS instance %d' % [dss_config_names[dss_config - 1], uss],
-              subplots: [
-                {
-                  render_expr: '%d < len(report.report.scenarios)' % (uss - 1),
-                  evaluation_context: [
-                    {
-                      name: 'scenario_index',
-                      value: '%d' % (uss - 1),
-                    },
-                    {
-                      name: 'scenario',
-                      value: 'report.report.scenarios[scenario_index]',
-                    },
-                    {
-                      name: 'scale',
-                      value: '[step.load_factor for step in completed_steps(scenario.steps)]',
-                    },
-                    {
-                      name: 'failures',
-                      value: '[throughput_of_step(scenario, s, types=["workflow.flight_planner.flight"], outcomes=[False])' +
-                            ' for s in completed_step_indices(scenario.steps)]',
-                    },
-                    {
-                      name: 'usl',
-                      value: 'USLFit.from_data(scale, throughputs[scenario_index])',
-                    },
-                  ],
-                  x_axis: {
-                    label: 'Flight planners',
-                  },
-                  y_axis: {
-                    label: 'Throughput\n(Flights/s)',
-                    min_value: 0,
-                    max_value_expr: 'max(throughputs)',
-                  },
-                  y_axes: [
-                    {
-                      label: 'Latency\n(Create ISA ms)',
-                      min_value: 0,
-                      max_value_expr: 'max(latencies)',
-                    },
-                  ],
-                  xy_plots: [
-                    {
-                      type: 'Line',
-                      color: 'lightgray',
-                      label_expr: 'f"USL: $\\\\gamma$={usl.parameters.scaling_factor:.2g} $\\\\alpha$={usl.parameters.contention_factor:.2g} $\\\\beta$={usl.parameters.coherency_factor:.2g}"',
-                      x_data_expr: 'scale',
-                      y_data_expr: 'list(usl.compute_throughput(scale))',
-                      kwargs: {
-                        zorder: -1,
-                      },
-                    },
-                    {
-                      type: 'Scatter',
-                      color: 'orange',
-                      label_expr: '"Latency"',
-                      x_data_expr: 'scale',
-                      y_data_expr: 'latencies[scenario_index]',
-                      y_axis: 1,
-                      kwargs: {
-                        zorder: -0.9,
-                      },
-                    },
-                    {
-                      type: 'Scatter',
-                      color: 'green',
-                      label_expr: '"Successes"',
-                      x_data_expr: 'scale',
-                      y_data_expr: 'throughputs[scenario_index]',
-                    },
-                    {
-                      type: 'Scatter',
-                      color: 'red',
-                      label_expr: '"Failures"',
-                      x_data_expr: 'scale',
-                      y_data_expr: 'failures',
-                    },
-                  ],
-                  legend: {
-                    location: 'upper left',
-                    font_size: 'x-small',
-                    label_spacing: 0.2,
-                    border_padding: 0.2,
-                  },
-                },
-              ],
-            } for uss in std.range(1, num_uss)
-          ] for dss_config in std.range(1, std.length(dss_config_names))
-        ]),
-      },
-    },
+    artifacts.scd_flights_timeline,
+    artifacts.throughput_latency_plots(
+      'scalability_curve',
+      test_name,
+      num_uss,
+      num_uss,
+    ),
   ],
 }
