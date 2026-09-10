@@ -100,7 +100,6 @@ exclude = [
   "monitoring/mock_uss/output/*",
   "monitoring/uss_qualifier/output/*",
   "monitoring/benchmarker/output/*",
-  "build/lib/*",
   "dist/*",
 ]
 
@@ -130,3 +129,6 @@ namespaces = true
 
 [tool.setuptools.dynamic]
 version = {attr = "monitoring._version.__version__"}
+
+[tool.distutils.build]
+build_base = ".build"
