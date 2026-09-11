@@ -250,7 +250,9 @@ def generate_matplotlib_figure(
             if "title" in subplot_spec and subplot_spec.title:
                 ax.set_title(subplot_spec.title)
             elif "title_expr" in subplot_spec and subplot_spec.title_expr:
-                title = evaluate_expression(subplot_spec.title_expr, "title", subplot_interpreter)
+                title = evaluate_expression(
+                    subplot_spec.title_expr, "title", subplot_interpreter
+                )
                 ax.set_title(title)
 
             if "y_axes" in subplot_spec and subplot_spec.y_axes:
