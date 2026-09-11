@@ -1,0 +1,26 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/reports/report/CleanupReport.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.benchmarker.reports.report.CleanupReport, as defined in monitoring/benchmarker/reports/report.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "end_time": {
+      "description": "Time cleanup ended.",
+      "format": "date-time",
+      "type": "string"
+    },
+    "start_time": {
+      "description": "Time cleanup started.",
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "required": [
+    "end_time",
+    "start_time"
+  ],
+  "type": "object"
+}

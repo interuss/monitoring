@@ -7,6 +7,17 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
+    "cleanup": {
+      "description": "Information about cleanup activities for this scenario.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "CleanupReport.json"
+        }
+      ]
+    },
     "metadata": {
       "description": "Arbitrary metadata copied from the scenario specification.",
       "type": [

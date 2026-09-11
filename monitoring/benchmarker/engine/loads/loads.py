@@ -12,7 +12,10 @@ from monitoring.benchmarker.configurations.users import (
 from monitoring.benchmarker.engine.coordination import Coordinator
 from monitoring.benchmarker.engine.loads.user_ramp.user_ramp import run_user_ramp_load
 from monitoring.benchmarker.engine.operations import ExecutedOperation
-from monitoring.benchmarker.reports.report import BenchmarkScenarioStepReport
+from monitoring.benchmarker.reports.report import (
+    BenchmarkScenarioStepReport,
+    CleanupReport,
+)
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 
 
@@ -23,7 +26,9 @@ async def run_scenario_load(
     executor: ThreadPoolExecutor,
     coordinator: Coordinator,
     scenario_name: BenchmarkScenarioName,
-) -> tuple[list[ExecutedOperation], list[BenchmarkScenarioStepReport]]:
+) -> tuple[
+    list[ExecutedOperation], list[BenchmarkScenarioStepReport], CleanupReport | None
+]:
     """Execute a scenario load."""
     if "user_ramp" in load_spec and load_spec.user_ramp:
         return await run_user_ramp_load(

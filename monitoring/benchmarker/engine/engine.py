@@ -89,7 +89,7 @@ async def _run_benchmark_async(
                     f"Scenario load '{scenario_spec.load}' not defined in configuration.loads"
                 )
             load_spec = loads_map[scenario_spec.load]
-            scenario_ops, scenario_steps = await run_scenario_load(
+            scenario_ops, scenario_steps, cleanup = await run_scenario_load(
                 load_spec,
                 user_specs_map,
                 resource_pool,
@@ -102,6 +102,7 @@ async def _run_benchmark_async(
             scenario_report = BenchmarkScenarioReport(
                 operations=group_operations(scenario_ops),
                 steps=scenario_steps,
+                cleanup=cleanup,
             )
             if "metadata" in scenario_spec:
                 scenario_report.metadata = (
