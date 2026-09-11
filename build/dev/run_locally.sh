@@ -73,6 +73,17 @@ if [[ "$DB_TYPE" == "raft" ]]; then
   export AUX_RAFT_NODES=${AUX_RAFT_NODES#,}
 fi
 
+echo "=== Local DSS pool configuration ==="
+echo "NUM_USS=${NUM_USS}"
+echo "NUM_NODES=${NUM_NODES}"
+echo "DB_TYPE=${DB_TYPE}"
+echo "DSS_IMAGE=${DSS_IMAGE}"
+echo "CORE_SERVICE_EXTRA_FLAGS=${CORE_SERVICE_EXTRA_FLAGS}"
+echo "INTER_USS_NETEM_CONF=${INTER_USS_NETEM_CONF}"
+echo "INTRA_USS_NETEM_CONF=${INTRA_USS_NETEM_CONF}"
+echo "DC_COMMAND=${DC_COMMAND}"
+echo "===================================="
+
 for ((i=1; i<=NUM_USS; i++)); do
   for ((j=1; j<=NUM_NODES; j++)); do
     export USS_IDX=$i
