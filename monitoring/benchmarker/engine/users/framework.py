@@ -94,6 +94,10 @@ class VirtualUser(ABC):
     async def run_custom_workflow(self, stop_event: asyncio.Event) -> None:
         raise NotImplementedError()
 
+    @abstractmethod
+    async def cleanup(self) -> None:
+        raise NotImplementedError()
+
 
 @dataclass(order=True, kw_only=True)
 class Action:
