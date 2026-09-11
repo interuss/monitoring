@@ -577,12 +577,12 @@ class SCDHandler(CoordinationSubscriber):
             self.op_intent_refs.clear()
 
         undeleted_ids = []
-        for op_intent_id, op_intent_ref in op_intent_refs.items():
+        for flight_id, op_intent_ref in op_intent_refs.items():
             dss_instance = self.select_dss_instance()
             try:
                 _, _, query = await self.user.run_sync_client_call(
                     dss_instance.delete_op_intent,
-                    id=op_intent_id,
+                    id=op_intent_ref.id,
                     ovn=op_intent_ref.ovn,
                 )
                 self.user.record_query(query, True)
@@ -592,13 +592,13 @@ class SCDHandler(CoordinationSubscriber):
                     self.user.record_query(query, success)
                 if not success:
                     logger.warning(
-                        f"{self.user.user_id}'s SCDHandler was unable to clean up op intent {op_intent_id} from {dss_instance.participant_id}'s DSS; HTTP code {e.queries[0].status_code}"
+                        f"{self.user.user_id}'s SCDHandler was unable to clean up op intent {op_intent_ref.id} for flight {flight_id} from {dss_instance.participant_id}'s DSS; HTTP code {e.queries[0].status_code}"
                     )
-                    undeleted_ids.append(op_intent_id)
+                    undeleted_ids.append(flight_id)
 
         with self.key_lock:
-            for op_intent_id in undeleted_ids:
-                self.op_intent_refs[op_intent_id] = op_intent_refs[op_intent_id]
+            for flight_id in undeleted_ids:
+                self.op_intent_refs[flight_id] = op_intent_refs[flight_id]
 
         n_cleaned = len(op_intent_refs) - len(undeleted_ids)
         if n_cleaned > 0:
