@@ -96,6 +96,8 @@ down-locally:
 clean-locally: down-locally
 	-docker ps -aq --filter network=interop_ecosystem_network | xargs -r docker rm -f
 	-docker ps -aq --filter network=dss_internal_network | xargs -r docker rm -f
+	-docker network rm interop_ecosystem_network 2>/dev/null || true
+	-docker network rm dss_internal_network 2>/dev/null || true
 
 .PHONY: check-monitoring
 check-monitoring:
