@@ -15,7 +15,7 @@ image: ../uv.lock ../pyproject.toml $(shell find . -type f ! -path "*/output/*" 
 	./build.sh
 
 image-dev: ../uv.lock ../pyproject.toml $(shell find . -type f ! -path "*/output/*" ! -path "*/.*" ! -path "*/__pycache__/*" ! -name image ! -name image-dev ! -name "*.pyc") $(shell find ../interfaces -type f)
-	./build_dev.sh
+	./build.sh dev
 
 .PHONY: test
 test:
