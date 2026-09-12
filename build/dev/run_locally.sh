@@ -54,64 +54,92 @@ if [[ "$DC_COMMAND" == up* ]]; then
   echo "Starting containers..."
 fi
 
-if [[ "$DB_TYPE" == "raft" ]]; then
-  RID_RAFT_NODES=""
-  SCD_RAFT_NODES=""
-  AUX_RAFT_NODES=""
+if [[ "$DC_COMMAND" == up* ]]; then
+  if [[ "$DB_TYPE" == "raft" ]]; then
+    RID_RAFT_NODES=""
+    SCD_RAFT_NODES=""
+    AUX_RAFT_NODES=""
+    for ((i=1; i<=NUM_USS; i++)); do
+      for ((j=1; j<=NUM_NODES; j++)); do
+        NODE_IDX=$(( (i-1) * NUM_NODES + j ))
+        PADDED_NODE_IDX=$(printf "%02d" "$NODE_IDX")
+        NODE_IP="172.27.${i}.${j}"
+        RID_RAFT_NODES="${RID_RAFT_NODES},${NODE_IDX}=http://${NODE_IP}:95${PADDED_NODE_IDX}"
+        SCD_RAFT_NODES="${SCD_RAFT_NODES},${NODE_IDX}=http://${NODE_IP}:96${PADDED_NODE_IDX}"
+        AUX_RAFT_NODES="${AUX_RAFT_NODES},${NODE_IDX}=http://${NODE_IP}:97${PADDED_NODE_IDX}"
+      done
+    done
+    export RID_RAFT_NODES=${RID_RAFT_NODES#,}
+    export SCD_RAFT_NODES=${SCD_RAFT_NODES#,}
+    export AUX_RAFT_NODES=${AUX_RAFT_NODES#,}
+  fi
+
+  echo "=== Local DSS pool configuration ==="
+  echo "NUM_USS=${NUM_USS}"
+  echo "NUM_NODES=${NUM_NODES}"
+  echo "DB_TYPE=${DB_TYPE}"
+  echo "DSS_IMAGE=${DSS_IMAGE}"
+  echo "CORE_SERVICE_EXTRA_FLAGS=${CORE_SERVICE_EXTRA_FLAGS}"
+  echo "INTER_USS_NETEM_CONF=${INTER_USS_NETEM_CONF}"
+  echo "INTRA_USS_NETEM_CONF=${INTRA_USS_NETEM_CONF}"
+  echo "DC_COMMAND=${DC_COMMAND}"
+  echo "===================================="
+
   for ((i=1; i<=NUM_USS; i++)); do
     for ((j=1; j<=NUM_NODES; j++)); do
+      export USS_IDX=$i
+      export USS_NODE_IDX=$j
       NODE_IDX=$(( (i-1) * NUM_NODES + j ))
+      export RAFT_ID=$NODE_IDX
       PADDED_NODE_IDX=$(printf "%02d" "$NODE_IDX")
-      NODE_IP="172.27.${i}.${j}"
-      RID_RAFT_NODES="${RID_RAFT_NODES},${NODE_IDX}=http://${NODE_IP}:95${PADDED_NODE_IDX}"
-      SCD_RAFT_NODES="${SCD_RAFT_NODES},${NODE_IDX}=http://${NODE_IP}:96${PADDED_NODE_IDX}"
-      AUX_RAFT_NODES="${AUX_RAFT_NODES},${NODE_IDX}=http://${NODE_IP}:97${PADDED_NODE_IDX}"
+      export PADDED_NODE_IDX
+
+      export COMPOSE_PROFILES=${DB_TYPE}
+      if [ "$i" -eq 1 ] && [ "$j" -eq 1 ]; then
+        export COMPOSE_PROFILES=${COMPOSE_PROFILES},oauth,lb
+      fi
+      if [ "$i" -eq "$NUM_USS" ] && [ "$j" -eq "$NUM_NODES" ] && [ "$DB_TYPE" != "raft" ]; then
+        export COMPOSE_PROFILES=${COMPOSE_PROFILES},bootstrap-${DB_TYPE}
+      fi
+
+      # keep the DSS and the DB in the same subnet by using the first bit of the last byte of the IP
+      # e.g. for USS 3 node 2 the IPs would be 172.27.3.2 for the DSS container and 172.27.3.130 for the DB container
+      export DSS_IP="172.27.$USS_IDX.$USS_NODE_IDX"
+      export DB_IP="172.27.$USS_IDX.$((2#10000000 | USS_NODE_IDX))" # '2#' is the binary syntax for bash arithmetic operations
+
+      # shellcheck disable=SC2086
+      docker compose -f docker-compose.yaml -p "local_infra_${USS_IDX}-${USS_NODE_IDX}" $DC_COMMAND $DC_OPTIONS &
+      sleep 0.1 # reduce probability of race condition in joining network at container start
     done
   done
-  export RID_RAFT_NODES=${RID_RAFT_NODES#,}
-  export SCD_RAFT_NODES=${SCD_RAFT_NODES#,}
-  export AUX_RAFT_NODES=${AUX_RAFT_NODES#,}
+  wait
+else
+  PROJECTS=$(docker compose ls -a -q 2>/dev/null | grep '^local_infra_' || true)
+  if [[ -n "$PROJECTS" ]]; then
+    echo "=== Local DSS pool: executing '$DC_COMMAND' on discovered projects ==="
+    echo "$PROJECTS"
+    echo "======================================================================="
+    for p in $PROJECTS; do
+      if [[ "$p" =~ ^local_infra_([0-9]+)-([0-9]+)$ ]]; then
+        export USS_IDX="${BASH_REMATCH[1]}"
+        export USS_NODE_IDX="${BASH_REMATCH[2]}"
+        export DSS_IP="172.27.$USS_IDX.$USS_NODE_IDX"
+        export DB_IP="172.27.$USS_IDX.$((2#10000000 | USS_NODE_IDX))"
+        export PADDED_NODE_IDX
+        PADDED_NODE_IDX="$(printf "%02d" "$USS_NODE_IDX")"
+        export NUM_USS=1
+        export DSS_IMAGE="${DSS_IMAGE:-interuss/dss:v0.23.0}"
+        export COMPOSE_PROFILES="*"
+
+        # shellcheck disable=SC2086
+        docker compose -f docker-compose.yaml --profile "*" -p "$p" $DC_COMMAND $DC_OPTIONS &
+      fi
+    done
+    wait
+  else
+    echo "No deployed local DSS projects found to execute '$DC_COMMAND'."
+  fi
 fi
-
-echo "=== Local DSS pool configuration ==="
-echo "NUM_USS=${NUM_USS}"
-echo "NUM_NODES=${NUM_NODES}"
-echo "DB_TYPE=${DB_TYPE}"
-echo "DSS_IMAGE=${DSS_IMAGE}"
-echo "CORE_SERVICE_EXTRA_FLAGS=${CORE_SERVICE_EXTRA_FLAGS}"
-echo "INTER_USS_NETEM_CONF=${INTER_USS_NETEM_CONF}"
-echo "INTRA_USS_NETEM_CONF=${INTRA_USS_NETEM_CONF}"
-echo "DC_COMMAND=${DC_COMMAND}"
-echo "===================================="
-
-for ((i=1; i<=NUM_USS; i++)); do
-  for ((j=1; j<=NUM_NODES; j++)); do
-    export USS_IDX=$i
-    export USS_NODE_IDX=$j
-    NODE_IDX=$(( (i-1) * NUM_NODES + j ))
-    export RAFT_ID=$NODE_IDX
-    PADDED_NODE_IDX=$(printf "%02d" "$NODE_IDX")
-    export PADDED_NODE_IDX
-
-    export COMPOSE_PROFILES=${DB_TYPE}
-    if [ "$i" -eq 1 ] && [ "$j" -eq 1 ]; then
-      export COMPOSE_PROFILES=${COMPOSE_PROFILES},oauth,lb
-    fi
-    if [ "$i" -eq "$NUM_USS" ] && [ "$j" -eq "$NUM_NODES" ] && [ "$DB_TYPE" != "raft" ]; then
-      export COMPOSE_PROFILES=${COMPOSE_PROFILES},bootstrap-${DB_TYPE}
-    fi
-
-    # keep the DSS and the DB in the same subnet by using the first bit of the last byte of the IP
-    # e.g. for USS 3 node 2 the IPs would be 172.27.3.2 for the DSS container and 172.27.3.130 for the DB container
-    export DSS_IP="172.27.$USS_IDX.$USS_NODE_IDX"
-    export DB_IP="172.27.$USS_IDX.$((2#10000000 | USS_NODE_IDX))" # '2#' is the binary syntax for bash arithmetic operations
-
-    # shellcheck disable=SC2086
-    docker compose -f docker-compose.yaml -p "local_infra_${USS_IDX}-${USS_NODE_IDX}" $DC_COMMAND $DC_OPTIONS &
-    sleep 0.1 # reduce probability of race condition in joining network at container start
-  done
-done
-wait
 
 if [[ "$DC_COMMAND" == up* ]]; then
   echo "Verifying and repairing docker network connections..."
@@ -202,6 +230,6 @@ fi
 
 if [[ "$DC_COMMAND" == "down" ]]; then
   echo "Removing networks..."
-  docker network rm dss_internal_network || true
-  docker network rm interop_ecosystem_network || true
+  docker network rm dss_internal_network 2>/dev/null || true
+  docker network rm interop_ecosystem_network 2>/dev/null || true
 fi
