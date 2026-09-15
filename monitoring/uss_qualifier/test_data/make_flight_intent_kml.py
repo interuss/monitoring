@@ -15,6 +15,7 @@ from pykml.util import format_xml_with_cdata
 from monitoring.monitorlib.kml.flight_planning import flight_planning_styles
 from monitoring.monitorlib.kml.generation import make_placemark_from_volume
 from monitoring.monitorlib.temporal import TestTimeContext, Time
+from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.fileio import load_dict_with_references, resolve_filename
 from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
     FlightIntentCollection,
@@ -44,12 +45,12 @@ def main() -> int:
     args = parse_args()
 
     path = args.flight_intent_collection
-    output_path = os.path.splitext(resolve_filename(path))[0] + ".kml"
+    output_path = os.path.splitext(resolve_filename(path, package_root))[0] + ".kml"
 
     start_of_test_run = Time(args.start_of_test_run or arrow.utcnow().datetime)
     context = TestTimeContext.all_times_are(start_of_test_run)
 
-    raw = load_dict_with_references(path)
+    raw = load_dict_with_references(path, package_root)
     collection: FlightIntentCollection = ImplicitDict.parse(raw, FlightIntentCollection)
     flight_intents = collection.resolve()
 

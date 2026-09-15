@@ -3,6 +3,7 @@ from collections.abc import Iterable
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.versioning import repo_url_of
+from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
     PotentialGeneratedAction,
 )
@@ -428,7 +429,7 @@ def _populate_breakdown_with_action_declaration(
     elif "test_suite" in action and action.test_suite:
         if "suite_type" in action.test_suite and action.test_suite.suite_type:
             suite_def: TestSuiteDefinition = ImplicitDict.parse(
-                load_dict_with_references(action.test_suite.suite_type),
+                load_dict_with_references(action.test_suite.suite_type, package_root),
                 TestSuiteDefinition,
             )
             for a in suite_def.actions:

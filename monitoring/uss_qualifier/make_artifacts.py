@@ -9,6 +9,7 @@ from loguru import logger
 
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib import inspection
+from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.configurations.configuration import (
     USSQualifierConfiguration,
     USSQualifierConfigurationV1,
@@ -70,11 +71,11 @@ def main() -> int:
             f"========== Generating artifacts for configuration {config_name} and report {report_path} =========="
         )
 
-        report_src = load_dict_with_references(report_path)
+        report_src = load_dict_with_references(report_path, package_root)
         report = ImplicitDict.parse(report_src, TestRunReport)
 
         if config_name != config_in_report:
-            config_src = load_dict_with_references(config_name)
+            config_src = load_dict_with_references(config_name, package_root)
             whole_config = ImplicitDict.parse(config_src, USSQualifierConfiguration)
         else:
             whole_config = report.configuration

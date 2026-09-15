@@ -6,7 +6,7 @@ import sys
 from implicitdict import ImplicitDict
 
 from monitoring.monitorlib.inspection import import_submodules
-from monitoring.uss_qualifier import action_generators, scenarios, suites
+from monitoring.uss_qualifier import action_generators, package_root, scenarios, suites
 from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.suites.definitions import TestSuiteDefinition
 from monitoring.uss_qualifier.suites.documentation.documentation import (
@@ -23,7 +23,8 @@ def main(lint: bool) -> int:
     test_suite_docs = {}
     for suite_yaml_file in find_test_suites():
         suite_def: TestSuiteDefinition = ImplicitDict.parse(
-            load_dict_with_references("file://" + suite_yaml_file), TestSuiteDefinition
+            load_dict_with_references("file://" + suite_yaml_file, package_root),
+            TestSuiteDefinition,
         )
         suite_doc_file = os.path.splitext(suite_yaml_file)[0] + ".md"
         new_docs = make_test_suite_documentation(

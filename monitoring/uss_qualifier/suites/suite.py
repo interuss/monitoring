@@ -17,6 +17,7 @@ from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.inspection import fullname
 from monitoring.monitorlib.temporal import Time, TimeDuringTest
 from monitoring.monitorlib.versioning import repo_url_of
+from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.action_generators.action_generator import (
     ActionGenerator,
     action_generator_type_from_name,
@@ -227,7 +228,7 @@ class TestSuite:
     ):
         # Determine the suite's documentation URL
         if "suite_type" in declaration and declaration.suite_type:
-            suite_yaml_path = resolve_filename(declaration.suite_type)
+            suite_yaml_path = resolve_filename(declaration.suite_type, package_root)
             if suite_yaml_path.lower().startswith(
                 "http://"
             ) or suite_yaml_path.lower().startswith("https://"):

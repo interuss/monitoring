@@ -4,6 +4,7 @@ from enum import StrEnum
 
 from implicitdict import ImplicitDict, Optional
 
+from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.action_generators.definitions import (
     ActionGeneratorDefinition,
 )
@@ -151,7 +152,8 @@ class TestSuiteDefinition(ImplicitDict):
     ) -> TestSuiteDefinition:
         if "suite_type" in declaration and declaration.suite_type:
             return ImplicitDict.parse(
-                load_dict_with_references(declaration.suite_type), TestSuiteDefinition
+                load_dict_with_references(declaration.suite_type, package_root),
+                TestSuiteDefinition,
             )
         elif "suite_definition" in declaration and declaration.suite_definition:
             return declaration.suite_definition

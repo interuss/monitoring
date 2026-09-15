@@ -52,7 +52,7 @@ def test_allof_list_concatenation_issue_1661():
             )
         )
 
-        result = load_dict_with_references(f"file://{config_file}")
+        result = load_dict_with_references(f"file://{config_file}", "")
         combined = result["tested_requirements"][0]["requirement_collections"][
             "CombinedRequirements"
         ]
@@ -89,7 +89,7 @@ def test_allof_readme_example():
             )
         )
 
-        result = load_dict_with_references(f"file://{q_file}")
+        result = load_dict_with_references(f"file://{q_file}", "")
         assert result == {"a": 1, "b": 8, "c": 6, "d": 9, "e": 7, "f": 10}
 
 
@@ -139,7 +139,7 @@ def test_allof_deep_merge_nested_dicts_and_lists():
             )
         )
 
-        result = load_dict_with_references(f"file://{main_file}")
+        result = load_dict_with_references(f"file://{main_file}", "")
         assert result == {
             "container": {
                 "nested": {
@@ -175,7 +175,7 @@ def test_allof_internal_references():
             )
         )
 
-        result = load_dict_with_references(f"file://{doc_file}")
+        result = load_dict_with_references(f"file://{doc_file}", "")
         assert result["combined"] == {
             "features": ["feat_1", "feat_2", "feat_3"],
             "score": 20,

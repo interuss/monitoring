@@ -8,6 +8,7 @@ from pathlib import Path
 from implicitdict import ImplicitDict
 from loguru import logger
 
+from monitoring.benchmarker import package_root
 from monitoring.benchmarker.artifacts.generation import (
     default_output_path,
     generate_artifacts,
@@ -81,7 +82,7 @@ def main() -> int:
             config = None
 
         logger.debug("Loading report...")
-        report_src = load_dict_with_references(report_path)
+        report_src = load_dict_with_references(report_path, package_root)
         logger.debug("Parsing report...")
         report = ImplicitDict.parse(report_src, BenchmarkRunReport)
 
@@ -95,7 +96,9 @@ def main() -> int:
             elif config_name != config_in_report:
                 output_path = default_output_path(config_name)
             else:
-                output_path = str(Path(resolve_filename(report_path)).parent)
+                output_path = str(
+                    Path(resolve_filename(report_path, package_root)).parent
+                )
             generate_artifacts(config.artifacts, report, output_path)
         else:
             output_path = "nowhere"

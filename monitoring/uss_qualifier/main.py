@@ -11,6 +11,7 @@ from loguru import logger
 
 from monitoring.monitorlib.dicts import get_element_or_default, remove_elements
 from monitoring.monitorlib.versioning import get_code_version, get_commit_hash
+from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.configurations.configuration import (
     ExecutionConfiguration,
     TestConfiguration,
@@ -188,7 +189,7 @@ def run_config(
     disallow_unredacted: bool,
     scenarios_filter: str | None,
 ):
-    config_src = load_dict_with_references(config_name)
+    config_src = load_dict_with_references(config_name, package_root)
 
     if not skip_validation:
         logger.info("Validating configuration...")

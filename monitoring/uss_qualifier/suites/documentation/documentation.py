@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 from implicitdict import ImplicitDict
 
+from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.action_generators.action_generator import (
     action_generator_type_from_name,
 )
@@ -87,7 +88,9 @@ def make_test_suite_documentation(
             parent_suite_doc, start=os.path.dirname(suite_doc_file)
         )
         prefix = f"Defined in [parent suite]({parent_rel_path}) "
-    lines.append(f"{prefix}[`{get_package_name(suite_yaml_file)}`](./{local_path})")
+    lines.append(
+        f"{prefix}[`{get_package_name(suite_yaml_file, package_root)}`](./{local_path})"
+    )
     lines.append("")
 
     suite_readme_abspath = os.path.join(
@@ -213,10 +216,10 @@ def _render_suite_by_type(
 ) -> list[str]:
     lines = []
     suite_def = ImplicitDict.parse(
-        load_dict_with_references(suite_type),
+        load_dict_with_references(suite_type, package_root),
         TestSuiteDefinition,
     )
-    suite_path = resolve_filename(suite_type)
+    suite_path = resolve_filename(suite_type, package_root)
     suite_rel_path = os.path.relpath(suite_path, start=context.base_path)
     doc_path = os.path.splitext(suite_path)[0] + ".md"
     doc_rel_path = os.path.relpath(doc_path, start=context.base_path)
@@ -345,7 +348,7 @@ def _collect_requirements_from_action(
     elif "test_suite" in action and action.test_suite:
         if "suite_type" in action.test_suite and action.test_suite.suite_type:
             suite_def = ImplicitDict.parse(
-                load_dict_with_references(action.test_suite.suite_type),
+                load_dict_with_references(action.test_suite.suite_type, package_root),
                 TestSuiteDefinition,
             )
             return _collect_requirements_from_suite_def(suite_def)

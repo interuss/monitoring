@@ -8,6 +8,7 @@ from loguru import logger
 
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.versioning import get_code_version
+from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.action_generators.action_generator import (
     action_generator_type_from_name,
 )
@@ -54,7 +55,9 @@ def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
             and report.declaration.test_suite.suite_type
         ):
             suite: TestSuiteDefinition = ImplicitDict.parse(
-                load_dict_with_references(report.declaration.test_suite.suite_type),
+                load_dict_with_references(
+                    report.declaration.test_suite.suite_type, package_root
+                ),
                 TestSuiteDefinition,
             )
             parent = ActionNode(

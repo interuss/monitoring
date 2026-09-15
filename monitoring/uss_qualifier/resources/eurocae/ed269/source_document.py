@@ -1,6 +1,6 @@
 from implicitdict import ImplicitDict
 
-from monitoring.uss_qualifier import fileio
+from monitoring.uss_qualifier import fileio, package_root
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
@@ -20,4 +20,4 @@ class SourceDocument(Resource[SourceDocumentSpecification]):
     ):
         super().__init__(specification, resource_origin)
         self.specification = specification
-        self.raw_document = fileio.load_content(specification.url)
+        self.raw_document = fileio.load_content(specification.url, package_root)
