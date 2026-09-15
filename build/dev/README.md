@@ -20,9 +20,9 @@ To tear down the deployment and clean up networks (also via `make down-locally` 
 ```bash
 ./run_locally.sh down
 ```
-Note that to ensure a proper cleanup, the same environment variables used for the `up` should be used for the `down`.
+Tearing down the deployment automatically discovers all deployed local DSS instances in Docker, so it does not require passing the same environment variables that were used for `up`.
 
-You can use `make cleanup-locally` to remove all containers connected to the `dss_internal_network` and/or `interop_ecosystem_network`.  This can include DSS instances, dummy auth server, mock USS instances, locust load test, etc.
+You can use `make clean-locally` to remove all containers connected to the `dss_internal_network` and/or `interop_ecosystem_network`.  This can include DSS instances, dummy auth server, mock USS instances, locust load test, etc.
 
 ## Environment Variables
 
