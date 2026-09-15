@@ -3,8 +3,9 @@ import json
 
 from implicitdict import ImplicitDict, Optional
 
-from monitoring.uss_qualifier import fileio, package_root
-from monitoring.uss_qualifier.fileio import FileReference
+from monitoring.monitorlib import fileio
+from monitoring.monitorlib.fileio import FileReference
+from monitoring.uss_qualifier import package_root
 
 
 class ExternalFile(ImplicitDict):

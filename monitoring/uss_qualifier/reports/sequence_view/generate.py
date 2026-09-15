@@ -7,6 +7,7 @@ from implicitdict import ImplicitDict
 from loguru import logger
 
 from monitoring.monitorlib.errors import stacktrace_string
+from monitoring.monitorlib.fileio import load_dict_with_references
 from monitoring.monitorlib.versioning import get_code_version
 from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.action_generators.action_generator import (
@@ -17,7 +18,6 @@ from monitoring.uss_qualifier.configurations.configuration import (
     SequenceViewConfiguration,
     TestConfiguration,
 )
-from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports import jinja_env
 from monitoring.uss_qualifier.reports.report import (
     Severity,

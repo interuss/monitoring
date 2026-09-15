@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from monitoring.uss_qualifier.fileio import load_dict_with_references
+from monitoring.monitorlib.fileio import load_dict_with_references
 
 
 def test_allof_list_concatenation_issue_1661():

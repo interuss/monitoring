@@ -2,6 +2,7 @@ from collections.abc import Iterable
 
 from implicitdict import ImplicitDict
 
+from monitoring.monitorlib.fileio import load_dict_with_references
 from monitoring.monitorlib.versioning import repo_url_of
 from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
@@ -15,7 +16,6 @@ from monitoring.uss_qualifier.configurations.configuration import (
     FullyQualifiedCheck,
     ParticipantID,
 )
-from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.report import (
     FailedCheck,
     PassedCheck,

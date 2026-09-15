@@ -91,7 +91,7 @@ def _get_web_content(url: str) -> str:
 
             # Extract personal access token(s) and applicability from environment variable
             token = None
-            pat_defs = os.environ.get(github_private_repos_key).split(";")
+            pat_defs = os.environ.get(github_private_repos_key, "").split(";")
             for pat_def in pat_defs:
                 patdef_match = re.match(
                     "^(?P<org>[^/]*)/(?P<repos>[^:]*):(?P<token>.*)$", pat_def

@@ -5,9 +5,9 @@ import sys
 
 from implicitdict import ImplicitDict
 
+from monitoring.monitorlib.fileio import load_dict_with_references
 from monitoring.monitorlib.inspection import import_submodules
 from monitoring.uss_qualifier import action_generators, package_root, scenarios, suites
-from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.suites.definitions import TestSuiteDefinition
 from monitoring.uss_qualifier.suites.documentation.documentation import (
     find_test_suites,

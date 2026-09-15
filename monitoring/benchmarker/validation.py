@@ -5,11 +5,11 @@ from monitoring.benchmarker import package_root
 from monitoring.benchmarker.configurations.configuration import (
     BenchmarkConfiguration,
 )
+from monitoring.monitorlib.fileio import load_dict_with_references
 from monitoring.monitorlib.schema_validation import (
     ValidationError,
     validate_implicitdict_object,
 )
-from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.validation import validate_resource_declarations
 
 

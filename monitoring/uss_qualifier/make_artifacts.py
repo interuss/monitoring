@@ -9,12 +9,12 @@ from loguru import logger
 
 from monitoring import uss_qualifier as uss_qualifier_module
 from monitoring.monitorlib import inspection
+from monitoring.monitorlib.fileio import load_dict_with_references
 from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.configurations.configuration import (
     USSQualifierConfiguration,
     USSQualifierConfigurationV1,
 )
-from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.artifacts import (
     default_output_path,
     generate_artifacts,

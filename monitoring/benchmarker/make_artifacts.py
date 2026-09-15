@@ -15,7 +15,7 @@ from monitoring.benchmarker.artifacts.generation import (
 )
 from monitoring.benchmarker.reports.report import BenchmarkRunReport
 from monitoring.benchmarker.validation import load_config
-from monitoring.uss_qualifier.fileio import load_dict_with_references, resolve_filename
+from monitoring.monitorlib.fileio import load_dict_with_references, resolve_filename
 
 
 def parseArgs() -> argparse.Namespace:

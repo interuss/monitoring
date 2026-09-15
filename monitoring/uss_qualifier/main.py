@@ -10,6 +10,7 @@ from implicitdict import ImplicitDict, Optional
 from loguru import logger
 
 from monitoring.monitorlib.dicts import get_element_or_default, remove_elements
+from monitoring.monitorlib.fileio import load_dict_with_references
 from monitoring.monitorlib.versioning import get_code_version, get_commit_hash
 from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.configurations.configuration import (
@@ -18,7 +19,6 @@ from monitoring.uss_qualifier.configurations.configuration import (
     USSQualifierConfiguration,
     USSQualifierConfigurationV1,
 )
-from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.reports.artifacts import (
     default_output_path,
     generate_artifacts,

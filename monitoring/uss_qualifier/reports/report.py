@@ -14,13 +14,13 @@ from implicitdict import (
 
 from monitoring.monitorlib import fetch, inspection
 from monitoring.monitorlib.errors import stacktrace_string
+from monitoring.monitorlib.fileio import FileReference
 from monitoring.uss_qualifier.action_generators.definitions import GeneratorTypeName
 from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import (
     ParticipantID,
     USSQualifierConfiguration,
 )
-from monitoring.uss_qualifier.fileio import FileReference
 from monitoring.uss_qualifier.reports.capability_definitions import (
     CapabilityID,
     JSONPathExpression,

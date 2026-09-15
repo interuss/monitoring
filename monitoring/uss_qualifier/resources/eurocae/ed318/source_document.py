@@ -1,6 +1,7 @@
 from implicitdict import ImplicitDict
 
-from monitoring.uss_qualifier import fileio, package_root
+from monitoring.monitorlib import fileio
+from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
