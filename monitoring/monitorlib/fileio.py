@@ -3,6 +3,7 @@ import copy
 import json
 import os
 import re
+from collections.abc import Callable
 
 import _jsonnet
 import bc_jsonpath_ng
@@ -143,7 +144,12 @@ def _split_anchor(file_name: str) -> tuple[str, str | None]:
     return base_file_name, anchor
 
 
-def load_dict_with_references(data_file: FileReference, package_root: str) -> dict:
+def load_dict_with_references(
+    data_file: FileReference,
+    package_root: str,
+    native_callbacks: dict[str, tuple[tuple[str, ...], Callable[..., object]]]
+    | None = None,
+) -> dict:
     """Loads a dict from the specified file reference.
 
     If the data_file has a #<COMPONENT_PATH> suffix, the component at that path
@@ -163,7 +169,7 @@ def load_dict_with_references(data_file: FileReference, package_root: str) -> di
     base_file_name = resolve_filename(base_file_name, package_root)
     file_name = base_file_name + (f"#{anchor}" if anchor is not None else "")
     dict_content, _ = _load_dict_with_references_from_file_name(
-        file_name, file_name, package_root
+        file_name, file_name, package_root, native_callbacks=native_callbacks
     )
     return dict_content
 
@@ -174,6 +180,8 @@ def _jsonnet_import_callback(
     rel: str,
     package_root: str,
     cache: dict[str, dict] | None,
+    native_callbacks: dict[str, tuple[tuple[str, ...], Callable[..., object]]]
+    | None = None,
 ) -> tuple[str, bytes]:
     if rel.endswith(".libsonnet"):
         # Do not attempt to parse libsonnet content (e.g., resolve $refs);
@@ -187,6 +195,7 @@ def _jsonnet_import_callback(
             base_file_name,
             package_root,
             cache,
+            native_callbacks,
         )
         return file_name, json.dumps(dict_content).encode()
 
@@ -196,6 +205,8 @@ def _load_dict_with_references_from_file_name(
     context_file_name: str,
     package_root: str,
     cache: dict[str, dict] | None = None,
+    native_callbacks: dict[str, tuple[tuple[str, ...], Callable[..., object]]]
+    | None = None,
 ) -> tuple[dict, str]:
     if cache is None:
         cache = {}
@@ -242,11 +253,14 @@ def _load_dict_with_references_from_file_name(
 
             def import_callback(folder: str, rel: str):
                 return _jsonnet_import_callback(
-                    base_file_name, folder, rel, package_root, cache
+                    base_file_name, folder, rel, package_root, cache, native_callbacks
                 )
 
             json_str = _jsonnet.evaluate_snippet(
-                base_file_name, file_content, import_callback=import_callback
+                base_file_name,
+                file_content,
+                import_callback=import_callback,
+                native_callbacks=native_callbacks,
             )
             dict_content = json.loads(json_str)
         else:
@@ -257,7 +271,13 @@ def _load_dict_with_references_from_file_name(
         allof_paths = _identify_allofs(dict_content)
         ref_paths = _identify_refs(dict_content)
         _replace_refs(
-            dict_content, base_file_name, ref_paths, allof_paths, package_root, cache
+            dict_content,
+            base_file_name,
+            ref_paths,
+            allof_paths,
+            package_root,
+            cache,
+            native_callbacks,
         )
         cache[base_file_name] = dict_content
 
@@ -357,6 +377,8 @@ def _replace_refs(
     allof_paths: list[str],
     package_root: str,
     cache: dict[str, dict] | None = None,
+    native_callbacks: dict[str, tuple[tuple[str, ...], Callable[..., object]]]
+    | None = None,
 ) -> None:
     for path in ref_parent_paths:
         parent = [m.value for m in bc_jsonpath_ng.parser.parse(path).find(content)]
@@ -368,7 +390,7 @@ def _replace_refs(
         ref_path = parent.pop("$ref")
         if not ref_path.startswith("#"):
             ref_content, _ = _load_dict_with_references_from_file_name(
-                ref_path, context_file_name, package_root, cache
+                ref_path, context_file_name, package_root, cache, native_callbacks
             )
         else:
             ref_json_path = bc_jsonpath_ng.parser.parse(
