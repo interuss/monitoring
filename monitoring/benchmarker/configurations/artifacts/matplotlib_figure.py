@@ -114,6 +114,9 @@ class SubplotSpecification(ImplicitDict):
     title: Optional[str]
     """Title of this subplot."""
 
+    title_expr: Optional[ASTExpression]
+    """Expression for the title of this subplot, if `title` is not specified."""
+
     render_expr: Optional[ASTExpression]
     """If specified and this expression evaluates to false, skip rendering this subplot."""
 

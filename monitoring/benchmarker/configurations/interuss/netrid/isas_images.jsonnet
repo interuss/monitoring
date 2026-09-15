@@ -1,3 +1,7 @@
+/* Compares NetRID performance of two different DSS images deployed locally with synthetic latency
+ * and loss between nodes.
+ */
+
 local num_uss = 3;
 local num_nodes = 3;
 local num_subscriptions = 8;
