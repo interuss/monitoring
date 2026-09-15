@@ -1,8 +1,5 @@
 USER_GROUP := $(shell id -u):$(shell id -g)
 
-UPSTREAM_OWNER := $(shell scripts/git/upstream_owner.sh)
-COMMIT := $(shell scripts/git/commit.sh)
-
 ifeq ($(OS),Windows_NT)
 	detected_OS := Windows
 else
@@ -56,9 +53,6 @@ image:
 image-dev:
 	cd monitoring && make image-dev
 
-tag:
-	scripts/tag.sh $(UPSTREAM_OWNER)/monitoring/v$(VERSION)
-
 .PHONY: start-locally
 start-locally:
 	build/dev/run_locally.sh up --wait
@@ -102,6 +96,8 @@ down-locally:
 clean-locally: down-locally
 	-docker ps -aq --filter network=interop_ecosystem_network | xargs -r docker rm -f
 	-docker ps -aq --filter network=dss_internal_network | xargs -r docker rm -f
+	-docker network rm interop_ecosystem_network 2>/dev/null || true
+	-docker network rm dss_internal_network 2>/dev/null || true
 
 .PHONY: check-monitoring
 check-monitoring:

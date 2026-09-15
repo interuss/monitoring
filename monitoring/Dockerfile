@@ -36,7 +36,7 @@
 
 ARG BASE_STAGE=base-system
 
-FROM ghcr.io/astral-sh/uv:0.12.12-python3.13-trixie-slim AS base-system
+FROM ghcr.io/astral-sh/uv:0.12.13-python3.13-trixie-slim AS base-system
 # Not -alpine because: https://stackoverflow.com/a/58028091/651139
 
 # Install system tools
@@ -105,7 +105,6 @@ ARG version
 ARG commit_hash
 ENV MONITORING_VERSION=$version
 ENV GIT_COMMIT_HASH=$commit_hash
-ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_MONITORING=$version
 
 # Add core content from repo
 ADD ./interfaces /app/interfaces
