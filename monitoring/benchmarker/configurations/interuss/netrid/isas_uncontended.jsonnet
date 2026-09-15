@@ -1,3 +1,7 @@
+/* Simple configuration that creates and deletes ISAs in an automatically-deployed local DSS pool
+ * without any contention-causing subscriptions, sweeping through inter-node latency values.
+ */
+
 local num_uss = 3;
 local num_nodes = 3;
 local latencies_ms = [std.max(1, i * 25) for i in std.range(0, 2)];

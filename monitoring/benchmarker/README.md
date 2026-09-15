@@ -7,7 +7,7 @@
 To execute `benchmarker`, run the following command from the root of the `monitoring` repo:
 
 ```bash
-PYTHONPATH=. uv run python monitoring/benchmarker/benchmark.py --config file://monitoring/benchmarker/configurations/interuss/isas_uncontended.jsonnet
+PYTHONPATH=. uv run python monitoring/benchmarker/benchmark.py --config file://monitoring/benchmarker/configurations/interuss/netrid/isas_uncontended.jsonnet
 ```
 
 ## Security
@@ -25,5 +25,5 @@ PYTHONPATH=. uv run python monitoring/benchmarker/make_artifacts.py --report fil
 You can also specify `--config` if you wish to generate artifacts using a configuration different from the one embedded in the report:
 
 ```bash
-PYTHONPATH=. uv run python monitoring/benchmarker/make_artifacts.py --report file://monitoring/benchmarker/output/isas_uncontended/report.json --config file://monitoring/benchmarker/configurations/interuss/isas_uncontended.jsonnet
+PYTHONPATH=. uv run python monitoring/benchmarker/make_artifacts.py --report file://monitoring/benchmarker/output/isas_uncontended/report.json --config file://monitoring/benchmarker/configurations/interuss/netrid/isas_uncontended.jsonnet
 ```
