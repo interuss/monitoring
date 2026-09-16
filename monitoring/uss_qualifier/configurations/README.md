@@ -18,7 +18,7 @@ To execute a test run with uss_qualifier, a uss_qualifier configuration must be 
 
 ### Specifying
 
-When referring to a configuration, three methods may be used; see [`FileReference` documentation](../fileio.py) for more details.
+When referring to a configuration, three methods may be used; see [`FileReference` documentation](../../monitorlib/fileio.py) for more details.
 
 Regardless of method used to refer to a configuration, the content of that configuration must be dict (JSON-like) content following the [`USSQualifierConfiguration`](configuration.py) schema.
 
