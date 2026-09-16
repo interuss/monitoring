@@ -135,7 +135,7 @@ Loading _q.json_ results in the object:
 {"a": 1, "b": 8, "c": 6, "d": 9, "e": 7, "f": 10}
 ```
 
-More details may be found in [`fileio.py`](../fileio.py).
+More details may be found in [`fileio.py`](../../monitorlib/fileio.py).
 
 ## Execution control
 
