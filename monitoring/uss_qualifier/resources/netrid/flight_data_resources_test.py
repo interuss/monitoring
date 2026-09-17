@@ -145,3 +145,44 @@ def test_adjacent_circular_flights_simulation_source_invalid_configuration(
 
     with pytest.raises(ValueError):
         FlightDataResource(specs, "test")
+
+
+def test_adjacent_circular_flights_duplicates_error():
+    from monitoring.uss_qualifier.resources.netrid.simulation.adjacent_circular_flights_simulator import (
+        generate_aircraft_states,
+    )
+
+    # A configuration that is known to produce duplicate positions (e.g. duration=90, num_flights=2)
+    config = AdjacentCircularFlightsSimulatorConfiguration(
+        minx=8.508996,
+        miny=47.382846,
+        maxx=8.514161,
+        maxy=47.386336,
+        utm_zone=32,
+        altitude_of_ground_level_wgs_84=48,
+        num_flights=2,
+        duration=90,
+    )
+    # By default, allow_duplicate_positions is False, which should error out on duplicate positions
+    with pytest.raises(ValueError, match="Duplicate position found"):
+        generate_aircraft_states(config, allow_duplicate_positions=False)
+
+
+def test_adjacent_circular_flights_duplicates_allowed():
+    from monitoring.uss_qualifier.resources.netrid.simulation.adjacent_circular_flights_simulator import (
+        generate_aircraft_states,
+    )
+
+    config = AdjacentCircularFlightsSimulatorConfiguration(
+        minx=8.508996,
+        miny=47.382846,
+        maxx=8.514161,
+        maxy=47.386336,
+        utm_zone=32,
+        altitude_of_ground_level_wgs_84=48,
+        num_flights=2,
+        duration=90,
+    )
+    # With allow_duplicate_positions=True, it should successfully generate states
+    collection = generate_aircraft_states(config, allow_duplicate_positions=True)
+    assert len(collection.flights) == 2
