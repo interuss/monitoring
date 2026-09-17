@@ -29,6 +29,7 @@ from monitoring.benchmarker.engine.users.creation import create_virtual_user
 from monitoring.benchmarker.engine.users.framework import VirtualUser
 from monitoring.benchmarker.reports.report import (
     BenchmarkScenarioStepReport,
+    CleanupReport,
     StepTerminationReason,
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID
@@ -43,7 +44,7 @@ async def run_user_ramp_load(
     executor: ThreadPoolExecutor,
     coordinator: Coordinator,
     scenario_name: BenchmarkScenarioName,
-) -> tuple[list[ExecutedOperation], list[BenchmarkScenarioStepReport]]:
+) -> tuple[list[ExecutedOperation], list[BenchmarkScenarioStepReport], CleanupReport]:
     """Apply a load by driving virtual user workflows and monitoring step criteria."""
     if "user_types" in ramp and ramp.user_types:
         user_types_list = ramp.user_types
@@ -356,6 +357,17 @@ async def run_user_ramp_load(
             f"Waiting for {len(active_tasks)} active virtual users to wind down gracefully..."
         )
         await asyncio.gather(*active_tasks, return_exceptions=True)
-        logger.info("All virtual users have finished.")
+        logger.info("All virtual users have finished their workflows.")
 
-    return operations, steps
+    logger.info(f"Cleaning up {len(virtual_users)} virtual users...")
+    cleanup_start = datetime.now(UTC)
+    for virtual_user in virtual_users:
+        await virtual_user.cleanup()
+    cleanup_end = datetime.now(UTC)
+    logger.info("All virtual users have been cleaned up.")
+    cleanup_report = CleanupReport(
+        start_time=StringBasedDateTime(cleanup_start),
+        end_time=StringBasedDateTime(cleanup_end),
+    )
+
+    return operations, steps, cleanup_report

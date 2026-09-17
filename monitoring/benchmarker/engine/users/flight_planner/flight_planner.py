@@ -207,6 +207,10 @@ class FlightPlannerUser(VirtualUser):
             if next_action.run_on_shutdown:
                 await next_action.start()
 
+    async def cleanup(self) -> None:
+        if self.scd:
+            await self.scd.cleanup()
+
     @staticmethod
     def enumerate_coordination_groups(
         flight_planner: FlightPlannerSpecification,
