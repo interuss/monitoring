@@ -3,6 +3,7 @@ import copy
 import json
 import os
 import re
+from collections.abc import Callable
 
 import _jsonnet
 import bc_jsonpath_ng
@@ -22,7 +23,7 @@ FileReference = str
 May be:
   * file://<PATH>
   * http(s)://<PATH>
-  * Python-package style name relative to the uss_qualifier package (without extension; extension will be inferred by what file is present)
+  * Python-package style name relative to the reference package (without extension; extension will be inferred by what file is present)
 
 Allowed extensions:
   * .json (dict, content)
@@ -31,10 +32,8 @@ Allowed extensions:
   * .kml (content)
 """
 
-_package_root = os.path.dirname(__file__)
 
-
-def resolve_filename(data_file: FileReference) -> str:
+def resolve_filename(data_file: FileReference, package_root: str) -> str:
     if data_file.startswith(FILE_PREFIX):
         # file:// explicit local file reference
         return os.path.abspath(data_file[len(FILE_PREFIX) :])
@@ -43,22 +42,20 @@ def resolve_filename(data_file: FileReference) -> str:
         return data_file
     else:
         # Package-based name (without extension)
-        path_parts = [_package_root]
+        path_parts = [package_root]
         path_parts += data_file.split(".")
-        file_name = None
 
         for ext in RECOGNIZED_EXTENSIONS:
             ext_file = os.path.join(*path_parts) + ext
             if os.path.exists(ext_file):
                 return os.path.abspath(ext_file)
 
-        if file_name is None:
-            raise NotImplementedError(
-                f"Cannot find a suitable file to load for {data_file}"
-            )
+        raise NotImplementedError(
+            f"Cannot find a suitable file to load for {data_file}"
+        )
 
 
-def get_package_name(local_file_path: str) -> FileReference:
+def get_package_name(local_file_path: str, package_root: str) -> FileReference:
     """Get the Python-package style name of the specified file path on the local system.
 
     Args:
@@ -71,7 +68,7 @@ def get_package_name(local_file_path: str) -> FileReference:
         raise ValueError(
             f"Package name does not exist for non-dictionary file {local_file_path}"
         )
-    rel_path = os.path.relpath(base, start=_package_root)
+    rel_path = os.path.relpath(base, start=package_root)
     return ".".join(os.path.normpath(rel_path).split(os.path.sep))
 
 
@@ -95,7 +92,7 @@ def _get_web_content(url: str) -> str:
 
             # Extract personal access token(s) and applicability from environment variable
             token = None
-            pat_defs = os.environ.get(github_private_repos_key).split(";")
+            pat_defs = os.environ.get(github_private_repos_key, "").split(";")
             for pat_def in pat_defs:
                 patdef_match = re.match(
                     "^(?P<org>[^/]*)/(?P<repos>[^:]*):(?P<token>.*)$", pat_def
@@ -132,8 +129,8 @@ def _load_content_from_file_name(file_name: str) -> str:
     return file_content
 
 
-def load_content(data_file: FileReference) -> str:
-    return _load_content_from_file_name(resolve_filename(data_file))
+def load_content(data_file: FileReference, package_root: str) -> str:
+    return _load_content_from_file_name(resolve_filename(data_file, package_root))
 
 
 def _split_anchor(file_name: str) -> tuple[str, str | None]:
@@ -147,7 +144,12 @@ def _split_anchor(file_name: str) -> tuple[str, str | None]:
     return base_file_name, anchor
 
 
-def load_dict_with_references(data_file: FileReference) -> dict:
+def load_dict_with_references(
+    data_file: FileReference,
+    package_root: str,
+    native_callbacks: dict[str, tuple[tuple[str, ...], Callable[..., object]]]
+    | None = None,
+) -> dict:
     """Loads a dict from the specified file reference.
 
     If the data_file has a #<COMPONENT_PATH> suffix, the component at that path
@@ -164,14 +166,22 @@ def load_dict_with_references(data_file: FileReference) -> dict:
     OpenAPI (nested dictionaries are recursively merged and lists are concatenated).
     """
     base_file_name, anchor = _split_anchor(data_file)
-    base_file_name = resolve_filename(base_file_name)
+    base_file_name = resolve_filename(base_file_name, package_root)
     file_name = base_file_name + (f"#{anchor}" if anchor is not None else "")
-    dict_content, _ = _load_dict_with_references_from_file_name(file_name, file_name)
+    dict_content, _ = _load_dict_with_references_from_file_name(
+        file_name, file_name, package_root, native_callbacks=native_callbacks
+    )
     return dict_content
 
 
 def _jsonnet_import_callback(
-    base_file_name: str, folder: str, rel: str, cache: dict[str, dict] | None
+    base_file_name: str,
+    folder: str,
+    rel: str,
+    package_root: str,
+    cache: dict[str, dict] | None,
+    native_callbacks: dict[str, tuple[tuple[str, ...], Callable[..., object]]]
+    | None = None,
 ) -> tuple[str, bytes]:
     if rel.endswith(".libsonnet"):
         # Do not attempt to parse libsonnet content (e.g., resolve $refs);
@@ -181,13 +191,22 @@ def _jsonnet_import_callback(
         return file_name, file_content.encode()
     else:
         dict_content, file_name = _load_dict_with_references_from_file_name(
-            rel, base_file_name, cache
+            rel,
+            base_file_name,
+            package_root,
+            cache,
+            native_callbacks,
         )
         return file_name, json.dumps(dict_content).encode()
 
 
 def _load_dict_with_references_from_file_name(
-    file_name: str, context_file_name: str, cache: dict[str, dict] | None = None
+    file_name: str,
+    context_file_name: str,
+    package_root: str,
+    cache: dict[str, dict] | None = None,
+    native_callbacks: dict[str, tuple[tuple[str, ...], Callable[..., object]]]
+    | None = None,
 ) -> tuple[dict, str]:
     if cache is None:
         cache = {}
@@ -214,7 +233,7 @@ def _load_dict_with_references_from_file_name(
             base_file_name = os.path.join(root_path, base_file_name)
         else:
             # This is a package-based file path
-            base_file_name = resolve_filename(base_file_name)
+            base_file_name = resolve_filename(base_file_name, package_root)
 
     if not base_file_name.startswith(HTTP_PREFIX) and not base_file_name.startswith(
         HTTPS_PREFIX
@@ -233,10 +252,15 @@ def _load_dict_with_references_from_file_name(
         elif base_file_name.lower().endswith(".jsonnet"):
 
             def import_callback(folder: str, rel: str):
-                return _jsonnet_import_callback(base_file_name, folder, rel, cache)
+                return _jsonnet_import_callback(
+                    base_file_name, folder, rel, package_root, cache, native_callbacks
+                )
 
             json_str = _jsonnet.evaluate_snippet(
-                base_file_name, file_content, import_callback=import_callback
+                base_file_name,
+                file_content,
+                import_callback=import_callback,
+                native_callbacks=native_callbacks,
             )
             dict_content = json.loads(json_str)
         else:
@@ -246,7 +270,15 @@ def _load_dict_with_references_from_file_name(
 
         allof_paths = _identify_allofs(dict_content)
         ref_paths = _identify_refs(dict_content)
-        _replace_refs(dict_content, base_file_name, ref_paths, allof_paths, cache)
+        _replace_refs(
+            dict_content,
+            base_file_name,
+            ref_paths,
+            allof_paths,
+            package_root,
+            cache,
+            native_callbacks,
+        )
         cache[base_file_name] = dict_content
 
     if anchor is not None:
@@ -343,7 +375,10 @@ def _replace_refs(
     context_file_name: str,
     ref_parent_paths: list[str],
     allof_paths: list[str],
+    package_root: str,
     cache: dict[str, dict] | None = None,
+    native_callbacks: dict[str, tuple[tuple[str, ...], Callable[..., object]]]
+    | None = None,
 ) -> None:
     for path in ref_parent_paths:
         parent = [m.value for m in bc_jsonpath_ng.parser.parse(path).find(content)]
@@ -355,7 +390,7 @@ def _replace_refs(
         ref_path = parent.pop("$ref")
         if not ref_path.startswith("#"):
             ref_content, _ = _load_dict_with_references_from_file_name(
-                ref_path, context_file_name, cache
+                ref_path, context_file_name, package_root, cache, native_callbacks
             )
         else:
             ref_json_path = bc_jsonpath_ng.parser.parse(

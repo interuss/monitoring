@@ -1,14 +1,15 @@
 from implicitdict import ImplicitDict
 from loguru import logger
 
+from monitoring.benchmarker import package_root
 from monitoring.benchmarker.configurations.configuration import (
     BenchmarkConfiguration,
 )
+from monitoring.monitorlib.fileio import load_dict_with_references
 from monitoring.monitorlib.schema_validation import (
     ValidationError,
     validate_implicitdict_object,
 )
-from monitoring.uss_qualifier.fileio import load_dict_with_references
 from monitoring.uss_qualifier.validation import validate_resource_declarations
 
 
@@ -41,7 +42,7 @@ def load_config(
 
     Returns: Parsed BenchmarkConfiguration instance.
     """
-    config_src = load_dict_with_references(config_name)
+    config_src = load_dict_with_references(config_name, package_root)
 
     if not skip_validation:
         logger.info("Validating configuration...")

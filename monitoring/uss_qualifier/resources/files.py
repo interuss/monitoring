@@ -3,8 +3,9 @@ import json
 
 from implicitdict import ImplicitDict, Optional
 
-from monitoring.uss_qualifier import fileio
-from monitoring.uss_qualifier.fileio import FileReference
+from monitoring.monitorlib import fileio
+from monitoring.monitorlib.fileio import FileReference
+from monitoring.uss_qualifier import package_root
 
 
 class ExternalFile(ImplicitDict):
@@ -39,7 +40,7 @@ def load_content(file: ExternalFile) -> str:
 
     Returns: Content of external file.
     """
-    content = fileio.load_content(file.path)
+    content = fileio.load_content(file.path, package_root)
     file.verify_or_set_hash(content)
     return content
 
@@ -54,7 +55,7 @@ def load_dict(file: ExternalFile) -> dict:
 
     Returns: Python dict with the content loaded from the file (and referenced files, if applicable).
     """
-    result = fileio.load_dict_with_references(file.path)
+    result = fileio.load_dict_with_references(file.path, package_root)
     content = json.dumps(result)
     file.verify_or_set_hash(content)
     return result
