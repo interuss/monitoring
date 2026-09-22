@@ -65,10 +65,13 @@ class AdjacentCircularFlightsSimulatorConfiguration(ImplicitDict):
     """Delay generated flight starts from the reference time to spread flights over time. Expressed in seconds. Use 0 to disable."""
 
     num_flights: int = 6
-    """Number of adjacent circular flights to generate."""
+    """Number of adjacent flights to generate."""
 
     duration: int = 30
     """Number of seconds of telemetry to generate for each flight."""
+
+    spiral_inward: bool = False
+    """If true, aircraft will spiral inward toward the center of each cell rather than flying in a circle, avoiding duplicate positions over longer durations."""
 
     allow_duplicate_positions: Optional[bool] = False
     """Whether to allow duplicate positions in the generated flights."""
