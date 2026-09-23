@@ -9,6 +9,7 @@ resources:
   problematically_big_area: resources.VolumeResource
   planning_area: resources.PlanningAreaResource
   test_exclusions: resources.dev.TestExclusionsResource?
+  concurrency_behavior_adjustment: resources.interuss.scenarios.astm.netrid.common.dss.heavy_traffic_concurrent.HeavyTrafficConcurrentBehaviorResource?
 actions:
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.dss.EndpointEncryption
@@ -78,3 +79,4 @@ actions:
         dss: dss
         id_generator: id_generator
         isa: isa
+        behavior_adjustment: concurrency_behavior_adjustment?
