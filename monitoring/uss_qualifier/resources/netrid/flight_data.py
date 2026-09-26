@@ -60,13 +60,19 @@ class AdjacentCircularFlightsSimulatorConfiguration(ImplicitDict):
     """Delay generated flight starts from the reference time to spread flights over time. Expressed in seconds. Use 0 to disable."""
 
     num_flights: int = 6
-    """Number of adjacent circular flights to generate."""
+    """Number of adjacent flights to generate."""
 
     duration: int = 30
     """Number of seconds of telemetry to generate for each flight."""
 
     allow_duplicate_positions: Optional[bool] = False
     """Whether to allow duplicate positions in the generated flights."""
+
+
+class AdjacentSpiralFlightsSimulatorConfiguration(
+    AdjacentCircularFlightsSimulatorConfiguration
+):
+    pass
 
 
 class FlightDataKMLFileConfiguration(ImplicitDict):
@@ -98,3 +104,8 @@ class FlightDataSpecification(ImplicitDict):
         AdjacentCircularFlightsSimulatorConfiguration
     ]
     """When this field is populated, flight data will be simulated with the AdjacentCircularFlightsSimulator"""
+
+    adjacent_spiral_flights_simulation_source: Optional[
+        AdjacentSpiralFlightsSimulatorConfiguration
+    ]
+    """When this field is populated, flight data will be simulated with the AdjacentSpiralFlightsSimulator"""
