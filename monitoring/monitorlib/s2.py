@@ -4,11 +4,9 @@ import s2sphere
 
 
 def _wrap_dlng_rad(dlng: float) -> float:
-    while dlng <= -math.pi:
-        dlng += 2 * math.pi
-    while dlng > math.pi:
-        dlng -= 2 * math.pi
-    return dlng
+    """Wrap a longitude difference into (-π, π]."""
+    r = math.remainder(dlng, 2 * math.pi)
+    return math.pi if r == -math.pi else r
 
 
 def _parent(cell: s2sphere.CellId, level: int) -> s2sphere.CellId:
