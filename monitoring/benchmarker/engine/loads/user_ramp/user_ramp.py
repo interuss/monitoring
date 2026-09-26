@@ -1,40 +1,35 @@
 import asyncio
-import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from random import Random
 from typing import Any
 
-from implicitdict import StringBasedDateTime
 from loguru import logger
 
-from monitoring.benchmarker.configurations.loads import (
-    UserRampLoad,
-)
+from monitoring.benchmarker.configurations.loads import UserRampLoad
 from monitoring.benchmarker.configurations.scenarios import BenchmarkScenarioName
 from monitoring.benchmarker.configurations.users import (
     BenchmarkUserName,
     BenchmarkUserSpecification,
 )
 from monitoring.benchmarker.engine.coordination import Coordinator
-from monitoring.benchmarker.engine.loads.criteria import (
-    check_load_completion_criteria,
-    check_stability_criteria,
-    check_step_completion_criteria,
+from monitoring.benchmarker.engine.loads.criteria import check_load_completion_criteria
+from monitoring.benchmarker.engine.loads.step_execution import (
+    ActiveUser,
+    StepProgressState,
+    resolve_user_types,
+    run_load_step,
+    spawn_users_to_target,
+    start_periodic_status_logger,
+    wind_down_and_cleanup_remaining_users,
 )
-from monitoring.benchmarker.engine.loads.status import get_operations_of_interest
-from monitoring.benchmarker.engine.loads.user_ramp.status import format_waiting_status
 from monitoring.benchmarker.engine.operations import ExecutedOperation, record_operation
-from monitoring.benchmarker.engine.users.creation import create_virtual_user
-from monitoring.benchmarker.engine.users.framework import VirtualUser
 from monitoring.benchmarker.reports.report import (
     BenchmarkScenarioStepReport,
     CleanupReport,
     StepTerminationReason,
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID
-
-PERIODIC_STATUS_PERIOD_S = 30.0
 
 
 async def run_user_ramp_load(
@@ -46,328 +41,94 @@ async def run_user_ramp_load(
     scenario_name: BenchmarkScenarioName,
 ) -> tuple[list[ExecutedOperation], list[BenchmarkScenarioStepReport], CleanupReport]:
     """Apply a load by driving virtual user workflows and monitoring step criteria."""
-    if "user_types" in ramp and ramp.user_types:
-        user_types_list = ramp.user_types
-        for ut in user_types_list:
-            if ut not in user_specs_map:
-                raise ValueError(
-                    f"User type '{ut}' for UserRampLoad.user_types not found in configuration.user_types"
-                )
-    elif "user_type" in ramp and ramp.user_type:
-        if ramp.user_type not in user_specs_map:
-            raise ValueError(
-                f"User type '{ramp.user_type}' for UserRampLoad.user_type not found in configuration.user_types"
-            )
-        user_types_list = [ramp.user_type]
-    else:
-        raise ValueError("Neither user_type nor user_types specified for UserRampLoad")
-
+    user_types_list = resolve_user_types(ramp, user_specs_map)
     random = (
         Random(ramp.random_seed)
         if "random_seed" in ramp and ramp.random_seed
         else Random()
     )
 
-    active_tasks: list[asyncio.Task] = []
-    virtual_users: list[VirtualUser] = []
-    stop_event = asyncio.Event()
+    active_users: list[ActiveUser] = []
+    load_stop_event = asyncio.Event()
 
     operations: list[ExecutedOperation] = []
     steps: list[BenchmarkScenarioStepReport] = []
 
     current_load_factor = ramp.initial_users
-    step_index = 0
-    step_start_time: datetime | None = None
-    stability_time: datetime | None = None
-
-    last_status_time = [time.monotonic()]
-
-    def update_status_time() -> None:
-        last_status_time[0] = time.monotonic()
+    progress = StepProgressState()
 
     def wrapped_record_op(op: ExecutedOperation) -> None:
         if not op.successful:
-            update_status_time()
+            progress.update_status_time()
         record_operation(op, operations)
 
     logger.info(f"Starting user_ramp load with initial_users={current_load_factor}")
-    update_status_time()
+    progress.update_status_time()
 
-    # Print status periodically if no other status updates have happened recently
-    async def _periodic_summary_logger() -> None:
-        while not stop_event.is_set():
-            now_t = time.monotonic()
-            dt_s = last_status_time[0] + PERIODIC_STATUS_PERIOD_S - now_t
-            if dt_s > 0:
-                await asyncio.sleep(dt_s)
-            elif not stop_event.is_set():
-                last_status_time[0] = time.monotonic()
-                msg = format_waiting_status(
-                    ramp,
-                    step_index,
-                    operations,
-                    step_start_time,
-                    stability_time,
-                    virtual_users,
-                )
-                logger.info(msg)
-
-    periodic_summary_task = asyncio.create_task(_periodic_summary_logger())
+    periodic_summary_task = start_periodic_status_logger(
+        ramp, progress, operations, active_users, load_stop_event
+    )
 
     try:
-        while not stop_event.is_set():
-            # Start new step
-            step_start_time = datetime.now(UTC)
+        while not load_stop_event.is_set():
+            progress.step_start_time = datetime.now(UTC)
 
-            # Spawn new users for step
-            first_user_spawned = None
-            last_user_spawned = None
-            while len(virtual_users) < current_load_factor:
-                user_spec = user_specs_map[
-                    user_types_list[len(virtual_users) % len(user_types_list)]
-                ]
-                user_id = f"{user_spec.name}_{len(virtual_users) + 1}"
-                if first_user_spawned is None:
-                    first_user_spawned = user_id
-                last_user_spawned = user_id
-                vu = create_virtual_user(
-                    user_id,
-                    user_spec,
-                    resource_pool,
-                    executor,
-                    coordinator,
-                    wrapped_record_op,
-                    Random(random.randint(0, 1 << 30)),
-                )
-                virtual_users.append(vu)
-                active_tasks.append(asyncio.create_task(vu.run_workflow(stop_event)))
-            if first_user_spawned and last_user_spawned:
-                if first_user_spawned == last_user_spawned:
-                    logger.info(f"Spawned virtual user '{first_user_spawned}'")
-                else:
-                    logger.info(
-                        f"Spawned virtual users '{first_user_spawned}' to '{last_user_spawned}'"
-                    )
-            else:
-                logger.warning("Spawned no additional virtual users")
-            update_status_time()
-
-            # Wait for throughput to become stable for this step
-            stability_time = None
-            is_unstable = False
-            step_end_time = datetime.now(UTC)
-            while not stop_event.is_set():
-                now = datetime.now(UTC)
-                if (
-                    "throughput_instability_criteria" in ramp
-                    and ramp.throughput_instability_criteria
-                    and check_stability_criteria(
-                        ramp.throughput_instability_criteria,
-                        operations,
-                        virtual_users,
-                        step_start_time,
-                        now,
-                    )
-                ):
-                    logger.warning(
-                        f"Step {step_index} became unstable during throughput stability phase after {(now - step_start_time).total_seconds():.1f}s"
-                    )
-                    is_unstable = True
-                    step_end_time = now
-                    break
-
-                if check_stability_criteria(
-                    ramp.throughput_stability_criteria,
-                    operations,
-                    virtual_users,
-                    step_start_time,
-                    now,
-                ):
-                    stability_time = now
-                    logger.info(
-                        f"Step {step_index} reached throughput stability after {(stability_time - step_start_time).total_seconds():.1f}s"
-                    )
-                    update_status_time()
-                    break
-
-                if all(t.done() for t in active_tasks):
-                    stop_event.set()
-                await asyncio.sleep(0.5)
-
-            if (
-                not stop_event.is_set()
-                and stability_time is not None
-                and not is_unstable
-            ):
-                step_end_time = datetime.now(UTC)
-
-                # Wait for step to complete
-                while not stop_event.is_set():
-                    now = datetime.now(UTC)
-                    if (
-                        "throughput_instability_criteria" in ramp
-                        and ramp.throughput_instability_criteria
-                        and check_stability_criteria(
-                            ramp.throughput_instability_criteria,
-                            operations,
-                            virtual_users,
-                            stability_time,
-                            now,
-                        )
-                    ):
-                        logger.warning(
-                            f"Step {step_index} became unstable during sampling phase after {(now - stability_time).total_seconds():.1f}s"
-                        )
-                        is_unstable = True
-                        step_end_time = now
-                        break
-
-                    if check_step_completion_criteria(
-                        ramp.step_completion_criteria,
-                        step_start_time,
-                        stability_time,
-                        now,
-                        operations,
-                    ):
-                        step_end_time = now
-                        break
-
-                    if all(t.done() for t in active_tasks):
-                        stop_event.set()
-                    await asyncio.sleep(0.5)
-            elif stability_time is None:
-                step_end_time = datetime.now(UTC)
-
-            # Summarize activity during step
-            step_ops = [
-                op
-                for op in operations
-                if op.completed_at.datetime >= step_start_time
-                and op.completed_at.datetime <= step_end_time
-            ]
-            ops_of_interest = get_operations_of_interest(
-                ramp.step_completion_criteria, step_ops, True
+            spawn_users_to_target(
+                target_load_factor=current_load_factor,
+                active_users=active_users,
+                user_types_list=user_types_list,
+                user_specs_map=user_specs_map,
+                resource_pool=resource_pool,
+                executor=executor,
+                coordinator=coordinator,
+                record_op=wrapped_record_op,
+                random=random,
             )
-            throughput_duration_s = (
-                (step_end_time - stability_time).total_seconds()
-                if stability_time
-                else 0.0
-            )
-            step_duration_s = (step_end_time - step_start_time).total_seconds()
+            progress.update_status_time()
 
-            valid_count = (
-                sum(
-                    1
-                    for op in step_ops
-                    if op.completed_at.datetime >= stability_time
-                    and op.type in ops_of_interest
-                    and op.successful
-                )
-                if stability_time
-                else 0
-            )
-            tp_valid = (
-                valid_count / throughput_duration_s
-                if throughput_duration_s > 0
-                else 0.0
-            )
-
-            step_count = sum(
-                1 for op in step_ops if op.type in ops_of_interest and op.successful
-            )
-
-            fails_by_type: dict[str, int] = {}
-            for op in step_ops:
-                if not op.successful:
-                    t_str = str(op.type)
-                    fails_by_type[t_str] = fails_by_type.get(t_str, 0) + 1
-
-            failures_str = (
-                ", ".join(f"{k}: {v}" for k, v in sorted(fails_by_type.items()))
-                if fails_by_type
-                else "0 failures"
-            )
-            ops_interest_str = (
-                ", ".join(sorted(ops_of_interest))
-                if ops_of_interest
-                else "all operations"
-            )
-
-            if stability_time is None:
-                termination_reason = StepTerminationReason.StabilityNotAchieved
-            elif is_unstable:
-                termination_reason = StepTerminationReason.Unstable
-            else:
-                termination_reason = StepTerminationReason.Completed
-
-            logger.info(
-                f"User ramp step {step_index} for scenario '{scenario_name}' ended with termination_reason='{termination_reason}' (load_factor={current_load_factor}, operations of interest: [{ops_interest_str}]):\n"
-                f"  • Operations of Interest Completed: {valid_count} ({tp_valid:.2f} ops/s) in validity period ({throughput_duration_s:.1f}s), {step_count} started since step began; full step duration ({step_duration_s:.1f}s)\n"
-                f"  • Failures during step: {failures_str}\n"
-                f"  • Tasks: {len(active_tasks)} total, {sum(1 if t.done() else 0 for t in active_tasks)} ended"
-            )
-            update_status_time()
-
-            # Report step
-            step_report = BenchmarkScenarioStepReport(
-                load_factor=float(current_load_factor),
-                start_time=StringBasedDateTime(step_start_time),
-                throughput_stability_time=StringBasedDateTime(stability_time)
-                if stability_time
-                else None,
-                end_time=StringBasedDateTime(step_end_time),
-                termination_reason=termination_reason,
+            step_report = await run_load_step(
+                load=ramp,
+                load_label="User ramp",
+                scenario_name=scenario_name,
+                current_load_factor=current_load_factor,
+                progress=progress,
+                active_users=active_users,
+                operations=operations,
+                load_stop_event=load_stop_event,
             )
             steps.append(step_report)
 
-            if termination_reason != StepTerminationReason.Completed:
+            if step_report.termination_reason != StepTerminationReason.Completed:
                 logger.info(
-                    f"Step {step_index} terminated with reason '{termination_reason}'. Stopping load."
+                    f"Step {progress.step_index} terminated with reason '{step_report.termination_reason}'. Stopping load."
                 )
-                update_status_time()
-                stop_event.set()
+                progress.update_status_time()
+                load_stop_event.set()
                 break
 
-            if stop_event.is_set():
+            if load_stop_event.is_set():
                 break
 
-            # Check if load is complete
             if check_load_completion_criteria(
                 ramp.load_completion_criteria, steps, operations
             ):
                 logger.info(
-                    f"Load completion criteria met after step {step_index}. Stopping load."
+                    f"Load completion criteria met after step {progress.step_index}. Stopping load."
                 )
-                update_status_time()
-                stop_event.set()
+                progress.update_status_time()
+                load_stop_event.set()
                 break
 
-            # Move to next step
-            step_index += 1
+            progress.step_index += 1
             current_load_factor += ramp.additional_users_per_step
             logger.info(
-                f"Advancing to step {step_index} for scenario '{scenario_name}' with load_factor={current_load_factor}"
+                f"Advancing to step {progress.step_index} for scenario '{scenario_name}' with load_factor={current_load_factor}"
             )
-            update_status_time()
+            progress.update_status_time()
     finally:
         periodic_summary_task.cancel()
-        if not stop_event.is_set():
-            stop_event.set()
-        logger.info(
-            f"Waiting for {len(active_tasks)} active virtual users to wind down gracefully..."
-        )
-        await asyncio.gather(*active_tasks, return_exceptions=True)
-        logger.info("All virtual users have finished their workflows.")
-
-    logger.info(f"Cleaning up {len(virtual_users)} virtual users...")
-    cleanup_start = datetime.now(UTC)
-    for virtual_user in virtual_users:
-        await virtual_user.cleanup()
-    cleanup_end = datetime.now(UTC)
-    logger.info("All virtual users have been cleaned up.")
-    cleanup_report = CleanupReport(
-        start_time=StringBasedDateTime(cleanup_start),
-        end_time=StringBasedDateTime(cleanup_end),
-    )
+        if not load_stop_event.is_set():
+            load_stop_event.set()
+        cleanup_report = await wind_down_and_cleanup_remaining_users(active_users)
 
     return operations, steps, cleanup_report

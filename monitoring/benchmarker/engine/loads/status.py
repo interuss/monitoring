@@ -1,11 +1,20 @@
-from datetime import datetime
+from datetime import UTC, datetime
+
+from implicitdict import StringBasedDateTime
+from loguru import logger
 
 from monitoring.benchmarker.configurations.loads import (
     OperationType,
     StepCompletionCriteria,
+    UserBasedLoad,
 )
+from monitoring.benchmarker.configurations.scenarios import BenchmarkScenarioName
 from monitoring.benchmarker.engine.operations import ExecutedOperation
-from monitoring.benchmarker.reports.report import BenchmarkScenarioStepReport
+from monitoring.benchmarker.engine.users.framework import VirtualUser
+from monitoring.benchmarker.reports.report import (
+    BenchmarkScenarioStepReport,
+    StepTerminationReason,
+)
 
 
 def throughput_of_step_ops(
@@ -131,3 +140,146 @@ def get_operations_of_interest(
     if not ops and with_defaults:
         ops = {op.type for op in all_step_ops}
     return ops
+
+
+def format_waiting_status(
+    load: UserBasedLoad,
+    step_index: int,
+    operations: list[ExecutedOperation],
+    step_start_time: datetime | None,
+    stability_time: datetime | None,
+    virtual_users: list[VirtualUser],
+) -> str:
+    if step_start_time is None:
+        return f"[Step {step_index} waiting to start]"
+
+    if stability_time is None:
+        if (
+            "each_user_completed_at_least" in load.throughput_stability_criteria
+            and load.throughput_stability_criteria.each_user_completed_at_least
+        ):
+            crit = load.throughput_stability_criteria.each_user_completed_at_least
+            req_count = crit.count
+            req_ops = set(crit.operations)
+            user_counts: dict[str, int] = {vu.user_id: 0 for vu in virtual_users}
+            for op in operations:
+                if (
+                    op.successful
+                    and op.completed_at.datetime >= step_start_time
+                    and op.type in req_ops
+                    and op.origin in user_counts
+                ):
+                    user_counts[op.origin] += 1
+            counts = list(user_counts.values())
+            met_users = sum(1 for c in counts if c >= req_count)
+            max_c = max(counts) if counts else 0
+            min_c = min(counts) if counts else 0
+            ops_str = ", ".join(sorted(req_ops))
+            return f"[Step {step_index} waiting for throughput stability] each_user_completed_at_least (threshold: {req_count} of [{ops_str}]): {met_users}/{len(virtual_users)} users met threshold | most advanced user: {max_c} completed, least advanced user: {min_c} completed"
+        else:
+            return f"[Step {step_index} waiting for throughput stability] (evaluating stability criteria)"
+    else:
+        now = datetime.now(UTC)
+        progress = (
+            format_step_completion_progress(
+                load.step_completion_criteria,
+                step_start_time,
+                stability_time,
+                now,
+                operations,
+            )
+            if step_start_time is not None
+            else []
+        )
+        cond_str = (
+            " AND ".join(progress)
+            if progress
+            else "(evaluating step completion criteria)"
+        )
+        return f"[Step {step_index} waiting for step completion] {cond_str}"
+
+
+def summarize_and_report_step(
+    load_label: str,
+    scenario_name: BenchmarkScenarioName,
+    step_index: int,
+    load_factor: float,
+    step_start_time: datetime,
+    stability_time: datetime | None,
+    step_end_time: datetime,
+    is_unstable: bool,
+    step_completion_criteria: StepCompletionCriteria,
+    operations: list[ExecutedOperation],
+    total_tasks: int,
+    ended_tasks: int,
+) -> BenchmarkScenarioStepReport:
+    """Log a summary of step activity and return its BenchmarkScenarioStepReport."""
+    step_ops = [
+        op
+        for op in operations
+        if op.completed_at.datetime >= step_start_time
+        and op.completed_at.datetime <= step_end_time
+    ]
+    ops_of_interest = get_operations_of_interest(
+        step_completion_criteria, step_ops, True
+    )
+    throughput_duration_s = (
+        (step_end_time - stability_time).total_seconds() if stability_time else 0.0
+    )
+    step_duration_s = (step_end_time - step_start_time).total_seconds()
+
+    valid_count = (
+        sum(
+            1
+            for op in step_ops
+            if op.completed_at.datetime >= stability_time
+            and op.type in ops_of_interest
+            and op.successful
+        )
+        if stability_time
+        else 0
+    )
+    tp_valid = valid_count / throughput_duration_s if throughput_duration_s > 0 else 0.0
+
+    step_count = sum(
+        1 for op in step_ops if op.type in ops_of_interest and op.successful
+    )
+
+    fails_by_type: dict[str, int] = {}
+    for op in step_ops:
+        if not op.successful:
+            t_str = str(op.type)
+            fails_by_type[t_str] = fails_by_type.get(t_str, 0) + 1
+
+    failures_str = (
+        ", ".join(f"{k}: {v}" for k, v in sorted(fails_by_type.items()))
+        if fails_by_type
+        else "0 failures"
+    )
+    ops_interest_str = (
+        ", ".join(sorted(ops_of_interest)) if ops_of_interest else "all operations"
+    )
+
+    if stability_time is None:
+        termination_reason = StepTerminationReason.StabilityNotAchieved
+    elif is_unstable:
+        termination_reason = StepTerminationReason.Unstable
+    else:
+        termination_reason = StepTerminationReason.Completed
+
+    logger.info(
+        f"{load_label} step {step_index} for scenario '{scenario_name}' ended with termination_reason='{termination_reason}' (load_factor={load_factor}, operations of interest: [{ops_interest_str}]):\n"
+        f"  • Operations of Interest Completed: {valid_count} ({tp_valid:.2f} ops/s) in validity period ({throughput_duration_s:.1f}s), {step_count} started since step began; full step duration ({step_duration_s:.1f}s)\n"
+        f"  • Failures during step: {failures_str}\n"
+        f"  • Tasks: {total_tasks} total, {ended_tasks} ended"
+    )
+
+    return BenchmarkScenarioStepReport(
+        load_factor=float(load_factor),
+        start_time=StringBasedDateTime(step_start_time),
+        throughput_stability_time=StringBasedDateTime(stability_time)
+        if stability_time
+        else None,
+        end_time=StringBasedDateTime(step_end_time),
+        termination_reason=termination_reason,
+    )
