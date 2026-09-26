@@ -22,6 +22,7 @@ lint: shell-lint python-lint
 .PHONY: check-hygiene
 check-hygiene: image-dev lint validate-uss-qualifier-docs
 	test/repo_hygiene/repo_hygiene.sh
+	cd monitoring/benchmarker/configurations/interuss && make validate-configs
 
 .PHONY: python-lint
 python-lint: image-dev
