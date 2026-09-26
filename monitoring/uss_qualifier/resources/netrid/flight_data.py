@@ -65,6 +65,9 @@ class AdjacentCircularFlightsSimulatorConfiguration(ImplicitDict):
     duration: int = 30
     """Number of seconds of telemetry to generate for each flight."""
 
+    allow_duplicate_positions: Optional[bool] = False
+    """Whether to allow duplicate positions in the generated flights."""
+
 
 class FlightDataKMLFileConfiguration(ImplicitDict):
     reference_time: StringBasedDateTime = StringBasedDateTime("2022-01-01T00:00:00Z")

@@ -79,12 +79,23 @@ class BenchmarkScenarioStepReport(ImplicitDict):
     """The reason this step terminated."""
 
 
+class CleanupReport(ImplicitDict):
+    start_time: StringBasedDateTime
+    """Time cleanup started."""
+
+    end_time: StringBasedDateTime
+    """Time cleanup ended."""
+
+
 class BenchmarkScenarioReport(ImplicitDict):
     operations: list[OperationsByType]
     """All operations that occurred during the benchmark run."""
 
     steps: list[BenchmarkScenarioStepReport]
     """Boundaries of steps within this scenario."""
+
+    cleanup: CleanupReport | None
+    """Information about cleanup activities for this scenario."""
 
     metadata: Optional[dict]
     """Arbitrary metadata copied from the scenario specification."""

@@ -17,6 +17,7 @@ resources:
   planning_area: resources.PlanningAreaResource
   test_exclusions: resources.dev.TestExclusionsResource?
   uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
+  concurrency_behavior_adjustment: resources.interuss.scenarios.astm.netrid.common.dss.heavy_traffic_concurrent.HeavyTrafficConcurrentBehaviorResource?
 actions:
   - test_scenario:
       scenario_type: scenarios.versioning.GetSystemVersions
@@ -94,6 +95,7 @@ actions:
         problematically_big_area: problematically_big_area
         planning_area: planning_area
         test_exclusions: test_exclusions?
+        concurrency_behavior_adjustment: concurrency_behavior_adjustment?
       specification:
         action_to_repeat:
           test_suite:
@@ -109,6 +111,7 @@ actions:
               problematically_big_area: problematically_big_area
               planning_area: planning_area
               test_exclusions: test_exclusions?
+              concurrency_behavior_adjustment: concurrency_behavior_adjustment?
           on_failure: Continue
         dss_instances_source: dss_instances
         dss_instance_id: dss

@@ -547,25 +547,71 @@ class SCDHandler(CoordinationSubscriber):
                 )
             )
 
-            if (
-                "ovn_coordination_group" in self.op_intent_ref_creation_strategy
-                and self.op_intent_ref_creation_strategy.ovn_coordination_group
-            ):
-                self.user.coordinator.publish(
-                    self.op_intent_ref_creation_strategy.ovn_coordination_group,
-                    COORDINATION_SUBJECT_REMOVE_OVN,
-                    op_intent_ref.ovn,
-                )
-            else:
-                self.receive_coordination_message(
-                    CoordinationMessage(
-                        group_id=None,
-                        subject=COORDINATION_SUBJECT_REMOVE_OVN,
-                        content=op_intent_ref.ovn,
+            if success:
+                if (
+                    "ovn_coordination_group" in self.op_intent_ref_creation_strategy
+                    and self.op_intent_ref_creation_strategy.ovn_coordination_group
+                ):
+                    self.user.coordinator.publish(
+                        self.op_intent_ref_creation_strategy.ovn_coordination_group,
+                        COORDINATION_SUBJECT_REMOVE_OVN,
+                        op_intent_ref.ovn,
                     )
-                )
+                else:
+                    self.receive_coordination_message(
+                        CoordinationMessage(
+                            group_id=None,
+                            subject=COORDINATION_SUBJECT_REMOVE_OVN,
+                            content=op_intent_ref.ovn,
+                        )
+                    )
+            else:
+                with self.key_lock:
+                    self.op_intent_refs[flight.id] = op_intent_ref
 
         return []
+
+    async def cleanup(self) -> None:
+        with self.key_lock:
+            op_intent_refs = {k: v for k, v in self.op_intent_refs.items()}
+            self.op_intent_refs.clear()
+
+        undeleted_ids = []
+        n_deleted = 0
+        n_already_gone = 0
+        for flight_id, op_intent_ref in op_intent_refs.items():
+            dss_instance = self.select_dss_instance()
+            try:
+                _, _, query = await self.user.run_sync_client_call(
+                    dss_instance.delete_op_intent,
+                    id=op_intent_ref.id,
+                    ovn=op_intent_ref.ovn,
+                )
+                self.user.record_query(query, True)
+                n_deleted += 1
+            except QueryError as e:
+                success = e.queries[0].status_code == 404
+                for query in e.queries:
+                    self.user.record_query(query, success)
+                if success:
+                    n_already_gone += 1
+                else:
+                    logger.warning(
+                        f"{self.user.user_id}'s SCDHandler was unable to clean up op intent {op_intent_ref.id} for flight {flight_id} from {dss_instance.participant_id}'s DSS; HTTP code {e.queries[0].status_code}"
+                    )
+                    undeleted_ids.append(flight_id)
+
+        with self.key_lock:
+            for flight_id in undeleted_ids:
+                self.op_intent_refs[flight_id] = op_intent_refs[flight_id]
+
+        if n_deleted + n_already_gone + len(undeleted_ids) > 0:
+            msg = f"{self.user.user_id}'s SCDHandler deleted {n_deleted} op intents"
+            if n_already_gone:
+                msg += f"; {n_already_gone} op intents already gone"
+            if len(undeleted_ids) > 0:
+                msg += f"; {len(undeleted_ids)} could not be deleted"
+            logger.debug(msg)
 
     @staticmethod
     def enumerate_coordination_groups(

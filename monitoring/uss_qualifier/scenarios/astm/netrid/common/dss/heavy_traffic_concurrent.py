@@ -66,6 +66,8 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
     _semaphore: asyncio.Semaphore
 
+    _behavior: HeavyTrafficConcurrentBehaviorSpecification
+
     def __init__(
         self,
         dss: DSSInstanceResource,
@@ -79,7 +81,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         )  # TODO: delete once _delete_isa_if_exists updated to use dss_wrapper
         self._dss_wrapper = DSSWrapper(self, dss.dss_instance)
 
-        behavior = (
+        self._behavior = (
             behavior_adjustment.value
             if behavior_adjustment
             else HeavyTrafficConcurrentBehaviorSpecification()
@@ -99,7 +101,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         isa_base_id = id_generator.id_factory.make_id(HeavyTrafficConcurrent.ISA_TYPE)
         # The base ID ends in 000: we simply increment it to generate the other IDs
         self._isa_ids = [
-            f"{isa_base_id[:-3]}{i:03d}" for i in range(behavior.isa_count)
+            f"{isa_base_id[:-3]}{i:03d}" for i in range(self._behavior.isa_count)
         ]
 
         # currently all params are the same:
@@ -113,7 +115,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             alt_hi=self._isa.altitude_max,
         )
 
-        self._semaphore = asyncio.Semaphore(behavior.concurrency)
+        self._semaphore = asyncio.Semaphore(self._behavior.concurrency)
 
     def run(self, context: ExecutionContext):
         self._resolve_isa_time_bounds()
@@ -121,6 +123,10 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         self.begin_test_scenario(context)
 
         self.begin_test_case("Setup")
+        self.record_note(
+            "behavior",
+            f"{self._behavior.isa_count} ISAs, {self._behavior.concurrency} concurrency",
+        )
         self.begin_test_step("Ensure clean workspace")
         self._delete_isas_if_exists()
         self.end_test_step()

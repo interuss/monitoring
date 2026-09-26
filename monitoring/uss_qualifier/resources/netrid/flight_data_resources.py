@@ -43,9 +43,20 @@ class FlightDataResource(Resource[FlightDataSpecification]):
                 load_dict(specification.record_source),
                 FlightRecordCollection,
             )
-        elif "adjacent_circular_flights_simulation_source" in specification:
+        elif (
+            "adjacent_circular_flights_simulation_source" in specification
+            and specification.adjacent_circular_flights_simulation_source
+        ):
+            config = specification.adjacent_circular_flights_simulation_source
+            allow_duplicate_positions = (
+                config.allow_duplicate_positions
+                if "allow_duplicate_positions" in config
+                and config.allow_duplicate_positions is not None
+                else False
+            )
             self.flight_collection = generate_aircraft_states(
-                specification.adjacent_circular_flights_simulation_source
+                config,
+                allow_duplicate_positions=allow_duplicate_positions,
             )
         elif "kml_source" in specification:
             kml_content = load_content(specification.kml_source.kml_file)

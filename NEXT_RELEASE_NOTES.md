@@ -39,4 +39,6 @@ The release notes should contain at least the following sections:
 
 ## Optional migration tasks
 
+* Added `allow_duplicate_positions` flag (defaulting to `False`) to `generate_aircraft_states` and `AdjacentCircularFlightsSimulatorConfiguration`. Currently, duplicate positions may be generated (e.g. if the configured flight duration is longer than the path's unique loop length). With this flag set to `False` (the new default), the simulator will now detect duplicate positions and raise a `ValueError`. To allow duplicate positions as before, set `allow_duplicate_positions: true` in your circular flight simulation configurations.
+
 ## Important information
