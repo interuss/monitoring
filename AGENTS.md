@@ -13,7 +13,7 @@ This document contains key context, nuances, and troubleshooting tips specifical
   ```bash
   PYTHONPATH=. uv run --index https://pypi.org/simple pytest monitoring/uss_qualifier/reports/obfuscation_test.py
   ```
-- **Linter and Formatting**: To verify stylistic correctness/consistency in the monitoring project, run `make format` (to auto-format when possible) or `make lint` (to check correctness/type check) from the root of the `monitoring` directory. Do not run `ruff` or `basedpyright` directly if they fail due to environment/index configuration issues.
+- **Linter and Formatting**: To verify stylistic correctness/consistency in the monitoring project, run `make format` (to auto-format when possible) or `make lint` (to check correctness/type check) from the root of the `monitoring` directory, or pass `--group dev` when invoking `ruff` or `basedpyright` via `uv run` (since `default-groups = []` in `pyproject.toml`).
 
 
 ## 2. Navigating Data Schemas

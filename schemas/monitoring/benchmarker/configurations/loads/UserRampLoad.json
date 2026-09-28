@@ -27,11 +27,9 @@
       ]
     },
     "step_completion_criteria": {
-      "$ref": "StepCompletionCriteria.json",
-      "description": "The current step is considered complete once these criteria are met."
+      "$ref": "StepCompletionCriteria.json"
     },
     "throughput_instability_criteria": {
-      "description": "If these criteria are met, throughput is considered to be unstable and step will not continue.",
       "oneOf": [
         {
           "type": "null"
@@ -42,18 +40,15 @@
       ]
     },
     "throughput_stability_criteria": {
-      "$ref": "ThroughputStabilityCriteria.json",
-      "description": "Throughput of the current step is considered stable once these criteria are met."
+      "$ref": "ThroughputStabilityCriteria.json"
     },
     "user_type": {
-      "description": "Type of user to instantiate.",
       "type": [
         "string",
         "null"
       ]
     },
     "user_types": {
-      "description": "Types of users to instantiate, cycling through them in order as load increases.",
       "items": {
         "type": "string"
       },

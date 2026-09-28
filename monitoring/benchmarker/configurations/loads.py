@@ -158,20 +158,12 @@ class LoadCompletionCriteria(ImplicitDict):
     """Evaluates true when the most recently completed step meets these criteria."""
 
 
-class UserRampLoad(ImplicitDict):
-    """Ramps up users of specified type(s), observing resulting throughput."""
-
+class UserBasedLoad(ImplicitDict):
     user_type: Optional[BenchmarkUserName]
     """Type of user to instantiate."""
 
     user_types: Optional[list[BenchmarkUserName]]
     """Types of users to instantiate, cycling through them in order as load increases."""
-
-    initial_users: int = 1
-    """Number of users to start with."""
-
-    additional_users_per_step: int = 1
-    """Additional users to add at each step along the ramp."""
 
     throughput_stability_criteria: ThroughputStabilityCriteria
     """Throughput of the current step is considered stable once these criteria are met."""
@@ -181,6 +173,16 @@ class UserRampLoad(ImplicitDict):
 
     step_completion_criteria: StepCompletionCriteria
     """The current step is considered complete once these criteria are met."""
+
+
+class UserRampLoad(UserBasedLoad):
+    """Ramps up users of specified type(s), observing resulting throughput."""
+
+    initial_users: int = 1
+    """Number of users to start with."""
+
+    additional_users_per_step: int = 1
+    """Additional users to add at each step along the ramp."""
 
     load_completion_criteria: LoadCompletionCriteria
     """The load is considered complete if these criteria are met."""
