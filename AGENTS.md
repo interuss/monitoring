@@ -13,7 +13,8 @@ This document contains key context, nuances, and troubleshooting tips specifical
   ```bash
   PYTHONPATH=. uv run --index https://pypi.org/simple pytest monitoring/uss_qualifier/reports/obfuscation_test.py
   ```
-- **Linter and Formatting**: To verify stylistic correctness/consistency in the monitoring project, run `make format` (to auto-format when possible) or `make lint` (to check correctness/type check) from the root of the `monitoring` directory, or pass `--group dev` when invoking `ruff` or `basedpyright` via `uv run` (since `default-groups = []` in `pyproject.toml`).
+- **Linter and Formatting**: To verify stylistic correctness/consistency in the monitoring project, run `make format` (to auto-format when possible) or `make lint` (to check correctness/type check) from the root of the `monitoring` directory. Do not run `ruff` or `basedpyright` directly if they fail due to environment/index configuration issues.
+- **Jsonnet `native_callbacks` Parameter Names**: In `_jsonnet` (`jsonnet` v0.22.0), parameter names in the `native_callbacks` tuple passed to `_jsonnet.evaluate_snippet` **must be single-character ASCII strings** (e.g., `("y", "x", "l")` instead of `("lat", "lng", "level")`). Due to a use-after-free bug in `_jsonnet`'s C extension (`handle_native_callbacks`; see [google/jsonnet#1321](https://github.com/google/jsonnet/issues/1321) and [google/jsonnet#1333](https://github.com/google/jsonnet/pull/1333)), multi-byte `PyBytes` objects returned by `PyUnicode_AsUTF8String` are prematurely `Py_DECREF`ed and freed inside the parameter loop before `jsonnet_native_callback` is called, causing subsequent parameter strings to reuse the same memory address and fail at runtime with `RUNTIME ERROR: binding parameter a second time: <param>`. Single-byte `PyBytes` objects are immortal singletons in CPython and are not freed.
 
 
 ## 2. Navigating Data Schemas
