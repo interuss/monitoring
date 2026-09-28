@@ -4,7 +4,7 @@
 
 local num_uss = 3;
 local num_nodes = 3;
-local latencies_ms = [std.max(1, i * 25) for i in std.range(0, 2)];
+local latencies_ms = [50, 25, 1];
 local jitter_frac = 0.05;
 
 local nodeIndex = function(uss, node) std.format('%02d', node + num_nodes * (uss - 1));
@@ -133,15 +133,34 @@ local nodeIndex = function(uss, node) std.format('%02d', node + num_nodes * (uss
   loads: [
     {
       name: 'Flight planner ramp for DSS instance %d' % uss,
-      user_ramp: {
+      user_search: {
         user_type: 'FPU%d' % uss,
-        initial_users: 10,
-        additional_users_per_step: 10,
+        initial_users: 16,
+        user_expansion_ratio: 2,
         throughput_stability_criteria: {
           each_user_completed_at_least: {
             count: 1,
             operations: ['workflow.flight_planner.flight'],
           },
+        },
+        throughput_instability_criteria: {
+          any_of: [
+            {
+              failures_more_than: {
+                count: 5,
+                operations: ['query.astm.f3411.v22a.dss.createIdentificationServiceArea'],
+              },
+            },
+            {
+              phase_duration_at_least: '60s',
+            },
+            {
+              average_duration_more_than: {
+                duration: '3s',
+                operations: ['query.astm.f3411.v22a.dss.createIdentificationServiceArea'],
+              },
+            },
+          ],
         },
         step_completion_criteria: {
           any_of: [
@@ -154,12 +173,6 @@ local nodeIndex = function(uss, node) std.format('%02d', node + num_nodes * (uss
                 operations: ['workflow.flight_planner.flight'],
               },
             },
-            {
-              average_duration_more_than: {
-                duration: '20s',
-                operations: ['workflow.flight_planner.flight'],
-              },
-            },
           ],
           sampling_duration_at_least: '10s',
           completed_at_least: {
@@ -167,34 +180,12 @@ local nodeIndex = function(uss, node) std.format('%02d', node + num_nodes * (uss
             operations: ['workflow.flight_planner.flight'],
           }
         },
-        load_completion_criteria: {
-          any_of: [
-            {
-              throughput_lower_than_peak: {
-                operations: ['workflow.flight_planner.flight'],
-                fraction_of_peak: 0.7,
-              },
-            },
-            {
-              failures_more_than: {
-                count: 10,
-                operations: ['workflow.flight_planner.flight'],
-              }
-            },
-            {
-              most_recent_step: {
-                average_duration_more_than: {
-                  duration: '20s',
-                  operations: ['workflow.flight_planner.flight'],
-                },
-              },
-            },
-            {
-              most_recent_step: {
-                throughput_stability_took_longer_than: '30s',
-              },
-            },
-          ],
+        search_completion_criteria: {
+          adjacency_user_count: 2,
+          consecutive_unstable_user_counts: 3,
+          consecutive_stable_user_counts: 3,
+          maximum_left_side_spacing: 0.2,
+          max_throughput_adjacent_user_counts: 2,
         },
       },
     } for uss in std.range(1, num_uss)
@@ -256,12 +247,12 @@ local nodeIndex = function(uss, node) std.format('%02d', node + num_nodes * (uss
                       },
                       {
                         name: 'scale',
-                        value: '[step.load_factor for step in scenarios[0].steps]',
+                        value: '[step.load_factor for step in completed_steps(scenarios[0].steps)]',
                       },
                       {
                         name: 'throughput',
                         value: '[throughput_of_step(scenarios[0], s, types=["workflow.flight_planner.flight"])' +
-                               ' for s in range(len(scenarios[0].steps))]',
+                               ' for s in completed_step_indices(scenarios[0].steps)]',
                       },
                     ],
                     render_expr: 'scenarios',
