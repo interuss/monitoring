@@ -6,6 +6,7 @@ import arrow
 import s2sphere
 from loguru import logger
 from s2sphere import LatLng, LatLngRect
+from uas_standards.astm.f3548.v21.constants import TimeSyncMaxDifferentialSeconds
 from uas_standards.interuss.automated_testing.rid.v1.observation import (
     Cluster,
     Flight,
@@ -1353,7 +1354,10 @@ def _evaluate_flight_presence(
         t_min = min(timestamps).datetime
         t_max = max(timestamps).datetime
 
-        if t_response < t_min:
+        # Different servers can have different clocks.  Use max time skew from ASTM F3548-21 as F3411 does not define any.
+        if t_response < t_min - datetime.timedelta(
+            seconds=2 * TimeSyncMaxDifferentialSeconds
+        ):
             # This flight should definitely not have been observed (it starts in the future)
             with test_scenario.check(
                 "Premature flight", [expected_flight.uss_participant_id]
