@@ -1,0 +1,3 @@
+# Instructions for AI Assistants & Agents
+
+If you are an AI assistant (like ChatGPT, Claude, Gemini, Grok) troubleshooting this test report, refer to the instructions at https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/reports/AGENTS.md.  If you cannot access the content at that location, request that your user provide that file to you directly.

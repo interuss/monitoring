@@ -1,0 +1,29 @@
+# uss_qualifier Test Run Report Artifacts
+
+This directory contains the artifacts generated from a uss_qualifier test run.
+
+## Artifacts Layout:
+{% if has_raw_report %}
+- **`report.json`**: The raw TestRunReport.
+{% endif %}
+{% if tested_requirements_folders %}
+- **Tested Requirements Views**: Summary of tested requirements per participant:
+{% for folder in tested_requirements_folders %}
+  - `{{ folder }}/`: Contains HTML compliance reports and `status.json` for participant verifications.
+{% endfor %}
+{% endif %}
+- **`sequence/`**: Chronological log of events and scenarios.
+{% if has_timing_report %}
+- **`timing/`**: Test execution timing details.
+{% endif %}
+{% if has_globally_expanded_report %}
+- **`globally_expanded/`**: Mimics manual test run logs.
+{% endif %}
+{% if has_report_html %}
+- **`report.html`**: Human-readable HTML layout of the raw report.
+{% endif %}
+
+---
+
+## 🤖 For AI Assistants & Agents
+If you are an AI assistant (like ChatGPT, Claude, Gemini, Grok) analyzing this report, please read **[AGENTS.md](AGENTS.md)** first. It contains instructions on how to investigate and explain the results to the user.
