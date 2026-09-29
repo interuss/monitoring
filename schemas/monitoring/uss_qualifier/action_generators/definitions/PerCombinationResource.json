@@ -1,0 +1,31 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/action_generators/definitions/PerCombinationResource.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.action_generators.definitions.PerCombinationResource, as defined in monitoring/uss_qualifier/action_generators/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "include_resource_provider": {
+      "description": "If true, include the resource_provider in the resources available to the flight planner combination action.  Otherwise, do not include it.",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "provided_resource": {
+      "description": "ID assigned to the provided/generated resource, as it will be accessed by the action run for the flight planner combination.",
+      "type": "string"
+    },
+    "resource_provider": {
+      "description": "ID of the resource in the pool that will generate a resource for the particular flight planner combination.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "provided_resource",
+    "resource_provider"
+  ],
+  "type": "object"
+}

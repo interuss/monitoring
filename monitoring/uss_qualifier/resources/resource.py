@@ -33,11 +33,11 @@ class Resource[SpecificationType: ImplicitDict](ABC):
         """
         self.resource_origin = resource_origin
 
-    def is_type(self, resource_type: str) -> bool:
+    def is_or_inherits(self, resource_type: str) -> bool:
         specified_type = inspection.get_module_object_by_name(
             uss_qualifier_module, resource_type
         )
-        return self.__class__ == specified_type
+        return issubclass(self.__class__, specified_type)
 
 
 class ValueResource[T: ImplicitDict](Resource[T]):

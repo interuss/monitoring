@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import Optional, TypeVar
 
 from implicitdict import ImplicitDict
 
@@ -29,3 +29,14 @@ class ActionGeneratorDefinition(ImplicitDict):
 
     If the parent resource ID is suffixed with ? then the resource will not be required (and will not be populated for the child action when not present in the parent)
     """
+
+
+class PerCombinationResource(ImplicitDict):
+    resource_provider: ResourceID
+    """ID of the resource in the pool that will generate a resource for the particular flight planner combination."""
+
+    provided_resource: ResourceID
+    """ID assigned to the provided/generated resource, as it will be accessed by the action run for the flight planner combination."""
+
+    include_resource_provider: Optional[bool]
+    """If true, include the resource_provider in the resources available to the flight planner combination action.  Otherwise, do not include it."""
