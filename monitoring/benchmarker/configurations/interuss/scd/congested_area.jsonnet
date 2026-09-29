@@ -245,5 +245,10 @@ local shape = {
       num_uss,
       num_uss,
     ),
+    {
+      usslogset: {
+        include_headers: ['Authorization'],
+      },
+    },
   ],
 }

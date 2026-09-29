@@ -5,6 +5,7 @@ from monitoring.benchmarker.artifacts.matplotlib.matplotlib_figure import (
 )
 from monitoring.benchmarker.artifacts.raw_report import generate_raw_report
 from monitoring.benchmarker.artifacts.timeline.timeline import generate_timeline
+from monitoring.benchmarker.artifacts.usslogset.usslogset import generate_usslogset
 from monitoring.benchmarker.configurations.artifacts.artifact import (
     ArtifactSpecification,
 )
@@ -56,3 +57,6 @@ def generate_artifacts(
 
         if "timeline" in spec and spec.timeline is not None:
             generate_timeline(report, spec.timeline, output_dir)
+
+        if "usslogset" in spec and spec.usslogset is not None:
+            generate_usslogset(report, spec.usslogset, output_dir)

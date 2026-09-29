@@ -11,9 +11,13 @@ from monitoring.benchmarker.configurations.artifacts.raw_report import (
 from monitoring.benchmarker.configurations.artifacts.timeline import (
     TimelineSpecification,
 )
+from monitoring.benchmarker.configurations.artifacts.usslogset import (
+    USSLogSetSpecification,
+)
 
 
 class ArtifactSpecification(ImplicitDict):
     raw_report: Optional[RawReportSpecification]
     matplotlib_figure: Optional[MatplotlibFigureSpecification]
     timeline: Optional[TimelineSpecification]
+    usslogset: Optional[USSLogSetSpecification]
