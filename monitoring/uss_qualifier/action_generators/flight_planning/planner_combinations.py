@@ -136,20 +136,6 @@ class FlightPlannerCombinations(
                             per_combination_resource
                         )
 
-                        if (
-                            "include_resource_provider" in per_index_resource
-                            and per_index_resource.include_resource_provider
-                        ):
-                            pass  # Already included
-                        else:
-                            if (
-                                per_index_resource.resource_provider
-                                in modified_resources
-                            ):
-                                del modified_resources[
-                                    per_index_resource.resource_provider
-                                ]
-
                 self._actions.append(
                     TestSuiteAction(specification.action_to_repeat, modified_resources)
                 )

@@ -33,10 +33,7 @@ class ActionGeneratorDefinition(ImplicitDict):
 
 class PerCombinationResource(ImplicitDict):
     resource_provider: ResourceID
-    """ID of the resource in the pool that will generate a resource for the particular flight planner combination."""
+    """ID of the resource in the pool that will generate a resource for the particular resource combination."""
 
     provided_resource: ResourceID
-    """ID assigned to the provided/generated resource, as it will be accessed by the action run for the flight planner combination."""
-
-    include_resource_provider: Optional[bool]
-    """If true, include the resource_provider in the resources available to the flight planner combination action.  Otherwise, do not include it."""
+    """ID assigned to the provided/generated resource, as it will be accessed by the action run for the resource combination."""
