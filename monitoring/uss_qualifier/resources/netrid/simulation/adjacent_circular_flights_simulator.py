@@ -60,6 +60,8 @@ class AdjacentCircularFlightsSimulator:
 
         self.geod = Geod(ellps="WGS84")
 
+        self.en4709_02conf = config.en4709_02
+
         self.input_extents_valid()
 
     def input_extents_valid(self) -> None:
@@ -263,7 +265,9 @@ class AdjacentCircularFlightsSimulator:
             operator_location=my_flight_details_generator.generate_operator_location(
                 centroid=self.bbox_center[0]
             ),
-            operator_id=my_flight_details_generator.generate_operator_id(),
+            operator_id=my_flight_details_generator.generate_operator_id(
+                self.en4709_02conf
+            ),
             registration_number=my_flight_details_generator.generate_registration_number(),
         )
 
