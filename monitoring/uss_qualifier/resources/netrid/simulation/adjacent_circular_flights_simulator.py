@@ -3,15 +3,13 @@ from datetime import timedelta
 
 import arrow
 import shapely.geometry
-from implicitdict import ImplicitDict
 from pyproj import Geod, Proj, Transformer
 from shapely.geometry import Point, Polygon
+from shapely.geometry.base import BaseGeometry
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 
-from monitoring.monitorlib.geo import LatLngPoint
 from monitoring.uss_qualifier.resources.netrid.flight_data import (
     AdjacentCircularFlightsSimulatorConfiguration,
-    FlightRecordCollection,
     FullFlightRecord,
 )
 from monitoring.uss_qualifier.resources.netrid.simulation import operator_flight_details
@@ -162,8 +160,10 @@ class AdjacentCircularFlightsSimulator:
         return [speed_mts_per_sec, fwd_azimuth]
 
     def utm_converter(
-        self, shapely_shape: shapely.geometry, inverse: bool = False
-    ) -> shapely.geometry.shape:
+        self,
+        shapely_shape: BaseGeometry,
+        inverse: bool = False,
+    ) -> BaseGeometry:
         """A helper function to convert from lat / lon to UTM coordinates for buffering. tracks. This is the UTM projection (https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system), we use Zone 33T which encompasses Switzerland, this zone has to be set for each locale / city. Adapted from https://gis.stackexchange.com/questions/325926/buffering-geometry-with-points-in-wgs84-using-shapely"""
 
         proj = Proj(proj="utm", zone=self.utm_zone, ellps="WGS84", datum="WGS84")
@@ -185,12 +185,11 @@ class AdjacentCircularFlightsSimulator:
             {"type": point_or_polygon, "coordinates": tuple(new_coordinates)}
         )
 
-    def generate_flight_grid_and_path_points(
-        self, altitude_of_ground_level_wgs_84: float
-    ):
-        """Generate a series of boxes (grid) within the given bounding box to have areas for different flight tracks within each box"""
-        # Arrange cells into a compact grid. The default 6 flights preserves the
-        # previous 3-column by 2-row layout.
+    def generate_grid_cells(self) -> list[Polygon]:
+        """Arrange cells into a compact grid based on num_flights and bounding box extents.
+
+        The default 6 flights preserves the previous 3-column by 2-row layout.
+        """
         n_rows = round(self.num_flights**0.5)
         n_cols = -(-self.num_flights // n_rows)
         cell_size_x = (self.maxx - self.minx) / n_cols
@@ -205,6 +204,13 @@ class AdjacentCircularFlightsSimulator:
                 x1 = x0 + cell_size_x
                 y1 = y0 + cell_size_y
                 grid_cells.append(shapely.geometry.box(x0, y0, x1, y1))
+        return grid_cells
+
+    def generate_flight_grid_and_path_points(
+        self, altitude_of_ground_level_wgs_84: float
+    ):
+        """Generate a series of boxes (grid) within the given bounding box to have areas for different flight tracks within each box"""
+        grid_cells = self.generate_grid_cells()
 
         all_grid_cell_tracks = []
         """ For each of the boxes (grid) allocated to the operator, get the centroid and buffer to generate a flight path. A 50 m radius is provided to have flight paths within each of the boxes """
@@ -218,6 +224,7 @@ class AdjacentCircularFlightsSimulator:
                 altitude_of_ground_level_wgs_84 + self.altitude_agl
             )  # meters WGS 84
             flight_points_with_altitude = []
+            assert isinstance(buffered_path, Polygon)
             x, y = buffered_path.exterior.coords.xy
 
             for coord in range(0, len(x)):
@@ -267,7 +274,7 @@ class AdjacentCircularFlightsSimulator:
             registration_number=my_flight_details_generator.generate_registration_number(),
         )
 
-    def generate_rid_state(self, duration):
+    def generate_rid_state(self, duration, loop_tracks=True):
         """
 
         This method generates rid_state objects that can be submitted as flight telemetry
@@ -306,43 +313,49 @@ class AdjacentCircularFlightsSimulator:
                 timestamp_isoformat = timestamp.shift(
                     seconds=k * self.flight_start_shift_time
                 ).isoformat()
-                list_end = (
-                    flight_track_details[k]["track_length"] - flight_current_index[k]
+
+                if loop_tracks:
+                    list_end = (
+                        flight_track_details[k]["track_length"]
+                        - flight_current_index[k]
+                    )
+
+                    if list_end != 1:
+                        flight_point = self.grid_cells_flight_tracks[k].track[
+                            flight_current_index[k]
+                        ]
+                        flight_current_index[k] += 1
+                    else:
+                        flight_current_index[k] = 0
+                        continue
+                else:
+                    flight_point = self.grid_cells_flight_tracks[k].track[j]
+
+                aircraft_position = injection.RIDAircraftPosition(
+                    lat=flight_point.lat,
+                    lng=flight_point.lng,
+                    alt=flight_point.alt,
+                    accuracy_h=injection.HorizontalAccuracy.HAUnknown,
+                    accuracy_v=injection.VerticalAccuracy.VAUnknown,
+                    extrapolated=False,
+                )
+                aircraft_height = injection.RIDHeight(
+                    distance=self.altitude_agl, reference="TakeoffLocation"
                 )
 
-                if list_end != 1:
-                    flight_point = self.grid_cells_flight_tracks[k].track[
-                        flight_current_index[k]
-                    ]
-                    aircraft_position = injection.RIDAircraftPosition(
-                        lat=flight_point.lat,
-                        lng=flight_point.lng,
-                        alt=flight_point.alt,
-                        accuracy_h=injection.HorizontalAccuracy.HAUnknown,
-                        accuracy_v=injection.VerticalAccuracy.VAUnknown,
-                        extrapolated=False,
-                    )
-                    aircraft_height = injection.RIDHeight(
-                        distance=self.altitude_agl, reference="TakeoffLocation"
-                    )
+                rid_aircraft_state = injection.RIDAircraftState(
+                    timestamp=timestamp_isoformat,
+                    operational_status="Airborne",
+                    position=aircraft_position,
+                    height=aircraft_height,
+                    track=flight_point.bearing,
+                    speed=flight_point.speed,
+                    timestamp_accuracy=0.0,
+                    speed_accuracy="SA3mps",
+                    vertical_speed=0.0,
+                )
 
-                    rid_aircraft_state = injection.RIDAircraftState(
-                        timestamp=timestamp_isoformat,
-                        operational_status="Airborne",
-                        position=aircraft_position,
-                        height=aircraft_height,
-                        track=flight_point.bearing,
-                        speed=flight_point.speed,
-                        timestamp_accuracy=0.0,
-                        speed_accuracy="SA3mps",
-                        vertical_speed=0.0,
-                    )
-
-                    all_flight_telemetry[k].append(rid_aircraft_state)
-
-                    flight_current_index[k] += 1
-                else:
-                    flight_current_index[k] = 0
+                all_flight_telemetry[k].append(rid_aircraft_state)
 
         flights = []
         for m in range(num_flights):
@@ -354,42 +367,3 @@ class AdjacentCircularFlightsSimulator:
             )
             flights.append(flight)
         self.flights = flights
-
-
-def generate_aircraft_states(
-    config: AdjacentCircularFlightsSimulatorConfiguration,
-    allow_duplicate_positions: bool = False,
-) -> FlightRecordCollection:
-    my_path_generator = AdjacentCircularFlightsSimulator(config)
-
-    my_path_generator.generate_flight_grid_and_path_points(
-        altitude_of_ground_level_wgs_84=config.altitude_of_ground_level_wgs_84
-    )
-    my_path_generator.generate_query_bboxes()
-
-    my_path_generator.generate_rid_state(duration=my_path_generator.duration)
-    flights = my_path_generator.flights
-
-    if not allow_duplicate_positions:
-        flat_states = []
-        for f_idx, flight in enumerate(flights):
-            for s_idx, state in enumerate(flight.states):
-                if "position" in state and state.position:
-                    pt = LatLngPoint(lat=state.position.lat, lng=state.position.lng)
-                    flat_states.append((f_idx, s_idx, pt, state))
-
-        for i in range(len(flat_states)):
-            f_idx1, s_idx1, pt1, state1 = flat_states[i]
-            for j in range(i + 1, len(flat_states)):
-                f_idx2, s_idx2, pt2, state2 = flat_states[j]
-                if pt1.match(pt2):
-                    raise ValueError(
-                        f"Duplicate position found: flight {f_idx1} state {s_idx1} at {state1.timestamp} "
-                        f"({pt1.lat}, {pt1.lng}) matches flight {f_idx2} state {s_idx2} at {state2.timestamp} "
-                        f"({pt2.lat}, {pt2.lng})"
-                    )
-
-    result = FlightRecordCollection(flights=flights)
-
-    # Fix type errors (TODO: fix these at the source rather than here)
-    return ImplicitDict.parse(result, FlightRecordCollection)

@@ -19,7 +19,7 @@ from monitoring.uss_qualifier.resources.netrid.flight_data import (
     FlightDataSpecification,
     FlightRecordCollection,
 )
-from monitoring.uss_qualifier.resources.netrid.simulation.adjacent_circular_flights_simulator import (
+from monitoring.uss_qualifier.resources.netrid.simulation import (
     generate_aircraft_states,
 )
 from monitoring.uss_qualifier.resources.netrid.simulation.kml_flights import (
@@ -48,6 +48,21 @@ class FlightDataResource(Resource[FlightDataSpecification]):
             and specification.adjacent_circular_flights_simulation_source
         ):
             config = specification.adjacent_circular_flights_simulation_source
+            allow_duplicate_positions = (
+                config.allow_duplicate_positions
+                if "allow_duplicate_positions" in config
+                and config.allow_duplicate_positions is not None
+                else False
+            )
+            self.flight_collection = generate_aircraft_states(
+                config,
+                allow_duplicate_positions=allow_duplicate_positions,
+            )
+        elif (
+            "adjacent_spiral_flights_simulation_source" in specification
+            and specification.adjacent_spiral_flights_simulation_source
+        ):
+            config = specification.adjacent_spiral_flights_simulation_source
             allow_duplicate_positions = (
                 config.allow_duplicate_positions
                 if "allow_duplicate_positions" in config
