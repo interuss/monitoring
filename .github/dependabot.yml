@@ -20,7 +20,8 @@ updates:
     cooldown:
       default-days: 7
     schedule:
-      interval: "daily"
+      interval: "cron"
+      cronjob: "0 0 1,15 * *"
 
   - package-ecosystem: "docker"
     directory: "/test/repo_hygiene/"
