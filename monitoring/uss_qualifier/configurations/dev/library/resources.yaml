@@ -354,6 +354,15 @@ che_conflicting_flights:
           degrees_east: 7.4774
           meters_up: 605
 
+che_conflicting_flights_provider:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.geospatial.TriangularCascadeSoutheastResource
+  dependencies:
+    base_resource: che_conflicting_flights
+  specification:
+    meters_east_margin: 10000
+    meters_north_margin: 10000
+
 che_invalid_flight_intents:
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
   resource_type: resources.flight_planning.FlightIntentsResource
