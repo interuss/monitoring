@@ -191,6 +191,57 @@ class UserRampLoad(UserBasedLoad):
     """Seed to use to randomly generate seeds for each user."""
 
 
+class SearchCompletionCriteria(ImplicitDict):
+    """Completion criteria for a user-count search.
+
+    Any specified field that evaluates to false will cause this criteria object to evaluate to false."""
+
+    any_of: Optional[list[SearchCompletionCriteria]]
+
+    adjacency_user_count: Optional[int]
+    """Number of users between steps considered 'consecutive' or 'adjacent'.  Defaults to 1 when unspecified.
+    
+    For instance, adjacency_user_count of 3 means that a step with 7 users and a step with 10 users are adjacent (or consecutive), but a step with 12 users and a step with 16 users are not adjacent (or consecutive)."""
+
+    consecutive_unstable_user_counts: Optional[int]
+    """There are at least this many consecutive user-count steps which ended in instability, preceded immediately by a step with stability.
+     
+    For instance, 24 users produced instability as well as 25 users and 26 users, but 23 users completed the step successfully."""
+
+    consecutive_stable_user_counts: Optional[int]
+    """There are at least this many consecutive user-count steps which completed successfully, followed immediately by a step with instability.
+     
+    For instance, the 21-users step completed successfully, as did 22 users and 23 users, but 24 users produced instability."""
+
+    maximum_left_side_spacing: Optional[float]
+    """No two user-count steps lower than the user-count step with the maximum measured throughput may be further apart than this fraction of the user-count of that maximum-throughput step.
+    
+    For instance, with max throughput at 90 users and maximum_left_side_spacing=0.1, the user-count spacing between two adjacent steps with fewer than 90 users may not exceed 9 users.
+    So, if there were no steps between 20 users and 32 users, an additional step would need to be measured between 21 and 31 users."""
+
+    max_throughput_adjacent_user_counts: Optional[int]
+    """The user-count step with the maximum throughput must have at least this many consecutive adjacent user-count steps unless/until an unstable step is encountered.
+    
+    For instance, if maximum throughput was detected at 56 users and max_throughput_adjacent_user_counts were 3, then steps with user counts of 53, 54, 55, 57, 58, and 59 must be measured normally.
+    However, if the step with 57 users were unstable, then the steps with 58 and 59 users would not need to be measured."""
+
+
+class UserSearchLoad(UserBasedLoad):
+    """Searches through quantities of users to find the point where throughput becomes unstable."""
+
+    initial_users: int = 1
+    """Number of users to start with."""
+
+    user_expansion_ratio: float = 2
+    """When more users are needed than have been used in any previous step, expand the largest previous number of users by this fraction (or 1 user, whichever is larger)."""
+
+    search_completion_criteria: SearchCompletionCriteria
+    """The search is considered complete if these criteria are met."""
+
+    random_seed: Optional[int]
+    """Seed to use to randomly generate seeds for each user."""
+
+
 class BenchmarkLoadSpecification(ImplicitDict):
     """Specification of how load will be applied."""
 
@@ -198,3 +249,6 @@ class BenchmarkLoadSpecification(ImplicitDict):
 
     user_ramp: Optional[UserRampLoad]
     """Load will be provided by ramping up the number of virtual users of a particular type/behavior."""
+
+    user_search: Optional[UserSearchLoad]
+    """Load will be provided by adaptively adjusting the number of virtual users of a particular type/behavior until desired characteristics of the throughput curve are discovered."""

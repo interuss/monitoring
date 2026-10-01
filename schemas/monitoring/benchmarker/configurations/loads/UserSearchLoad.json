@@ -1,0 +1,67 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/loads/UserSearchLoad.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Searches through quantities of users to find the point where throughput becomes unstable.\n\nmonitoring.benchmarker.configurations.loads.UserSearchLoad, as defined in monitoring/benchmarker/configurations/loads.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "initial_users": {
+      "description": "Number of users to start with.",
+      "type": "integer"
+    },
+    "random_seed": {
+      "description": "Seed to use to randomly generate seeds for each user.",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "search_completion_criteria": {
+      "$ref": "SearchCompletionCriteria.json",
+      "description": "The search is considered complete if these criteria are met."
+    },
+    "step_completion_criteria": {
+      "$ref": "StepCompletionCriteria.json"
+    },
+    "throughput_instability_criteria": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ThroughputStabilityCriteria.json"
+        }
+      ]
+    },
+    "throughput_stability_criteria": {
+      "$ref": "ThroughputStabilityCriteria.json"
+    },
+    "user_expansion_ratio": {
+      "description": "When more users are needed than have been used in any previous step, expand the largest previous number of users by this fraction (or 1 user, whichever is larger).",
+      "type": "number"
+    },
+    "user_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "user_types": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "search_completion_criteria",
+    "step_completion_criteria",
+    "throughput_stability_criteria"
+  ],
+  "type": "object"
+}

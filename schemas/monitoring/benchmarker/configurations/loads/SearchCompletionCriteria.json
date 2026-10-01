@@ -1,0 +1,56 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/loads/SearchCompletionCriteria.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Completion criteria for a user-count search.\n\nAny specified field that evaluates to false will cause this criteria object to evaluate to false.\n\nmonitoring.benchmarker.configurations.loads.SearchCompletionCriteria, as defined in monitoring/benchmarker/configurations/loads.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "adjacency_user_count": {
+      "description": "Number of users between steps considered 'consecutive' or 'adjacent'.  Defaults to 1 when unspecified.\n\nFor instance, adjacency_user_count of 3 means that a step with 7 users and a step with 10 users are adjacent (or consecutive), but a step with 12 users and a step with 16 users are not adjacent (or consecutive).",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "any_of": {
+      "items": {
+        "$ref": "SearchCompletionCriteria.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "consecutive_stable_user_counts": {
+      "description": "There are at least this many consecutive user-count steps which completed successfully, followed immediately by a step with instability.\n \nFor instance, the 21-users step completed successfully, as did 22 users and 23 users, but 24 users produced instability.",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "consecutive_unstable_user_counts": {
+      "description": "There are at least this many consecutive user-count steps which ended in instability, preceded immediately by a step with stability.\n \nFor instance, 24 users produced instability as well as 25 users and 26 users, but 23 users completed the step successfully.",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "max_throughput_adjacent_user_counts": {
+      "description": "The user-count step with the maximum throughput must have at least this many consecutive adjacent user-count steps unless/until an unstable step is encountered.\n\nFor instance, if maximum throughput was detected at 56 users and max_throughput_adjacent_user_counts were 3, then steps with user counts of 53, 54, 55, 57, 58, and 59 must be measured normally.\nHowever, if the step with 57 users were unstable, then the steps with 58 and 59 users would not need to be measured.",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "maximum_left_side_spacing": {
+      "description": "No two user-count steps lower than the user-count step with the maximum measured throughput may be further apart than this fraction of the user-count of that maximum-throughput step.\n\nFor instance, with max throughput at 90 users and maximum_left_side_spacing=0.1, the user-count spacing between two adjacent steps with fewer than 90 users may not exceed 9 users.\nSo, if there were no steps between 20 users and 32 users, an additional step would need to be measured between 21 and 31 users.",
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}
