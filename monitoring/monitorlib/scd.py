@@ -33,13 +33,24 @@ def priority_of(details: OperationalIntentDetails) -> int:
     return priority
 
 
-def _str_headers(headers: dict[str, str] | None) -> list[str]:
+def _str_headers(
+    headers: dict[str, str] | None, include_headers: set[str] | None = None
+) -> list[str]:
     if headers is None:
         return []
+    if include_headers is not None:
+        allowed = {h.lower() for h in include_headers}
+        return [
+            f"{h_name}: {h_val}"
+            for h_name, h_val in headers.items()
+            if h_name.lower() in allowed
+        ]
     return [f"{h_name}: {h_val}" for h_name, h_val in headers.items()]
 
 
-def make_request_exchange_record(request: RequestDescription) -> ExchangeRecord:
+def make_request_exchange_record(
+    request: RequestDescription, include_headers: set[str] | None = None
+) -> ExchangeRecord:
     req_headers = (
         request.headers
         if "headers" in request and request.headers is not None
@@ -48,7 +59,7 @@ def make_request_exchange_record(request: RequestDescription) -> ExchangeRecord:
     er = ExchangeRecord(
         url=request.url,
         method=request.method,
-        headers=_str_headers(req_headers),
+        headers=_str_headers(req_headers, include_headers),
         recorder_role=(
             ExchangeRecordRecorderRole.Client
             if request.outgoing
@@ -64,15 +75,17 @@ def make_request_exchange_record(request: RequestDescription) -> ExchangeRecord:
 
 
 def make_exchange_record(
-    query: Query, msg_problem: str | None = None
+    query: Query,
+    msg_problem: str | None = None,
+    include_headers: set[str] | None = None,
 ) -> ExchangeRecord:
-    er = make_request_exchange_record(query.request)
+    er = make_request_exchange_record(query.request, include_headers=include_headers)
     resp_headers = (
         query.response.headers
         if "headers" in query.response and query.response.headers is not None
         else None
     )
-    er.headers = (er.headers or []) + _str_headers(resp_headers)
+    er.headers = (er.headers or []) + _str_headers(resp_headers, include_headers)
     er.response_time = Time(value=StringBasedDateTime(query.response.reported))
     er.response_code = query.status_code
     if msg_problem is not None:

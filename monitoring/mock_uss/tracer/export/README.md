@@ -16,6 +16,16 @@ PYTHONPATH=. uv run python monitoring/mock_uss/tracer/export/make_usslogset.py \
   --output /path/to/usslogset.json
 ```
 
+To restrict the HTTP headers recorded in the exported `USSLogSet` messages to a
+case-insensitive whitelist, pass `--include-headers`:
+
+```shell
+PYTHONPATH=. uv run python monitoring/mock_uss/tracer/export/make_usslogset.py \
+  --log-folder /path/to/log/files \
+  --output /path/to/usslogset.json \
+  --include-headers authorization,date
+```
+
 ### Invocation via Docker
 
 Set `LOG_PATH` to the folder containing the unzipped log files:

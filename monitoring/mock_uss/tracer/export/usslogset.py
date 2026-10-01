@@ -52,20 +52,37 @@ _NON_F3548_LOG_TYPES: set[type[TracerLogEntry]] = {
 def extract_exchange_records(
     log_entry: TracerLogEntry,
     seen_uss_queries: set[tuple[str, datetime.datetime]] | None = None,
+    include_headers: set[str] | None = None,
 ) -> list[ExchangeRecord]:
     """Extract ASTM F3548-21 ExchangeRecords from a TracerLogEntry."""
     if isinstance(log_entry, SCDSubscribe):
-        return [make_exchange_record(log_entry.changed_subscription)]
+        return [
+            make_exchange_record(
+                log_entry.changed_subscription, include_headers=include_headers
+            )
+        ]
     elif isinstance(log_entry, SCDUnsubscribe):
-        records = [make_exchange_record(log_entry.existing_subscription)]
+        records = [
+            make_exchange_record(
+                log_entry.existing_subscription, include_headers=include_headers
+            )
+        ]
         if (
             "deleted_subscription" in log_entry
             and log_entry.deleted_subscription is not None
         ):
-            records.append(make_exchange_record(log_entry.deleted_subscription))
+            records.append(
+                make_exchange_record(
+                    log_entry.deleted_subscription, include_headers=include_headers
+                )
+            )
         return records
     elif isinstance(log_entry, (PollOperationalIntents, PollConstraints)):
-        records = [make_exchange_record(log_entry.poll.dss_query)]
+        records = [
+            make_exchange_record(
+                log_entry.poll.dss_query, include_headers=include_headers
+            )
+        ]
         uss_queries = list(log_entry.poll.uss_queries.values()) + list(
             log_entry.poll.cached_uss_queries.values()
         )
@@ -75,10 +92,14 @@ def extract_exchange_records(
                 if key in seen_uss_queries:
                     continue
                 seen_uss_queries.add(key)
-            records.append(make_exchange_record(q))
+            records.append(make_exchange_record(q, include_headers=include_headers))
         return records
     elif isinstance(log_entry, (OperationalIntentNotification, ConstraintNotification)):
-        return [make_request_exchange_record(log_entry.request)]
+        return [
+            make_request_exchange_record(
+                log_entry.request, include_headers=include_headers
+            )
+        ]
     elif isinstance(log_entry, tuple(_NON_F3548_LOG_TYPES)):
         return []
     else:
@@ -87,7 +108,9 @@ def extract_exchange_records(
         )
 
 
-def make_usslogset(log_folder: str) -> USSLogSet:
+def make_usslogset(
+    log_folder: str, include_headers: set[str] | None = None
+) -> USSLogSet:
     """Generate an ASTM F3548-21 USSLogSet from a folder of tracer log files."""
     messages: list[ExchangeRecord] = []
     seen_uss_queries: set[tuple[str, datetime.datetime]] = set()
@@ -97,7 +120,13 @@ def make_usslogset(log_folder: str) -> USSLogSet:
         ignored_types=_NON_F3548_LOG_TYPES,
     ):
         try:
-            messages.extend(extract_exchange_records(log_entry, seen_uss_queries))
+            messages.extend(
+                extract_exchange_records(
+                    log_entry,
+                    seen_uss_queries=seen_uss_queries,
+                    include_headers=include_headers,
+                )
+            )
         except (ValueError, TypeError, KeyError) as e:
             logger.warning(f"Skipping {filename} because of invalid data: {e}")
             continue
