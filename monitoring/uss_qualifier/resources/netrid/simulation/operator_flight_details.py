@@ -1,9 +1,13 @@
 import random
 import string
+from typing import Optional
 
 from faker import Faker
 from uas_standards.ansi_cta_2063_a import SerialNumber
+from uas_standards.en4709_02 import OperatorRegistrationNumber
 from uas_standards.interuss.automated_testing.rid.v1 import injection
+
+from monitoring.uss_qualifier.resources.netrid.flight_data import EN4709_02Configuration
 
 
 class OperatorFlightDataGenerator:
@@ -42,11 +46,15 @@ class OperatorFlightDataGenerator:
         operator_location = injection.LatLngPoint(lat=centroid.y, lng=centroid.x)
         return operator_location
 
-    def generate_operator_id(self, prefix="OP-"):
-        operator_id = prefix + "".join(
+    def generate_operator_id(
+        self, en4709_02conf: Optional[EN4709_02Configuration] = None
+    ) -> str:
+        if en4709_02conf is not None:
+            return OperatorRegistrationNumber.generate_valid(en4709_02conf.prefix)
+
+        return "OP-" + "".join(
             self.random.choices(string.ascii_lowercase + string.digits, k=8)
         )
-        return operator_id
 
     def generate_company_name(self):
         return self.fake.company()

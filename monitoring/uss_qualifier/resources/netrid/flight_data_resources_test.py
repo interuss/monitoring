@@ -1,13 +1,18 @@
+import random
+
 import pytest
+from uas_standards.en4709_02 import OperatorRegistrationNumber
 
 from monitoring.uss_qualifier.resources.files import ExternalFile
 
 from .flight_data import (
     AdjacentCircularFlightsSimulatorConfiguration,
+    EN4709_02Configuration,
     FlightDataKMLFileConfiguration,
     FlightDataSpecification,
 )
 from .flight_data_resources import FlightDataResource
+from .simulation.operator_flight_details import OperatorFlightDataGenerator
 
 
 def test_unknown_type():
@@ -186,3 +191,71 @@ def test_adjacent_circular_flights_duplicates_allowed():
     # With allow_duplicate_positions=True, it should successfully generate states
     collection = generate_aircraft_states(config, allow_duplicate_positions=True)
     assert len(collection.flights) == 2
+
+
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        "CHE",
+        "FIN",
+    ],
+)
+def test_adjacent_circular_flights_simulation_source_en4709_02(prefix: str):
+    specs = FlightDataSpecification(
+        adjacent_circular_flights_simulation_source=AdjacentCircularFlightsSimulatorConfiguration(
+            en4709_02=EN4709_02Configuration(prefix=prefix),
+        )
+    )
+    resource = FlightDataResource(specs, "test")
+
+    assert len(resource.flight_collection.flights) == 6
+    for f in resource.flight_collection.flights:
+        assert f.flight_details.operator_id is not None
+        op_id = OperatorRegistrationNumber(f.flight_details.operator_id)
+        assert op_id.valid
+        assert op_id.prefix == prefix
+
+
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        "",
+        "CH",
+        "CHEE",
+    ],
+)
+def test_adjacent_circular_flights_simulation_source_en4709_02_invalid_prefix(
+    prefix: str,
+):
+    specs = FlightDataSpecification(
+        adjacent_circular_flights_simulation_source=AdjacentCircularFlightsSimulatorConfiguration(
+            en4709_02=EN4709_02Configuration(prefix=prefix),
+        )
+    )
+    with pytest.raises(ValueError):
+        FlightDataResource(specs, "test")
+
+
+def test_operator_flight_details_generate_operator_id():
+    rng = random.Random(12345)
+    generator = OperatorFlightDataGenerator(rng)
+
+    # Test default generation when en4709_02conf is None or omitted
+    default_op_id = generator.generate_operator_id()
+    assert default_op_id.startswith("OP-")
+    assert len(default_op_id) == 11
+    assert generator.generate_operator_id(None).startswith("OP-")
+
+    # Test EN4709-02 generation with valid prefix
+    en_op_id = generator.generate_operator_id(
+        en4709_02conf=EN4709_02Configuration(prefix="FIN")
+    )
+    op_num = OperatorRegistrationNumber(en_op_id)
+    assert op_num.valid
+    assert op_num.prefix == "FIN"
+
+    # Test EN4709-02 generation with invalid prefix
+    with pytest.raises(ValueError):
+        generator.generate_operator_id(
+            en4709_02conf=EN4709_02Configuration(prefix="FI")
+        )

@@ -9,6 +9,11 @@ from uas_standards.interuss.automated_testing.rid.v1 import injection
 from monitoring.uss_qualifier.resources.files import ExternalFile
 
 
+class EN4709_02Configuration(ImplicitDict):
+    prefix: str
+    """The first three (3) alphanumerics (upper-case only) corresponding to the ISO 3166 Alpha-3 code of the EU Member State of registration."""
+
+
 class FullFlightRecord(ImplicitDict):
     reference_time: StringBasedDateTime
     """The reference time of this flight (usually the time of first telemetry)"""
@@ -67,6 +72,9 @@ class AdjacentCircularFlightsSimulatorConfiguration(ImplicitDict):
 
     allow_duplicate_positions: Optional[bool] = False
     """Whether to allow duplicate positions in the generated flights."""
+
+    en4709_02: Optional[EN4709_02Configuration] = None
+    """If specified, the operator ID will be generated according to the EN4709-02 standard required by the EASA Easy Access Rule for Unmanned Aircraft Systems. Example of valid operator ID: FIN87astrdge12k8-xyz."""
 
 
 class FlightDataKMLFileConfiguration(ImplicitDict):
