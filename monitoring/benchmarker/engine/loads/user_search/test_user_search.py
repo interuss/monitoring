@@ -122,6 +122,7 @@ def _make_search_load(
     )
 
 
+# This test is AI-generated and has not been closely inspected by a human.
 def test_prompt_walkthrough_when_45_is_unstable():
     """Verify the exact step sequence from the user's specification when 45 users is unstable."""
     search = _make_search_load()
@@ -201,6 +202,7 @@ def test_prompt_walkthrough_when_45_is_unstable():
     assert check_search_completion_criteria(search, steps, operations)
 
 
+# This test is AI-generated and has not been closely inspected by a human.
 def test_prompt_walkthrough_when_45_is_stable():
     """Verify the sequence when 45 users is unexpectedly stable, requiring 46 and 47 to be tested."""
     search = _make_search_load(max_tp_adjacent=None, max_left_spacing=None)
@@ -246,6 +248,7 @@ def test_prompt_walkthrough_when_45_is_stable():
     assert check_search_completion_criteria(search, steps, operations)
 
 
+# This test is AI-generated and has not been closely inspected by a human.
 def test_initial_users_greater_than_1_and_adjacency_2():
     """Verify search with initial_users=16 and adjacency_user_count=2 (like isas_uncontended.jsonnet),
     including filling left-side gaps down toward 0."""
@@ -291,6 +294,7 @@ def test_initial_users_greater_than_1_and_adjacency_2():
     assert check_search_completion_criteria(search, steps, operations)
 
 
+# This test is AI-generated and has not been closely inspected by a human.
 def test_any_of_raises_not_implemented():
     search = ImplicitDict.parse(
         {
@@ -348,6 +352,7 @@ class _DummyVirtualUser(VirtualUser):
         self.cleanup_count += 1
 
 
+# This test is AI-generated and has not been closely inspected by a human.
 def test_run_user_search_load_recovers_from_unstable_step():
     """Verify run_user_search_load gracefully stops and cleans up all users after an unstable step and continues."""
     search = ImplicitDict.parse(
@@ -433,6 +438,7 @@ def test_run_user_search_load_recovers_from_unstable_step():
     assert all(u.stopped and u.cleanup_count == 1 for u in state["created_users"])
 
 
+# This test is AI-generated and has not been closely inspected by a human.
 def test_isas_uncontended_config_validates():
     config = load_config("configurations.interuss.netrid.isas_uncontended")
     assert len(config.loads) >= 1
