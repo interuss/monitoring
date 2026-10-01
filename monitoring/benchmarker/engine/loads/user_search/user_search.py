@@ -129,7 +129,7 @@ async def run_user_search_load(
             # If transitioning from a stable step to a lower user count, stop only the excess users
             if len(active_users) > next_load_factor:
                 excess_users = active_users[next_load_factor:]
-                active_users = active_users[:next_load_factor]
+                del active_users[next_load_factor:]
                 await stop_and_cleanup_users(
                     excess_users,
                     reason=f"reducing load factor from {current_load_factor} to {next_load_factor}",
