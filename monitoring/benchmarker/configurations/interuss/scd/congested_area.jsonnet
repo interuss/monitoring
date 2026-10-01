@@ -134,5 +134,10 @@ local rect = s2_inscribed_latlng_rect(s2cell);
       num_uss,
       num_uss,
     ),
+    {
+      usslogset: {
+        include_headers: ['Authorization'],
+      },
+    },
   ],
 }
