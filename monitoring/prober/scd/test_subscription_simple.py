@@ -20,7 +20,7 @@ from monitoring.monitorlib import scd
 from monitoring.monitorlib.geo import Circle
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib.scd import SCOPE_SC
+from monitoring.monitorlib.scd import SCOPE_CP, SCOPE_SC
 from monitoring.monitorlib.testing import assert_datetimes_are_equal, make_fake_url
 from monitoring.prober.infrastructure import for_api_versions, register_resource_type
 from monitoring.prober.scd import actions
@@ -163,7 +163,7 @@ def test_get_sub_by_search(ids, scd_api, scd_session):
 
 
 @for_api_versions(scd.API_0_3_17)
-@default_scope(SCOPE_SC)
+@default_scope(SCOPE_CP)
 def test_mutate_sub(ids, scd_api, scd_session):
     if scd_session is None:
         return
