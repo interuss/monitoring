@@ -1,72 +1,39 @@
 /* Dense/overlapping SCD flight operations applied to an existing DSS deployment after adding
- * subscriptions to cause maximum contention.
+ * subscriptions to intentionally cause contention.  Load applied to one DSS instance at a time to
+ * separate the performance of addressing a leader or a follower.
  */
 
-local test_name = 'Single S2 cell';
+local s2_cell_of = std.native('s2.cell_of');
+
+// Top-level constants
+local test_name = 'Congested Area';
 local num_uss = 3;
 local num_nodes = 3;
-local num_subscriptions = 8;
+local num_subscriptions = 8; // Should not exceed 10 because of how subscription IDs are constructed below
 local users_per_step = 3;
+local s2cell = s2_cell_of(34, -118, 13);
+local lat_size = 0.00001;
+local lng_size = 0.00001;
 
+// Imports and constructed values
+local actions = import './actions.libsonnet';
 local artifacts = import '../artifacts.libsonnet';
-
-local location = {
-  uniform_box: {lat_min: 34, lat_max: 34.001, lng_max: -118, lng_min: -118.001},
-  vertical: {value: 300, reference: 'W84', units: 'M'},
-};
-
-local shape = {
-  origin_horizontal: {lat: 0, lng: 0},
-  origin_vertical: {value: 0, reference: 'W84', units: 'M'},
-  origin_time: '2026-01-01T00:00:00Z',
-  volumes: [
-    {
-      volume: {
-        outline_polygon: {
-          vertices: [
-            {lat: -0.00001, lng: -0.00001},
-            {lat: 0.00001, lng: -0.00001},
-            {lat: 0.00001, lng: 0.00001},
-            {lat: -0.00001, lng: 0.00001},
-          ],
-        },
-        altitude_lower: {value: 0, reference: 'W84', units: 'M'},
-        altitude_upper: {value: 20, reference: 'W84', units: 'M'},
-      },
-      time_start: '2026-01-01T00:00:00Z',
-      time_end: '2026-01-01T00:00:05Z',
-    },
-  ],
-};
+local environment = import './local_environment.libsonnet';
+local flights = import '../flights.libsonnet';
+local loads = import '../loads.libsonnet';
+local users = import './users.libsonnet';
+local s2_inscribed_latlng_rect = std.native('s2.inscribed_latlng_rect');
+local s2_expand_latlng_rect = std.native('s2.expand_latlng_rect');
+local rect = s2_inscribed_latlng_rect(s2cell);
 
 {
   resources: {
-    local nodeIndex = function(uss, node) std.format('%02d', node + num_nodes * (uss - 1)),
     resource_declarations: {
-      utm_auth: {
-        resource_type: 'resources.communications.AuthAdapterResource',
-        specification: {
-          auth_spec: 'DummyOAuth(http://localhost:8085/token,benchmarker)',
-          scopes_authorized: [
-            'utm.strategic_coordination',
-          ],
-        },
-      },
+      utm_auth: environment.dummy_oauth_resource_declaration,
     } + {
-      ['uss%d_dss_pool' % uss]: {
-        resource_type: 'resources.astm.f3548.v21.DSSInstancesResource',
-        dependencies: {
-          auth_adapter: 'utm_auth',
-        },
-        specification: {
-          dss_instances: [
-            {
-              participant_id: 'uss%(uss)d_dss%(node)d' % { uss: uss, node: node },
-              base_url: 'http://localhost:80%s' % nodeIndex(uss, node),
-            } for node in std.range(1, num_nodes)
-          ],
-        },
-      } for uss in std.range(1, num_uss)
+      ['uss%d_dss_pool' % uss]: environment.dss_instances_resource_declaration(
+        std.range(uss - 1, uss - 1), std.range(0, num_nodes - 1), 'utm_auth'
+      ) for uss in std.range(1, num_uss)
     },
   },
 
@@ -79,26 +46,11 @@ local shape = {
       },
     },
   ] + [
-    {
-      name: 'Create subscription %d' % sub_index,
-      f3548: {
-        create_subscription: {
-          subscription: {
-            subscription_id: '3bdb0b88-a522-4286-9499-%d60e56c953bb' % (sub_index - 1),
-            duration: '23h',
-            area: {
-              lat_min: 34 - 0.00001,
-              lng_min: -118.001 - 0.00001,
-              lat_max: 34.001 + 0.00001,
-              lng_max: -118 + 0.00001,
-            },
-            min_alt: {value: 0, units: 'M', reference: 'W84'},
-            max_alt: {value: 3000, units: 'M', reference: 'W84'},
-          },
-          mode: 'GetDeleteCreate',
-        },
-      },
-    } for sub_index in std.range(1, num_subscriptions)
+    actions.create_subscription(
+      'Create subscription %d' % sub_index,
+      '3bdb0b88-a522-4286-9499-%d60e56c953bb' % (sub_index - 1),
+      rect,
+    ) for sub_index in std.range(1, num_subscriptions)
   ] + [
     {
       name: 'Delete subscription %d' % sub_index,
@@ -121,37 +73,14 @@ local shape = {
               fixed_spacing: '36s',
               uniform_random_spacing: '7.2s',
             },
-            location: {
-              random_location: location,
-            },
-            shape: {
-                fixed_volumes: shape,
-            },
+            location: flights.laglng_rect_location(s2_expand_latlng_rect(rect, -lat_size, -lng_size)),
+            shape: flights.latlng_rect_shape(lat_size, lng_size),
           },
         },
         flight_execution: {
           end_flight_after_start: '5s',
         },
-        scd_behavior: {
-          dss_pool: ['uss%d_dss_pool' % uss],
-          dss_selection_strategy: 'Random',
-          subscription_strategy: {
-            single_subscription: {
-              subscription_id: '3bdb0b88-a522-4286-9499-060e56c953bb',
-            },
-          },
-          op_intent_ref_creation_strategy: {
-            ovn_coordination_group: 'cluster1',
-            coordinate_requested_ovns: true,
-            retries: 2,
-            accept_before_flight_start: '20s',
-            activate_before_flight_start: '10s',
-            expect_timely_clearance: true,
-          },
-          op_intent_ref_cleanup_strategy: {
-            after_actual_flight_end: '1s',
-          },
-        },
+        scd_behavior: users.basic_scd_behavior(['uss%d_dss_pool' % uss], '3bdb0b88-a522-4286-9499-060e56c953bb', '20s', '10s'),
       },
     } for uss in std.range(1, num_uss)
   ],
@@ -164,49 +93,9 @@ local shape = {
         initial_users: users_per_step,
         additional_users_per_step: users_per_step,
         random_seed: 1234,
-        throughput_stability_criteria: {
-          each_user_completed_at_least: {
-            count: 1,
-            operations: ['workflow.flight_planner.flight'],
-          },
-        },
-        throughput_instability_criteria: {
-          any_of: [
-            {
-              failures_more_than: {
-                count: 30,
-                operations: ['workflow.flight_planner.flight'],
-              },
-            },
-            {
-              phase_duration_at_least: '120s',
-            },
-            {
-              average_duration_more_than: {
-                duration: '60s',
-                operations: ['workflow.flight_planner.flight'],
-              },
-            },
-          ],
-        },
-        step_completion_criteria: {
-          any_of: [
-            {
-              sampling_duration_at_least: '90s',
-            },
-            {
-              completed_at_least: {
-                count: 100,
-                operations: ['workflow.flight_planner.flight'],
-              },
-            },
-          ],
-          sampling_duration_at_least: '10s',
-          completed_at_least: {
-            count: 5,
-            operations: ['workflow.flight_planner.flight'],
-          }
-        },
+        throughput_stability_criteria: loads.normal_flights_stability_criteria,
+        throughput_instability_criteria: loads.normal_flights_instability_criteria,
+        step_completion_criteria: loads.normal_flights_completion_criteria,
         load_completion_criteria: {
           any_of: [
             {

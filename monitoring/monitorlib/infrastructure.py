@@ -129,6 +129,8 @@ class UTMClientSession(requests.Session):
     _closure_timer: threading.Timer | None = None
     _closure_lock: threading.Lock
     _last_used: float | None = None
+    _in_flight: int = 0
+    """Number of requests currently being performed with this session."""
 
     def __init__(
         self,
@@ -173,7 +175,8 @@ class UTMClientSession(requests.Session):
     def close_if_idle(self) -> None:
         with self._closure_lock:
             if (
-                self._last_used
+                self._in_flight == 0
+                and self._last_used
                 and time.monotonic() - self._last_used > SOCKET_KEEP_ALIVE_LIMIT
             ):
                 logger.debug(
@@ -244,9 +247,13 @@ class UTMClientSession(requests.Session):
             kwargs = self.adjust_request_kwargs(kwargs)
 
         with self._closure_lock:
-            result = super().request(method, url, *args, **kwargs)
-            self._last_used = time.monotonic()
-            return result
+            self._in_flight += 1
+        try:
+            return super().request(method, url, *args, **kwargs)
+        finally:
+            with self._closure_lock:
+                self._in_flight -= 1
+                self._last_used = time.monotonic()
 
     def get_prefix_url(self):
         return self._prefix_url
