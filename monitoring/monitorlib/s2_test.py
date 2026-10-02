@@ -1,7 +1,10 @@
+import json
 import math
 
+import _jsonnet
 import s2sphere
 
+from monitoring.monitorlib.config_callbacks import s2_callbacks
 from monitoring.monitorlib.s2 import (
     _parent,
     _point_xyz,
@@ -125,3 +128,30 @@ def test_inscribed_latlng_rect():
             assert area_ratio >= min_area_ratio, (
                 f"Expected area ratio >= {min_area_ratio} at ({lat}, {lng}) level {level}, got {area_ratio}"
             )
+
+
+def test_s2_callbacks():
+    snippet = """
+    local cell_of = std.native('s2.cell_of');
+    local offset_cell = std.native('s2.offset_cell');
+    local inscribed_latlng_rect = std.native('s2.inscribed_latlng_rect');
+    local latlng_rect_part = std.native('s2.latlng_rect_part');
+    local c = cell_of(34, -118, 13);
+    local c_east = offset_cell(c, 1, 0);
+    local r = inscribed_latlng_rect(c);
+    {
+      cell: c,
+      cell_east: c_east,
+      lat_lo: latlng_rect_part(r, 'lat_lo'),
+      lng_lo: latlng_rect_part(r, 'lng_lo'),
+      lat_hi: latlng_rect_part(r, 'lat_hi'),
+      lng_hi: latlng_rect_part(r, 'lng_hi'),
+    }
+    """
+    result = json.loads(
+        _jsonnet.evaluate_snippet("test", snippet, native_callbacks=s2_callbacks)  # pyright: ignore [reportArgumentType]
+    )
+    assert result["cell"] == cell_of(34, -118, 13).to_token()
+    assert result["cell_east"] == offset_cell(cell_of(34, -118, 13), 1, 0).to_token()
+    assert result["lat_lo"] < result["lat_hi"]
+    assert result["lng_lo"] < result["lng_hi"]

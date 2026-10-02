@@ -21,6 +21,17 @@
       "description": "Number of seconds of telemetry to generate for each flight.",
       "type": "integer"
     },
+    "en4709_02": {
+      "description": "If specified, the operator ID will be generated according to the EN4709-02 standard required by the EASA Easy Access Rule for Unmanned Aircraft Systems. Example of valid operator ID: FIN87astrdge12k8-xyz.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "EN4709_02Configuration.json"
+        }
+      ]
+    },
     "flight_start_shift": {
       "description": "Delay generated flight starts from the reference time to spread flights over time. Expressed in seconds. Use 0 to disable.",
       "type": "integer"
