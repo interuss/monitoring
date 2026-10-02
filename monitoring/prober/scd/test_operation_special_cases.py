@@ -13,7 +13,7 @@ import json
 
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib.scd import SCOPE_SC
+from monitoring.monitorlib.scd import SCOPE_CP, SCOPE_SC
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.prober.infrastructure import for_api_versions, register_resource_type
 from monitoring.prober.scd import actions
@@ -84,7 +84,7 @@ def test_op_query_not_area_too_large(scd_api, scd_session):
 # ID conversion bug exposure
 # Reproduces issue #314
 @for_api_versions(scd.API_0_3_17)
-@default_scope(SCOPE_SC)
+@default_scope(SCOPE_CP)
 def test_id_conversion_bug(ids, scd_api, scd_session):
     sub_uuid = ids(SUB_TYPE)
     time_ref = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)
