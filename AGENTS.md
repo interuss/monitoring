@@ -34,3 +34,6 @@ This document contains key context, nuances, and troubleshooting tips specifical
 ## 5. Continuous Improvement of this Guide
 - **Pay It Forward**: As an AI agent, your ability to acquire context quickly is critical. If, during your work, you find yourself spending significant time overcoming a misunderstanding, discovering a hidden project nuance, or writing introspection scripts to understand a schema, **please proactively update this `AGENTS.md` file**. Add concise tips or warnings to help future agents (including yourself) avoid the same friction, alongside completing your core task.
 - **Correcting Mistakes**: Documentation can become outdated or contain errors over time. If your core work reveals that information in this `AGENTS.md` file is mistaken or missing critical context, please take the initiative to fix those errors while completing your primary objectives!
+
+## 6. Agent Annotations
+- **Tagging Unit Tests**: When creating new unit tests, please tag each new test with the comment `# This test is AI-generated and has not been closely inspected by a human.` above the test definition (one comment per test_* function).  Your user may remove this annotation if they closely inspect it, but this is not generally necessary and pull requests should not generally be rejected because of these annotations.
