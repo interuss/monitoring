@@ -3,6 +3,9 @@ from collections.abc import Iterator
 from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.inspection import fullname
+from monitoring.uss_qualifier.action_generators.definitions import (
+    PerCombinationResource,
+)
 from monitoring.uss_qualifier.action_generators.documentation.definitions import (
     PotentialGeneratedAction,
 )
@@ -17,6 +20,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
 )
 from monitoring.uss_qualifier.resources.resource import (
     MissingResourceError,
+    ResourceProvidingResource,
     ResourceType,
 )
 from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
@@ -35,6 +39,12 @@ class FlightPlannerCombinationsSpecification(ImplicitDict):
 
     roles: list[ResourceID]
     """Resource IDs of FlightPlannerResource inputs to the action_to_repeat"""
+
+    per_index_resources: Optional[list[PerCombinationResource]]
+    """Resources that generate flight-planner-combination-specific resources according to the index of the flight planner combination.
+    The generated resource is added to the pool of resources available to provide to the Action, but must be provided to the Action explicitly.
+    
+    Must be a ResourceProvidingResource whose `provide_resource_for` accepts an int `index` argument."""
 
 
 class FlightPlannerCombinations(
@@ -103,6 +113,28 @@ class FlightPlannerCombinations(
                 modified_resources = {k: v for k, v in resources.items()}
                 for k, v in flight_planners_combination.items():
                     modified_resources[k] = v
+
+                if (
+                    "per_index_resources" in specification
+                    and specification.per_index_resources
+                ):
+                    combination_index = len(self._actions)
+                    for per_index_resource in specification.per_index_resources:
+                        resource_provider = resources[
+                            per_index_resource.resource_provider
+                        ]
+                        if not isinstance(resource_provider, ResourceProvidingResource):
+                            raise ValueError(
+                                f"Resource '{per_index_resource.resource_provider}' was specified as a per_index_resource but was not a ResourceProvidingResource (type '{type(resource_provider).__name__}')"
+                            )
+                        per_combination_resource = (
+                            resource_provider.provide_resource_for(
+                                index=combination_index
+                            )
+                        )
+                        modified_resources[per_index_resource.provided_resource] = (
+                            per_combination_resource
+                        )
 
                 self._actions.append(
                     TestSuiteAction(specification.action_to_repeat, modified_resources)

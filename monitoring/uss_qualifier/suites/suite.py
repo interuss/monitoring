@@ -280,7 +280,7 @@ class TestSuite:
                 )
             if resource_id in self.local_resources and not self.local_resources[
                 resource_id
-            ].is_type(resource_type):
+            ].is_or_inherits(resource_type):
                 raise ValueError(
                     f'Test suite "{self.definition.name}" expected resource {resource_id} to be {resource_type}, but instead it was provided {fullname(self.local_resources[resource_id].__class__)}'
                 )

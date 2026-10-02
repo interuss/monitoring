@@ -5,6 +5,7 @@ v1:
       resource_declarations:
         locality_che: {$ref: 'library/resources.yaml#/locality_che'}
         che_conflicting_flights: {$ref: 'library/resources.yaml#/che_conflicting_flights'}
+        che_conflicting_flights_provider: {$ref: 'library/resources.yaml#/che_conflicting_flights_provider'}
         che_invalid_flight_intents: {$ref: 'library/resources.yaml#/che_invalid_flight_intents'}
         che_invalid_flight_auth_flights: {$ref: 'library/resources.yaml#/che_invalid_flight_auth_flights'}
         che_non_conflicting_flights: {$ref: 'library/resources.yaml#/che_non_conflicting_flights'}
@@ -59,7 +60,7 @@ v1:
           prod_env_version_providers: prod_env_version_providers?
 
           conflicting_flights: che_conflicting_flights
-          priority_preemption_flights: che_conflicting_flights
+          priority_preemption_flights_provider: che_conflicting_flights_provider
           invalid_flight_intents: che_invalid_flight_intents
           invalid_flight_auth_flights: che_invalid_flight_auth_flights
           non_conflicting_flights: che_non_conflicting_flights
@@ -96,7 +97,7 @@ v1:
                 prod_env_version_providers: prod_env_version_providers?
 
                 conflicting_flights: conflicting_flights
-                priority_preemption_flights: priority_preemption_flights
+                priority_preemption_flights_provider: priority_preemption_flights_provider
                 invalid_flight_intents: invalid_flight_intents
                 invalid_flight_auth_flights: invalid_flight_auth_flights
                 non_conflicting_flights: non_conflicting_flights
