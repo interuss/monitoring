@@ -11,7 +11,7 @@
       "additionalProperties": {
         "type": "string"
       },
-      "description": "Mapping of dependency parameter (additional argument to concrete resource constructor) to `name` of resource to use",
+      "description": "Mapping of dependency parameter (additional argument to concrete resource constructor) to `name` of resource to use (optionally suffixed with `?` to indicate an optional dependency when the constructor parameter has a default value)",
       "properties": {
         "$ref": {
           "description": "Path to content that replaces the $ref",
@@ -21,7 +21,7 @@
       "type": "object"
     },
     "resource_type": {
-      "description": "Type of resource, expressed as a Python class name qualified relative to this `resources` module",
+      "description": "Type of resource, expressed as a Python class name qualified relative to this `resources` module (optionally with generic type arguments in brackets)",
       "type": "string"
     },
     "specification": {
