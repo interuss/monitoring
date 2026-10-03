@@ -104,15 +104,23 @@ class GenericAuthValidator:
         with self._scenario.check(
             "Unauthorized requests return the proper error message body", self._pid
         ) as check:
-            errors = schema_validation.validate(
-                F3548_21.OpenAPIPath,
-                F3548_21.ErrorResponse,
-                q.response.json,
-            )
-            if errors:
+            if q.response.json is None:
                 check.record_failed(
-                    summary="Unexpected error response body",
-                    details=f"Response body for {q.request.method} query to {q.request.url} failed validation: {errors}, "
-                    f"body content was: {q.response.json}",
+                    summary="Error response body is not JSON",
+                    details=f"Response body for {q.request.method} query to {q.request.url} is not valid JSON, "
+                    f"body content was {q.response.get('body', '')!r}",
                     query_timestamps=[q.request.timestamp],
                 )
+            else:
+                errors = schema_validation.validate(
+                    F3548_21.OpenAPIPath,
+                    F3548_21.ErrorResponse,
+                    q.response.json,
+                )
+                if errors:
+                    check.record_failed(
+                        summary="Unexpected error response body",
+                        details=f"Response body for {q.request.method} query to {q.request.url} failed validation: {errors}, "
+                        f"body content was: {q.response.json}",
+                        query_timestamps=[q.request.timestamp],
+                    )
