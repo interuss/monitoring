@@ -14,7 +14,7 @@ from monitoring.monitorlib.mutate import scd as mutate
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
 from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
-from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.generic import (
+from monitoring.uss_qualifier.scenarios.astm.utm.auth_validator import (
     GenericAuthValidator,
 )
 from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenario

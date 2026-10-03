@@ -10,7 +10,7 @@ from uas_standards.astm.f3548.v21.constants import Scope
 from monitoring.monitorlib.fetch import QueryError, QueryType
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
-from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.generic import (
+from monitoring.uss_qualifier.scenarios.astm.utm.auth_validator import (
     GenericAuthValidator,
 )
 from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenario
