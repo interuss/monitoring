@@ -40,7 +40,7 @@ class AuthenticationValidation(TestScenario):
     A scenario that verifies that the DSS properly authenticates requests to all its endpoints,
     and properly validates the scopes of the requests depending on the action being performed.
 
-    Note that this scenario does not verif that a DSS only allows an entity owner to mutate or delete them:
+    Note that this scenario does not verify that a DSS only allows an entity owner to mutate or delete them:
     this is covered in other scenarios.
     """
 
