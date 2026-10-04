@@ -436,7 +436,7 @@
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">USS0105,3</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/subscription_notifications/receive_notifications_for_awareness/receive_notifications_for_awareness.md">Awareness of relevant operational intents</a></td>
+    <td><a href="../../../scenarios/astm/utm/uss_authentication/scd_authentication_validation.md">ASTM SCD USS: Interfaces authentication</a><br><a href="../../../scenarios/astm/utm/subscription_notifications/receive_notifications_for_awareness/receive_notifications_for_awareness.md">Awareness of relevant operational intents</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">USS0105,4</a></td>

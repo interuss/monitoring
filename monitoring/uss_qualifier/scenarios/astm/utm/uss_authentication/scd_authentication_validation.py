@@ -4,6 +4,8 @@ from uas_standards.astm.f3548.v21.api import (
     OPERATIONS,
     OperationalIntentReference,
     OperationID,
+    PutOperationalIntentDetailsParameters,
+    SubscriptionState,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -109,7 +111,8 @@ class SCDAuthenticationValidation(TestScenario):
 
         self.begin_test_case("Endpoint authorization")
         self.begin_test_step("Operational Intent endpoints authentication")
-        self._verify_endpoint_authentication(uss)
+        self._verify_get_oi_details(uss)
+        self._verify_notify_oi_details_changed(uss)
         self.end_test_step()
         self.end_test_case()
 
@@ -145,7 +148,7 @@ class SCDAuthenticationValidation(TestScenario):
             ),
         )
 
-    def _verify_endpoint_authentication(self, uss: USSInstance):
+    def _verify_get_oi_details(self, uss: USSInstance):
         op = OPERATIONS[OperationID.GetOperationalIntentDetails]
         EndpointAuthValidator(
             scenario=self,
@@ -158,6 +161,31 @@ class SCDAuthenticationValidation(TestScenario):
                 url=op.path.format(entityid=str(uuid.uuid4())),
                 query_type=QueryType.F3548v21USSGetOperationalIntentDetails,
                 participant_id=uss.participant_id,
+            ),
+        ).verify_endpoints_authentication()
+
+    def _verify_notify_oi_details_changed(self, uss: USSInstance):
+        op = OPERATIONS[OperationID.NotifyOperationalIntentDetailsChanged]
+        EndpointAuthValidator(
+            scenario=self,
+            operation_name="Notify operational intent details changed",
+            auth_target=uss,
+            client_scopes=self.utm_auth.scopes,
+            valid_scopes=[Scope.StrategicCoordination],
+            query_kwargs=dict(
+                verb=op.verb,
+                url=op.path,
+                query_type=QueryType.F3548v21USSNotifyOperationalIntentDetailsChanged,
+                participant_id=uss.participant_id,
+                json=PutOperationalIntentDetailsParameters(
+                    operational_intent_id=str(uuid.uuid4()),
+                    subscriptions=[
+                        SubscriptionState(
+                            subscription_id=str(uuid.uuid4()),
+                            notification_index=0,
+                        )
+                    ],
+                ),
             ),
         ).verify_endpoints_authentication()
 
