@@ -8,6 +8,21 @@ from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
 
 class EndpointAuthValidator:
+    """
+    Verifies authentication and authorization of a single endpoint by issuing requests with
+    missing credentials (expect 401), invalid credentials (expect 401), an incorrect scope
+    (expect 403), and each valid scope (expect anything other than 401 or 403).
+
+    Each rejected request is also checked for a valid ErrorResponse body.
+
+    The calling scenario's documentation must declare these checks in the current test step:
+    * "Unauthorized requests return the proper error message body"
+    * "<operation_name> with missing credentials"
+    * "<operation_name> with invalid credentials"
+    * "<operation_name> with an incorrect scope"
+    * "<operation_name> with valid credentials"
+    """
+
     def __init__(
         self,
         scenario: TestScenario,
@@ -30,7 +45,8 @@ class EndpointAuthValidator:
         self._valid_scopes = valid_scopes
         self._query_kwargs = query_kwargs
 
-    def verify_endpoints_authentication(self):
+    def verify_endpoint_authentication(self):
+        """Executes each auth scenario for missing, invalid, incorrectly scoped, and valid credentials"""
         self._verify_missing_credentials()
         self._verify_invalid_credentials()
         self._verify_incorrect_scope()
@@ -76,7 +92,7 @@ class EndpointAuthValidator:
 
         query = self._generic_validator.query_with_scope(scope, **self._query_kwargs)
         with self._scenario.check(
-            f"{self._operation_name} with incorrect scope",
+            f"{self._operation_name} with an incorrect scope",
             self._pid,
         ) as check:
             if query.status_code != 403:

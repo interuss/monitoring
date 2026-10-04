@@ -58,8 +58,8 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 class SCDAuthenticationValidation(TestScenario):
     """
     A scenario that verifies that a USS properly authenticates requests to the
-    strategic coordination endpoints required by USS0105,1, 3, and 4 with the
-    appropriate status code and error response body.
+    strategic coordination endpoints required by ASTM F3548-21 USS0105,1, 3,
+    and 4 with the appropriate status code and error response body.
     """
 
     def __init__(
@@ -177,7 +177,7 @@ class SCDAuthenticationValidation(TestScenario):
                 query_type=QueryType.F3548v21USSGetOperationalIntentDetails,
                 participant_id=uss.participant_id,
             ),
-        ).verify_endpoints_authentication()
+        ).verify_endpoint_authentication()
 
     def _verify_notify_oi_details_changed(self, uss: USSInstance):
         op = OPERATIONS[OperationID.NotifyOperationalIntentDetailsChanged]
@@ -202,7 +202,7 @@ class SCDAuthenticationValidation(TestScenario):
                     ],
                 ),
             ),
-        ).verify_endpoints_authentication()
+        ).verify_endpoint_authentication()
 
     def _verify_make_uss_report(self, uss: USSInstance):
         op = OPERATIONS[OperationID.MakeUssReport]
@@ -233,7 +233,7 @@ class SCDAuthenticationValidation(TestScenario):
                     ),
                 ),
             ),
-        ).verify_endpoints_authentication()
+        ).verify_endpoint_authentication()
 
     def cleanup(self):
         self.begin_cleanup()

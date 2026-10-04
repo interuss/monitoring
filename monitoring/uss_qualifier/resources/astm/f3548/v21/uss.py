@@ -6,7 +6,7 @@ from monitoring.monitorlib.infrastructure import UTMClientSession
 @dataclass(frozen=True)
 class USSInstance:
     participant_id: str
-    """ID of the USS responsible for this USS instance"""
+    """Participant responsible for this USS instance"""
 
     base_url: str
     """Base URL for the USS instance according to the ASTM F3548-21 API"""

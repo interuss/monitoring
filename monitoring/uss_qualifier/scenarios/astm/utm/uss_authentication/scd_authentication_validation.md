@@ -48,7 +48,7 @@ If the USS under test allows the fetching of operational intent details without 
 
 If the USS under test allows the fetching of operational intent details with credentials that are well-formed but invalid, it is in violation of **[astm.f3548.v21.USS0105,1](../../../../requirements/astm/f3548/v21.md)**.
 
-#### 🛑 Get operational intent details with incorrect scope check
+#### 🛑 Get operational intent details with an incorrect scope check
 
 If the USS under test allows the fetching of operational intent details with valid credentials but an incorrect scope, it is in violation of **[astm.f3548.v21.USS0105,1](../../../../requirements/astm/f3548/v21.md)**.
 
@@ -70,7 +70,7 @@ If the USS under test accepts an operational intent details change notification 
 
 If the USS under test accepts an operational intent details change notification with credentials that are well-formed but invalid, it is in violation of **[astm.f3548.v21.USS0105,3](../../../../requirements/astm/f3548/v21.md)**.
 
-#### 🛑 Notify operational intent details changed with incorrect scope check
+#### 🛑 Notify operational intent details changed with an incorrect scope check
 
 If the USS under test accepts an operational intent details change notification with valid credentials but an incorrect scope, it is in violation of **[astm.f3548.v21.USS0105,3](../../../../requirements/astm/f3548/v21.md)**.
 
@@ -92,7 +92,7 @@ If the USS under test accepts a request to make a USS report without any credent
 
 If the USS under test accepts a request to make a USS report with credentials that are well-formed but invalid, it is in violation of **[astm.f3548.v21.USS0105,4](../../../../requirements/astm/f3548/v21.md)**.
 
-#### 🛑 Make USS report with incorrect scope check
+#### 🛑 Make USS report with an incorrect scope check
 
 If the USS under test accepts a request to make a USS report with valid credentials but an incorrect scope, it is in violation of **[astm.f3548.v21.USS0105,4](../../../../requirements/astm/f3548/v21.md)**.
 
