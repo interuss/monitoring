@@ -19,6 +19,9 @@ from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
 )
+from monitoring.monitorlib.clients.flight_planning.flight_info_template import (
+    FlightInfoTemplate,
+)
 from monitoring.monitorlib.fetch import QueryType
 from monitoring.monitorlib.infrastructure import (
     utm_client_session_factory,
@@ -85,7 +88,9 @@ class SCDAuthenticationValidation(TestScenario):
             consumer_name=f"{self.__class__.__name__} test scenario",
         )
 
-    def _init_flight_template(self, flight_intents: FlightIntentsResource):
+    def _init_flight_template(
+        self, flight_intents: FlightIntentsResource
+    ) -> FlightInfoTemplate:
         templates = flight_intents.get_flight_intents()
         expected_flight_intents = [
             ExpectedFlightIntent(
