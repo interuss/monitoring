@@ -142,7 +142,7 @@ class OperationalIntentRefAuthValidator:
 
         # Valid credentials but wrong scope:
         if self._test_wrong_scope:
-            wrong_scope_q = self._gen_val.query_wrong_scope(
+            wrong_scope_q = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -236,7 +236,7 @@ class OperationalIntentRefAuthValidator:
 
         # Valid credentials but wrong scope
         if self._test_wrong_scope:
-            query_wrong_scope = self._gen_val.query_wrong_scope(
+            query_wrong_scope = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -318,7 +318,7 @@ class OperationalIntentRefAuthValidator:
             self._gen_val.verify_4xx_response(no_scope_q)
 
         if self._test_wrong_scope:
-            wrong_scope_q = self._gen_val.query_wrong_scope(
+            wrong_scope_q = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -405,7 +405,7 @@ class OperationalIntentRefAuthValidator:
             self._gen_val.verify_4xx_response(no_scope_q)
 
         if self._test_wrong_scope:
-            wrong_scope_q = self._gen_val.query_wrong_scope(
+            wrong_scope_q = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -482,7 +482,7 @@ class OperationalIntentRefAuthValidator:
             self._gen_val.verify_4xx_response(no_scope_q)
 
         if self._test_wrong_scope:
-            wrong_scope_q = self._gen_val.query_wrong_scope(
+            wrong_scope_q = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(

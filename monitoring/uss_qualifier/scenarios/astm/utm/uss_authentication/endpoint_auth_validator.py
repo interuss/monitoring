@@ -74,7 +74,7 @@ class EndpointAuthValidator:
             )
             return
 
-        query = self._generic_validator.query_wrong_scope(scope, **self._query_kwargs)
+        query = self._generic_validator.query_with_scope(scope, **self._query_kwargs)
         with self._scenario.check(
             f"{self._operation_name} with incorrect scope",
             self._pid,
@@ -95,7 +95,7 @@ class EndpointAuthValidator:
             )
             return
 
-        query = self._generic_validator.query_wrong_scope(scope, **self._query_kwargs)
+        query = self._generic_validator.query_with_scope(scope, **self._query_kwargs)
         with self._scenario.check(
             f"{self._operation_name} with valid credentials",
             self._pid,

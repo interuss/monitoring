@@ -113,7 +113,7 @@ class AvailabilityAuthValidator:
 
         # Valid credentials but wrong scope:
         if self._test_wrong_scope:
-            wrong_scope_q = self._gen_val.query_wrong_scope(
+            wrong_scope_q = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -226,7 +226,7 @@ class AvailabilityAuthValidator:
 
         # Valid credentials but wrong scope:
         if self._test_wrong_scope:
-            wrong_scope_q = self._gen_val.query_wrong_scope(
+            wrong_scope_q = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(

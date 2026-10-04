@@ -72,10 +72,9 @@ class GenericAuthValidator:
         self._scenario.record_query(q)
         return q
 
-    def query_wrong_scope(self, scope: str, **query_kwargs) -> fetch.Query:
+    def query_with_scope(self, scope: str, **query_kwargs) -> fetch.Query:
         """
-        Issue a query to the authentication target with a valid token, but with a scope that is not allowed
-        to perform the operation.
+        Issue a query to the authentication target with a valid token for the supplied scope.
         Note that the auth adapter needs to be able to request a token with this scope.
         """
         q = fetch.query_and_describe(

@@ -143,7 +143,7 @@ class SubscriptionAuthValidator:
 
         # Valid credentials but wrong scope:
         if self._test_wrong_scope:
-            wrong_scope_q = self._gen_val.query_wrong_scope(
+            wrong_scope_q = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -224,7 +224,7 @@ class SubscriptionAuthValidator:
             self._gen_val.verify_4xx_response(query_missing_scope)
 
         if self._test_wrong_scope:
-            query_wrong_scope = self._gen_val.query_wrong_scope(
+            query_wrong_scope = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -313,7 +313,7 @@ class SubscriptionAuthValidator:
             self._gen_val.verify_4xx_response(query_missing_scope)
 
         if self._test_wrong_scope:
-            query_wrong_scope = self._gen_val.query_wrong_scope(
+            query_wrong_scope = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -399,7 +399,7 @@ class SubscriptionAuthValidator:
             self._gen_val.verify_4xx_response(query_missing_scope)
 
         if self._test_wrong_scope:
-            query_wrong_scope = self._gen_val.query_wrong_scope(
+            query_wrong_scope = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -495,7 +495,7 @@ class SubscriptionAuthValidator:
             self._gen_val.verify_4xx_response(query_missing_scope)
 
         if self._test_wrong_scope:
-            query_wrong_scope = self._gen_val.query_wrong_scope(
+            query_wrong_scope = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
