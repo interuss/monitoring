@@ -1,11 +1,17 @@
 import uuid
 
+import arrow
+from implicitdict import StringBasedDateTime
 from uas_standards.astm.f3548.v21.api import (
     OPERATIONS,
+    ErrorReport,
+    ExchangeRecord,
+    ExchangeRecordRecorderRole,
     OperationalIntentReference,
     OperationID,
     PutOperationalIntentDetailsParameters,
     SubscriptionState,
+    Time,
 )
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -110,10 +116,19 @@ class SCDAuthenticationValidation(TestScenario):
         self.end_test_case()
 
         self.begin_test_case("Endpoint authorization")
-        self.begin_test_step("Operational Intent endpoints authentication")
+
+        self.begin_test_step("Get operational intent details authentication")
         self._verify_get_oi_details(uss)
+        self.end_test_step()
+
+        self.begin_test_step("Notify operational intent details changed authentication")
         self._verify_notify_oi_details_changed(uss)
         self.end_test_step()
+
+        self.begin_test_step("Make USS report authentication")
+        self._verify_make_uss_report(uss)
+        self.end_test_step()
+
         self.end_test_case()
 
         self.end_test_scenario()
@@ -185,6 +200,37 @@ class SCDAuthenticationValidation(TestScenario):
                             notification_index=0,
                         )
                     ],
+                ),
+            ),
+        ).verify_endpoints_authentication()
+
+    def _verify_make_uss_report(self, uss: USSInstance):
+        op = OPERATIONS[OperationID.MakeUssReport]
+        EndpointAuthValidator(
+            scenario=self,
+            operation_name="Make USS report",
+            auth_target=uss,
+            client_scopes=self.utm_auth.scopes,
+            valid_scopes=[
+                Scope.StrategicCoordination,
+                Scope.ConstraintManagement,
+                Scope.ConstraintProcessing,
+                Scope.ConformanceMonitoringForSituationalAwareness,
+                Scope.AvailabilityArbitration,
+            ],
+            query_kwargs=dict(
+                verb=op.verb,
+                url=op.path,
+                query_type=QueryType.F3548v21USSMakeUssReport,
+                participant_id=uss.participant_id,
+                json=ErrorReport(
+                    exchange=ExchangeRecord(
+                        url=(uss.base_url + op.path),
+                        method=op.verb,
+                        recorder_role=ExchangeRecordRecorderRole.Client,
+                        request_time=Time(value=StringBasedDateTime(arrow.utcnow())),
+                        problem="This is a dummy record created by the USS qualifier's authentication tests. This failure is expected.",
+                    ),
                 ),
             ),
         ).verify_endpoints_authentication()

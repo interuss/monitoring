@@ -34,11 +34,11 @@ Ensures that a USS rejects improperly-authenticated requests to the strategic co
 
 This test case ensures that the USS properly authenticates requests to its strategic coordination endpoints.
 
-### Operational Intent endpoints authentication test step
+### Get operational intent details authentication test step
 
 #### 🛑 Unauthorized requests return the proper error message body check
 
-If the USS under test does not return a proper error message body when an unauthorized request is received, it fails to properly implement the OpenAPI specification that is part of **[astm.f3548.v21.USS0105,1](../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.USS0105,3](../../../../requirements/astm/f3548/v21.md)**.
+If the USS under test does not return a proper error message body when an unauthorized request is received, it fails to properly implement the OpenAPI specification that is part of **[astm.f3548.v21.USS0105,1](../../../../requirements/astm/f3548/v21.md)**.
 
 #### 🛑 Get operational intent details with missing credentials check
 
@@ -56,6 +56,12 @@ If the USS under test allows the fetching of operational intent details with val
 
 If the USS under test rejects a request to fetch operational intent details with a 401 or 403 when valid credentials with an appropriate scope are presented, it is in violation of **[astm.f3548.v21.USS0105,1](../../../../requirements/astm/f3548/v21.md)**.
 
+### Notify operational intent details changed authentication test step
+
+#### 🛑 Unauthorized requests return the proper error message body check
+
+If the USS under test does not return a proper error message body when an unauthorized request is received, it fails to properly implement the OpenAPI specification that is part of **[astm.f3548.v21.USS0105,3](../../../../requirements/astm/f3548/v21.md)**.
+
 #### 🛑 Notify operational intent details changed with missing credentials check
 
 If the USS under test accepts an operational intent details change notification without any credentials being presented, it is in violation of **[astm.f3548.v21.USS0105,3](../../../../requirements/astm/f3548/v21.md)**.
@@ -71,6 +77,29 @@ If the USS under test accepts an operational intent details change notification 
 #### 🛑 Notify operational intent details changed with valid credentials check
 
 If the USS under test rejects an operational intent details change notification with a 401 or 403 when valid credentials with an appropriate scope are presented, it is in violation of **[astm.f3548.v21.USS0105,3](../../../../requirements/astm/f3548/v21.md)**.
+
+### Make USS report authentication test step
+
+#### 🛑 Unauthorized requests return the proper error message body check
+
+If the USS under test does not return a proper error message body when an unauthorized request is received, it fails to properly implement the OpenAPI specification that is part of **[astm.f3548.v21.USS0105,4](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Make USS report with missing credentials check
+
+If the USS under test accepts a request to make a USS report without any credentials being presented, it is in violation of **[astm.f3548.v21.USS0105,4](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Make USS report with invalid credentials check
+
+If the USS under test accepts a request to make a USS report with credentials that are well-formed but invalid, it is in violation of **[astm.f3548.v21.USS0105,4](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Make USS report with incorrect scope check
+
+If the USS under test accepts a request to make a USS report with valid credentials but an incorrect scope, it is in violation of **[astm.f3548.v21.USS0105,4](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Make USS report with valid credentials check
+
+If the USS under test rejects a request to make a USS report with a 401 or 403 when valid credentials with an appropriate scope are presented, it is in violation of **[astm.f3548.v21.USS0105,4](../../../../requirements/astm/f3548/v21.md)**.
+
 
 ## Cleanup
 

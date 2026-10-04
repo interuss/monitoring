@@ -90,8 +90,8 @@ class EndpointAuthValidator:
     def _verify_valid_credentials(self, scope: Scope):
         if scope not in self._client_scopes:
             self._scenario.record_note(
-                f"{self._operation_name} valid scope",
-                f"{self._operation_name}: {scope.value} scope not available; valid-scope check skipped",
+                f"{self._operation_name} valid scope {scope.value}",
+                "scope not available; valid-scope check skipped",
             )
             return
 

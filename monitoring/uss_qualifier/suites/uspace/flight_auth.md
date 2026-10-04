@@ -442,7 +442,7 @@
   <tr>
     <td><a href="../../requirements/astm/f3548/v21.md">USS0105,4</a></td>
     <td>Implemented</td>
-    <td><a href="../../scenarios/astm/utm/make_uss_report.md">ASTM F3548 makeUssReport</a></td>
+    <td><a href="../../scenarios/astm/utm/make_uss_report.md">ASTM F3548 makeUssReport</a><br><a href="../../scenarios/astm/utm/uss_authentication/scd_authentication_validation.md">ASTM SCD USS: Interfaces authentication</a></td>
   </tr>
   <tr>
     <td rowspan="6" style="vertical-align:top;"><a href="../../requirements/interuss/automated_testing/flight_planning.md">interuss<br>.automated_testing<br>.flight_planning</a></td>
