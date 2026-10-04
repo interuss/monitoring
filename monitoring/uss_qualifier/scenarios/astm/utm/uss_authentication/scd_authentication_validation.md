@@ -44,6 +44,18 @@ If the USS under test does not return a proper error message body when an unauth
 
 If the USS under test allows the fetching of operational intent details without any credentials being presented, it is in violation of **[astm.f3548.v21.USS0105,1](../../../../requirements/astm/f3548/v21.md)**.
 
+#### 🛑 Get operational intent details with invalid credentials check
+
+If the USS under test allows the fetching of operational intent details with credentials that are well-formed but invalid, it is in violation of **[astm.f3548.v21.USS0105,1](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Get operational intent details with incorrect scope check
+
+If the USS under test allows the fetching of operational intent details with valid credentials but an incorrect scope, it is in violation of **[astm.f3548.v21.USS0105,1](../../../../requirements/astm/f3548/v21.md)**.
+
+#### 🛑 Get operational intent details with valid credentials check
+
+If the USS under test rejects a request to fetch operational intent details with a 401 or 403 when valid credentials with an appropriate scope are presented, it is in violation of **[astm.f3548.v21.USS0105,1](../../../../requirements/astm/f3548/v21.md)**.
+
 ## Cleanup
 
 ### ⚠️ Successful flight deletion check

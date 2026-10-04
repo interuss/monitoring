@@ -1,12 +1,17 @@
 import uuid
 
-from uas_standards.astm.f3548.v21.api import OperationalIntentReference
+from uas_standards.astm.f3548.v21.api import (
+    OPERATIONS,
+    OperationalIntentReference,
+    OperationID,
+)
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
 )
+from monitoring.monitorlib.fetch import QueryType
 from monitoring.monitorlib.infrastructure import (
     utm_client_session_factory,
 )
@@ -25,14 +30,11 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation
     ExpectedFlightIntent,
     validate_flight_intent_templates,
 )
-from monitoring.uss_qualifier.scenarios.astm.utm.auth_validator import (
-    GenericAuthValidator,
-)
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     OpIntentValidator,
 )
-from monitoring.uss_qualifier.scenarios.astm.utm.uss_authentication.scd_get_oi_validator import (
-    GetOperationalIntentAuthValidator,
+from monitoring.uss_qualifier.scenarios.astm.utm.uss_authentication.endpoint_auth_validator import (
+    EndpointAuthValidator,
 )
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights,
@@ -68,6 +70,12 @@ class SCDAuthenticationValidation(TestScenario):
                 Scope.StrategicCoordination: "search for operational intent references to obtain USS base URL"
             }
         )
+        self.utm_auth.assert_scopes_available(
+            scopes_required={
+                Scope.StrategicCoordination: "act as a peer USS calling the USS under test"
+            },
+            consumer_name=f"{self.__class__.__name__} test scenario",
+        )
 
     def _init_flight_template(self, flight_intents: FlightIntentsResource):
         templates = flight_intents.get_flight_intents()
@@ -90,12 +98,12 @@ class SCDAuthenticationValidation(TestScenario):
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
         self.record_note("Tested USS", self.tested_uss.participant_id)
-        self.record_note("scd", "Testing Strategic Coordination endpoints")
 
         self.begin_test_case("Setup")
         self.begin_test_step("Successfully plan flight")
         oi_ref = self._resolve_oi_ref()
         uss = self._resolve_uss(oi_ref)
+        self.record_note("USS base URL", uss.base_url)
         self.end_test_step()
         self.end_test_case()
 
@@ -138,14 +146,19 @@ class SCDAuthenticationValidation(TestScenario):
         )
 
     def _verify_endpoint_authentication(self, uss: USSInstance):
-        scd_generic_validator = GenericAuthValidator(
-            self, uss, Scope.StrategicCoordination
-        )
-        GetOperationalIntentAuthValidator(
+        op = OPERATIONS[OperationID.GetOperationalIntentDetails]
+        EndpointAuthValidator(
             scenario=self,
-            generic_validator=scd_generic_validator,
-            uss=uss,
-            op_intent_id=str(uuid.uuid4()),
+            operation_name="Get operational intent details",
+            auth_target=uss,
+            client_scopes=self.utm_auth.scopes,
+            valid_scopes=[Scope.StrategicCoordination],
+            query_kwargs=dict(
+                verb=op.verb,
+                url=op.path.format(entityid=str(uuid.uuid4())),
+                query_type=QueryType.F3548v21USSGetOperationalIntentDetails,
+                participant_id=uss.participant_id,
+            ),
         ).verify_endpoints_authentication()
 
     def cleanup(self):
