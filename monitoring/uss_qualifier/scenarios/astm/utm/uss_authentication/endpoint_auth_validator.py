@@ -64,7 +64,6 @@ class EndpointAuthValidator:
             if query.status_code != 401:
                 check.record_failed(
                     summary=f"Expected 401, got {query.status_code}",
-                    details=str(query.failure_details),
                     query_timestamps=[query.request.timestamp],
                 )
         self._generic_validator.verify_4xx_response(query)
@@ -78,7 +77,6 @@ class EndpointAuthValidator:
             if query.status_code != 401:
                 check.record_failed(
                     summary=f"Expected 401, got {query.status_code}",
-                    details=str(query.failure_details),
                     query_timestamps=[query.request.timestamp],
                 )
         self._generic_validator.verify_4xx_response(query)
@@ -100,7 +98,6 @@ class EndpointAuthValidator:
             if query.status_code != 403:
                 check.record_failed(
                     summary=f"Expected 403, got {query.status_code}",
-                    details=str(query.failure_details),
                     query_timestamps=[query.request.timestamp],
                 )
         self._generic_validator.verify_4xx_response(query)
@@ -121,7 +118,6 @@ class EndpointAuthValidator:
             if query.status_code in (401, 403):
                 check.record_failed(
                     summary=f"Valid credentials with scope {scope.value} were rejected with {query.status_code}",
-                    details=str(query.failure_details),
                     query_timestamps=[query.request.timestamp],
                 )
 
