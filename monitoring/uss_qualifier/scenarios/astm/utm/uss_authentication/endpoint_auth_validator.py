@@ -32,6 +32,8 @@ class EndpointAuthValidator:
         valid_scopes: list[Scope],
         query_kwargs: dict,
     ):
+        if not valid_scopes:
+            raise ValueError("valid_scopes must not be empty")
         generic_validator = GenericAuthValidator(
             scenario,
             auth_target,
