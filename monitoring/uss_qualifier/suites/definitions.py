@@ -125,7 +125,7 @@ class TestSuiteActionDeclaration(ImplicitDict):
 
 
 ResourceTypeNameSpecifyingOptional = ResourceTypeName
-"""This string is a ResourceTypeName, but then may be suffixed with '?'.  If the value ends in '?', that indicates the resource is optional and does not need to be provided."""
+"""This string is a ResourceTypeName (which may include generic type arguments in brackets), but then may be suffixed with '?' (e.g., `resources.SomeGenericResource[resources.SubResource]?`).  If the value ends in '?', that indicates the resource is optional and does not need to be provided."""
 
 
 class TestSuiteDefinition(ImplicitDict):
@@ -138,7 +138,7 @@ class TestSuiteDefinition(ImplicitDict):
     """Enumeration of the resources used by this test suite"""
 
     local_resources: Optional[dict[ResourceID, ResourceDeclaration]]
-    """Declarations of resources originating in this test suite.  If a resource is defined in both `resources` and `local_resources`, the resource in `local_resources` will be ignored (`resources` overrides `local_resources`)."""
+    """Declarations of resources originating in this test suite, which may depend on `resources` passed into the test suite.  If a resource is defined in both `resources` and `local_resources`, the resource in `local_resources` will be ignored (`resources` overrides `local_resources`)."""
 
     actions: list[TestSuiteActionDeclaration]
     """The actions to take when running the test suite.  Components will be executed in order."""

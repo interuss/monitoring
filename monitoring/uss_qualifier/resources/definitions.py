@@ -7,7 +7,7 @@ ResourceID = str
 
 
 ResourceTypeName = str
-"""This plain string represents a type of resource, expressed as a Python class name qualified relative to this `resources` module"""
+"""This plain string represents a type of resource, expressed as a Python class name qualified relative to this `resources` module, optionally with generic type arguments in brackets (e.g., `resources.SomeGenericResource[resources.SubResource]`)"""
 
 
 SpecificationType = TypeVar("SpecificationType", bound=ImplicitDict)
@@ -15,10 +15,10 @@ SpecificationType = TypeVar("SpecificationType", bound=ImplicitDict)
 
 class ResourceDeclaration(ImplicitDict):
     resource_type: ResourceTypeName
-    """Type of resource, expressed as a Python class name qualified relative to this `resources` module"""
+    """Type of resource, expressed as a Python class name qualified relative to this `resources` module (optionally with generic type arguments in brackets)"""
 
     dependencies: dict[ResourceID, ResourceID] = {}
-    """Mapping of dependency parameter (additional argument to concrete resource constructor) to `name` of resource to use"""
+    """Mapping of dependency parameter (additional argument to concrete resource constructor) to `name` of resource to use (optionally suffixed with `?` to indicate an optional dependency when the constructor parameter has a default value)"""
 
     specification: dict = {}
     """Specification of resource; format is the SpecificationType that corresponds to the `resource_type`"""
