@@ -51,7 +51,7 @@ def collect_typevars(cls: type, mapping: dict[TypeVar, ResolvedType]) -> None:
     any already-known TypeVars in `mapping` so that TypeVars defined on ancestor generic
     classes are mapped to their concrete or parameterized types.
     """
-    orig_bases: tuple[TypeAnnotation, ...] = getattr(cls, "__orig_bases__", ())
+    orig_bases: tuple[TypeAnnotation, ...] = types.get_original_bases(cls)
     if orig_bases:
         for base in orig_bases:
             origin = get_origin(base)
