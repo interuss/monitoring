@@ -71,8 +71,8 @@
                   type: 'Line',
                   color: 'lightgray',
                   label_expr: 'f"USL: $\\\\gamma$={usl.parameters.scaling_factor:.2g} $\\\\alpha$={usl.parameters.contention_factor:.2g} $\\\\beta$={usl.parameters.coherency_factor:.2g}"',
-                  x_data_expr: 'scale',
-                  y_data_expr: 'list(usl.compute_throughput(scale))',
+                  x_data_expr: 'sorted(scale)',
+                  y_data_expr: 'list(usl.compute_throughput(sorted(scale)))',
                   kwargs: {
                     zorder: -1,
                   },

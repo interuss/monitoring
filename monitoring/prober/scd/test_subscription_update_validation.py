@@ -16,8 +16,8 @@ import datetime
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.geo import Circle
 from monitoring.monitorlib.geotemporal import Volume4D
-from monitoring.monitorlib.infrastructure import default_scope
-from monitoring.monitorlib.scd import SCOPE_SC
+from monitoring.monitorlib.infrastructure import default_scope, default_scopes
+from monitoring.monitorlib.scd import SCOPE_CP, SCOPE_SC
 from monitoring.monitorlib.testing import assert_datetimes_are_equal, make_fake_url
 from monitoring.prober.infrastructure import (
     depends_on,
@@ -104,7 +104,7 @@ def test_create_op(ids, scd_api, scd_session):
 
 # Try to mutate subscription by shrinking its 2d area
 @for_api_versions(scd.API_0_3_17)
-@default_scope(SCOPE_SC)
+@default_scopes([SCOPE_SC, SCOPE_CP])
 @depends_on(test_create_op)
 def test_mutate_sub_shrink_2d(scd_api, scd_session):
     # GET current sub before mutation
@@ -126,7 +126,7 @@ def test_mutate_sub_shrink_2d(scd_api, scd_session):
 
 # Try to mutate subscription by shrinking its altitude range
 @for_api_versions(scd.API_0_3_17)
-@default_scope(SCOPE_SC)
+@default_scopes([SCOPE_SC, SCOPE_CP])
 @depends_on(test_create_op)
 def test_mutate_sub_shrink_altitude(scd_api, scd_session):
     # GET current sub before mutation
@@ -148,7 +148,7 @@ def test_mutate_sub_shrink_altitude(scd_api, scd_session):
 
 # Try to mutate subscription by shrinking its time range
 @for_api_versions(scd.API_0_3_17)
-@default_scope(SCOPE_SC)
+@default_scopes([SCOPE_SC, SCOPE_CP])
 @depends_on(test_create_op)
 def test_mutate_sub_shrink_time(scd_api, scd_session):
     # GET current sub before mutation
@@ -170,7 +170,7 @@ def test_mutate_sub_shrink_time(scd_api, scd_session):
 
 # Mutate sub, with the same 2d area
 @for_api_versions(scd.API_0_3_17)
-@default_scope(SCOPE_SC)
+@default_scopes([SCOPE_SC, SCOPE_CP])
 @depends_on(test_create_op)
 def test_mutate_sub_not_shrink(scd_api, scd_session):
     # GET current sub before mutation

@@ -1,8 +1,13 @@
 import datetime
+import glob
 import json
 import os
+import re
+from collections.abc import Iterator
 
 import yaml
+from implicitdict import ImplicitDict
+from loguru import logger
 
 from monitoring.mock_uss.tracer.log_types import TracerLogEntry
 from monitoring.monitorlib import infrastructure
@@ -67,3 +72,61 @@ class DummyLogger(Logger):
 
     def log_new(self, content: TracerLogEntry) -> str:
         return "dummy"
+
+
+def load_logs(
+    log_folder: str,
+    acceptable_types: set[type[TracerLogEntry]] | None = None,
+    ignored_types: set[type[TracerLogEntry]] | None = None,
+) -> Iterator[tuple[str, TracerLogEntry]]:
+    """Iterate through parsed TracerLogEntry files in a folder.
+
+    Args:
+        log_folder: Path to folder containing tracer YAML log files.
+        acceptable_types: If specified, only parse and yield log entries of these types,
+            raising NotImplementedError if an unignored log entry type is not in this set.
+        ignored_types: If specified, silently skip log entries of these types without
+            reading or parsing the file.
+    """
+    if not os.path.isdir(log_folder):
+        raise ValueError(f"Log folder '{log_folder}' is not a directory")
+
+    log_files = glob.glob(os.path.join(log_folder, "*.yaml"))
+    log_files.sort()
+    for log_file in log_files:
+        logger.debug(f"Processing {log_file}")
+
+        if "nochange_queries" in log_file:
+            continue  # This is a known case where we don't want to print a warning
+
+        filename = os.path.split(log_file)[-1]
+        m = re.match(r"^(\d{6})_(\d\d)(\d\d)(\d\d)_(\d{6})_([^.]+)\.yaml$", filename)
+        if not m:
+            logger.warning(f"File name {filename} does not match log entry format")
+            continue
+
+        prefix_code = m.group(6)
+        log_entry_type = TracerLogEntry.entry_type_from_prefix(prefix_code)
+        if not log_entry_type:
+            logger.warning(
+                f"Cannot determine log entry type from prefix_code `{prefix_code}` in {filename}"
+            )
+            continue
+
+        if ignored_types is not None and log_entry_type in ignored_types:
+            continue
+
+        if acceptable_types is not None and log_entry_type not in acceptable_types:
+            raise NotImplementedError(
+                f"Unhandled TracerLogEntry type {log_entry_type.__name__} in {log_file}"
+            )
+
+        with open(log_file) as f:
+            try:
+                content = yaml.load(f, Loader=yaml.CLoader)
+                log_entry = ImplicitDict.parse(content, log_entry_type)
+            except (ValueError, TypeError, KeyError, yaml.YAMLError) as e:
+                logger.warning(f"Skipping {filename} because of parse error: {e}")
+                continue
+
+        yield filename, log_entry
