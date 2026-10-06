@@ -5,6 +5,7 @@ from monitoring.benchmarker import package_root
 from monitoring.benchmarker.configurations.configuration import (
     BenchmarkConfiguration,
 )
+from monitoring.monitorlib.config_callbacks import s2_callbacks
 from monitoring.monitorlib.fileio import load_dict_with_references
 from monitoring.monitorlib.schema_validation import (
     ValidationError,
@@ -42,7 +43,8 @@ def load_config(
 
     Returns: Parsed BenchmarkConfiguration instance.
     """
-    config_src = load_dict_with_references(config_name, package_root)
+    all_callbacks = s2_callbacks
+    config_src = load_dict_with_references(config_name, package_root, all_callbacks)
 
     if not skip_validation:
         logger.info("Validating configuration...")

@@ -7,6 +7,17 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
+    "ai_helpers": {
+      "description": "If specified, configuration describing AI helper tools to include in artifacts.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "AIHelpersConfiguration.json"
+        }
+      ]
+    },
     "globally_expanded_report": {
       "description": "If specified, configuration describing a desired report mimicking what might be seen had the test run been conducted manually.",
       "oneOf": [

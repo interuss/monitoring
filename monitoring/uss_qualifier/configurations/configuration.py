@@ -255,6 +255,10 @@ class TimingReportConfiguration(ImplicitDict):
     """Percentage of test time to break down in the timing report (smaller contributions are not reported)"""
 
 
+class AIHelpersConfiguration(ImplicitDict):
+    pass
+
+
 class ArtifactsConfiguration(ImplicitDict):
     raw_report: Optional[RawReportConfiguration] = None
     """Configuration for raw report generation"""
@@ -276,6 +280,9 @@ class ArtifactsConfiguration(ImplicitDict):
 
     timing_report: Optional[TimingReportConfiguration] = None
     """If specified, configuration describing a desired report describing where and how time was spent during the test."""
+
+    ai_helpers: Optional[AIHelpersConfiguration] = None
+    """If specified, configuration describing AI helper tools to include in artifacts."""
 
     @property
     def acceptable_findings(self) -> Iterable[FullyQualifiedCheck]:

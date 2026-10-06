@@ -7,6 +7,7 @@ from implicitdict import ImplicitDict
 from loguru import logger
 
 from monitoring.uss_qualifier.configurations.configuration import ArtifactsConfiguration
+from monitoring.uss_qualifier.reports.ai_helpers.ai_helpers import write_ai_helper_files
 from monitoring.uss_qualifier.reports.documents import make_report_html
 from monitoring.uss_qualifier.reports.globally_expanded.generate import (
     generate_globally_expanded_report,
@@ -145,6 +146,19 @@ def generate_artifacts(
         generate_timing_report(redacted_report, artifacts.timing_report, path)
         logger.info(f"Wrote timing report in {time.monotonic() - t0:.1f}s")
 
+    def make_ai_helpers() -> None:
+        if artifacts.ai_helpers is None:
+            return
+        if artifacts.sequence_view is None or not artifacts.tested_requirements:
+            logger.warning(
+                "AI helper files generation requested, but either sequence_view or tested_requirements is not configured. Disabling AI helpers."
+            )
+            return
+        logger.info(f"Writing AI troubleshooting helper files to {output_path}")
+        t0 = time.monotonic()
+        write_ai_helper_files(output_path, artifacts)
+        logger.info(f"Wrote AI helper files in {time.monotonic() - t0:.1f}s")
+
     artifact_generators = [
         make_raw_report,
         make_html_report,
@@ -153,6 +167,7 @@ def generate_artifacts(
         make_sequence_view,
         make_globally_expanded_report,
         make_timing_report,
+        make_ai_helpers,
     ]
     generators = [Process(target=g, daemon=True) for g in artifact_generators]
     for p in generators:

@@ -11,6 +11,9 @@ from monitoring.benchmarker.configurations.users import (
 )
 from monitoring.benchmarker.engine.coordination import Coordinator
 from monitoring.benchmarker.engine.loads.user_ramp.user_ramp import run_user_ramp_load
+from monitoring.benchmarker.engine.loads.user_search.user_search import (
+    run_user_search_load,
+)
 from monitoring.benchmarker.engine.operations import ExecutedOperation
 from monitoring.benchmarker.reports.report import (
     BenchmarkScenarioStepReport,
@@ -33,6 +36,15 @@ async def run_scenario_load(
     if "user_ramp" in load_spec and load_spec.user_ramp:
         return await run_user_ramp_load(
             load_spec.user_ramp,
+            user_specs_map,
+            resource_pool,
+            executor,
+            coordinator,
+            scenario_name,
+        )
+    elif "user_search" in load_spec and load_spec.user_search:
+        return await run_user_search_load(
+            load_spec.user_search,
             user_specs_map,
             resource_pool,
             executor,
