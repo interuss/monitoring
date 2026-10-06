@@ -188,4 +188,12 @@ def infer_typevars_from_arg(
 
 def format_type_name(tp: TypeAnnotation) -> TypeName:
     """Return a human-readable display name for a type annotation."""
+    if tp is type(None):
+        return "None"
+    origin = get_origin(tp)
+    args: tuple[TypeAnnotation, ...] = get_args(tp)
+    if origin in (types.UnionType, Union):
+        return " | ".join(format_type_name(a) for a in args)
+    if origin is not None and args:
+        return f"{format_type_name(origin)}[{', '.join(format_type_name(a) for a in args)}]"
     return getattr(tp, "__name__", str(tp))
