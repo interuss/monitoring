@@ -16,10 +16,10 @@ class EndpointAuthValidator:
     Each rejected request is also checked for a valid ErrorResponse body.
 
     The calling scenario's documentation must declare these checks in the current test step:
-    * "Unauthorized requests return the proper error message body"
     * "<operation_name> with missing credentials"
     * "<operation_name> with invalid credentials"
     * "<operation_name> with an incorrect scope"
+    * "Unauthorized requests return the proper error message body"
     * "<operation_name> with valid credentials"
     """
 
