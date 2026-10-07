@@ -1,5 +1,15 @@
 # uss_qualifier reports
 
+## Troubleshooting test runs
+
+The recommended approach for understanding and troubleshooting a particular test run of uss_qualifier with a lower level of subject-matter expertise is to use an AI coding agent.  Ideally, prepare for the prompt by cloning this repository (and possibly [the `dss` repository](https://github.com/interuss/dss)) into the workspace accessible by the coding agent; this allows the coding agent to easily examine specific behaviors of uss_qualifier (and perhaps the DSS) in its investigation.  Place the artifacts produced by the test run (folder, .zip, or report.json) into the workspace accessible by the coding agent as well.  The suggested form for the prompt is to briefly describe your objective and refer the coding agent to the latest version of agent test result interpretation instructions ([AGENTS.md](./AGENTS.md)) even if the version of uss_qualifier used in the test run was older.  Examples:
+
+> Please use the instructions at https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/reports/AGENTS.md to help me understand why the tested requirements in the test run artifacts located in test_runs/683d882f-17b6-4ca5-8726-81612fa96cad indicate that Example USS failed.
+
+> Please use the instructions at https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/reports/AGENTS.md to help me understand why no one seems to be passing in the artifacts in test_runs/683d882f-17b6-4ca5-8726-81612fa96cad.
+
+> Using the instructions at https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/reports/AGENTS.md, why are there so many failures in scenario 11 in the artifacts in test_runs/683d882f-17b6-4ca5-8726-81612fa96cad?
+
 ## Report types
 
 uss_qualifier is capable of generating a range of artifacts from a test run, each intended to fulfill a different purpose.  Part of a [test configuration](../configurations) defines artifacts that should be produced by the test run.
@@ -29,4 +39,3 @@ The [globally-expanded report artifact](./globally_expanded/README.md) assembles
 ### Test artifacts obfuscation tool
 
 The [obfuscation tool](./obfuscate.md) can be used to redact and pseudo-anonymize participant IDs, server hostnames, and authorization tokens from a collection of test artifacts before sharing or publishing.
-

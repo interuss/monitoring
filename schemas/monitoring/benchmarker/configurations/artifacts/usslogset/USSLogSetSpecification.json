@@ -1,0 +1,32 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/artifacts/usslogset/USSLogSetSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Specification to write ASTM F3548 DSS interactions to a USSLogSet file.\n\nmonitoring.benchmarker.configurations.artifacts.usslogset.USSLogSetSpecification, as defined in monitoring/benchmarker/configurations/artifacts/usslogset.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "exclude_headers": {
+      "description": "If specified, omit headers with any of these case-insensitive keys.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "include_headers": {
+      "description": "If specified, only include headers with this case-insensitive key.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

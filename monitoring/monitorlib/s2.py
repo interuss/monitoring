@@ -1,4 +1,5 @@
 import math
+import re
 
 import s2sphere
 
@@ -222,5 +223,59 @@ def inscribed_latlng_rect(cell: s2sphere.CellId) -> s2sphere.LatLngRect:
     )
 
 
-def rect_str(r: s2sphere.LatLngRect) -> str:
-    return f"(lat {r.lat_lo().degrees}, lng {r.lng_lo().degrees})-(lat {r.lat_hi().degrees}, lng {r.lng_hi().degrees})"
+def expand_latlng_rect(
+    r: s2sphere.LatLngRect, dlat: float, dlng: float
+) -> s2sphere.LatLngRect:
+    return s2sphere.LatLngRect.from_point_pair(
+        s2sphere.LatLng.from_degrees(
+            r.lat_lo().degrees - dlat,
+            r.lng_lo().degrees - dlng,
+        ),
+        s2sphere.LatLng.from_degrees(
+            r.lat_hi().degrees + dlat,
+            r.lng_hi().degrees + dlng,
+        ),
+    )
+
+
+def latlng_rect_str(r: s2sphere.LatLngRect) -> str:
+    return f"(lat={r.lat_lo().degrees},lng={r.lng_lo().degrees})-(lat={r.lat_hi().degrees},lng={r.lng_hi().degrees})"
+
+
+def latlng_rect_str_part(rect_str: str, part: str) -> float:
+    """Retrieve specified part of a LatLngRect.
+
+    Args:
+        * rect_str: LatLngRect string (see latlng_rect_str).
+        * part: One of {"lat_lo", "lng_lo", "lat_hi", "lng_hi"}
+    """
+    m = re.match(
+        r"\(lat=(?P<lat_lo>[^,]*),lng=(?P<lng_lo>[^,]*)\)-\(lat=(?P<lat_hi>[^,]*),lng=(?P<lng_hi>[^,]*)\)",
+        rect_str,
+    )
+    if not m:
+        raise ValueError(
+            f"'{rect_str}' was not a valid LatLngRect string from which '{part}' could be extracted"
+        )
+    value_str = m.group(part)
+    if not value_str:
+        raise ValueError(f"Could not find '{part}' in LatLngRect string '{rect_str}'")
+    try:
+        return float(value_str)
+    except ValueError as e:
+        raise ValueError(
+            f"'{part}' of LatLngRect string '{rect_str}' ('{value_str}') could not be converted to float: {str(e)}"
+        )
+
+
+def latlng_rect_from_str(rect_str: str) -> s2sphere.LatLngRect:
+    return s2sphere.LatLngRect.from_point_pair(
+        s2sphere.LatLng.from_degrees(
+            lat=latlng_rect_str_part(rect_str, "lat_lo"),
+            lng=latlng_rect_str_part(rect_str, "lng_lo"),
+        ),
+        s2sphere.LatLng.from_degrees(
+            lat=latlng_rect_str_part(rect_str, "lat_hi"),
+            lng=latlng_rect_str_part(rect_str, "lng_hi"),
+        ),
+    )

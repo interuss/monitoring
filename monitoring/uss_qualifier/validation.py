@@ -30,7 +30,7 @@ def validate_resource_declarations(
         declaration = ImplicitDict.parse(declaration, ResourceDeclaration)
         path = base_path + "." + resource_id
         try:
-            _, specification_type = get_resource_types(declaration)
+            specification_type = get_resource_types(declaration).specification_type
         except ValueError as e:
             result.append(ValidationError(message=str(e), json_path=path))
             continue
