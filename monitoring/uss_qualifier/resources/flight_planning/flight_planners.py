@@ -13,6 +13,7 @@ from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlannerConfiguration,
 )
+from monitoring.uss_qualifier.resources.plural import PluralResource
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
@@ -65,7 +66,9 @@ class FlightPlannersSpecification(ImplicitDict):
     flight_planners: list[FlightPlannerConfiguration]
 
 
-class FlightPlannersResource(Resource[FlightPlannersSpecification]):
+class FlightPlannersResource(
+    PluralResource[FlightPlannerResource], Resource[FlightPlannersSpecification]
+):
     flight_planners: list[FlightPlannerResource]
 
     def __init__(
@@ -85,6 +88,12 @@ class FlightPlannersResource(Resource[FlightPlannersSpecification]):
             )
             for i, p in enumerate(specification.flight_planners)
         ]
+
+    def get_resource_instances_count(self) -> int:
+        return len(self.flight_planners)
+
+    def get_resource_instance(self, index: int) -> FlightPlannerResource:
+        return self.flight_planners[index]
 
     def make_subset(self, select_indices: Iterable[int]) -> list[FlightPlannerResource]:
         return [self.flight_planners[i] for i in select_indices]

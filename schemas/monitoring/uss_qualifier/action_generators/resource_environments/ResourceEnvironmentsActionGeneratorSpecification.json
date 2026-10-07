@@ -1,0 +1,24 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/action_generators/resource_environments/ResourceEnvironmentsActionGeneratorSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.action_generators.resource_environments.ResourceEnvironmentsActionGeneratorSpecification, as defined in monitoring/uss_qualifier/action_generators/resource_environments.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "action_to_repeat": {
+      "$ref": "../../suites/definitions/TestSuiteActionDeclaration.json",
+      "description": "Test suite action to run for each resource environment"
+    },
+    "resource_environments_source": {
+      "description": "Resource providing different resource environments",
+      "type": "string"
+    }
+  },
+  "required": [
+    "action_to_repeat",
+    "resource_environments_source"
+  ],
+  "type": "object"
+}
