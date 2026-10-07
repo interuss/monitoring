@@ -24,7 +24,6 @@ actions:
     scenario_type: scenarios.faa.uft.StartMessageSigningReport
     resources:
       mock_uss: mock_uss
-  on_failure: Abort
 - test_suite:
     suite_type: suites.astm.utm.f3548_21
     resources:
@@ -46,9 +45,7 @@ actions:
       planning_area: planning_area
       problematically_big_area: problematically_big_area
       test_exclusions: test_exclusions?
-  on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.faa.uft.FinalizeMessageSigningReport
     resources:
       mock_uss: mock_uss
-  on_failure: Continue
