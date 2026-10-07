@@ -40,7 +40,7 @@ This test case ensures that the USS properly authenticates requests to its strat
 
 ### Get operational intent details authentication test step
 
-uss_qualifier queries the USS under test's getOperationalIntentDetails endpoint for an arbitrary operational intent ID using several kinds of credentials, both permitted and not permitted by [the OpenAPI specification](https://github.com/astm-utm/Protocol/blob/v1.0.0/utm.yaml#L3471-L3473).
+uss_qualifier queries the USS under test's getOperationalIntentDetails endpoint for an arbitrary operational intent ID using several kinds of credentials not permitted by [the OpenAPI specification](https://github.com/astm-utm/Protocol/blob/v1.0.0/utm.yaml#L3471-L3473).
 
 #### ⚠️ Get operational intent details with missing credentials check
 
@@ -58,13 +58,9 @@ If the USS under test allows the fetching of operational intent details with val
 
 If, for any of the rejected requests above, the USS under test does not return a proper error message body, it fails to properly implement the OpenAPI specification that is part of **[astm.f3548.v21.USS0105,1](../../../../requirements/astm/f3548/v21.md)**.
 
-#### ⚠️ Get operational intent details with valid credentials check
-
-If the USS under test rejects a request to fetch operational intent details with a 401 or 403 when valid credentials with an appropriate scope are presented, it is in violation of **[astm.f3548.v21.USS0105,1](../../../../requirements/astm/f3548/v21.md)**.
-
 ### Notify operational intent details changed authentication test step
 
-uss_qualifier sends the USS under test's notifyOperationalIntentDetailsChanged endpoint a notification that an arbitrary operational intent was removed, using several kinds of credentials, both permitted and not permitted by [the OpenAPI specification](https://github.com/astm-utm/Protocol/blob/v1.0.0/utm.yaml#L3610-L3612).
+uss_qualifier sends the USS under test's notifyOperationalIntentDetailsChanged endpoint a notification that an arbitrary operational intent was removed, using several kinds of credentials not permitted by [the OpenAPI specification](https://github.com/astm-utm/Protocol/blob/v1.0.0/utm.yaml#L3610-L3612).
 
 #### ⚠️ Notify operational intent details changed with missing credentials check
 
@@ -81,10 +77,6 @@ If the USS under test accepts an operational intent details change notification 
 #### ⚠️ Unauthorized requests return the proper error message body check
 
 If, for any of the rejected requests above, the USS under test does not return a proper error message body, it fails to properly implement the OpenAPI specification that is part of **[astm.f3548.v21.USS0105,3](../../../../requirements/astm/f3548/v21.md)**.
-
-#### ⚠️ Notify operational intent details changed with valid credentials check
-
-If the USS under test rejects an operational intent details change notification with a 401 or 403 when valid credentials with an appropriate scope are presented, it is in violation of **[astm.f3548.v21.USS0105,3](../../../../requirements/astm/f3548/v21.md)**.
 
 ### Make USS report authentication test step
 

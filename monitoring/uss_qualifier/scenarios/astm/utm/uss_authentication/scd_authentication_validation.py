@@ -216,6 +216,7 @@ class SCDAuthenticationValidation(TestScenario):
             operation_name="Make USS report",
             auth_target=uss,
             client_scopes=self.utm_auth.scopes,
+            test_valid_credentials=True,
             valid_scopes=[
                 Scope.StrategicCoordination,
                 Scope.ConstraintManagement,

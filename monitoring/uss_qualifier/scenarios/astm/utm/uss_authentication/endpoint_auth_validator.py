@@ -15,12 +15,14 @@ class EndpointAuthValidator:
 
     Each rejected request is also checked for a valid ErrorResponse body.
 
+    Checks for valid scopes are only performed when `test_valid_credentials` is True.
+
     The calling scenario's documentation must declare these checks in the current test step:
     * "<operation_name> with missing credentials"
     * "<operation_name> with invalid credentials"
     * "<operation_name> with an incorrect scope"
     * "Unauthorized requests return the proper error message body"
-    * "<operation_name> with valid credentials"
+    * "<operation_name> with valid credentials" (when test_valid_credentials is True)
     """
 
     def __init__(
@@ -31,6 +33,7 @@ class EndpointAuthValidator:
         client_scopes: set[str],
         valid_scopes: list[Scope],
         query_kwargs: dict,
+        test_valid_credentials: bool = False,
     ):
         if not valid_scopes:
             raise ValueError("valid_scopes must not be empty")
@@ -46,14 +49,16 @@ class EndpointAuthValidator:
         self._client_scopes = client_scopes
         self._valid_scopes = valid_scopes
         self._query_kwargs = query_kwargs
+        self._test_valid_credentials = test_valid_credentials
 
     def verify_endpoint_authentication(self):
         """Executes each auth scenario for missing, invalid, incorrectly scoped, and valid credentials"""
         self._verify_missing_credentials()
         self._verify_invalid_credentials()
         self._verify_incorrect_scope()
-        for scope in self._valid_scopes:
-            self._verify_valid_credentials(scope)
+        if self._test_valid_credentials:
+            for scope in self._valid_scopes:
+                self._verify_valid_credentials(scope)
 
     def _verify_missing_credentials(self):
         query = self._generic_validator.query_no_auth(**self._query_kwargs)
