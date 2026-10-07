@@ -53,7 +53,7 @@
       "type": "number"
     },
     "num_flights": {
-      "description": "Number of adjacent circular flights to generate.",
+      "description": "Number of adjacent flights to generate.",
       "type": "integer"
     },
     "random_seed": {
@@ -67,6 +67,10 @@
       "description": "The reference time relative to which flight data should be generated.\n\nThe time should be irrelevant in real-world use as times are adjusted to be\nrelative to a time close to the time of test.",
       "format": "date-time",
       "type": "string"
+    },
+    "spiral_inward": {
+      "description": "If true, aircraft will spiral inward toward the center of each cell rather than flying in a circle, avoiding duplicate positions over longer durations.",
+      "type": "boolean"
     },
     "utm_zone": {
       "description": "UTM Zone integer for the location, see https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system to identify the zone for the location.",

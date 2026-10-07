@@ -1,9 +1,13 @@
 import random
 
 import pytest
+from pyproj import Geod
 from uas_standards.en4709_02 import OperatorRegistrationNumber
 
 from monitoring.uss_qualifier.resources.files import ExternalFile
+from monitoring.uss_qualifier.resources.netrid.simulation.adjacent_circular_flights_simulator import (
+    generate_aircraft_states,
+)
 
 from .flight_data import (
     AdjacentCircularFlightsSimulatorConfiguration,
@@ -153,10 +157,6 @@ def test_adjacent_circular_flights_simulation_source_invalid_configuration(
 
 
 def test_adjacent_circular_flights_duplicates_error():
-    from monitoring.uss_qualifier.resources.netrid.simulation.adjacent_circular_flights_simulator import (
-        generate_aircraft_states,
-    )
-
     # A configuration that is known to produce duplicate positions (e.g. duration=90, num_flights=2)
     config = AdjacentCircularFlightsSimulatorConfiguration(
         minx=8.508996,
@@ -174,10 +174,6 @@ def test_adjacent_circular_flights_duplicates_error():
 
 
 def test_adjacent_circular_flights_duplicates_allowed():
-    from monitoring.uss_qualifier.resources.netrid.simulation.adjacent_circular_flights_simulator import (
-        generate_aircraft_states,
-    )
-
     config = AdjacentCircularFlightsSimulatorConfiguration(
         minx=8.508996,
         miny=47.382846,
@@ -259,3 +255,33 @@ def test_operator_flight_details_generate_operator_id():
         generator.generate_operator_id(
             en4709_02conf=EN4709_02Configuration(prefix="FI")
         )
+
+
+def test_adjacent_circular_flights_spiral_inward():
+    specs = FlightDataSpecification(
+        adjacent_circular_flights_simulation_source=AdjacentCircularFlightsSimulatorConfiguration(
+            spiral_inward=True,
+            num_flights=6,
+            duration=90,
+        )
+    )
+    resource = FlightDataResource(specs, "test")
+
+    assert len(resource.flight_collection.flights) == 6
+    for f in resource.flight_collection.flights:
+        assert len(f.states) == 90
+
+    # Verify that distance between subsequent points is around 5.0 m (since v = 5.0 m/s and delta_t = 1s)
+    flight = resource.flight_collection.flights[0]
+    geod = Geod(ellps="WGS84")
+    distances_between_points = []
+    for i in range(len(flight.states) - 1):
+        p1 = flight.states[i].position
+        p2 = flight.states[i + 1].position
+        assert p1 is not None
+        assert p2 is not None
+        _, _, dist = geod.inv(p1.lng, p1.lat, p2.lng, p2.lat)
+        distances_between_points.append(dist)
+
+    avg_dist = sum(distances_between_points) / len(distances_between_points)
+    assert 4.5 < avg_dist < 5.5
