@@ -15,15 +15,15 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.planning_area import PlanningAreaResource
 from monitoring.uss_qualifier.resources.resource import MissingResourceError
+from monitoring.uss_qualifier.scenarios.astm.utm.auth_validator import (
+    GenericAuthValidator,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.availability_api_validator import (
     AvailabilityAuthValidator,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.cr_api_validator import (
     ConstraintRefAuthValidator,
-)
-from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.generic import (
-    GenericAuthValidator,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.oir_api_validator import (
     OperationalIntentRefAuthValidator,
@@ -40,7 +40,7 @@ class AuthenticationValidation(TestScenario):
     A scenario that verifies that the DSS properly authenticates requests to all its endpoints,
     and properly validates the scopes of the requests depending on the action being performed.
 
-    Note that this scenario does not verif that a DSS only allows an entity owner to mutate or delete them:
+    Note that this scenario does not verify that a DSS only allows an entity owner to mutate or delete them:
     this is covered in other scenarios.
     """
 

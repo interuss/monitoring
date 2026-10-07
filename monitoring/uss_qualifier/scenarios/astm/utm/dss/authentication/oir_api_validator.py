@@ -17,7 +17,7 @@ from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.infrastructure import UTMClientSession
 from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
-from monitoring.uss_qualifier.scenarios.astm.utm.dss.authentication.generic import (
+from monitoring.uss_qualifier.scenarios.astm.utm.auth_validator import (
     GenericAuthValidator,
 )
 from monitoring.uss_qualifier.scenarios.scenario import PendingCheck, TestScenario
@@ -142,7 +142,7 @@ class OperationalIntentRefAuthValidator:
 
         # Valid credentials but wrong scope:
         if self._test_wrong_scope:
-            wrong_scope_q = self._gen_val.query_wrong_scope(
+            wrong_scope_q = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -236,7 +236,7 @@ class OperationalIntentRefAuthValidator:
 
         # Valid credentials but wrong scope
         if self._test_wrong_scope:
-            query_wrong_scope = self._gen_val.query_wrong_scope(
+            query_wrong_scope = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -318,7 +318,7 @@ class OperationalIntentRefAuthValidator:
             self._gen_val.verify_4xx_response(no_scope_q)
 
         if self._test_wrong_scope:
-            wrong_scope_q = self._gen_val.query_wrong_scope(
+            wrong_scope_q = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -405,7 +405,7 @@ class OperationalIntentRefAuthValidator:
             self._gen_val.verify_4xx_response(no_scope_q)
 
         if self._test_wrong_scope:
-            wrong_scope_q = self._gen_val.query_wrong_scope(
+            wrong_scope_q = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
@@ -482,7 +482,7 @@ class OperationalIntentRefAuthValidator:
             self._gen_val.verify_4xx_response(no_scope_q)
 
         if self._test_wrong_scope:
-            wrong_scope_q = self._gen_val.query_wrong_scope(
+            wrong_scope_q = self._gen_val.query_with_scope(
                 scope=self._test_wrong_scope, **query_kwargs
             )
             with self._scenario.check(
