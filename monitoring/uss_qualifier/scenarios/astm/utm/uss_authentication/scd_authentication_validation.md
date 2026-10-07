@@ -24,7 +24,11 @@ Ensures that a USS rejects improperly-authenticated requests to the strategic co
 
 ## Setup test case
 
+This test case sets up the rest of the scenario by collecting the USS base URL for the USS under test.
+
 ### Successfully plan flight test step
+
+uss_qualifier instructs the USS under test to plan a flight, queries the DSS for the resulting operational intent reference, and records the USS base URL from that reference for use in the rest of this scenario.
 
 #### [Plan successfully](../../../flight_planning/plan_flight_intent.md)
 
@@ -35,6 +39,8 @@ Ensures that a USS rejects improperly-authenticated requests to the strategic co
 This test case ensures that the USS properly authenticates requests to its strategic coordination endpoints.
 
 ### Get operational intent details authentication test step
+
+uss_qualifier queries the USS under test's getOperationalIntentDetails endpoint for an arbitrary operational intent ID using several kinds of credentials, both permitted and not permitted by [the OpenAPI specification](https://github.com/astm-utm/Protocol/blob/v1.0.0/utm.yaml#L3471-L3473).
 
 #### ⚠️ Get operational intent details with missing credentials check
 
@@ -58,6 +64,8 @@ If the USS under test rejects a request to fetch operational intent details with
 
 ### Notify operational intent details changed authentication test step
 
+uss_qualifier sends the USS under test's notifyOperationalIntentDetailsChanged endpoint a notification that an arbitrary operational intent was removed, using several kinds of credentials, both permitted and not permitted by [the OpenAPI specification](https://github.com/astm-utm/Protocol/blob/v1.0.0/utm.yaml#L3610-L3612).
+
 #### ⚠️ Notify operational intent details changed with missing credentials check
 
 If the USS under test accepts an operational intent details change notification without any credentials being presented, it is in violation of **[astm.f3548.v21.USS0105,3](../../../../requirements/astm/f3548/v21.md)**.
@@ -79,6 +87,8 @@ If, for any of the rejected requests above, the USS under test does not return a
 If the USS under test rejects an operational intent details change notification with a 401 or 403 when valid credentials with an appropriate scope are presented, it is in violation of **[astm.f3548.v21.USS0105,3](../../../../requirements/astm/f3548/v21.md)**.
 
 ### Make USS report authentication test step
+
+uss_qualifier submits a dummy report to the USS under test's makeUssReport endpoint using several kinds of credentials, both permitted and not permitted by [the OpenAPI specification](https://github.com/astm-utm/Protocol/blob/v1.0.0/utm.yaml#L3822-L3832).
 
 #### ⚠️ Make USS report with missing credentials check
 
