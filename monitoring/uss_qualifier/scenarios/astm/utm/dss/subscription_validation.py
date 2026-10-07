@@ -205,10 +205,7 @@ class SubscriptionValidation(TestScenario):
         duration = (
             subscription.time_end.value.datetime
             - subscription.time_start.value.datetime
-            if "time_start" in subscription
-            and subscription.time_start is not None
-            and "time_end" in subscription
-            and subscription.time_end is not None
+            if subscription.time_start is not None and subscription.time_end is not None
             else None
         )
         # In case of success, we obtained the effectively created subscription:
