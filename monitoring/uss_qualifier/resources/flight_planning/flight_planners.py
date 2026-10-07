@@ -10,6 +10,10 @@ from monitoring.monitorlib.clients.flight_planning.client import FlightPlannerCl
 from monitoring.uss_qualifier.reports.report import ParticipantID
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.definitions import ResourceID
+from monitoring.uss_qualifier.resources.environments import (
+    ResourceEnvironmentSelectorResource,
+    ResourceEnvironmentSelectorSpecification,
+)
 from monitoring.uss_qualifier.resources.flight_planning.flight_planner import (
     FlightPlannerConfiguration,
 )
@@ -99,7 +103,9 @@ class FlightPlannersResource(
         return [self.flight_planners[i] for i in select_indices]
 
 
-class FlightPlannerCombinationSelectorSpecification(ImplicitDict):
+class FlightPlannerCombinationSelectorSpecification(
+    ResourceEnvironmentSelectorSpecification
+):
     must_include: Optional[list[ParticipantID]]
     """The set of flight planners which must be included in every combination"""
 
@@ -108,7 +114,8 @@ class FlightPlannerCombinationSelectorSpecification(ImplicitDict):
 
 
 class FlightPlannerCombinationSelectorResource(
-    Resource[FlightPlannerCombinationSelectorSpecification]
+    ResourceEnvironmentSelectorResource,
+    Resource[FlightPlannerCombinationSelectorSpecification],
 ):
     _specification: FlightPlannerCombinationSelectorSpecification
 
@@ -119,6 +126,17 @@ class FlightPlannerCombinationSelectorResource(
     ):
         super().__init__(specification, resource_origin)
         self._specification = specification
+
+    def select_resource_environment(
+        self, resource_environment: dict[ResourceID, Resource]
+    ) -> bool:
+        return self.is_valid_combination(
+            {
+                resource_id: resource
+                for resource_id, resource in resource_environment.items()
+                if isinstance(resource, FlightPlannerResource)
+            }
+        )
 
     def is_valid_combination(
         self, flight_planners: dict[ResourceID, FlightPlannerResource]
