@@ -101,7 +101,7 @@ def record_operation(
             details = (
                 op.query.failure_details
                 or op.query.error_message
-                or op.query.response.failure
+                or ("failure" in op.query.response and op.query.response.failure)
                 or f"HTTP {op.query.status_code}"
             )
             logger.debug(
