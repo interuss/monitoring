@@ -193,9 +193,29 @@ class SubscriptionValidation(TestScenario):
     def _check_properly_truncated(
         self, check: PendingCheck, changed: MutatedSubscription
     ):
-        duration = changed.subscription.duration
+        subscription = changed.subscription
+        if subscription is None:
+            check.record_failed(
+                summary="DSS failed to reject or truncate subscription that exceeded 24 hours",
+                details=f"DSS returned status {changed.status_code} without a valid subscription: {changed.errors}",
+                query_timestamps=[changed.request.timestamp],
+            )
+            return
+
+        duration = (
+            subscription.time_end.value.datetime
+            - subscription.time_start.value.datetime
+            if "time_start" in subscription
+            and subscription.time_start is not None
+            and "time_end" in subscription
+            and subscription.time_end is not None
+            else None
+        )
         # In case of success, we obtained the effectively created subscription:
-        if _24H_MIN_TOLERANCE_S < duration.total_seconds() < _24H_MAX_TOLERANCE_S:
+        if (
+            duration is not None
+            and _24H_MIN_TOLERANCE_S < duration.total_seconds() < _24H_MAX_TOLERANCE_S
+        ):
             # All is good
             pass
         else:
@@ -204,12 +224,12 @@ class SubscriptionValidation(TestScenario):
                 details=f"{self._dss.participant_id} DSS instance has returned a non-properly truncated subscription "
                 f"(duration: {duration}) "
                 f"when the expectation was either to fail or to truncate at 24 hours.",
-                query_timestamps=[changed.query.request.timestamp],
+                query_timestamps=[changed.request.timestamp],
             )
             # If a subscription was created, we want to delete it before continuing:
             self.record_query(
                 self._dss.delete_subscription(
-                    sub_id=self._sub_id, sub_version=changed.subscription.version
+                    sub_id=self._sub_id, sub_version=subscription.version
                 )
             )
 
