@@ -1,10 +1,13 @@
 from uas_standards.astm.f3548.v21.api import OperationalIntentReference, Subscription
 
-from monitoring.monitorlib.fetch.rid import FetchedSubscription
+from monitoring.monitorlib.fetch.scd import FetchedSubscription
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
 from monitoring.monitorlib.subscription_params import SubscriptionParams
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
-from monitoring.uss_qualifier.scenarios.scenario import TestScenarioType
+from monitoring.uss_qualifier.scenarios.scenario import (
+    ScenarioCannotContinueError,
+    TestScenarioType,
+)
 
 # TODO: add functions implementing checks documented in this package
 
@@ -40,15 +43,18 @@ def sub_get_query(
     with scenario.check("Get Subscription by ID", dss.participant_id) as check:
         fetched_sub = dss.get_subscription(sub_id)
         scenario.record_query(fetched_sub)
-        if not fetched_sub.success:
+        subscription = fetched_sub.subscription
+        if not fetched_sub.success or subscription is None:
             check.record_failed(
                 summary="Subscription query failed",
-                details=f"Failed to query subscription {sub_id} referenced by oid {scenario._oir_a_id} with code {fetched_sub.response.status_code}. Message: {fetched_sub.error_message}",
-                query_timestamps=fetched_sub.query_timestamps,
+                details=f"Failed to query subscription {sub_id} with code {fetched_sub.status_code}: {', '.join(fetched_sub.errors)}",
+                query_timestamps=[fetched_sub.request.timestamp],
             )
-            return None
+            raise ScenarioCannotContinueError(
+                "Cannot continue without the requested subscription"
+            )
 
-        return fetched_sub.subscription, fetched_sub
+        return subscription, fetched_sub
 
 
 def sub_delete_query(

@@ -1064,7 +1064,9 @@ class OIRImplicitSubHandling(TestScenario):
         check_sub_changed(oir_queried, q)
 
         # Now fetch the subscription and check it is implicit
-        fetched_sub, _ = sub_get_query(self, self._dss, oir_queried.subscription_id)
+        fetched_sub, sub_query = sub_get_query(
+            self, self._dss, oir_queried.subscription_id
+        )
 
         with self.check(
             "OIR is now attached to an implicit subscription", self._pid
@@ -1073,7 +1075,7 @@ class OIRImplicitSubHandling(TestScenario):
                 check.record_failed(
                     summary="OIR is not attached to an implicit subscription",
                     details=f"Subscription {self._sub_id} referenced by OIR {self._oir_a_id} is not an implicit subscription.",
-                    query_timestamps=[fetched_sub.request.timestamp],
+                    query_timestamps=[sub_query.request.timestamp],
                 )
 
         self.end_test_step()
@@ -1139,7 +1141,9 @@ class OIRImplicitSubHandling(TestScenario):
         check_sub_not_none(oir_queried)
 
         # Now fetch the subscription and check it is implicit
-        fetched_sub, _ = sub_get_query(self, self._dss, oir_queried.subscription_id)
+        fetched_sub, sub_query = sub_get_query(
+            self, self._dss, oir_queried.subscription_id
+        )
 
         with self.check(
             "OIR is now attached to an implicit subscription", self._pid
@@ -1148,7 +1152,7 @@ class OIRImplicitSubHandling(TestScenario):
                 check.record_failed(
                     summary="OIR is not attached to an implicit subscription",
                     details=f"Subscription {self._sub_id} referenced by OIR {self._oir_a_id} is not an implicit subscription.",
-                    query_timestamps=[fetched_sub.request.timestamp],
+                    query_timestamps=[sub_query.request.timestamp],
                 )
 
         self.end_test_step()

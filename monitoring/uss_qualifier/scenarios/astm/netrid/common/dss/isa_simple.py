@@ -233,7 +233,7 @@ class ISASimple(GenericTestScenario):
                     check.record_failed(
                         f"ISAs search did not return expected ISA {self._isa_id}",
                         details=f"Search in area {self._isa_area} from time {earliest} returned ISAs {isas.isas.keys()}",
-                        query_timestamps=[isas.dss_query.query.request.timestamp],
+                        query_timestamps=[isas.query.request.timestamp],
                     )
                 else:
                     isa_validator = ISAValidator(
@@ -272,7 +272,7 @@ class ISASimple(GenericTestScenario):
                     check.record_failed(
                         f"ISAs search returned unexpected ISA {self._isa_id}",
                         details=f"Search in area {self._isa_area} from time {earliest} returned ISAs {isas.isas.keys()}",
-                        query_timestamps=[isas.dss_query.query.request.timestamp],
+                        query_timestamps=[isas.query.request.timestamp],
                     )
 
             self.end_test_step()
@@ -299,7 +299,7 @@ class ISASimple(GenericTestScenario):
                     check.record_failed(
                         f"ISAs search did not return expected ISA {self._isa_id}",
                         details=f"Search in area {self._isa_area} to time {latest} returned ISAs {isas.isas.keys()}",
-                        query_timestamps=[isas.dss_query.query.request.timestamp],
+                        query_timestamps=[isas.query.request.timestamp],
                     )
                 else:
                     isa_validator = ISAValidator(
@@ -338,7 +338,7 @@ class ISASimple(GenericTestScenario):
                     check.record_failed(
                         f"ISAs search returned unexpected ISA {self._isa_id}",
                         details=f"Search in area {self._isa_area} to time {latest} returned ISAs {isas.isas.keys()}",
-                        query_timestamps=[isas.dss_query.query.request.timestamp],
+                        query_timestamps=[isas.query.request.timestamp],
                     )
 
             self.end_test_step()
@@ -363,7 +363,7 @@ class ISASimple(GenericTestScenario):
                     check.record_failed(
                         f"ISAs search did not return expected ISA {self._isa_id}",
                         details=f"Search in area {self._isa_area} returned ISAs {isas.isas.keys()}",
-                        query_timestamps=[isas.dss_query.query.request.timestamp],
+                        query_timestamps=[isas.query.request.timestamp],
                     )
                 else:
                     isa_validator = ISAValidator(
@@ -530,7 +530,7 @@ class ISASimple(GenericTestScenario):
                     check.record_failed(
                         f"ISAs search returned deleted ISA {self._isa_id}",
                         details=f"Search in area {self._isa_area} returned ISAs {isas.isas.keys()}",
-                        query_timestamps=[isas.dss_query.query.request.timestamp],
+                        query_timestamps=[isas.query.request.timestamp],
                     )
 
             self.end_test_step()
