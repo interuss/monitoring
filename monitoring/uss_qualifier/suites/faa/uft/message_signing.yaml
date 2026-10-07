@@ -8,7 +8,10 @@ resources:
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
   conflicting_flights: resources.flight_planning.FlightIntentsResource
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
-  priority_preemption_flights: resources.flight_planning.FlightIntentsResource
+
+  # This resource should provide resources.flight_planning.FlightIntentsResource instances
+  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource?
+
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
   id_generator: resources.interuss.IDGeneratorResource
   utm_client_identity: resources.communications.ClientIdentityResource
@@ -28,7 +31,7 @@ actions:
       mock_uss: mock_uss
       conflicting_flights: conflicting_flights
       non_conflicting_flights: non_conflicting_flights
-      priority_preemption_flights: priority_preemption_flights
+      priority_preemption_flights_provider: priority_preemption_flights_provider?
       flight_planners: flight_planners
       flight_planners_to_clear: flight_planners
       nominal_planning_selector: combination_selector

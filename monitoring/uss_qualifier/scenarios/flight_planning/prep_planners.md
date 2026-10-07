@@ -30,6 +30,10 @@ FlightIntentsResource containing flight intents that will be used in subsequent 
 
 (Optional) If more than one FlightIntentsResource will be used in subsequent tests, additional intents may be specified with this resource.
 
+### flight_intents_provider
+
+(Optional) ResourceProvidingResource providing FlightIntentsResource according to `index`.
+
 ## Preparation test case
 
 ### Check for flight planning readiness test step

@@ -3,7 +3,10 @@ resources:
   test_env_version_providers: resources.versioning.VersionProvidersResource?
   prod_env_version_providers: resources.versioning.VersionProvidersResource?
   conflicting_flights: resources.flight_planning.FlightIntentsResource
-  priority_preemption_flights: resources.flight_planning.FlightIntentsResource
+
+  # This resource should provide resources.flight_planning.FlightIntentsResource instances
+  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource?
+
   invalid_flight_auth_flights: resources.flight_planning.FlightIntentsResource
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
@@ -27,7 +30,7 @@ actions:
       test_env_version_providers: test_env_version_providers?
       prod_env_version_providers: prod_env_version_providers?
       conflicting_flights: conflicting_flights
-      priority_preemption_flights: priority_preemption_flights
+      priority_preemption_flights_provider: priority_preemption_flights_provider?
       invalid_flight_intents: invalid_flight_intents
       non_conflicting_flights: non_conflicting_flights
       flight_planners: flight_planners?

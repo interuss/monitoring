@@ -1,0 +1,24 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/action_generators/definitions/PerCombinationResource.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.action_generators.definitions.PerCombinationResource, as defined in monitoring/uss_qualifier/action_generators/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "provided_resource": {
+      "description": "ID assigned to the provided/generated resource, as it will be accessed by the action run for the resource combination.",
+      "type": "string"
+    },
+    "resource_provider": {
+      "description": "ID of the resource in the pool that will generate a resource for the particular resource combination.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "provided_resource",
+    "resource_provider"
+  ],
+  "type": "object"
+}
