@@ -3,6 +3,7 @@ v1:
     resources:
       resource_declarations:
         che_conflicting_flights: {$ref: 'library/resources.yaml#/che_conflicting_flights'}
+        che_conflicting_flights_provider: {$ref: 'library/resources.yaml#/che_conflicting_flights_provider'}
         che_invalid_flight_intents: {$ref: 'library/resources.yaml#/che_invalid_flight_intents'}
         che_non_conflicting_flights: {$ref: 'library/resources.yaml#/che_non_conflicting_flights'}
         che_problematically_big_area: {$ref: 'library/resources.yaml#/che_problematically_big_area'}
@@ -54,7 +55,7 @@ v1:
           conflicting_flights: che_conflicting_flights
           invalid_flight_intents: che_invalid_flight_intents
           non_conflicting_flights: che_non_conflicting_flights
-          priority_preemption_flights: che_conflicting_flights
+          priority_preemption_flights_provider: che_conflicting_flights_provider
           dss: scd_dss
           dss_instances: scd_dss_instances
           id_generator: id_generator
@@ -79,4 +80,4 @@ v1:
         pass_condition:
           elements:
             count:
-              equal_to: 6 # 2 DatastoreAccess, 1 PoolInfo, 1 GetSystemVersions, 1 MakeUssReport, 1 EvaluateSystemVersions
+              equal_to: 7 # 2 DatastoreAccess, 1 PoolInfo, 1 GetSystemVersions, 1 SCDAuthenticationValidation, 1 MakeUssReport, 1 EvaluateSystemVersions

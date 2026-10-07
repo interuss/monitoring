@@ -22,6 +22,16 @@
       "description": "ID of the resource providing all available flight planners",
       "type": "string"
     },
+    "per_index_resources": {
+      "description": "Resources that generate flight-planner-combination-specific resources according to the index of the flight planner combination.\nThe generated resource is added to the pool of resources available to provide to the Action, but must be provided to the Action explicitly.\n\nMust be a ResourceProvidingResource whose `provide_resource_for` accepts an int `index` argument.",
+      "items": {
+        "$ref": "../../definitions/PerCombinationResource.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
     "roles": {
       "description": "Resource IDs of FlightPlannerResource inputs to the action_to_repeat",
       "items": {

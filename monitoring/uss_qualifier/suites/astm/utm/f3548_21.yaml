@@ -9,7 +9,10 @@ resources:
   interuss_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
   conflicting_flights: resources.flight_planning.FlightIntentsResource
-  priority_preemption_flights: resources.flight_planning.FlightIntentsResource?
+
+  # This resource should provide resources.flight_planning.FlightIntentsResource instances
+  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource?
+
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
   nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
@@ -46,9 +49,9 @@ actions:
       mock_uss: mock_uss?
       dss: dss
       flight_intents: invalid_flight_intents
-      flight_intents2: priority_preemption_flights?
-      flight_intents3: conflicting_flights?
-      flight_intents4: non_conflicting_flights?
+      flight_intents2: conflicting_flights?
+      flight_intents3: non_conflicting_flights?
+      flight_intents_provider: priority_preemption_flights_provider?
   on_failure: Continue
 - action_generator:
     generator_type: action_generators.astm.f3548.ForEachDSS
@@ -107,7 +110,7 @@ actions:
     resources:
       flight_planners: flight_planners
       priority_planning_selector: priority_planning_selector?
-      priority_preemption_flights: priority_preemption_flights
+      priority_preemption_flights_provider: priority_preemption_flights_provider
       dss: dss
     specification:
       action_to_repeat:
@@ -124,6 +127,9 @@ actions:
       roles:
         - uss1
         - uss2
+      per_index_resources:
+        - resource_provider: priority_preemption_flights_provider
+          provided_resource: priority_preemption_flights
   on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
@@ -194,6 +200,27 @@ actions:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
       flight_planners: flight_planners
+      utm_auth: utm_auth?
+      dss: dss
+      non_conflicting_flights: non_conflicting_flights
+    specification:
+      action_to_repeat:
+        test_scenario:
+          scenario_type: scenarios.astm.utm.uss_authentication.scd_authentication_validation.SCDAuthenticationValidation
+          resources:
+            tested_uss: tested_uss
+            utm_auth: utm_auth
+            dss: dss
+            flight_intents: non_conflicting_flights
+        on_failure: Continue
+      flight_planners_source: flight_planners
+      roles:
+        - tested_uss
+  on_failure: Continue
+- action_generator:
+    generator_type: action_generators.flight_planning.FlightPlannerCombinations
+    resources:
+      flight_planners: flight_planners
       nominal_planning_selector: nominal_planning_selector?
       conflicting_flights: conflicting_flights
       dss: dss
@@ -239,9 +266,9 @@ actions:
       mock_uss: mock_uss?
       dss: dss
       flight_intents: invalid_flight_intents
-      flight_intents2: priority_preemption_flights?
-      flight_intents3: conflicting_flights?
-      flight_intents4: non_conflicting_flights?
+      flight_intents2: conflicting_flights?
+      flight_intents3: non_conflicting_flights?
+      flight_intents_provider: priority_preemption_flights_provider?
   on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.astm.utm.make_uss_report.MakeUssReport

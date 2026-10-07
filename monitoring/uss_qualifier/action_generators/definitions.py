@@ -29,3 +29,11 @@ class ActionGeneratorDefinition(ImplicitDict):
 
     If the parent resource ID is suffixed with ? then the resource will not be required (and will not be populated for the child action when not present in the parent)
     """
+
+
+class PerCombinationResource(ImplicitDict):
+    resource_provider: ResourceID
+    """ID of the resource in the pool that will generate a resource for the particular resource combination."""
+
+    provided_resource: ResourceID
+    """ID assigned to the provided/generated resource, as it will be accessed by the action run for the resource combination."""
