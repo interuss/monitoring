@@ -12,7 +12,7 @@ Ensures that a USS rejects improperly-authenticated requests to the strategic co
 
 ### utm_auth
 
-[`AuthAdapterResource`](../../../../resources/communications/auth_adapter.py) used to obtain credentials when acting as a peer USS.
+[`AuthAdapterResource`](../../../../resources/communications/auth_adapter.py) used to obtain credentials when acting as a USS to call the endpoints of the USS under test.
 
 ### dss
 
