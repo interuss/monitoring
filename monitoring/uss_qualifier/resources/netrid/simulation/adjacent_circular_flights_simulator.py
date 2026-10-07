@@ -1,3 +1,4 @@
+import math
 import random
 from datetime import timedelta
 
@@ -6,6 +7,7 @@ import shapely.geometry
 from implicitdict import ImplicitDict
 from pyproj import Geod, Proj, Transformer
 from shapely.geometry import Point, Polygon
+from shapely.geometry.base import BaseGeometry
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 
 from monitoring.monitorlib.geo import LatLngPoint
@@ -47,6 +49,7 @@ class AdjacentCircularFlightsSimulator:
             raise ValueError("duration must be at least 1 second")
         self.num_flights = config.num_flights
         self.duration = config.duration
+        self.spiral_inward = config.spiral_inward
 
         self.altitude_agl = 50.0
 
@@ -164,8 +167,10 @@ class AdjacentCircularFlightsSimulator:
         return [speed_mts_per_sec, fwd_azimuth]
 
     def utm_converter(
-        self, shapely_shape: shapely.geometry, inverse: bool = False
-    ) -> shapely.geometry.shape:
+        self,
+        shapely_shape: BaseGeometry,
+        inverse: bool = False,
+    ) -> BaseGeometry:
         """A helper function to convert from lat / lon to UTM coordinates for buffering. tracks. This is the UTM projection (https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system), we use Zone 33T which encompasses Switzerland, this zone has to be set for each locale / city. Adapted from https://gis.stackexchange.com/questions/325926/buffering-geometry-with-points-in-wgs84-using-shapely"""
 
         proj = Proj(proj="utm", zone=self.utm_zone, ellps="WGS84", datum="WGS84")
@@ -187,12 +192,11 @@ class AdjacentCircularFlightsSimulator:
             {"type": point_or_polygon, "coordinates": tuple(new_coordinates)}
         )
 
-    def generate_flight_grid_and_path_points(
-        self, altitude_of_ground_level_wgs_84: float
-    ):
-        """Generate a series of boxes (grid) within the given bounding box to have areas for different flight tracks within each box"""
-        # Arrange cells into a compact grid. The default 6 flights preserves the
-        # previous 3-column by 2-row layout.
+    def _generate_grid_cells(self) -> list[Polygon]:
+        """Arrange cells into a compact grid based on num_flights and bounding box extents.
+
+        The default 6 flights preserves the previous 3-column by 2-row layout.
+        """
         n_rows = round(self.num_flights**0.5)
         n_cols = -(-self.num_flights // n_rows)
         cell_size_x = (self.maxx - self.minx) / n_cols
@@ -207,6 +211,13 @@ class AdjacentCircularFlightsSimulator:
                 x1 = x0 + cell_size_x
                 y1 = y0 + cell_size_y
                 grid_cells.append(shapely.geometry.box(x0, y0, x1, y1))
+        return grid_cells
+
+    def generate_flight_grid_and_path_points(
+        self, altitude_of_ground_level_wgs_84: float
+    ):
+        """Generate a series of boxes (grid) within the given bounding box to have areas for different flight tracks within each box"""
+        grid_cells = self._generate_grid_cells()
 
         all_grid_cell_tracks = []
         """ For each of the boxes (grid) allocated to the operator, get the centroid and buffer to generate a flight path. A 50 m radius is provided to have flight paths within each of the boxes """
@@ -214,35 +225,66 @@ class AdjacentCircularFlightsSimulator:
         for grid_cell in grid_cells:
             center = grid_cell.centroid
             center_utm = self.utm_converter(center)
-            buffer_shape_utm = center_utm.buffer(50)
-            buffered_path = self.utm_converter(buffer_shape_utm, inverse=True)
+            assert isinstance(center_utm, Point)
             altitude = (
                 altitude_of_ground_level_wgs_84 + self.altitude_agl
             )  # meters WGS 84
             flight_points_with_altitude = []
-            x, y = buffered_path.exterior.coords.xy
 
-            for coord in range(0, len(x)):
-                cur_coord = coord
-                next_coord = coord + 1
-                next_coord = 0 if next_coord == len(x) else next_coord
-                adjacent_points = [
-                    Point(x[cur_coord], y[cur_coord]),
-                    Point(x[next_coord], y[next_coord]),
+            if self.spiral_inward:
+                utm_points = []
+                for t in range(self.duration + 1):
+                    x_t, y_t = _spiral_2d_position(t, r0=50.0, speed=5.0, dt=1.0)
+                    utm_points.append(Point(center_utm.x + x_t, center_utm.y + y_t))
+
+                wgs84_points = [
+                    self.utm_converter(pt, inverse=True) for pt in utm_points
                 ]
-                flight_speed, bearing = self.generate_flight_speed_bearing(
-                    adjacent_points=adjacent_points, delta_time_secs=1
-                )
+                for t in range(self.duration):
+                    pt_curr = wgs84_points[t]
+                    pt_next = wgs84_points[t + 1]
 
-                flight_points_with_altitude.append(
-                    FlightPoint(
-                        lat=y[coord],
-                        lng=x[coord],
-                        alt=altitude,
-                        speed=flight_speed,
-                        bearing=bearing,
+                    flight_speed, bearing = self.generate_flight_speed_bearing(
+                        adjacent_points=[pt_curr, pt_next], delta_time_secs=1
                     )
-                )
+
+                    assert isinstance(pt_curr, Point)
+                    flight_points_with_altitude.append(
+                        FlightPoint(
+                            lat=pt_curr.y,
+                            lng=pt_curr.x,
+                            alt=altitude,
+                            speed=flight_speed,
+                            bearing=bearing,
+                        )
+                    )
+            else:
+                buffer_shape_utm = center_utm.buffer(50)
+                buffered_path = self.utm_converter(buffer_shape_utm, inverse=True)
+                assert isinstance(buffered_path, Polygon)
+                x, y = buffered_path.exterior.coords.xy
+
+                for coord in range(0, len(x)):
+                    cur_coord = coord
+                    next_coord = coord + 1
+                    next_coord = 0 if next_coord == len(x) else next_coord
+                    adjacent_points = [
+                        Point(x[cur_coord], y[cur_coord]),
+                        Point(x[next_coord], y[next_coord]),
+                    ]
+                    flight_speed, bearing = self.generate_flight_speed_bearing(
+                        adjacent_points=adjacent_points, delta_time_secs=1
+                    )
+
+                    flight_points_with_altitude.append(
+                        FlightPoint(
+                            lat=y[coord],
+                            lng=x[coord],
+                            alt=altitude,
+                            speed=flight_speed,
+                            bearing=bearing,
+                        )
+                    )
 
             all_grid_cell_tracks.append(
                 GridCellFlight(bounds=grid_cell, track=flight_points_with_altitude)
@@ -290,12 +332,6 @@ class AdjacentCircularFlightsSimulator:
         for i in range(num_flights):
             flight_positions_len = len(self.grid_cells_flight_tracks[i].track)
 
-            # in a circular flight pattern increment direction
-            angle_increment = 360 / flight_positions_len
-
-            # the resolution of track is 1 degree minimum
-            angle_increment = 1.0 if angle_increment == 0.0 else angle_increment
-
             if i not in flight_track_details:
                 flight_track_details[i] = {}
             flight_track_details[i]["track_length"] = flight_positions_len
@@ -310,43 +346,50 @@ class AdjacentCircularFlightsSimulator:
                 timestamp_isoformat = timestamp.shift(
                     seconds=k * self.flight_start_shift_time
                 ).isoformat()
-                list_end = (
-                    flight_track_details[k]["track_length"] - flight_current_index[k]
+
+                if not self.spiral_inward:
+                    # we loop the tracks when not spiraling inwards
+                    list_end = (
+                        flight_track_details[k]["track_length"]
+                        - flight_current_index[k]
+                    )
+
+                    if list_end != 1:
+                        flight_point = self.grid_cells_flight_tracks[k].track[
+                            flight_current_index[k]
+                        ]
+                        flight_current_index[k] += 1
+                    else:
+                        flight_current_index[k] = 0
+                        continue
+                else:
+                    flight_point = self.grid_cells_flight_tracks[k].track[j]
+
+                aircraft_position = injection.RIDAircraftPosition(
+                    lat=flight_point.lat,
+                    lng=flight_point.lng,
+                    alt=flight_point.alt,
+                    accuracy_h=injection.HorizontalAccuracy.HAUnknown,
+                    accuracy_v=injection.VerticalAccuracy.VAUnknown,
+                    extrapolated=False,
+                )
+                aircraft_height = injection.RIDHeight(
+                    distance=self.altitude_agl, reference="TakeoffLocation"
                 )
 
-                if list_end != 1:
-                    flight_point = self.grid_cells_flight_tracks[k].track[
-                        flight_current_index[k]
-                    ]
-                    aircraft_position = injection.RIDAircraftPosition(
-                        lat=flight_point.lat,
-                        lng=flight_point.lng,
-                        alt=flight_point.alt,
-                        accuracy_h=injection.HorizontalAccuracy.HAUnknown,
-                        accuracy_v=injection.VerticalAccuracy.VAUnknown,
-                        extrapolated=False,
-                    )
-                    aircraft_height = injection.RIDHeight(
-                        distance=self.altitude_agl, reference="TakeoffLocation"
-                    )
+                rid_aircraft_state = injection.RIDAircraftState(
+                    timestamp=timestamp_isoformat,
+                    operational_status="Airborne",
+                    position=aircraft_position,
+                    height=aircraft_height,
+                    track=flight_point.bearing,
+                    speed=flight_point.speed,
+                    timestamp_accuracy=0.0,
+                    speed_accuracy="SA3mps",
+                    vertical_speed=0.0,
+                )
 
-                    rid_aircraft_state = injection.RIDAircraftState(
-                        timestamp=timestamp_isoformat,
-                        operational_status="Airborne",
-                        position=aircraft_position,
-                        height=aircraft_height,
-                        track=flight_point.bearing,
-                        speed=flight_point.speed,
-                        timestamp_accuracy=0.0,
-                        speed_accuracy="SA3mps",
-                        vertical_speed=0.0,
-                    )
-
-                    all_flight_telemetry[k].append(rid_aircraft_state)
-
-                    flight_current_index[k] += 1
-                else:
-                    flight_current_index[k] = 0
+                all_flight_telemetry[k].append(rid_aircraft_state)
 
         flights = []
         for m in range(num_flights):
@@ -358,6 +401,49 @@ class AdjacentCircularFlightsSimulator:
             )
             flights.append(flight)
         self.flights = flights
+
+
+def _spiral_2d_position(
+    t: float,
+    r0: float,
+    speed: float,
+    dt: float,
+) -> tuple[float, float]:
+    """Calculate the 2D position (x, y) relative to origin of an aircraft spiraling inward at constant speed.
+
+    The aircraft moves at a constant speed and spirals inward around the origin
+    initially with radius r0. The circular radius decreases by dt * speed each
+    circle (2*pi radians). The starting position is (r0, 0).
+    """
+    b = dt * speed / (2 * math.pi)
+
+    def g(u: float) -> float:
+        return 0.5 * (u * math.hypot(u, b) + (b**2) * math.asinh(u / b))
+
+    g_r0 = g(r0)
+    max_duration = int(g_r0 / (b * speed))
+    if t > max_duration:
+        raise ValueError(
+            f"Duration ({t}) exceeds maximum spiral duration of {max_duration} seconds before reaching the center"
+        )
+
+    target = g_r0 - b * speed * t
+    if target <= 0:
+        return 0.0, 0.0
+
+    # Solve g(u) = target using Newton-Raphson
+    u = math.sqrt(max(0.0, r0**2 - 2 * b * speed * t))
+    for _ in range(10):
+        val = g(u) - target
+        if abs(val) < 1e-9:
+            break
+        deriv = math.hypot(u, b)
+        u -= val / deriv
+
+    theta = (r0 - u) / b
+    x = u * math.cos(theta)
+    y = u * math.sin(theta)
+    return x, y
 
 
 def generate_aircraft_states(
