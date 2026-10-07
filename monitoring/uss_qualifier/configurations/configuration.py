@@ -121,7 +121,18 @@ class TestSuiteActionSelectionCondition(ImplicitDict):
     """Do not select actions selected by any of these conditions, even when they are selected by one or more conditions above."""
 
 
+class ParallelismRule(ImplicitDict):
+    max_parallelism: int
+    """Maximum number of actions to execute simultaneously at the selected level."""
+
+    conditions: list[TestSuiteActionSelectionCondition]
+    """Apply the parallelism in this rule when any of these conditions are met."""
+
+
 class ExecutionConfiguration(ImplicitDict):
+    parallelism_rules: Optional[list[ParallelismRule]]
+    """Rules defining what level of parallelism should be used when executing actions.  Rules earlier in the list take precedence."""
+
     include_action_when: Optional[list[TestSuiteActionSelectionCondition]] = None
     """If specified, only execute test actions if they are selected by ANY of these conditions (and not selected by any of the `skip_when` conditions)."""
 

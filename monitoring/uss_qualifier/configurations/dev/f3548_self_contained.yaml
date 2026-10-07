@@ -296,6 +296,14 @@ v1:
       # But, don't stop_fast for findings that are acceptable according to any of the tested_requirements.
       do_not_stop_fast_for_acceptable_findings: true
 
+      # Allow certain actions to execute their sub-actions in parallel.
+      parallelism_rules:
+        - max_parallelism: 2
+          conditions:
+            - is_action_generator:
+                types:
+                  - action_generators.resource_environments.ResourceEnvironmentsActionGenerator
+
   # This block defines artifacts related to the test run.  Note that all paths are
   # relative to where uss_qualifier is executed from, and are located inside the
   # Docker container executing uss_qualifier.

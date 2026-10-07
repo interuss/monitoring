@@ -4,8 +4,11 @@ import json
 import os
 import re
 from collections.abc import Iterator
+from concurrent.futures import Future, ThreadPoolExecutor
+from copy import copy
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from threading import Condition
 
 import arrow
 import yaml
@@ -124,7 +127,7 @@ class TestSuiteAction[T: ActionGenerator]:
             )
 
     def run(self, context: ExecutionContext) -> TestSuiteActionReport:
-        context.begin_action(self)
+        """Run an action whose frame has already been registered in the context."""
         skip_report = context.evaluate_skip()
         if skip_report:
             logger.warning(
@@ -355,28 +358,81 @@ def _run_actions(
     context: ExecutionContext,
     report: TestSuiteReport | ActionGeneratorReport,
 ) -> None:
-    success = True
-    for action in actions:
-        if isinstance(action, SkippedActionReport):
-            action_report = TestSuiteActionReport(skipped_action=action)
-        elif context.should_stop_early_now():
-            assert context.current_frame
-            action_report = TestSuiteActionReport(
-                skipped_action=SkippedActionReport(
-                    timestamp=StringBasedDateTime(arrow.utcnow().datetime),
-                    reason=TEST_RUN_TIMEOUT_SKIP_REASON,
-                    declaration=context.current_frame.action.declaration,
-                )
-            )
-        else:
-            action_report = action.run(context)
-        report.actions.append(action_report)
-        if action_report.has_critical_problem():
-            success = False
-            break
-        if not action_report.successful():
-            success = False
-    report.successful = success
+    max_parallelism = context.max_parallelism()
+
+    # Each invocation has its own capacity, including nested suites and generators.
+    condition = Condition()  # Coordination signal for action-continuation checks
+    active = 0  # Number of active actions
+    stop_dispatch = False  # Flag to stop dispatching actions
+    results: list[Future[TestSuiteActionReport] | TestSuiteActionReport] = []
+
+    def run_action(
+        action: TestSuiteAction, action_context: ExecutionContext
+    ) -> TestSuiteActionReport:
+        nonlocal active, stop_dispatch
+        try:
+            action_report = action.run(action_context)
+            with condition:
+                stop_dispatch |= action_report.has_critical_problem()
+            return action_report
+        except BaseException:
+            with condition:
+                stop_dispatch = True
+            raise
+        finally:
+            with condition:
+                active -= 1
+                condition.notify()
+
+    with ThreadPoolExecutor(max_workers=max_parallelism) as executor:
+        while True:
+            # Wait until we're below max parallelism to dispatch the next action
+            with condition:
+                condition.wait_for(lambda: active < max_parallelism or stop_dispatch)
+                if stop_dispatch:
+                    break
+
+            # Advance to next action using actions as a lazy generator
+            try:
+                action = next(actions)
+            except StopIteration:
+                break
+
+            with condition:
+                # An action may have completed while the generator was advancing.
+                if stop_dispatch:
+                    break
+                if isinstance(action, SkippedActionReport):
+                    results.append(TestSuiteActionReport(skipped_action=action))
+                else:
+                    # Register frames before submitting so addresses follow dispatch order.
+                    action_context = context.fork(
+                        action, len(report.actions) + len(results)
+                    )
+                    if context.should_stop_early_now():
+                        action_report = TestSuiteActionReport(
+                            skipped_action=SkippedActionReport(
+                                timestamp=StringBasedDateTime(arrow.utcnow().datetime),
+                                reason=TEST_RUN_TIMEOUT_SKIP_REASON,
+                                declaration=action.declaration,
+                            )
+                        )
+                        action_context.end_action(action, action_report)
+                        results.append(action_report)
+                    else:
+                        active += 1
+                        results.append(
+                            executor.submit(run_action, action, action_context)
+                        )
+
+        # Already-dispatched actions finish even when subsequent dispatch is stopped.
+        report.actions.extend(
+            result.result() if isinstance(result, Future) else result
+            for result in results
+        )
+    report.successful = all(
+        not a.has_critical_problem() and a.successful() for a in report.actions
+    )
     report.end_time = StringBasedDateTime(datetime.now(UTC))
 
 
@@ -386,6 +442,7 @@ class ActionStackFrame:
     parent: ActionStackFrame | None
     children: list[ActionStackFrame]
     report: TestSuiteActionReport | None = None
+    index: int = 0
 
     def address(self) -> JSONAddress:
         if self.action.test_scenario is not None:
@@ -402,16 +459,7 @@ class ActionStackFrame:
         if self.parent is None:
             return addr
 
-        index = -1
-        for a, child in enumerate(self.parent.children):
-            if child is self:
-                index = a
-                break
-        if index == -1:
-            raise RuntimeError(
-                "ActionStackFrame was not listed as a child of its parent"
-            )
-        return f"{self.parent.address()}.actions[{index}].{addr}"
+        return f"{self.parent.address()}.actions[{self.index}].{addr}"
 
 
 class ExecutionContext:
@@ -431,6 +479,12 @@ class ExecutionContext:
         self.top_frame = None
         self.current_frame = None
         self.start_time = arrow.utcnow().datetime
+
+    def fork(self, action: TestSuiteAction, index: int) -> ExecutionContext:
+        """Share the report tree and run configuration, but keep a private frame cursor."""
+        context = copy(self)
+        context.begin_action(action, index)
+        return context
 
     def sibling_queries(self) -> Iterator[Query]:
         if self.current_frame is None or self.current_frame.parent is None:
@@ -503,6 +557,19 @@ class ExecutionContext:
             return False
         dt = arrow.utcnow() - self.start_time
         return dt >= self.config.stop_after.timedelta
+
+    def max_parallelism(self) -> int:
+        if not self.config or not self.config.parallelism_rules:
+            return 1
+        if not self.current_frame:
+            return 1
+        for rule in self.config.parallelism_rules:
+            if any(
+                self._is_selected_by(self.current_frame, condition)
+                for condition in rule.conditions
+            ):
+                return rule.max_parallelism
+        return 1
 
     def _compute_n_of(
         self, target: TestSuiteAction, condition: TestSuiteActionSelectionCondition
@@ -692,13 +759,18 @@ class ExecutionContext:
 
         return None
 
-    def begin_action(self, action: TestSuiteAction) -> None:
+    def begin_action(self, action: TestSuiteAction, index: int | None = None) -> None:
         if self.top_frame is None:
             self.top_frame = ActionStackFrame(action=action, parent=None, children=[])
             self.current_frame = self.top_frame
         else:
+            if index is None:
+                index = len(self.current_frame.children) if self.current_frame else 0
             self.current_frame = ActionStackFrame(
-                action=action, parent=self.current_frame, children=[]
+                action=action,
+                parent=self.current_frame,
+                children=[],
+                index=index,
             )
             if self.current_frame.parent:
                 self.current_frame.parent.children.append(self.current_frame)
