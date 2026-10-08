@@ -1,5 +1,6 @@
 import datetime
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 import arrow
@@ -22,6 +23,7 @@ from monitoring.monitorlib.fetch.rid import (
     Position,
     all_flights,
 )
+from monitoring.monitorlib.fetch.rid import Flight as SPFlight
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.temporal import Time
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -74,7 +76,7 @@ class DPObservedFlight:
         return self.query.flights[self.flight_index].most_recent_position
 
     @property
-    def flight(self) -> fetch.rid.Flight:
+    def flight(self) -> SPFlight:
         return self.query.flights[self.flight_index]
 
     # TODO we may rather want to expose the whole flight object (self.query.flights[self.flight])
@@ -96,10 +98,10 @@ ObservationType = Flight | DPObservedFlight
 
 
 @dataclass
-class TelemetryMapping:
+class TelemetryMapping[ObservationT: ObservationType]:
     injected_flight: InjectedFlight
     telemetry_index: int
-    observed_flight: ObservationType
+    observed_flight: ObservationT
 
 
 @dataclass
@@ -113,10 +115,10 @@ class FetchedToInjectedCache:
     """Unmapped is the list of flights or flight details we didn't attributed yet"""
 
 
-def map_observations_to_injected_flights(
+def map_observations_to_injected_flights[ObservationT: ObservationType](
     injected_flights: list[InjectedFlight],
-    observed_flights: list[ObservationType],
-) -> dict[str, TelemetryMapping]:
+    observed_flights: Sequence[ObservationT],
+) -> dict[str, TelemetryMapping[ObservationT]]:
     """Identify which of the observed flights (if any) matches to each of the injected flights
 
     This function assumes there is no valid situation in which a particular observed flight could be one of multiple
@@ -129,7 +131,7 @@ def map_observations_to_injected_flights(
 
     Returns: Mapping between InjectedFlight and observed Flight, indexed by injection_id.
     """
-    mapping: dict[str, TelemetryMapping] = {}
+    mapping: dict[str, TelemetryMapping[ObservationT]] = {}
     for injected_flight in injected_flights:
         smallest_distance = 1e9
         best_match = None
@@ -194,7 +196,7 @@ def check_fetched_flights(
                 summary="Could not query ISAs from DSS",
                 details=f"Query to {dss_participant_id}'s DSS at failed: {', '.join(fetched_flights.dss_isa_query.errors)}",
                 query_timestamps=[
-                    fetched_flights.dss_isa_query.request.initiated_at.datetime
+                    fetched_flights.dss_isa_query.query.request.timestamp
                 ],
             )
 
@@ -235,7 +237,7 @@ def map_fetched_to_injected_flights(
     fetched_flights: list[FetchedUSSFlights],
     fetched_flights_details: list[FetchedUSSFlightDetails],
     query_cache: FetchedToInjectedCache,
-) -> dict[str, TelemetryMapping]:
+) -> dict[str, TelemetryMapping[DPObservedFlight]]:
     """Identify which of the fetched flights (if any) matches to each of the injected flights.
 
     See `map_observations_to_injected_flights`.
@@ -518,7 +520,7 @@ class RIDObservationEvaluator:
                         details=(
                             f"{mapping.injected_flight.uss_participant_id}'s flight with injection ID "
                             f"{mapping.injected_flight.flight.injection_id} in test {mapping.injected_flight.test_id} had telemetry index {mapping.telemetry_index} at {injected_telemetry.timestamp} "
-                            f"with extrapolated position state, but Service Provider reported non-extrapolated telemetry at {mapping.observed_flight.query.query.request.initiated_at}. "
+                            f"without extrapolated position state, but the observation reported extrapolated telemetry at {query.request.timestamp}. "
                             f"Extrapolation State: Injected={injected_telemetry_extrapolated}, Observed={observed_telemetry_extrapolated}"
                         ),
                     )
@@ -816,7 +818,7 @@ class RIDObservationEvaluator:
         self,
         requested_area: s2sphere.LatLngRect,
         sp_observation: FetchedFlights,
-        mappings: dict[str, TelemetryMapping],
+        mappings: dict[str, TelemetryMapping[DPObservedFlight]],
     ) -> None:
         # Note: This step currently uses the DSS endpoint to perform a one-time query for ISAs, but this
         # endpoint is not strictly required.  The PUT Subscription endpoint, followed immediately by the
@@ -842,7 +844,7 @@ class RIDObservationEvaluator:
         self,
         requested_area: s2sphere.LatLngRect,
         sp_observation: FetchedFlights,
-        mappings: dict[str, TelemetryMapping],
+        mappings: dict[str, TelemetryMapping[DPObservedFlight]],
     ) -> None:
         _evaluate_flight_presence(
             "uss_qualifier, acting as Display Provider",
@@ -973,7 +975,7 @@ class RIDObservationEvaluator:
 
     def _evaluate_area_too_large_sp_observation(
         self,
-        mappings: dict[str, TelemetryMapping],
+        mappings: dict[str, TelemetryMapping[DPObservedFlight]],
         rect: s2sphere.LatLngRect,
         diagonal: float,
     ) -> None:
@@ -992,7 +994,10 @@ class RIDObservationEvaluator:
                 )
 
     def _evaluate_sp_flight_recent_positions_times(
-        self, f: Flight, query_time: datetime.datetime, participant: ParticipantID
+        self,
+        f: SPFlight,
+        query_time: datetime.datetime,
+        participant: ParticipantID,
     ):
         with self._test_scenario.check(
             "Recent positions timestamps", participant
@@ -1008,7 +1013,10 @@ class RIDObservationEvaluator:
                     )
 
     def _evaluate_sp_flight_recent_positions_crossing_area_boundary(
-        self, requested_area: s2sphere.LatLngRect, f: Flight, participant: ParticipantID
+        self,
+        requested_area: s2sphere.LatLngRect,
+        f: SPFlight,
+        participant: ParticipantID,
     ):
         with self._test_scenario.check(
             "Recent positions for aircraft crossing the requested area boundary show only one position before or after crossing",
@@ -1154,7 +1162,7 @@ class DisconnectedUASObservationEvaluator:
     def _evaluate_sp_observation(
         self,
         sp_observation: FetchedFlights,
-        mappings: dict[str, TelemetryMapping],
+        mappings: dict[str, TelemetryMapping[DPObservedFlight]],
     ) -> None:
         # Note: This step currently uses the DSS endpoint to perform a one-time query for ISAs, but this
         # endpoint is not strictly required.  The PUT Subscription endpoint, followed immediately by the
@@ -1167,7 +1175,7 @@ class DisconnectedUASObservationEvaluator:
     def _evaluate_sp_observation_of_disconnected_flights(
         self,
         sp_observation: FetchedFlights,
-        mappings: dict[str, TelemetryMapping],
+        mappings: dict[str, TelemetryMapping[DPObservedFlight]],
     ) -> None:
         # TODO we will want to reuse the code in RIDObservationEvaluator rather than copy-pasting it
         _evaluate_flight_presence(
@@ -1214,11 +1222,17 @@ class DisconnectedUASObservationEvaluator:
                         continue
 
                     if expected_flight.flight.injection_id in mappings:
-                        observed_telemetry_timestamp = Time(
-                            mappings[
-                                expected_flight.flight.injection_id
-                            ].observed_flight.flight.timestamp.datetime
-                        )
+                        observed_timestamp = mappings[
+                            expected_flight.flight.injection_id
+                        ].observed_flight.flight.timestamp
+                        if observed_timestamp is None:
+                            check.record_failed(
+                                summary="Observed flight has no telemetry timestamp",
+                                details="The Service Provider returned the disconnected flight without a current-state timestamp.",
+                                query_timestamps=query_timestamps,
+                            )
+                            continue
+                        observed_telemetry_timestamp = Time(observed_timestamp.datetime)
 
                         # We don't expect the SP's systems to update the injected timestamp value,
                         # but accept that it might do some reasonable roundings.
@@ -1313,7 +1327,7 @@ class NotificationsEvaluator:
         )
 
 
-def _chronological_positions(f: Flight) -> list[s2sphere.LatLng]:
+def _chronological_positions(f: SPFlight) -> list[s2sphere.LatLng]:
     """
     Returns the recent positions of the flight, ordered by time with the oldest first, and the most recent last.
     """
@@ -1330,11 +1344,11 @@ def _sliding_triples(points: list[s2sphere.LatLng]) -> list[list[s2sphere.LatLng
     return [[points[i], points[i + 1], points[i + 2]] for i in range(len(points) - 2)]
 
 
-def _evaluate_flight_presence(
+def _evaluate_flight_presence[ObservationT: ObservationType](
     observer_participant_id: str,
     observation_queries: list[Query],
     observer_participant_is_relevant: bool,
-    mapping_by_injection_id: dict[str, TelemetryMapping],
+    mapping_by_injection_id: dict[str, TelemetryMapping[ObservationT]],
     verified_sps: set[str],
     test_scenario: TestScenario,
     injected_flights: list[InjectedFlight],

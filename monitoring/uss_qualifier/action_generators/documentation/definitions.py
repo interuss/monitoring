@@ -33,3 +33,9 @@ class PotentialGeneratedAction(ImplicitDict):
     test_scenario: Optional[PotentialTestScenarioAction]
     test_suite: Optional[PotentialTestSuiteAction]
     action_generator: Optional[PotentialActionGeneratorAction]
+
+    @property
+    def invalid_type_error(self) -> ValueError:
+        return ValueError(
+            "Invalid PotentialGeneratedAction: test_scenario, test_suite or action_generator must be specified"
+        )

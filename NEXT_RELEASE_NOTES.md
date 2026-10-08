@@ -43,3 +43,5 @@ The release notes should contain at least the following sections:
 ## Optional migration tasks
 
 ## Important information
+
+In uss_qualifier test suite definitions, `on_failure` has been removed, so test suite actions with `Abort` will change behavior under check failures.

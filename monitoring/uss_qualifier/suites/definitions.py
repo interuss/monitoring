@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from enum import StrEnum
-
 from implicitdict import ImplicitDict, Optional
 
 from monitoring.monitorlib.fileio import FileReference, load_dict_with_references
@@ -61,14 +59,6 @@ class TestSuiteDeclaration(ImplicitDict):
             return "<in-configuration definition>"
 
 
-class ReactionToFailure(StrEnum):
-    Continue = "Continue"
-    """If the test suite action fails, continue to the next action in that test suite"""
-
-    Abort = "Abort"
-    """If the test suite action fails, do not execute any more actions in that test suite"""
-
-
 class TestSuiteActionDeclaration(ImplicitDict):
     """Defines a step in the sequence of things to do for a test suite.
 
@@ -83,9 +73,6 @@ class TestSuiteActionDeclaration(ImplicitDict):
 
     action_generator: Optional[ActionGeneratorDefinition]
     """If this field is populated, declaration of a generator that will produce 0 or more test suite actions"""
-
-    on_failure: ReactionToFailure = ReactionToFailure.Continue
-    """What to do if this action fails"""
 
     @property
     def invalid_type_error(self):

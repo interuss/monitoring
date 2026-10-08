@@ -24,14 +24,12 @@ actions:
       resources:
         version_providers: test_env_version_providers
         system_identity: system_identity
-      on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.ServiceProviderNotifiesSlowUpdates
       resources:
         flights_data: flights_data
         service_providers: service_providers
         evaluation_configuration: evaluation_configuration
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.DisplayProviderBehavior
       resources:
@@ -41,7 +39,6 @@ actions:
         dss_pool: dss_instances
         isa: service_area
         uss_identification: uss_identification?
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.NetworkedUASDisconnect
       resources:
@@ -49,14 +46,12 @@ actions:
         service_providers: service_providers
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.SpOperatorNotifyMissingFields
       resources:
         flights_data: flights_data
         service_providers: service_providers
         evaluation_configuration: evaluation_configuration
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.ServiceProviderNotificationBehavior
       resources:
@@ -66,7 +61,6 @@ actions:
         id_generator: id_generator
         dss_pool: dss_instances
         uss_identification: uss_identification
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.NominalBehavior
       resources:
@@ -75,7 +69,6 @@ actions:
         observers: observers?
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances?
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.Misbehavior
       resources:
@@ -83,7 +76,6 @@ actions:
         service_providers: service_providers
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances
-      on_failure: Continue
   - action_generator:
       generator_type: action_generators.astm.f3411.ForEachDSS
       resources:
@@ -112,10 +104,8 @@ actions:
               planning_area: planning_area
               test_exclusions: test_exclusions?
               concurrency_behavior_adjustment: concurrency_behavior_adjustment?
-          on_failure: Continue
         dss_instances_source: dss_instances
         dss_instance_id: dss
-      on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.AggregateChecks
       resources:

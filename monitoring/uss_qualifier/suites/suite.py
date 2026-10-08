@@ -57,7 +57,6 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     get_scenario_type_by_name,
 )
 from monitoring.uss_qualifier.suites.definitions import (
-    ReactionToFailure,
     TestSuiteActionDeclaration,
     TestSuiteDeclaration,
     TestSuiteDefinition,
@@ -357,7 +356,7 @@ def _run_actions(
     report: TestSuiteReport | ActionGeneratorReport,
 ) -> None:
     success = True
-    for a, action in enumerate(actions):
+    for action in actions:
         if isinstance(action, SkippedActionReport):
             action_report = TestSuiteActionReport(skipped_action=action)
         elif context.should_stop_early_now():
@@ -377,14 +376,6 @@ def _run_actions(
             break
         if not action_report.successful():
             success = False
-            if action.declaration.on_failure == ReactionToFailure.Abort:
-                break
-            elif action.declaration.on_failure == ReactionToFailure.Continue:
-                continue
-            else:
-                raise ValueError(
-                    f"Action {a} indicated an unrecognized reaction to failure: {str(action.declaration.on_failure)}"
-                )
     report.successful = success
     report.end_time = StringBasedDateTime(datetime.now(UTC))
 
