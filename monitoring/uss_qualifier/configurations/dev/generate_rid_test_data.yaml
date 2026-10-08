@@ -41,26 +41,22 @@ v1:
                               resources:
                                 flights_data: adjacent_circular_flights_data
                                 storage_configuration: adjacent_circular_storage_config
-                            on_failure: Continue
                           - test_scenario:
                               scenario_type: scenarios.astm.netrid.StoreFlightData
                               resources:
                                 flights_data: kml_flights_data
                                 storage_configuration: kml_storage_config
-                            on_failure: Continue
                       resources:
                         adjacent_circular_flights_data: adjacent_circular_flights_data
                         adjacent_circular_storage_config: adjacent_circular_storage_config
                         kml_flights_data: kml_flights_data
                         kml_storage_config: kml_storage_config
-                    on_failure: Abort
                   times_to_repeat: 2
                 resources:
                   adjacent_circular_flights_data: adjacent_circular_flights_data
                   adjacent_circular_storage_config: adjacent_circular_storage_config
                   kml_flights_data: kml_flights_data
                   kml_storage_config: kml_storage_config
-              on_failure: Continue
     execution:
       stop_fast: true
   validation:

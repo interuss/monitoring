@@ -45,7 +45,6 @@ actions:
     resources:
       version_providers: test_env_version_providers
       system_identity: system_identity
-    on_failure: Continue
 - test_suite:
     suite_type: suites.uspace.flight_auth
     resources:
@@ -69,7 +68,6 @@ actions:
       problematically_big_area: problematically_big_area
       system_identity: system_identity
       test_exclusions: test_exclusions?
-  on_failure: Continue
 - test_suite:
     suite_type: suites.uspace.network_identification
     resources:
@@ -88,7 +86,6 @@ actions:
       mock_uss_dp: mock_uss_dp?
       mock_uss_sp: mock_uss_sp?
       uss_identification: uss_identification?
-  on_failure: Continue
 participant_verifiable_capabilities:
     - id: required_services
       name: U-space Required Services (work in progress)

@@ -1,8 +1,12 @@
 from datetime import UTC, datetime
+from unittest.mock import MagicMock
 
 import s2sphere
+from implicitdict import StringBasedDateTime
+from uas_standards.interuss.automated_testing.rid.v1 import injection, observation
 
-from monitoring.monitorlib.fetch.rid import Flight
+from monitoring.monitorlib.fetch import Query, RequestDescription, ResponseDescription
+from monitoring.monitorlib.fetch.rid import FetchedFlights, FetchedISAs, Flight
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.resources.netrid.evaluation import EvaluationConfiguration
 from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator_test import (
@@ -11,8 +15,101 @@ from monitoring.uss_qualifier.scenarios.astm.netrid.common_dictionary_evaluator_
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid.display_data_evaluator import (
     RIDObservationEvaluator,
+    check_fetched_flights,
 )
+from monitoring.uss_qualifier.scenarios.astm.netrid.injection import InjectedFlight
 from monitoring.uss_qualifier.scenarios.interuss.unit_test import UnitTestScenario
+from monitoring.uss_qualifier.scenarios.scenario import GenericTestScenario
+
+
+# This test is AI-generated and has not been closely inspected by a human.
+def test_failed_dss_search_records_query_timestamp():
+    now = datetime(2026, 10, 7, tzinfo=UTC)
+    query = Query(
+        request=RequestDescription(
+            method="GET",
+            url="https://dss.example/isas",
+            initiated_at=StringBasedDateTime(now),
+        ),
+        response=ResponseDescription(
+            code=500, reported=StringBasedDateTime(now), elapsed_s=0
+        ),
+    )
+    fetched = FetchedFlights(
+        dss_isa_query=FetchedISAs(v22a_query=query),
+        uss_flight_queries={},
+        uss_flight_details_queries={},
+    )
+    scenario = MagicMock(spec=GenericTestScenario)
+
+    check_fetched_flights(fetched, scenario, "dss", False)
+
+    check = scenario.check.return_value.__enter__.return_value
+    check.record_failed.assert_called_once()
+    assert check.record_failed.call_args.kwargs["query_timestamps"] == [now]
+
+
+# This test is AI-generated and has not been closely inspected by a human.
+def test_dp_extrapolation_failure_uses_observation_query():
+    now = datetime(2026, 10, 7, tzinfo=UTC)
+    injected = InjectedFlight(
+        uss_participant_id="sp",
+        test_id="test-id",
+        query_timestamp=now,
+        query_duration_s=0,
+        flight=injection.TestFlight(
+            injection_id="injection-id",
+            telemetry=[
+                injection.RIDAircraftState(
+                    timestamp=StringBasedDateTime(now),
+                    position=injection.RIDAircraftPosition(lat=1, lng=1, alt=100),
+                )
+            ],
+            details_responses=[],
+        ),
+    )
+    observed_position = observation.Position(lat=1, lng=1, alt=100)
+    # Constructors discard undeclared fields; explicitly add unexpected response data
+    # to exercise the extrapolation failure reporting branch.
+    observed_position["extrapolated"] = True
+    observed = observation.Flight(
+        id="observed-id", most_recent_position=observed_position
+    )
+    query = Query(
+        request=RequestDescription(
+            method="GET",
+            url="https://observer.example/display_data",
+            initiated_at=StringBasedDateTime(now),
+        ),
+        response=ResponseDescription(
+            code=200, reported=StringBasedDateTime(now), elapsed_s=0
+        ),
+    )
+    scenario = MagicMock(spec=UnitTestScenario)
+    observer = MagicMock(participant_id="dp", base_url="https://observer.example")
+    evaluator = RIDObservationEvaluator(
+        config=EvaluationConfiguration(),
+        test_scenario=scenario,
+        rid_version=RIDVersion.f3411_22a,
+        injected_flights=[injected],
+    )
+    evaluator._common_dictionary_evaluator = MagicMock()
+    evaluator._retrieved_flight_details[observer.base_url] = {observed.id}
+
+    evaluator._evaluate_normal_observation(
+        observer, observation.GetDisplayDataResponse(flights=[observed]), query, {"sp"}
+    )
+
+    check = scenario.check.return_value.__enter__.return_value
+    failure = next(
+        call
+        for call in check.record_failed.call_args_list
+        if call.args
+        and call.args[0]
+        == "Position Data is using extrapolation when Telemetry is available."
+    )
+    assert str(now) in failure.kwargs["details"]
+    assert "observation reported extrapolated telemetry" in failure.kwargs["details"]
 
 
 def _assert_evaluate_sp_flight_recent_positions(

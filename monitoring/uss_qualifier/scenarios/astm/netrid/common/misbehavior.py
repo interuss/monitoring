@@ -23,6 +23,7 @@ from monitoring.uss_qualifier.scenarios.astm.netrid import (
     injection,
 )
 from monitoring.uss_qualifier.scenarios.astm.netrid.display_data_evaluator import (
+    DPObservedFlight,
     FetchedToInjectedCache,
     TelemetryMapping,
 )
@@ -167,7 +168,9 @@ class Misbehavior(GenericTestScenario):
     def _is_area_too_large(self, rect: s2sphere.LatLngRect) -> bool:
         return geo.get_latlngrect_diagonal_km(rect) > self._rid_version.max_diagonal_km
 
-    def _fetch_flights_from_dss(self, rect: LatLngRect) -> dict[str, TelemetryMapping]:
+    def _fetch_flights_from_dss(
+        self, rect: LatLngRect
+    ) -> dict[str, TelemetryMapping[DPObservedFlight]]:
         # We grab all flights from the SPs (which we know how to reach by first querying the DSS).
         # This is authenticated and is expected to succeed
         sp_observation = rid.all_flights(
@@ -215,7 +218,10 @@ class Misbehavior(GenericTestScenario):
         return set(mapping_by_injection_id.keys())
 
     def _evaluate_too_large_area(
-        self, rect: LatLngRect, injection_id: str, mapping: TelemetryMapping
+        self,
+        rect: LatLngRect,
+        injection_id: str,
+        mapping: TelemetryMapping[DPObservedFlight],
     ):
         participant_id = mapping.injected_flight.uss_participant_id
         flights_url = mapping.observed_flight.query.flights_url

@@ -22,7 +22,6 @@ actions:
         flights_data: flights_data
         service_providers: service_providers
         evaluation_configuration: evaluation_configuration
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v19.DisplayProviderBehavior
       resources:
@@ -32,7 +31,6 @@ actions:
         dss_pool: dss_instances
         isa: service_area
         uss_identification: uss_identification?
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v19.NetworkedUASDisconnect
       resources:
@@ -40,14 +38,12 @@ actions:
         service_providers: service_providers
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v19.SpOperatorNotifyMissingFields
       resources:
         flights_data: flights_data
         service_providers: service_providers
         evaluation_configuration: evaluation_configuration
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v19.ServiceProviderNotificationBehavior
       resources:
@@ -57,7 +53,6 @@ actions:
         id_generator: id_generator
         dss_pool: dss_instances
         uss_identification: uss_identification
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v19.NominalBehavior
       resources:
@@ -66,7 +61,6 @@ actions:
         observers: observers
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances
-    on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v19.Misbehavior
       resources:
@@ -75,7 +69,6 @@ actions:
         observers: observers
         evaluation_configuration: evaluation_configuration
         dss_pool: dss_instances
-      on_failure: Continue
   - action_generator:
       generator_type: action_generators.astm.f3411.ForEachDSS
       resources:
@@ -101,10 +94,8 @@ actions:
               problematically_big_area: problematically_big_area
               planning_area: planning_area
               test_exclusions: test_exclusions?
-          on_failure: Continue
         dss_instances_source: dss_instances
         dss_instance_id: dss
-      on_failure: Continue
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v19.AggregateChecks
       resources:

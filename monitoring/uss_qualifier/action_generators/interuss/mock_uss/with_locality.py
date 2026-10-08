@@ -27,7 +27,6 @@ from monitoring.uss_qualifier.scenarios.scenario import get_scenario_type_name
 from monitoring.uss_qualifier.suites.definitions import TestSuiteActionDeclaration
 from monitoring.uss_qualifier.suites.suite import (
     ActionGenerator,
-    ReactionToFailure,
     TestSuiteAction,
 )
 
@@ -105,7 +104,6 @@ class WithLocality(ActionGenerator[WithLocalitySpecification]):
         action_to_wrap = ImplicitDict.parse(
             specification.action_to_wrap, TestSuiteActionDeclaration
         )
-        action_to_wrap.on_failure = ReactionToFailure.Continue
 
         self._actions = [
             TestSuiteAction(
@@ -117,7 +115,6 @@ class WithLocality(ActionGenerator[WithLocalitySpecification]):
                             "locality": specification.locality_source,
                         },
                     ),
-                    on_failure=ReactionToFailure.Abort,
                 ),
                 resources,
             ),
@@ -128,7 +125,6 @@ class WithLocality(ActionGenerator[WithLocalitySpecification]):
                         scenario_type=get_scenario_type_name(UnconfigureLocality),
                         resources={},
                     ),
-                    on_failure=ReactionToFailure.Continue,
                 ),
                 resources,
             ),

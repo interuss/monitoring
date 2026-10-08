@@ -58,12 +58,16 @@ class VirtualUser(ABC):
     async def sleep_interruptible(
         self, seconds: float, stop_event: asyncio.Event
     ) -> None:
-        """Sleep in short intervals to wake up quickly if stop_event is set."""
-        elapsed = 0.0
-        while elapsed < seconds and not stop_event.is_set():
-            slice_dur = min(0.1, seconds - elapsed)
-            await asyncio.sleep(slice_dur)
-            elapsed += slice_dur
+        """Sleep for the specified duration, waking up immediately if stop_event is set.
+
+        A sleeping user is only woken once (by timeout or stop_event), so idle users consume no event loop time.
+        """
+        if seconds <= 0 or stop_event.is_set():
+            return
+        try:
+            await asyncio.wait_for(stop_event.wait(), timeout=seconds)
+        except TimeoutError:
+            pass
 
     def record_query(self, query: Query, successful: bool | None = None) -> None:
         if query.query_type is None:

@@ -55,7 +55,6 @@ actions:
     resources:
       version_providers: test_env_version_providers
       system_identity: system_identity
-    on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.astm.utm.dss.pool_info.PoolInfo
     resources:
@@ -70,7 +69,6 @@ actions:
       flight_intents2: conflicting_flights?
       flight_intents3: non_conflicting_flights?
       flight_intents_environments: flight_intents_environments?
-  on_failure: Continue
 - action_generator:
     generator_type: action_generators.astm.f3548.ForEachDSS
     resources:
@@ -98,10 +96,8 @@ actions:
             planning_area: planning_area
             problematically_big_area: problematically_big_area
             test_exclusions: test_exclusions?
-        on_failure: Continue
       dss_instances_source: dss_instances
       dss_instance_id: dss
-    on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
@@ -117,12 +113,10 @@ actions:
             flight_intents: invalid_flight_intents
             tested_uss: uss1
             dss: dss
-        on_failure: Continue
       combination_selector_source: flight_intent_validation_selector?
       flight_planners_source: flight_planners
       roles:
         - uss1
-  on_failure: Continue
 - action_generator:
     generator_type: action_generators.resource_environments.ResourceEnvironmentsActionGenerator
     resources:
@@ -138,8 +132,6 @@ actions:
             tested_uss: uss1
             control_uss: uss2
             dss: dss
-        on_failure: Continue
-  on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
@@ -156,13 +148,11 @@ actions:
             tested_uss: uss1
             control_uss: uss2
             dss: dss
-        on_failure: Continue
       combination_selector_source: nominal_planning_selector
       flight_planners_source: flight_planners
       roles:
         - uss1
         - uss2
-  on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
@@ -179,11 +169,9 @@ actions:
             mock_uss: mock_uss
             dss: dss
             flight_intents: non_conflicting_flights
-        on_failure: Continue
       flight_planners_source: flight_planners
       roles:
         - tested_uss
-  on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
@@ -200,11 +188,9 @@ actions:
             mock_uss: mock_uss
             dss: dss
             flight_intents: non_conflicting_flights
-        on_failure: Continue
       flight_planners_source: flight_planners
       roles:
         - tested_uss
-  on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
@@ -221,11 +207,9 @@ actions:
             utm_auth: utm_auth
             dss: dss
             flight_intents: non_conflicting_flights
-        on_failure: Continue
       flight_planners_source: flight_planners
       roles:
         - tested_uss
-  on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
@@ -241,12 +225,10 @@ actions:
             flight_intents: conflicting_flights
             tested_uss: uss1
             dss: dss
-        on_failure: Continue
       combination_selector_source: nominal_planning_selector
       flight_planners_source: flight_planners
       roles:
         - uss1
-  on_failure: Continue
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
@@ -262,12 +244,10 @@ actions:
             flight_intents: conflicting_flights
             tested_uss: uss1
             dss: dss
-        on_failure: Continue
       combination_selector_source: nominal_planning_selector
       flight_planners_source: flight_planners
       roles:
         - uss1
-  on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.astm.utm.PrepareFlightPlanners  # TODO: Convert this to a scenario which only clears the area (does not check readiness)
     resources:
@@ -278,19 +258,16 @@ actions:
       flight_intents2: conflicting_flights?
       flight_intents3: non_conflicting_flights?
       flight_intents_environments: flight_intents_environments?
-  on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.astm.utm.make_uss_report.MakeUssReport
     resources:
       utm_auth: utm_auth
-  on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.astm.utm.versioning.evaluate_system_versions.EvaluateSystemVersions
     resources:
       test_env_version_providers: test_env_version_providers
       prod_env_version_providers: prod_env_version_providers
       system_identity: system_identity
-    on_failure: Continue
 - test_scenario:
     scenario_type: scenarios.astm.utm.AggregateChecks
     resources:
