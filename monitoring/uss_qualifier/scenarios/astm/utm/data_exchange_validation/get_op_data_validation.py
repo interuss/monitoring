@@ -43,6 +43,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     OpIntentValidationFailureType,
     OpIntentValidator,
 )
+from monitoring.uss_qualifier.scenarios.flight_planning.state import FlightPlanningState
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights,
     delete_flight,
@@ -76,6 +77,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         flight_intents: FlightIntentsResource | None = None,
     ):
         super().__init__()
+        self.flight_planning_state = FlightPlanningState()
         self.tested_uss_client = tested_uss.client
         self.mock_uss = mock_uss.mock_uss
         self.mock_uss_client = mock_uss.mock_uss.flight_planner
@@ -159,6 +161,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 self,
                 self.mock_uss_client,
                 flight_2,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight_2 = as_planned
@@ -181,6 +184,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 self,
                 self.tested_uss_client,
                 flight_1,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight_1 = as_planned
@@ -214,11 +218,23 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.end_test_step()
 
         self.begin_test_step("Delete tested_uss flight")
-        delete_flight(self, self.tested_uss_client, self.flight_1_id)
+        assert self.flight_1_id is not None
+        delete_flight(
+            self,
+            self.tested_uss_client,
+            self.flight_1_id,
+            flight_planning_state=self.flight_planning_state,
+        )
         self.end_test_step()
 
         self.begin_test_step("Delete mock_uss flight")
-        delete_flight(self, self.mock_uss_client, self.flight_2_id)
+        assert self.flight_2_id is not None
+        delete_flight(
+            self,
+            self.mock_uss_client,
+            self.flight_2_id,
+            flight_planning_state=self.flight_planning_state,
+        )
         self.end_test_step()
 
     def _plan_unsuccessfully_test_case(self):
@@ -251,6 +267,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 self.mock_uss_client,
                 flight_info,
                 additional_fields,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight_info = as_planned
@@ -281,6 +298,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
                 {},
                 self.tested_uss_client,
                 flight_1,
+                flight_planning_state=self.flight_planning_state,
             )
             validator.expect_not_shared()
         self.end_test_step()
@@ -310,10 +328,20 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.end_test_step()
 
         self.begin_test_step("Delete mock_uss flight")
-        delete_flight(self, self.mock_uss_client, self.flight_2_id)
+        assert self.flight_2_id is not None
+        delete_flight(
+            self,
+            self.mock_uss_client,
+            self.flight_2_id,
+            flight_planning_state=self.flight_planning_state,
+        )
         self.end_test_step()
 
     def cleanup(self):
         self.begin_cleanup()
-        (cleanup_flights(self, (self.mock_uss_client, self.tested_uss_client)),)
+        cleanup_flights(
+            self,
+            (self.mock_uss_client, self.tested_uss_client),
+            flight_planning_state=self.flight_planning_state,
+        )
         self.end_cleanup()

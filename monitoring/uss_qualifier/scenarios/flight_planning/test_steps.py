@@ -7,8 +7,10 @@ from uas_standards.interuss.automated_testing.flight_planning.v1.api import (
     FunctionalState,
 )
 
-from monitoring.monitorlib.clients.flight_planning.client import PlanningActivityError
-from monitoring.monitorlib.clients.flight_planning.client_v1 import FlightPlannerClient
+from monitoring.monitorlib.clients.flight_planning.client import (
+    FlightPlannerClient,
+    PlanningActivityError,
+)
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     ExecutionStyle,
     FlightID,
@@ -27,6 +29,7 @@ from monitoring.uss_qualifier.scenarios.flight_planning.injection_evaluation imp
     times_not_later_than_specified_or_now,
     values_exactly_equal,
 )
+from monitoring.uss_qualifier.scenarios.flight_planning.state import FlightPlanningState
 from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioDidNotStopError,
     TestScenario,
@@ -58,6 +61,8 @@ def plan_flight(
     flight_info: FlightInfo,
     additional_fields: dict | None = None,
     nearby_potential_conflict: bool = False,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> tuple[PlanningActivityResponse, str | None, FlightInfo | None]:
     """Plan a flight intent that should result in success.
 
@@ -81,6 +86,7 @@ def plan_flight(
         flight_planner=flight_planner,
         flight_info=flight_info,
         additional_fields=additional_fields,
+        flight_planning_state=flight_planning_state,
     )
 
     if (
@@ -100,6 +106,8 @@ def modify_planned_flight(
     flight_info: FlightInfo,
     flight_id: str,
     additional_fields: dict | None = None,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> tuple[PlanningActivityResponse, FlightInfo | None]:
     """Modify a planned flight intent that should result in success.
 
@@ -132,6 +140,7 @@ def modify_planned_flight(
         flight_info=flight_info,
         flight_id=flight_id,
         additional_fields=additional_fields,
+        flight_planning_state=flight_planning_state,
     )
     return resp, as_planned
 
@@ -143,6 +152,8 @@ def modify_activated_flight(
     flight_id: str,
     preexisting_conflict: bool = False,
     additional_fields: dict | None = None,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> tuple[PlanningActivityResponse, FlightInfo | None]:
     """Modify an activated flight intent that should result in success.
 
@@ -175,6 +186,7 @@ def modify_activated_flight(
             flight_info=flight_info,
             flight_id=flight_id,
             additional_fields=additional_fields,
+            flight_planning_state=flight_planning_state,
         )
         assert as_planned is not None
 
@@ -208,6 +220,7 @@ def modify_activated_flight(
             flight_info=flight_info,
             flight_id=flight_id,
             additional_fields=additional_fields,
+            flight_planning_state=flight_planning_state,
         )
         assert as_planned is not None
 
@@ -220,6 +233,8 @@ def activate_flight(
     flight_info: FlightInfo,
     flight_id: str | None = None,
     additional_fields: dict | None = None,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> tuple[PlanningActivityResponse, str | None, FlightInfo | None]:
     """Activate a flight intent that should result in success.
 
@@ -240,6 +255,7 @@ def activate_flight(
         flight_info=flight_info,
         flight_id=flight_id,
         additional_fields=additional_fields,
+        flight_planning_state=flight_planning_state,
     )
 
 
@@ -254,6 +270,8 @@ def submit_flight(
     additional_fields: dict | None = None,
     skip_if_not_supported: bool = False,
     may_end_in_past: bool = False,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> tuple[PlanningActivityResponse, str | None, FlightInfo | None]:
     """Submit a flight intent with an expected result.
     A check fail is considered by default of high severity and as such will raise an ScenarioCannotContinueError.
@@ -284,7 +302,11 @@ def submit_flight(
     with scenario.check(success_check, [flight_planner.participant_id]) as check:
         try:
             resp, query, flight_id = request_flight(
-                flight_planner, flight_info, flight_id, additional_fields
+                flight_planner,
+                flight_info,
+                flight_id,
+                additional_fields,
+                flight_planning_state=flight_planning_state,
             )
             scenario.record_query(query)
         except QueryError as e:
@@ -363,6 +385,8 @@ def request_flight(
     flight_info: FlightInfo,
     flight_id: str | None,
     additional_fields: dict | None = None,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> tuple[PlanningActivityResponse, Query, str]:
     """
     Uses FlightPlannerClient to plan the flight
@@ -374,16 +398,20 @@ def request_flight(
     """
     if not flight_id:
         try:
-            resp = flight_planner.try_plan_flight(
-                flight_info, ExecutionStyle.IfAllowed, additional_fields
+            resp = flight_planning_state.plan_flight(
+                flight_planner, flight_info, ExecutionStyle.IfAllowed, additional_fields
             )
         except PlanningActivityError as e:
             raise QueryError(str(e), e.queries)
         flight_id = resp.flight_id
     else:
         try:
-            resp = flight_planner.try_update_flight(
-                flight_id, flight_info, ExecutionStyle.IfAllowed
+            resp = flight_planning_state.update_flight(
+                flight_planner,
+                flight_id,
+                flight_info,
+                ExecutionStyle.IfAllowed,
+                additional_fields,
             )
         except PlanningActivityError as e:
             raise QueryError(str(e), e.queries)
@@ -395,6 +423,8 @@ def delete_flight(
     scenario: TestScenario,
     flight_planner: FlightPlannerClient,
     flight_id: FlightID,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> PlanningActivityResponse:
     """Delete an existing flight intent that should result in success.
     A check fail is considered of high severity and as such will raise an ScenarioCannotContinueError.
@@ -407,7 +437,9 @@ def delete_flight(
         "Successful deletion", [flight_planner.participant_id]
     ) as check:
         try:
-            resp = flight_planner.try_end_flight(flight_id, ExecutionStyle.IfAllowed)
+            resp = flight_planning_state.end_flight(
+                flight_planner, flight_id, ExecutionStyle.IfAllowed
+            )
 
         except QueryError as e:
             scenario.record_queries(e.queries)
@@ -425,7 +457,6 @@ def delete_flight(
             resp.activity_result == PlanningActivityResult.Completed
             and resp.flight_plan_status == FlightPlanStatus.Closed
         ):
-            flight_planner.created_flight_ids.discard(flight_id)
             return resp
         else:
             check.record_failed(
@@ -439,24 +470,27 @@ def delete_flight(
 
 
 def cleanup_flights(
-    scenario: TestScenario, flight_planners: Iterable[FlightPlannerClient]
+    scenario: TestScenario,
+    flight_planners: Iterable[FlightPlannerClient],
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> None:
     """Remove flights during a cleanup test step.
 
     This function assumes:
     * `scenario` is currently cleaning up (cleanup has started)
     * "Successful flight deletion" check declared for cleanup phase in `scenario`'s documentation
-    * IDs of flights created have been added to each flight_planner.created_flight_ids
+    * flight_planning_state is owned by this scenario and tracks its flights
     """
     for flight_planner in flight_planners:
-        to_remove = flight_planner.created_flight_ids.copy()
+        to_remove = flight_planning_state.get_flight_ids(flight_planner)
         for flight_id in to_remove:
             with scenario.check(
                 "Successful flight deletion", [flight_planner.participant_id]
             ) as check:
                 try:
-                    resp = flight_planner.try_end_flight(
-                        flight_id, ExecutionStyle.IfAllowed
+                    resp = flight_planning_state.end_flight(
+                        flight_planner, flight_id, ExecutionStyle.IfAllowed
                     )
 
                 except QueryError as e:
@@ -478,7 +512,7 @@ def cleanup_flights(
                         )
 
                     # Do not attempt to clean up again as we would expect the same error
-                    flight_planner.created_flight_ids.discard(flight_id)
+                    flight_planning_state.forget_flight(flight_planner, flight_id)
 
                     continue
                 scenario.record_queries(resp.queries)
@@ -496,4 +530,4 @@ def cleanup_flights(
                 # Remove flight_id from created flights regardless of status.
                 # If status was successful, the flight has been removed.  If the status was unsuccessful, we would
                 # expect the same error status if we were to try again.
-                flight_planner.created_flight_ids.discard(flight_id)
+                flight_planning_state.forget_flight(flight_planner, flight_id)

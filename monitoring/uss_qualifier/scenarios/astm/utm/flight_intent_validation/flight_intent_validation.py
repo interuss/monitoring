@@ -31,6 +31,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import OpIntentValidator
+from monitoring.uss_qualifier.scenarios.flight_planning.state import FlightPlanningState
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights,
     delete_flight,
@@ -65,6 +66,7 @@ class FlightIntentValidation(TestScenario):
         dss: DSSInstanceResource,
     ):
         super().__init__()
+        self.flight_planning_state = FlightPlanningState()
         self.tested_uss = tested_uss.client
         self.dss = dss.get_instance(
             {
@@ -169,6 +171,7 @@ class FlightIntentValidation(TestScenario):
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
                 flight_planner=self.tested_uss,
                 flight_info=invalid_too_far_away,
+                flight_planning_state=self.flight_planning_state,
             )
 
             validator.expect_not_shared()
@@ -193,6 +196,7 @@ class FlightIntentValidation(TestScenario):
                 flight_planner=self.tested_uss,
                 flight_info=invalid_recently_ended,
                 may_end_in_past=True,
+                flight_planning_state=self.flight_planning_state,
             )
 
             validator.expect_not_shared()
@@ -212,6 +216,7 @@ class FlightIntentValidation(TestScenario):
                 self,
                 self.tested_uss,
                 valid_flight,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             assert as_planned is not None
@@ -220,13 +225,19 @@ class FlightIntentValidation(TestScenario):
         self.end_test_step()
 
         self.begin_test_step("Remove Valid Flight")
+        assert flight_id is not None
         with OpIntentValidator(
             self,
             self.tested_uss,
             self.dss,
             valid_flight,
         ) as cancelled_validator:
-            _ = delete_flight(self, self.tested_uss, flight_id)
+            _ = delete_flight(
+                self,
+                self.tested_uss,
+                flight_id,
+                flight_planning_state=self.flight_planning_state,
+            )
             cancelled_validator.expect_removed(oi_ref.id)
         self.end_test_step()
 
@@ -238,6 +249,7 @@ class FlightIntentValidation(TestScenario):
             self,
             self.tested_uss,
             valid_flight,
+            flight_planning_state=self.flight_planning_state,
         )
         # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
         self.end_test_step()
@@ -262,6 +274,7 @@ class FlightIntentValidation(TestScenario):
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
                 flight_planner=self.tested_uss,
                 flight_info=valid_conflict_tiny_overlap,
+                flight_planning_state=self.flight_planning_state,
             )
 
             validator.expect_not_shared()
@@ -269,5 +282,7 @@ class FlightIntentValidation(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights(self, [self.tested_uss])
+        cleanup_flights(
+            self, [self.tested_uss], flight_planning_state=self.flight_planning_state
+        )
         self.end_cleanup()

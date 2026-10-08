@@ -30,6 +30,7 @@ This document contains key context, nuances, and troubleshooting tips specifical
 - **Documentation Traceability**: All documented test checks must trace back to exactly one or more requirements using a specific bold format, and feature a severity emoji prefix (e.g., `## 🛑 Correct operational intent details check`). You must refer to `monitoring/uss_qualifier/scenarios/README.md` for specific markup details before modifying test steps.
 
 ## 4. Local Testing constraints
+- **Unit-test working directory**: Run `uss_qualifier` unit tests from `monitoring/uss_qualifier/` with the repository root on `PYTHONPATH` (for example, `PYTHONPATH=../.. ../../.venv/bin/python -m pytest scenarios/scenario_test resources/flight_planning`). Some resource fixtures resolve test-data paths relative to the working directory and fail when run from the repository root.
 - **Docker Dependency**: Mock USS and DSS environments require active Docker containers. Standard testing commands are typically structured via bash scripts like `./monitoring/uss_qualifier/run_locally.sh <config>`. If container-building fails due to `Authentication` or package registry issues in the agent's environment, gracefully halt and ask the human user to run the script instead.
 
 ## 5. Continuous Improvement of this Guide
