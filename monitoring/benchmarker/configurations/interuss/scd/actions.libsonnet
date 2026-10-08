@@ -21,4 +21,14 @@ local s2_latlng_rect_part = std.native('s2.latlng_rect_part');
       },
     },
   },
+
+  delete_subscription: function(name, sub_id) {
+    name: name,
+    f3548: {
+      delete_subscription: {
+        subscription_id: sub_id,
+        mode: 'GetDeleteIfExist',
+      },
+    },
+  },
 }
