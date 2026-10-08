@@ -13,6 +13,7 @@ from monitoring.monitorlib.clients.mock_uss.interactions import (
 from monitoring.monitorlib.fetch import Query, QueryError, QueryType
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSClient
 from monitoring.uss_qualifier.scenarios.scenario import (
+    GenericTestScenario,
     ScenarioDidNotStopError,
     TestScenario,
 )
@@ -35,7 +36,7 @@ def get_clock(scenario: TestScenario, mock_uss: MockUSSClient) -> datetime:
 
 
 def get_mock_uss_interactions(
-    scenario: TestScenario,
+    scenario: GenericTestScenario,
     mock_uss: MockUSSClient,
     since: StringBasedDateTime,
     *is_applicable: Callable[[Interaction], bool],
