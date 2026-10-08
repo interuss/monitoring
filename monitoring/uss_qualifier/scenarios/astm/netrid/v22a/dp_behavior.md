@@ -109,6 +109,11 @@ Validate that the Display Provider queried the SP and behaved correctly while do
 **[astm.f3411.v22a.NET0240](../../../../requirements/astm/f3411/v22a.md)** requires that a Display Provider queries a Service Provider for areas with a diagonal no greater than `NetMaxDisplayAreaDiagonal` (7km).
 
 If the Display Provider failed to issue requests when it was queried for valid areas, it is in violation of this requirement.
+This check does not require those requests to be issued while a display query is being answered. 5.5.4.2 describes
+the Display Provider making periodic requests to the applicable Service Providers, and NOTE 12(e) under 5.5.4.4
+names once per second as the reference cadence, so a conformant Display Provider may serve a display query from the
+data it already holds and query the Service Provider on its own cycle. The expected requests are therefore awaited
+for several of those periods rather than looked for only in the moment the display queries were answered.
 
 #### 🛑 No query to SP exceeded the maximum diagonal check
 
