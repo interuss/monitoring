@@ -31,6 +31,24 @@ local_resources:
     resource_type: resources.versioning.SystemIdentityResource
     specification:
       system_identity: astm.f3548.v21
+  priority_preemption_combinations:
+    resource_type: resources.combinations.ResourceCombinationsResource
+    dependencies:
+      uss1: flight_planners
+      uss2: flight_planners
+      combination_selector: priority_planning_selector?
+    specification: {}
+  priority_preemption_environments:
+    resource_type: resources.environments.EnvironmentAugmentationResource
+    dependencies:
+      environments: priority_preemption_combinations  # provides uss1, uss2
+      flight_intents: priority_preemption_flights_provider
+    specification: {}
+  flight_intents_environments:
+    resource_type: resources.environments.ConcatenatedResourceEnvironmentsResource
+    dependencies:
+      priority_preemption: priority_preemption_environments?
+    specification: {}
 actions:
 - test_scenario:
     scenario_type: scenarios.versioning.GetSystemVersions
@@ -50,7 +68,7 @@ actions:
       flight_intents: invalid_flight_intents
       flight_intents2: conflicting_flights?
       flight_intents3: non_conflicting_flights?
-      flight_intents_provider: priority_preemption_flights_provider?
+      flight_intents_environments: flight_intents_environments?
 - action_generator:
     generator_type: action_generators.astm.f3548.ForEachDSS
     resources:
@@ -95,34 +113,25 @@ actions:
             flight_intents: invalid_flight_intents
             tested_uss: uss1
             dss: dss
-      combination_selector_source: flight_intent_validation_selector
+      combination_selector_source: flight_intent_validation_selector?
       flight_planners_source: flight_planners
       roles:
         - uss1
 - action_generator:
-    generator_type: action_generators.flight_planning.FlightPlannerCombinations
+    generator_type: action_generators.resource_environments.ResourceEnvironmentsActionGenerator
     resources:
-      flight_planners: flight_planners
-      priority_planning_selector: priority_planning_selector?
-      priority_preemption_flights_provider: priority_preemption_flights_provider
+      priority_preemption_environments: priority_preemption_environments
       dss: dss
     specification:
+      resource_environments_source: priority_preemption_environments
       action_to_repeat:
         test_scenario:
           scenario_type: scenarios.astm.utm.ConflictHigherPriority
           resources:
-            flight_intents: priority_preemption_flights
+            flight_intents: flight_intents
             tested_uss: uss1
             control_uss: uss2
             dss: dss
-      combination_selector_source: priority_planning_selector
-      flight_planners_source: flight_planners
-      roles:
-        - uss1
-        - uss2
-      per_index_resources:
-        - resource_provider: priority_preemption_flights_provider
-          provided_resource: priority_preemption_flights
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
@@ -248,7 +257,7 @@ actions:
       flight_intents: invalid_flight_intents
       flight_intents2: conflicting_flights?
       flight_intents3: non_conflicting_flights?
-      flight_intents_provider: priority_preemption_flights_provider?
+      flight_intents_environments: flight_intents_environments?
 - test_scenario:
     scenario_type: scenarios.astm.utm.make_uss_report.MakeUssReport
     resources:
