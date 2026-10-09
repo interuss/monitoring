@@ -40,6 +40,8 @@ The release notes should contain at least the following sections:
 * For any uss_qualifier test configurations using any of the test suites `suites.astm.utm.f3548_21`, `suites.faa.uft.message_signing`, `suites.uspace.flight_auth`, or `suites.uspace.required_services`, the following resources must be changed:
     * `priority_preemption_flights` was previously an optional `resources.flight_planning.FlightIntentsResource`.  If this resource was previously provided to one of the above test suites, a new resource named `priority_preemption_flights_provider` must be provided instead.  This new resource must be a `resources.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`, and one suitable concrete implementation is a `resources.geospatial.TriangularCascadeSoutheastResource`.  See [f3548_self_contained](./monitoring/uss_qualifier/configurations/dev/f3548_self_contained.yaml) for an example.
 
+* (uncommon) For any uss_qualifier test configurations directly using (i.e., not via the f3548_21 test suite) the scenario `scenarios.flight_planning.prep_planners.PrepareFlightPlannersScenario` or the scenario `scenarios.astm.utm.prep_planners.PrepareFlightPlanners`, the `flight_intents_provider` resource must be replaced with a `flight_intents_environments` that is a `resources.environments.ResourceEnvironmentsGenerator`; see [the f3548_21 test suite](./monitoring/uss_qualifier/suites/astm/utm/f3548_21.yaml) for an example.
+
 ## Optional migration tasks
 
 ## Important information

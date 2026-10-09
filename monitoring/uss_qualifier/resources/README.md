@@ -32,6 +32,8 @@ Resources for a given test configuration are all declared in a single global res
 2. Every type of test resource must define a "resource specification", which is a serializable data type that fully defines how to create an instance of that resource type.
 3. Every type of test resource must define how to create an instance of the test resource from an instance of the resource specification.
 
+Dependency resource IDs may be suffixed with `?` to indicate that the dependency is optional.  Explicit constructor parameters must have a default value to accept optional dependencies.  Dependencies accepted through `**kwargs` are treated as having an implicit default of `None`.  Missing optional dependencies are omitted from the constructor call, so they do not appear in the `kwargs` dictionary.
+
 
 ## Resource-modifying resources
 
