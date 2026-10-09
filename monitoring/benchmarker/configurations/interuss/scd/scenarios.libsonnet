@@ -2,8 +2,37 @@ local actions = import './actions.libsonnet';
 local artifacts = import '../artifacts.libsonnet';
 local environment = import './local_environment.libsonnet';
 local loads = import '../loads.libsonnet';
+local users = import './users.libsonnet';
 
 {
+  /* Distribute flight planners across operating rectangles, each with its own subscription
+   * and OVN coordination group.  subscription_id_prefix is the first four UUID groups
+   * followed by a hyphen; the final group is constructed from the site's 0-based index.
+   */
+  multi_site_flight_planner_search: function(test_name, num_uss, num_nodes, initial_users, rects, subscription_id_prefix, lat_size, lng_size)
+    local site_indices = std.range(0, std.length(rects) - 1);
+    local subscriptions = [
+      {
+        id: subscription_id_prefix + '%012x' % i,
+        rect: rects[i],
+      } for i in site_indices
+    ];
+    $.flight_planner_search(
+      test_name, num_nodes, initial_users,
+      [
+        [
+          {
+            name: 'FPU%d_s%d' % [uss, i + 1],
+            flight_planner: users.basic_flight_planner(
+              ['uss%d_dss_pool' % uss], subscriptions[i].id, rects[i], lat_size, lng_size,
+              'site%d' % (i + 1),
+            ),
+          } for i in site_indices
+        ] for uss in std.range(1, num_uss)
+      ],
+      subscriptions,
+    ),
+
   /* Apply a flight planner user-count search to each DSS instance in turn.  user_types_by_uss is an
    * array of arrays of user specifications, one array per USS.  Users are assigned
    * round-robin within each array; repeated entries can weight traffic toward busy sites.
