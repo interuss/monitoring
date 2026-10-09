@@ -2,13 +2,15 @@ from typing import Protocol
 
 from uas_standards.astm.f3548.v21.constants import Scope
 
-from monitoring.monitorlib import fetch, schema_validation
+from monitoring.monitorlib import fetch
 from monitoring.monitorlib.auth import InvalidTokenSignatureAuth
 from monitoring.monitorlib.infrastructure import (
     UTMClientSession,
     utm_client_session_factory,
 )
-from monitoring.monitorlib.schema_validation import F3548_21
+from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
+    verify_error_response_body,
+)
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
 
@@ -99,27 +101,9 @@ class GenericAuthValidator:
 
     def verify_4xx_response(self, q: fetch.Query):
         """Verifies that the passed query response's body is a valid ErrorResponse, as per the OpenAPI spec."""
-
-        with self._scenario.check(
-            "Unauthorized requests return the proper error message body", self._pid
-        ) as check:
-            if q.response.json is None:
-                check.record_failed(
-                    summary="Error response body is not JSON",
-                    details=f"Response body for {q.request.method} query to {q.request.url} is not valid JSON, "
-                    f"body content was {q.response.get('body', '')!r}",
-                    query_timestamps=[q.request.timestamp],
-                )
-            else:
-                errors = schema_validation.validate(
-                    F3548_21.OpenAPIPath,
-                    F3548_21.ErrorResponse,
-                    q.response.json,
-                )
-                if errors:
-                    check.record_failed(
-                        summary="Unexpected error response body",
-                        details=f"Response body for {q.request.method} query to {q.request.url} failed validation: {errors}, "
-                        f"body content was: {q.response.json}",
-                        query_timestamps=[q.request.timestamp],
-                    )
+        verify_error_response_body(
+            self._scenario,
+            "Unauthorized requests return the proper error message body",
+            self._pid,
+            q,
+        )

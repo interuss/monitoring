@@ -6,7 +6,6 @@ from enum import StrEnum
 
 from implicitdict import ImplicitDict, Optional, StringBasedDateTime
 from uas_standards.astm.f3548.v21.api import (
-    EntityID,
     GetOperationalIntentDetailsResponse,
     OperationalIntent,
     OperationalIntentReference,
@@ -39,6 +38,7 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     ScenarioDidNotStopError,
     ScenarioLogicError,
     TestRunCannotContinueError,
+    TestScenario,
     TestScenarioType,
 )
 
@@ -169,12 +169,14 @@ class OpIntentValidator:
         if len(oi_ids_delta) == 1:
             self._new_oi_ref = self._find_after_oi(oi_ids_delta.pop())
 
-    def expect_removed(self, oi_id: EntityID) -> None:
-        """Validate that a specific operational intent reference was removed from the DSS.
+    def expect_removed(self, oi_ref: OperationalIntentReference) -> None:
+        """Validate that a specific operational intent reference was removed from the DSS,
+        and that its managing USS no longer provides its details.
 
         It implements the test step described in validate_removed_operational_intent.md.
         """
         self._begin_step_fragment()
+        oi_id = oi_ref.id
 
         with self._scenario.check(
             "Operational intent not shared", self._flight_planner.participant_id
@@ -197,6 +199,34 @@ class OpIntentValidator:
                         self._after_query.request.timestamp,
                     ],
                 )
+
+        self._check_op_intent_details_not_found(oi_ref)
+
+    def _check_op_intent_details_not_found(self, oi_ref: OperationalIntentReference):
+        pid = self._flight_planner.participant_id
+        try:
+            _, query = self._dss.get_full_op_intent(oi_ref, pid)
+        except QueryError as e:
+            query = e.queries[0]
+        self._scenario.record_query(query)
+
+        with self._scenario.check(
+            "Removed operational intent details not found", [pid]
+        ) as check:
+            if query.status_code != 404:
+                check.record_failed(
+                    summary=f"Expected 404, got {query.status_code}",
+                    details=f"{pid} responded with status code {query.status_code} when queried for the details of operational intent {oi_ref.id}, which it had just removed",
+                    query_timestamps=[query.request.timestamp],
+                )
+                return
+
+        verify_error_response_body(
+            self._scenario,
+            "Not found response has the proper error message body",
+            pid,
+            query,
+        )
 
     def expect_not_shared(self) -> None:
         """Validate that an operational intent information was not shared with the DSS.
@@ -834,3 +864,36 @@ def set_uss_down(
         scenario, dss, uss_sub, Scope.AvailabilityArbitration
     )
     set_uss_availability(scenario, dss, uss_sub, UssAvailabilityState.Down, version)
+
+
+def verify_error_response_body(
+    scenario: TestScenario,
+    check_name: str,
+    participant_id: str,
+    query: fetch.Query,
+):
+    """Verifies that the passed query response's body is a valid ErrorResponse, as per the OpenAPI spec.
+
+    The calling scenario's documentation must declare a check named `check_name` in the current test step.
+    """
+    with scenario.check(check_name, participant_id) as check:
+        if query.response.json is None:
+            check.record_failed(
+                summary="Error response body is not JSON",
+                details=f"Response body for {query.request.method} query to {query.request.url} is not valid JSON, "
+                f"body content was {query.response.get('body', '')!r}",
+                query_timestamps=[query.request.timestamp],
+            )
+        else:
+            errors = schema_validation.validate(
+                schema_validation.F3548_21.OpenAPIPath,
+                schema_validation.F3548_21.ErrorResponse,
+                query.response.json,
+            )
+            if errors:
+                check.record_failed(
+                    summary="Unexpected error response body",
+                    details=f"Response body for {query.request.method} query to {query.request.url} failed validation: {errors}, "
+                    f"body content was: {query.response.json}",
+                    query_timestamps=[query.request.timestamp],
+                )

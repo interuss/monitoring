@@ -217,6 +217,7 @@ class FlightIntentValidation(TestScenario):
             assert as_planned is not None
             valid_flight = as_planned
             oi_ref = planned_validator.expect_shared(valid_flight)
+            assert oi_ref is not None
         self.end_test_step()
 
         self.begin_test_step("Remove Valid Flight")
@@ -227,7 +228,7 @@ class FlightIntentValidation(TestScenario):
             valid_flight,
         ) as cancelled_validator:
             _ = delete_flight(self, self.tested_uss, flight_id)
-            cancelled_validator.expect_removed(oi_ref.id)
+            cancelled_validator.expect_removed(oi_ref)
         self.end_test_step()
 
     def _validate_precision_intersection(self):
