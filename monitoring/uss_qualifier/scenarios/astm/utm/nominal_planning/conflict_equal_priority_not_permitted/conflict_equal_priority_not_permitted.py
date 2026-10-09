@@ -187,6 +187,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
                 self,
                 self.control_uss,
                 flight2_planned,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight2_planned = as_planned
@@ -208,6 +209,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
                 self.control_uss,
                 flight2_activated,
                 self.flight2_id,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight2_activated = as_planned
@@ -227,6 +229,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
                 self,
                 self.tested_uss,
                 flight1_planned,
+                flight_planning_state=self.flight_planning_state,
             )
             validator.expect_not_shared()
         self.end_test_step()
@@ -246,6 +249,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
                 self.tested_uss,
                 flight1_activated,
                 self.flight1_id,
+                flight_planning_state=self.flight_planning_state,
             )
             validator.expect_not_shared()
         self.end_test_step()
@@ -267,6 +271,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
                 self.tested_uss,
                 flight1c_planned,
                 nearby_potential_conflict=True,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             assert as_planned is not None
@@ -289,6 +294,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
                 self.tested_uss,
                 flight1_planned,
                 self.flight1_id,
+                flight_planning_state=self.flight_planning_state,
             )
             flight_1_oi_ref = validator.expect_shared(
                 flight1c_planned, skip_if_not_found=True
@@ -315,6 +321,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
                 self.tested_uss,
                 flight1c_activated,
                 self.flight1_id,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             assert as_planned is not None
@@ -337,6 +344,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
                 self.tested_uss,
                 flight1_activated,
                 self.flight1_id,
+                flight_planning_state=self.flight_planning_state,
             )
             validator.expect_not_shared()
         self.end_test_step()
@@ -347,12 +355,23 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
             )
             if self.flight1_id is None:
                 raise ValueError("flight1_id is None")
-            delete_flight(self, self.tested_uss, self.flight1_id)
+            delete_flight(
+                self,
+                self.tested_uss,
+                self.flight1_id,
+                flight_planning_state=self.flight_planning_state,
+            )
             self.flight1_id = None
             self.end_test_step()
 
         self.begin_test_step("Delete Flight 2")
-        delete_flight(self, self.control_uss, self.flight2_id)
+        assert self.flight2_id is not None
+        delete_flight(
+            self,
+            self.control_uss,
+            self.flight2_id,
+            flight_planning_state=self.flight_planning_state,
+        )
         self.flight2_id = None
         self.end_test_step()
 
@@ -377,6 +396,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
                 self.tested_uss,
                 flight1_activated,
                 self.flight1_id,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             assert as_planned is not None
@@ -397,6 +417,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
                 self,
                 self.control_uss,
                 flight2m_planned,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             assert as_planned is not None
@@ -427,6 +448,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
                 flight_planner=self.control_uss,
                 flight_info=flight2_nonconforming,
                 flight_id=self.flight2_id,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight2_nonconforming = as_planned
@@ -463,6 +485,7 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
                 flight_planner=self.tested_uss,
                 flight_info=flight1m_activated,
                 flight_id=self.flight1_id,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight1m_activated = as_planned

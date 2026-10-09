@@ -28,6 +28,7 @@ from monitoring.uss_qualifier.scenarios.documentation.definitions import (
     TestScenarioDocumentation,
     TestStepDocumentation,
 )
+from monitoring.uss_qualifier.scenarios.flight_planning.state import FlightPlanningState
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
@@ -58,6 +59,7 @@ class GeneralFlightAuthorization(TestScenario):
         planner: FlightPlannerResource,
     ):
         super().__init__()
+        self.flight_planning_state = FlightPlanningState()
         self.table = table.table
         self.flight_planner = planner.client
         self.participant_id = planner.participant_id
@@ -165,8 +167,8 @@ class GeneralFlightAuthorization(TestScenario):
             )
             with self.check(_VALID_API_RESPONSE_NAME, [self.participant_id]) as check:
                 try:
-                    resp = self.flight_planner.try_plan_flight(
-                        info, row.execution_style
+                    resp = self.flight_planning_state.plan_flight(
+                        self.flight_planner, info, row.execution_style
                     )
                 except PlanningActivityError as e:
                     for q in e.queries:
@@ -272,8 +274,10 @@ class GeneralFlightAuthorization(TestScenario):
                     _VALID_API_RESPONSE_NAME, [self.participant_id]
                 ) as check:
                     try:
-                        del_resp = self.flight_planner.try_end_flight(
-                            resp.flight_id, ExecutionStyle.IfAllowed
+                        del_resp = self.flight_planning_state.end_flight(
+                            self.flight_planner,
+                            resp.flight_id,
+                            ExecutionStyle.IfAllowed,
                         )
                     except PlanningActivityError as e:
                         for q in e.queries:

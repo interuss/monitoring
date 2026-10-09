@@ -10,6 +10,7 @@ from monitoring.monitorlib.clients.flight_planning.planning import (
     PlanningActivityResponse,
     PlanningActivityResult,
 )
+from monitoring.uss_qualifier.scenarios.flight_planning.state import FlightPlanningState
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     expect_flight_intent_state,
     submit_flight,
@@ -22,6 +23,8 @@ def plan_priority_conflict_flight(
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     additional_fields: dict | None = None,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> PlanningActivityResponse:
     """Attempt to plan a flight intent that should result in a conflict with a higher priority flight intent.
 
@@ -48,6 +51,7 @@ def plan_priority_conflict_flight(
         flight_planner=flight_planner,
         flight_info=flight_info,
         additional_fields=additional_fields,
+        flight_planning_state=flight_planning_state,
     )[0]
 
 
@@ -57,6 +61,8 @@ def modify_planned_priority_conflict_flight(
     flight_info: FlightInfo,
     flight_id: str,
     additional_fields: dict | None = None,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> PlanningActivityResponse:
     """Attempt to modify a planned flight intent that should result in a conflict with a higher priority flight intent.
 
@@ -91,6 +97,7 @@ def modify_planned_priority_conflict_flight(
         flight_info=flight_info,
         flight_id=flight_id,
         additional_fields=additional_fields,
+        flight_planning_state=flight_planning_state,
     )[0]
 
 
@@ -100,6 +107,8 @@ def activate_priority_conflict_flight(
     flight_info: FlightInfo,
     flight_id: str | None = None,
     additional_fields: dict | None = None,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> PlanningActivityResponse:
     """Attempt to activate a flight intent that should result in a conflict with a higher priority flight intent.
 
@@ -134,6 +143,7 @@ def activate_priority_conflict_flight(
         flight_info=flight_info,
         flight_id=flight_id,
         additional_fields=additional_fields,
+        flight_planning_state=flight_planning_state,
     )[0]
 
 
@@ -143,6 +153,8 @@ def modify_activated_priority_conflict_flight(
     flight_info: FlightInfo,
     flight_id: str,
     additional_fields: dict | None = None,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> PlanningActivityResponse:
     """Attempt to modify an activated flight intent that should result in a conflict with a higher priority flight intent.
 
@@ -173,6 +185,7 @@ def modify_activated_priority_conflict_flight(
         flight_info=flight_info,
         flight_id=flight_id,
         additional_fields=additional_fields,
+        flight_planning_state=flight_planning_state,
     )[0]
 
 
@@ -181,6 +194,8 @@ def plan_conflict_flight(
     flight_planner: FlightPlannerClient,
     flight_info: FlightInfo,
     additional_fields: dict | None = None,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> PlanningActivityResponse:
     """Attempt to plan a flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
@@ -206,6 +221,7 @@ def plan_conflict_flight(
         flight_planner=flight_planner,
         flight_info=flight_info,
         additional_fields=additional_fields,
+        flight_planning_state=flight_planning_state,
     )[0]
 
 
@@ -215,6 +231,8 @@ def modify_planned_conflict_flight(
     flight_info: FlightInfo,
     flight_id: str,
     additional_fields: dict | None = None,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> PlanningActivityResponse:
     """Attempt to modify a planned flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
@@ -249,6 +267,7 @@ def modify_planned_conflict_flight(
         flight_info=flight_info,
         flight_id=flight_id,
         additional_fields=additional_fields,
+        flight_planning_state=flight_planning_state,
     )[0]
 
 
@@ -258,6 +277,8 @@ def activate_conflict_flight(
     flight_info: FlightInfo,
     flight_id: str | None = None,
     additional_fields: dict | None = None,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> PlanningActivityResponse:
     """Attempt to activate a flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
@@ -292,6 +313,7 @@ def activate_conflict_flight(
         flight_info=flight_info,
         flight_id=flight_id,
         additional_fields=additional_fields,
+        flight_planning_state=flight_planning_state,
     )[0]
 
 
@@ -301,6 +323,8 @@ def modify_activated_conflict_flight(
     flight_info: FlightInfo,
     flight_id: str,
     additional_fields: dict | None = None,
+    *,
+    flight_planning_state: FlightPlanningState,
 ) -> PlanningActivityResponse:
     """Attempt to modify an activated flight intent that should result in a non-permitted conflict with an equal priority flight intent.
 
@@ -331,4 +355,5 @@ def modify_activated_conflict_flight(
         flight_info=flight_info,
         flight_id=flight_id,
         additional_fields=additional_fields,
+        flight_planning_state=flight_planning_state,
     )[0]

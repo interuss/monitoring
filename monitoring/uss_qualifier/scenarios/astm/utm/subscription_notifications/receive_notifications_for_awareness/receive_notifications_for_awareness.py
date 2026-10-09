@@ -28,6 +28,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.subscription_notifications.test
     expect_tested_uss_receives_notification_from_mock_uss,
 )
 from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import OpIntentValidator
+from monitoring.uss_qualifier.scenarios.flight_planning.state import FlightPlanningState
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     activate_flight,
     cleanup_flights,
@@ -65,6 +66,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
         flight_intents: FlightIntentsResource | None = None,
     ):
         super().__init__()
+        self.flight_planning_state = FlightPlanningState()
         self.tested_uss_client = tested_uss.client
         self.mock_uss = mock_uss.mock_uss
         self.mock_uss_client = mock_uss.mock_uss.flight_planner
@@ -162,6 +164,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
                 self,
                 self.tested_uss_client,
                 flight_1_planned,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight_1_planned = as_planned
@@ -179,6 +182,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
                 self.tested_uss_client,
                 flight_1_activated,
                 self.flight_1_id,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight_1_activated = as_planned
@@ -198,6 +202,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
                 self,
                 self.mock_uss_client,
                 flight_2_planned,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight_2_planned = as_planned
@@ -237,6 +242,7 @@ class ReceiveNotificationsForAwareness(TestScenario):
                 self.mock_uss_client,
                 flight_2_planned_modified,
                 self.flight_2_id,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight_2_planned_modified = as_planned
@@ -259,5 +265,9 @@ class ReceiveNotificationsForAwareness(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights(self, (self.mock_uss_client, self.tested_uss_client))
+        cleanup_flights(
+            self,
+            (self.mock_uss_client, self.tested_uss_client),
+            flight_planning_state=self.flight_planning_state,
+        )
         self.end_cleanup()
