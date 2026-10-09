@@ -113,10 +113,7 @@ class ConcatenatedResourceEnvironmentsResource(
 
         remaining_generators = generators.copy()
         self._generators = []
-        if (
-            "environments_sequence" in specification
-            and specification.environments_sequence
-        ):
+        if specification.environments_sequence:
             for resource_id in specification.environments_sequence:
                 if resource_id in remaining_generators:
                     self._generators.append(remaining_generators.pop(resource_id))
