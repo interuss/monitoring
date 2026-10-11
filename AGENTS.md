@@ -30,6 +30,7 @@ This document contains key context, nuances, and troubleshooting tips specifical
 - **Documentation Traceability**: All documented test checks must trace back to exactly one or more requirements using a specific bold format, and feature a severity emoji prefix (e.g., `## 🛑 Correct operational intent details check`). You must refer to `monitoring/uss_qualifier/scenarios/README.md` for specific markup details before modifying test steps.
 
 ## 4. Local Testing constraints
+- **Qualifier Working Directory**: Run resource-construction checks and qualifier resource tests from `monitoring/uss_qualifier` with the repository root on `PYTHONPATH`. External resource paths such as `file://./test_data/...` resolve relative to the current working directory, as they do in `run_locally.sh`.
 - **Docker Dependency**: Mock USS and DSS environments require active Docker containers. Standard testing commands are typically structured via bash scripts like `./monitoring/uss_qualifier/run_locally.sh <config>`. If container-building fails due to `Authentication` or package registry issues in the agent's environment, gracefully halt and ask the human user to run the script instead.
 
 ## 5. Continuous Improvement of this Guide

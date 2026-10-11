@@ -3,15 +3,14 @@ from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.uss_qualifier.resources.astm.f3548.v21 import DSSInstanceResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstance
+from monitoring.uss_qualifier.resources.environments import (
+    ResourceEnvironmentsGenerator,
+)
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
     FlightPlannersResource,
 )
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
-    FlightIntentsSpecification,
-)
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSResource
-from monitoring.uss_qualifier.resources.resource import ResourceProvidingResource
 from monitoring.uss_qualifier.scenarios.astm.utm.clear_area_validation import (
     validate_clear_area,
 )
@@ -35,10 +34,7 @@ class PrepareFlightPlanners(PrepareFlightPlannersScenario):
         flight_intents2: FlightIntentsResource | None = None,
         flight_intents3: FlightIntentsResource | None = None,
         flight_intents4: FlightIntentsResource | None = None,
-        flight_intents_provider: ResourceProvidingResource[
-            FlightIntentsSpecification, FlightIntentsResource
-        ]
-        | None = None,
+        flight_intents_environments: ResourceEnvironmentsGenerator | None = None,
     ):
         super().__init__(
             flight_planners,
@@ -47,7 +43,7 @@ class PrepareFlightPlanners(PrepareFlightPlannersScenario):
             flight_intents2,
             flight_intents3,
             flight_intents4,
-            flight_intents_provider,
+            flight_intents_environments,
         )
         self.dss = dss.get_instance(
             {

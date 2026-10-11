@@ -287,6 +287,9 @@ def get_resource_types(
         name: substitute_typevars(t, typevar_map) for name, t in raw_signature.items()
     }
     init_params = inspect.signature(resource_type.__init__).parameters
+    accepts_keyword_dependencies = any(
+        param.kind == inspect.Parameter.VAR_KEYWORD for param in init_params.values()
+    )
 
     specification_type = None
     for arg_name, arg_type in constructor_signature.items():
@@ -312,7 +315,15 @@ def get_resource_types(
     for arg_name, pool_source in declaration.dependencies.items():
         if pool_source.endswith("?"):
             param = init_params.get(arg_name)
-            if param is None or param.default is inspect.Parameter.empty:
+            has_default = (
+                param is not None and param.default is not inspect.Parameter.empty
+            )
+            # Dependencies accepted through **kwargs have an implicit None default;
+            # absent optional dependencies are omitted from the constructor call.
+            is_keyword_dependency = accepts_keyword_dependencies and (
+                param is None or param.kind == inspect.Parameter.VAR_KEYWORD
+            )
+            if not has_default and not is_keyword_dependency:
                 raise ValueError(
                     f'Resource declaration for {declaration.resource_type} specifies optional dependency "{pool_source}" for parameter "{arg_name}", which has no default value in {resource_type.__name__}.__init__'
                 )

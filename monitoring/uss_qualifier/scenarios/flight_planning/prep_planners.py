@@ -7,17 +7,17 @@ from monitoring.monitorlib.clients.flight_planning.client import (
     PlanningActivityError,
 )
 from monitoring.monitorlib.geotemporal import Volume4D, Volume4DCollection
+from monitoring.monitorlib.inspection import fullname
 from monitoring.monitorlib.temporal import TestTimeContext, Time
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
+from monitoring.uss_qualifier.resources.environments import (
+    ResourceEnvironmentsGenerator,
+)
 from monitoring.uss_qualifier.resources.flight_planning import (
     FlightIntentsResource,
     FlightPlannersResource,
 )
-from monitoring.uss_qualifier.resources.flight_planning.flight_intent import (
-    FlightIntentsSpecification,
-)
 from monitoring.uss_qualifier.resources.interuss.mock_uss.client import MockUSSResource
-from monitoring.uss_qualifier.resources.resource import ResourceProvidingResource
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 
 MAX_TEST_DURATION = timedelta(minutes=45)
@@ -36,10 +36,7 @@ class PrepareFlightPlannersScenario(TestScenario):
         flight_intents2: FlightIntentsResource | None = None,
         flight_intents3: FlightIntentsResource | None = None,
         flight_intents4: FlightIntentsResource | None = None,
-        flight_intents_provider: ResourceProvidingResource[
-            FlightIntentsSpecification, FlightIntentsResource
-        ]
-        | None = None,
+        flight_intents_environments: ResourceEnvironmentsGenerator | None = None,
     ):
         super().__init__()
         now = Time(arrow.utcnow().datetime)
@@ -47,31 +44,24 @@ class PrepareFlightPlannersScenario(TestScenario):
         later = now.offset(MAX_TEST_DURATION)
         times_later = TestTimeContext.all_times_are(later)
         self.areas = []
-        if flight_intents_provider:
-            # TODO: use just the indices that will be used in the test run
-            # This can be accomplished by creating a
-            # ResourceCombinationsResource[T1: Resource](Resource[ResourceCombinationsSpecification])
-            # whose `source` is a PluralResource[T1] abstract base class (implemented by, e.g.,
-            # FlightPlannersResource).  ResourceCombinationsResource will fill a specified number
-            # of roles with combinations of resources (producing list[dict[ResourceID, T1]])
-            # just like, e.g. the FlightPlannerCombinations action generator currently.  Then,
-            # FlightPlannerCombinations can be adjusted to accept a ResourceCombinationsResource
-            # with all the combinations pregenerated -- this achieves parity with today, just the
-            # combinations are produced in the ResourceCombinationsResource rather than the action
-            # generator.  Then, we can have a PerCombinationResources[T2: Resource] that uses the
-            # ResourceCombinationsResource as a dependency and produces a FlightIntentsResource per
-            # combination.  That PerCombinationResources will implement PluralResource[T2], and
-            # then this scenario can be adjusted to accept a PluralResource[FlightIntentsResource]
-            # instead of the ResourceProvidingResource[FlightIntentsResource].
-            extra_intents = (flight_intents_provider.provide_resource_for(index=0),)
-        else:
-            extra_intents = tuple()
-        for intents in (
+        extra_intents = []
+        if flight_intents_environments:
+            for environment in flight_intents_environments.get_environments():
+                flight_intents_resource = environment.get("flight_intents", None)
+                if not flight_intents_resource:
+                    continue
+                if not isinstance(flight_intents_resource, FlightIntentsResource):
+                    raise ValueError(
+                        f"{fullname(self.__class__)} expects each environment in `flight_intents_environments` to contain a `flight_intents` resource of type {fullname(FlightIntentsResource)}, but instead found {fullname(flight_intents_resource.__class__)}"
+                    )
+                extra_intents.append(flight_intents_resource)
+
+        for intents in [
             flight_intents,
             flight_intents2,
             flight_intents3,
             flight_intents4,
-        ) + extra_intents:
+        ] + extra_intents:
             if intents is None:
                 continue
             v4c = Volume4DCollection([])

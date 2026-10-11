@@ -1,5 +1,7 @@
 import math
+from collections.abc import Callable
 from datetime import datetime, timedelta
+from typing import TypeVar
 from urllib.parse import parse_qs, urlparse
 
 import arrow
@@ -11,6 +13,7 @@ from monitoring.monitorlib.clients.mock_uss.interactions import (
     Interaction,
     QueryDirection,
 )
+from monitoring.monitorlib.fetch import Query
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.temporal import Time
 from monitoring.prober.infrastructure import register_resource_type
@@ -38,6 +41,19 @@ from monitoring.uss_qualifier.scenarios.scenario import (
     GenericTestScenario,
 )
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
+
+TOperationResult = TypeVar("TOperationResult")
+
+EXPECTED_SP_QUERIES = 2
+"""Number of queries to the SP that the two valid display queries of this test case are expected to elicit."""
+
+SP_QUERY_OBSERVATION_RETRIES = 5
+SP_QUERY_OBSERVATION_DELAY_S = 1
+"""A Display Provider does not necessarily query the Service Provider while it is answering a display request:
+F3411-22a 5.5.4.2 describes the Display Provider making periodic requests to the applicable Service Providers, and
+NOTE 12(e) under 5.5.4.4 names once per second as the reference cadence for doing so. Its queries to the SP are
+therefore spread over time rather than aligned with the display requests that motivated them, so allow several of
+those periods to elapse before concluding that it did not query the SP at all."""
 
 
 class DisplayProviderBehavior(GenericTestScenario):
@@ -263,12 +279,26 @@ class DisplayProviderBehavior(GenericTestScenario):
                 and interaction.query.request.method == "GET"
             )
 
-        interactions, q = get_mock_uss_interactions(
-            self,
-            self._mock_uss,
-            Time(test_step_start_time),
-            direction_filter(QueryDirection.Incoming),
-            flight_search_filter,
+        def fetch_interactions() -> tuple[list[Interaction], Query]:
+            return get_mock_uss_interactions(
+                self,
+                self._mock_uss,
+                Time(test_step_start_time),
+                direction_filter(QueryDirection.Incoming),
+                flight_search_filter,
+            )
+
+        def enough_queries(raw: tuple[list[Interaction], Query]) -> bool:
+            return len(raw[0]) >= EXPECTED_SP_QUERIES
+
+        # The queries to the SP are not necessarily made while the display queries above are being answered:
+        # we optimistically look early, and retry until the permissible delay has passed or we have seen them.
+        interactions, q = self._retry(
+            fetch_interactions,
+            retries=SP_QUERY_OBSERVATION_RETRIES,
+            delay_s=SP_QUERY_OBSERVATION_DELAY_S,
+            delay_reason="waiting for the display provider to query the service provider",
+            was_successful=enough_queries,
         )
 
         with self.check("DP queried SP", observer.participant_id) as check:
@@ -280,10 +310,10 @@ class DisplayProviderBehavior(GenericTestScenario):
                 )
                 return
 
-            if len(interactions) < 2:
+            if len(interactions) < EXPECTED_SP_QUERIES:
                 check.record_failed(
-                    summary="Expected at least two queries to SP",
-                    details=f"Found less than two queries to SP from observer under test for participant {observer.participant_id}",
+                    summary=f"Expected at least {EXPECTED_SP_QUERIES} queries to SP",
+                    details=f"Found only {len(interactions)} query/queries to SP from observer under test for participant {observer.participant_id} over the {SP_QUERY_OBSERVATION_RETRIES * SP_QUERY_OBSERVATION_DELAY_S} seconds following the display queries",
                     query_timestamps=[q.timestamp],
                 )
 
@@ -305,6 +335,25 @@ class DisplayProviderBehavior(GenericTestScenario):
                         details=f"Query to SP from observer under test for participant {observer.participant_id} exceeded the maximum diagonal.",
                         query_timestamps=[q.timestamp],
                     )
+
+    def _retry(
+        self,
+        operation: Callable[[], TOperationResult],
+        retries: int,
+        delay_s: float,
+        delay_reason: str,
+        was_successful: Callable[[TOperationResult], bool],
+    ) -> TOperationResult:
+        """Retry an operation with a delay, up to a certain number of retries,
+        until the condition is met or retries are exhausted.
+        """
+        result = operation()
+        for attempt in range(retries):
+            if was_successful(result):
+                return result
+            self.sleep(timedelta(seconds=delay_s), delay_reason)
+            result = operation()
+        return result
 
     def _clean_isa(self):
         with self.check(

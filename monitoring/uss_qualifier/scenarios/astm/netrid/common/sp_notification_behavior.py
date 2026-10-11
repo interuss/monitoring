@@ -207,7 +207,7 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
 
         # notifications are not immediate: we optimistically try early, and retry until
         # the permissible delay has passed, or we have received all notifications.
-        interactions, query = self._retry_with_backoff(
+        interactions, query = self._retry(
             fetch_interactions,
             retries=3,
             delay_s=1,
@@ -291,7 +291,7 @@ class ServiceProviderNotificationBehavior(GenericTestScenario):
                 )
         self.end_cleanup()
 
-    def _retry_with_backoff(
+    def _retry(
         self,
         operation: Callable[[], TOperationResult],
         retries: int,
