@@ -412,7 +412,7 @@ def test_run_user_search_load_recovers_from_unstable_step():
 
     with (
         patch(
-            "monitoring.benchmarker.engine.loads.user_search.user_search.create_virtual_user",
+            "monitoring.benchmarker.engine.loads.step_execution.create_virtual_user",
             side_effect=fake_create_vu,
         ),
         ThreadPoolExecutor(max_workers=4) as executor,
