@@ -20,30 +20,12 @@ local lng_size = 0.00001;
 
 local scenarios = import './scenarios.libsonnet';
 local sites = import './sites.libsonnet';
-local users = import './users.libsonnet';
 local s2_cell_of = std.native('s2.cell_of');
 // Level 11 gives each site a several-kilometer operating area.  Four-cell spacing
 // leaves gaps between sites; S2 offsets avoid assuming a fixed km-per-degree scale.
 local rects = sites.grid(s2_cell_of(34, -118, 11), num_sites, site_columns, site_spacing_cells);
-local subscriptions = [
-  {
-    id: '48ff9727-d204-4cc3-9b7a-%012x' % i,
-    rect: rects[i],
-  } for i in std.range(0, num_sites - 1)
-];
 
-scenarios.flight_planner_search(
-  test_name, num_nodes, initial_users,
-  [
-    [
-      {
-        name: 'FPU%d_s%d' % [uss, i + 1],
-        flight_planner: users.basic_flight_planner(
-          ['uss%d_dss_pool' % uss], subscriptions[i].id, rects[i], lat_size, lng_size,
-          'site%d' % (i + 1),
-        ),
-      } for i in std.range(0, num_sites - 1)
-    ] for uss in std.range(1, num_uss)
-  ],
-  subscriptions,
+scenarios.multi_site_flight_planner_search(
+  test_name, num_uss, num_nodes, initial_users, rects,
+  '48ff9727-d204-4cc3-9b7a-', lat_size, lng_size,
 )
