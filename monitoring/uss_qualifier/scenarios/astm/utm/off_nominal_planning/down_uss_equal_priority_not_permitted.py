@@ -132,6 +132,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
                 flight_planner=self.tested_uss,
                 flight_info=flight2_planned,
+                flight_planning_state=self.flight_planning_state,
             )
 
             validator.expect_not_shared()
@@ -175,6 +176,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
                 flight_planner=self.tested_uss,
                 flight_info=flight2_planned,
+                flight_planning_state=self.flight_planning_state,
             )
 
             validator.expect_not_shared()
@@ -216,6 +218,7 @@ class DownUSSEqualPriorityNotPermitted(DownUSS):
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
                 flight_planner=self.tested_uss,
                 flight_info=flight2_planned,
+                flight_planning_state=self.flight_planning_state,
             )
 
             validator.expect_not_shared()

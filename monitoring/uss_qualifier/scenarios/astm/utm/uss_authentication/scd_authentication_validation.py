@@ -47,6 +47,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
 from monitoring.uss_qualifier.scenarios.astm.utm.uss_authentication.endpoint_auth_validator import (
     EndpointAuthValidator,
 )
+from monitoring.uss_qualifier.scenarios.flight_planning.state import FlightPlanningState
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights,
     plan_flight,
@@ -73,6 +74,7 @@ class SCDAuthenticationValidation(TestScenario):
         flight_intents: FlightIntentsResource,
     ):
         super().__init__()
+        self.flight_planning_state = FlightPlanningState()
         self.tested_uss = tested_uss
         self.utm_auth = utm_auth
         self.flight_1 = self._init_flight_template(flight_intents=flight_intents)
@@ -150,6 +152,7 @@ class SCDAuthenticationValidation(TestScenario):
                 self,
                 self.tested_uss.client,
                 flight,
+                flight_planning_state=self.flight_planning_state,
             )
             return validator.expect_shared(as_planned)
 
@@ -243,5 +246,9 @@ class SCDAuthenticationValidation(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights(self, [self.tested_uss.client])
+        cleanup_flights(
+            self,
+            [self.tested_uss.client],
+            flight_planning_state=self.flight_planning_state,
+        )
         self.end_cleanup()

@@ -19,6 +19,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
+from monitoring.uss_qualifier.scenarios.flight_planning.state import FlightPlanningState
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights,
     plan_flight,
@@ -39,6 +40,7 @@ class Validation(TestScenario):
         flight_planner: FlightPlannerResource,
     ):
         super().__init__()
+        self.flight_planning_state = FlightPlanningState()
         self.ussp = flight_planner.client
 
         templates = flight_intents.get_flight_intents()
@@ -118,6 +120,7 @@ class Validation(TestScenario):
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
                 flight_planner=self.ussp,
                 flight_info=flight_intent,
+                flight_planning_state=self.flight_planning_state,
             )
 
         self.end_test_step()  # Inject flight intents
@@ -131,6 +134,7 @@ class Validation(TestScenario):
             self,
             self.ussp,
             valid_flight_intent,
+            flight_planning_state=self.flight_planning_state,
         )
         # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
         if resp is None:
@@ -140,5 +144,7 @@ class Validation(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights(self, [self.ussp])
+        cleanup_flights(
+            self, [self.ussp], flight_planning_state=self.flight_planning_state
+        )
         self.end_cleanup()

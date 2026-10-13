@@ -46,6 +46,10 @@ See [CONTRIBUTING.md](../../../CONTRIBUTING.md#ussqualifier-test-scenarios) for 
 
 Scenarios should avoid delays when possible as automated tests are more valuable when they run more quickly.  When delays are necessary, only use `<TestScenario>.sleep` -- do not use `time.sleep` nor `monitorlib.delay.sleep` nor any other means to cause an intentional delay.  The use of `<TestScenario>.sleep` allows delays to be more easily tracked and audited as they are often a prime target of interest when attempting to reduce automated testing run time.
 
+### Flight planning state
+
+Scenarios using flight planning helpers should create a separate (owned by scenario) `FlightPlanningState` instance and pass it to each helper via the `flight_planning_state` keyword argument, including `cleanup_flights`.  The state tracks flights for all planners used by that scenario.  Use the state's `plan_flight`, `update_flight`, and `end_flight` methods when issuing planning activities directly so cleanup can track flights even when requests fail.
+
 ## Resources
 
 Most test scenarios will require [test resources](../resources/README.md) (like NetRID telemetry to inject, NetRID service providers under test, etc) usually customized to the ecosystem in which the tests are being performed.  A test scenario declares what kind of resource(s) it requires, and a test suite identifies which available resources should be used to fulfill each test scenario's needs.

@@ -26,11 +26,9 @@ class FlightPlannerClient(ABC):
     """Client to interact with a USS as a user performing flight planning activities and as the test director preparing for tests involving flight planning activities."""
 
     participant_id: ParticipantID
-    created_flight_ids: set[FlightID]
 
     def __init__(self, participant_id: ParticipantID):
         self.participant_id = participant_id
-        self.created_flight_ids = set()
 
     # ===== Emulation of user actions =====
 
@@ -40,8 +38,13 @@ class FlightPlannerClient(ABC):
         flight_info: FlightInfo,
         execution_style: ExecutionStyle,
         additional_fields: dict | None = None,
+        *,
+        flight_id: FlightID | None = None,
     ) -> PlanningActivityResponse:
         """Instruct the USS to emulate a normal user trying to plan the described flight.
+
+        If flight_id is provided, use it for the new flight; otherwise generate an ID.
+        Callers can provide an ID to track the flight even if the request fails.
 
         Raises:
             * PlanningActivityError

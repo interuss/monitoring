@@ -190,6 +190,7 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
                 self,
                 self.control_uss,
                 flight2_planned,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight2_planned = as_planned
@@ -209,12 +210,19 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
                 self,
                 self.tested_uss,
                 flight1_planned,
+                flight_planning_state=self.flight_planning_state,
             )
             validator.expect_not_shared()
         self.end_test_step()
 
         self.begin_test_step("Delete Flight 2")
-        _ = delete_flight(self, self.control_uss, self.flight2_id)
+        assert self.flight2_id is not None
+        _ = delete_flight(
+            self,
+            self.control_uss,
+            self.flight2_id,
+            flight_planning_state=self.flight_planning_state,
+        )
         self.flight2_id = None
         self.end_test_step()
 
@@ -234,6 +242,7 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
                 self,
                 self.tested_uss,
                 flight1_planned,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             assert as_planned is not None
@@ -258,6 +267,7 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
                 self,
                 self.control_uss,
                 flight2_planned,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             assert as_planned is not None
@@ -291,6 +301,7 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
                 self.tested_uss,
                 flight1m_planned,
                 self.flight1_id,
+                flight_planning_state=self.flight_planning_state,
             )
             flight_1_oi_ref = validator.expect_shared(
                 flight1_planned, skip_if_not_found=True
@@ -319,6 +330,7 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
                 self.tested_uss,
                 flight1_activated,
                 self.flight1_id,
+                flight_planning_state=self.flight_planning_state,
             )
             flight_1_oi_ref = validator.expect_shared(
                 flight_1_intent, skip_if_not_found=True
@@ -331,7 +343,13 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
         self, flight_1_oi_ref: OperationalIntentReference | None
     ) -> tuple[FlightInfo, OperationalIntentReference, OperationalIntentReference]:
         self.begin_test_step("Delete Flight 2")
-        _ = delete_flight(self, self.control_uss, self.flight2_id)
+        assert self.flight2_id is not None
+        _ = delete_flight(
+            self,
+            self.control_uss,
+            self.flight2_id,
+            flight_planning_state=self.flight_planning_state,
+        )
         self.flight2_id = None
         self.end_test_step()
 
@@ -350,6 +368,7 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
                 self.tested_uss,
                 flight1_activated,
                 self.flight1_id,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             assert as_planned is not None
@@ -370,6 +389,7 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
                 self,
                 self.control_uss,
                 flight2_planned,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight2_planned = as_planned
@@ -395,6 +415,7 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
                 self.control_uss,
                 flight2_activated,
                 self.flight2_id,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight2_activated = as_planned
@@ -430,6 +451,7 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
                 flight1m_activated,
                 self.flight1_id,
                 preexisting_conflict=True,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight1m_activated = as_planned
@@ -466,6 +488,7 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
                 self.control_uss,
                 flight2m_activated,
                 self.flight2_id,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight2m_activated = as_planned
@@ -495,6 +518,7 @@ class ConflictHigherPriority(PlanningSequenceScenario, NotificationChecker):
                 self.tested_uss,
                 flight1c_activated,
                 self.flight1_id,
+                flight_planning_state=self.flight_planning_state,
             )
             validator.expect_not_shared()
         self.end_test_step()

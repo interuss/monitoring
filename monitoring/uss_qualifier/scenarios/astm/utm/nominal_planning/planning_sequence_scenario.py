@@ -26,6 +26,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation
 from monitoring.uss_qualifier.scenarios.astm.utm.clear_area_validation import (
     validate_clear_area,
 )
+from monitoring.uss_qualifier.scenarios.flight_planning.state import FlightPlanningState
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights,
 )
@@ -56,6 +57,7 @@ class PlanningSequenceScenario(TestScenario, ABC):
         scopes: dict[Scope, str],
     ):
         super().__init__()
+        self.flight_planning_state = FlightPlanningState()
         self.tested_uss = tested_uss.client
         self.control_uss = control_uss.client
         self.dss = dss.get_instance({k.value: v for k, v in scopes.items()})
@@ -125,5 +127,9 @@ class PlanningSequenceScenario(TestScenario, ABC):
 
     def cleanup(self):
         self.begin_cleanup()
-        cleanup_flights(self, (self.control_uss, self.tested_uss))
+        cleanup_flights(
+            self,
+            (self.control_uss, self.tested_uss),
+            flight_planning_state=self.flight_planning_state,
+        )
         self.end_cleanup()

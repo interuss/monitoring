@@ -150,15 +150,6 @@ class SCDFlightPlannerClient(FlightPlannerClient):
             # As a mitigation, if the USS responds with ReadyToFly for an off-nominal injected flight, we assume that the USS responded correctly.
             response.flight_plan_status = FlightPlanStatus.OffNominal
 
-        created_status = [
-            FlightPlanStatus.Planned,
-            FlightPlanStatus.OkToFly,
-            FlightPlanStatus.OffNominal,
-        ]
-        if response.activity_result == PlanningActivityResult.Completed:
-            if response.flight_plan_status in created_status:
-                self.created_flight_ids.add(flight_id)
-
         if query.response.json and "as_planned" in query.response.json:
             # Make best effort to interpret additional `as_planned` field according to flight_planning API as an ad-hoc
             # retrofit to the legacy scd injection API
@@ -181,9 +172,14 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         flight_info: FlightInfo,
         execution_style: ExecutionStyle,
         additional_fields: dict | None = None,
+        *,
+        flight_id: FlightID | None = None,
     ) -> PlanningActivityResponse:
         return self._inject(
-            str(uuid.uuid4()), flight_info, execution_style, additional_fields
+            flight_id or str(uuid.uuid4()),
+            flight_info,
+            execution_style,
+            additional_fields,
         )
 
     def try_update_flight(
@@ -243,8 +239,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
             notes=resp.notes if "notes" in resp else None,
         )
         if resp.result == scd_api.DeleteFlightResponseResult.Closed:
-            del self._plan_statuses[flight_id]
-            self.created_flight_ids.discard(flight_id)
+            self._plan_statuses.pop(flight_id, None)
 
         else:
             self._plan_statuses[flight_id] = response.flight_plan_status

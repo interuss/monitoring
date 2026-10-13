@@ -42,6 +42,7 @@ from monitoring.uss_qualifier.scenarios.astm.utm.test_steps import (
     set_uss_available,
     set_uss_down,
 )
+from monitoring.uss_qualifier.scenarios.flight_planning.state import FlightPlanningState
 from monitoring.uss_qualifier.scenarios.flight_planning.test_steps import (
     cleanup_flights,
     submit_flight,
@@ -72,6 +73,7 @@ class DownUSS(TestScenario):
         dss: DSSInstanceResource,
     ):
         super().__init__()
+        self.flight_planning_state = FlightPlanningState()
         self.dss_resource = dss
         self.tested_uss = tested_uss.client
         self.dss = dss.get_instance(self._dss_req_scopes)
@@ -269,6 +271,7 @@ class DownUSS(TestScenario):
                 failed_checks={PlanningActivityResult.Failed: "Failure"},
                 flight_planner=self.tested_uss,
                 flight_info=flight1_planned,
+                flight_planning_state=self.flight_planning_state,
             )
             # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
             flight1_planned = as_planned
@@ -333,7 +336,9 @@ class DownUSS(TestScenario):
     def cleanup(self):
         self.begin_cleanup()
         set_uss_available(self, self.dss, self.uss_qualifier_sub)
-        cleanup_flights(self, [self.tested_uss])
+        cleanup_flights(
+            self, [self.tested_uss], flight_planning_state=self.flight_planning_state
+        )
         if self.scenario_execution_max_extents:
             self._clear_op_intents(self.scenario_execution_max_extents)
 
