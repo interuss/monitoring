@@ -10,6 +10,7 @@ resources:
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
 
   # This resource should provide resources.flight_planning.FlightIntentsResource instances
+  conflicting_flights_provider: resources.resource.ResourceProvidingResource
   priority_preemption_flights_provider: resources.resource.ResourceProvidingResource?
 
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
@@ -29,6 +30,7 @@ actions:
     resources:
       mock_uss: mock_uss
       conflicting_flights: conflicting_flights
+      conflicting_flights_provider: conflicting_flights_provider
       non_conflicting_flights: non_conflicting_flights
       priority_preemption_flights_provider: priority_preemption_flights_provider?
       flight_planners: flight_planners
