@@ -32,7 +32,7 @@ The "Scenarios executed" table shows how test scenarios came to be run (e.g., te
 
 The columns following the "Scenario" column summarize which participants were active in each scenario by showing the outcomes of checks attributed to those participants in the test scenario.  For instance, a green checkmark under USS1 indicates that uss_qualifier verified USS1's compliance to at least one requirement and did not detect any non-compliance from USS1.
 
-The final column indicates how long each test scenario took to run in minutes:seconds.
+Each scenario cell shows its execution duration at the right.  Suite and action generator cells (including alignment cells shown as arrows) show the elapsed time from the earliest scenario start to the latest scenario end within that cell, including gaps between scenarios.
 
 #### Skipped elements
 
@@ -49,6 +49,10 @@ Each test scenario executed during the test run has its own page linked from the
 ### Resources
 
 The "Resources" section helps identify the origin of each resource used in this particular execution of the test scenario.  The test scenario itself may call for, e.g., a control USS and a test USS.  This section identifies which resource was used for the control USS and which resource was used for the test USS.
+
+### Execution
+
+The "Execution" section below "Resources" shows the scenario's start time, end time, and duration.  If the report has no scenario end time, the latest recorded step activity is used, or the start time if no step activity was recorded.
 
 ### Events
 

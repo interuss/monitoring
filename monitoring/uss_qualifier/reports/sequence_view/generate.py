@@ -36,6 +36,7 @@ from monitoring.uss_qualifier.reports.sequence_view.summary_types import (
     OverviewRow,
     SkippedAction,
     SuiteCell,
+    format_duration,
 )
 from monitoring.uss_qualifier.reports.tested_requirements.generate import (
     compute_test_run_information,
@@ -212,6 +213,24 @@ def _align_overview_rows(rows: list[OverviewRow]) -> None:
             r0 += 1
 
 
+def _compute_overview_durations(rows: list[OverviewRow]) -> None:
+    """Time each suite cell using only the scenarios within its rendered rows."""
+    for row_index, row in enumerate(rows):
+        for cell in row.suite_cells:
+            if not cell.first_row:
+                continue
+            rowspan = cell.node.rows if cell.node is not None else cell.rowspan
+            scenarios = [
+                covered_row.scenario_node.scenario
+                for covered_row in rows[row_index : row_index + rowspan]
+                if covered_row.scenario_node and covered_row.scenario_node.scenario
+            ]
+            if scenarios:
+                start_time = min(s.start_time for s in scenarios)
+                end_time = max(s.end_time for s in scenarios)
+                cell.duration = format_duration(end_time - start_time)
+
+
 def _enumerate_all_participants(node: ActionNode) -> list[ParticipantID]:
     if node.node_type == ActionNodeType.Scenario:
         assert node.scenario
@@ -318,6 +337,7 @@ def generate_sequence_view(
 
     overview_rows = list(_compute_overview_rows(node))
     _align_overview_rows(overview_rows)
+    _compute_overview_durations(overview_rows)
     max_suite_cols = max(len(r.suite_cells) for r in overview_rows)
     all_participants = _enumerate_all_participants(node)
     all_participants.sort()

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import StrEnum
 
 from implicitdict import ImplicitDict, Optional
@@ -15,6 +15,14 @@ from monitoring.uss_qualifier.reports.report import (
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 from monitoring.uss_qualifier.scenarios.definitions import TestScenarioTypeName
+
+
+def format_duration(duration: timedelta) -> str:
+    minutes, seconds = divmod(round(duration.total_seconds()), 60)
+    hours, minutes = divmod(minutes, 60)
+    if hours:
+        return f"{hours}:{minutes:02}:{seconds:02}"
+    return f"{minutes}:{seconds:02}"
 
 
 class NoteEvent(ImplicitDict):
@@ -102,6 +110,8 @@ class TestedScenario:
     name: str
     url: str
     scenario_index: int
+    start_time: datetime
+    end_time: datetime
     duration: str
     epochs: list[Epoch]
     participants: dict[ParticipantID, TestedParticipant]
@@ -152,6 +162,7 @@ class SuiteCell:
     first_row: bool
     rowspan: int = 1
     colspan: int = 1
+    duration: str | None = None
 
 
 @dataclass

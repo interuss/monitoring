@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import html
-import math
 from datetime import datetime
 
 from implicitdict import ImplicitDict
@@ -21,6 +20,7 @@ from monitoring.uss_qualifier.reports.sequence_view.summary_types import (
     TestedParticipant,
     TestedScenario,
     TestedStep,
+    format_duration,
 )
 
 UNATTRIBUTED_PARTICIPANT = "unattributed"
@@ -253,27 +253,18 @@ def compute_tested_scenario(
         epochs.append(Epoch(events=post_notes))
         all_events.extend(post_notes)
 
-    if (
-        "end_time" in report
-        and report.end_time
-        and (latest_step_time is None or report.end_time.datetime > latest_step_time)
-    ):
-        latest_step_time = report.end_time.datetime
-
-    if latest_step_time is not None:
-        dt_s = round((latest_step_time - report.start_time.datetime).total_seconds())
-    else:
-        dt_s = 0
-    dt_m = math.floor(dt_s / 60)
-    dt_s -= dt_m * 60
-    padding = "0" if dt_s < 10 else ""
-    duration = f"{dt_m}:{padding}{dt_s}"
+    start_time = report.start_time.datetime
+    end_time = (
+        report.end_time.datetime if report.end_time else latest_step_time or start_time
+    )
 
     scenario = TestedScenario(
         type=report.scenario_type,
         name=report.name,
         url=report.documentation_url,
-        duration=duration,
+        start_time=start_time,
+        end_time=end_time,
+        duration=format_duration(end_time - start_time),
         epochs=epochs,
         scenario_index=action_indexer.index,
         participants=scenario_participants,
