@@ -42,6 +42,15 @@
                   value: '[step.load_factor for step in completed_steps(scenario.steps)]',
                 },
                 {
+                  name: 'query_types',
+                  value: '[str(o.type) for o in scenario.operations if str(o.type).startswith("query.")]',
+                },
+                {
+                  name: 'qps',
+                  value: '[throughput_of_step(scenario, s, types=query_types, outcomes=[True])' +
+                        ' for s in completed_step_indices(scenario.steps)]',
+                },
+                {
                   name: 'failures',
                   value: '[throughput_of_step(scenario, s, types=["workflow.flight_planner.flight"], outcomes=[False])' +
                         ' for s in completed_step_indices(scenario.steps)]',
@@ -57,13 +66,19 @@
               y_axis: {
                 label: 'Throughput\n(Flights/s)',
                 min_value: 0,
-                max_value_expr: 'max(throughputs)',
+                max_value_expr: 'max(throughputs[%d])' % scenario_index,
               },
               y_axes: [
                 {
-                  label: 'Latency\n(Create ISA ms)',
+                  label: 'Latency\n(Create OIR ms)',
                   min_value: 0,
-                  max_value_expr: 'max(latencies)',
+                  max_value_expr: 'max(latencies[%d])' % scenario_index,
+                  y_axis: 1,
+                },
+                {
+                  label: 'DSS queries/s',
+                  min_value: 0,
+                  max_value_expr: 'qps',
                 },
               ],
               xy_plots: [
@@ -101,6 +116,15 @@
                   label_expr: '"Failures"',
                   x_data_expr: 'scale',
                   y_data_expr: 'failures',
+                },
+                {
+                  type: 'Scatter',
+                  color: 'purple',
+                  label_expr: '"QPS"',
+                  x_data_expr: 'scale',
+                  y_data_expr: 'qps',
+                  y_axis: 2,
+                  kwargs: { marker: 's', zorder: -0.8 },
                 },
               ],
               legend: {
