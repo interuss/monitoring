@@ -166,19 +166,22 @@ class TestSuiteAction[T: ActionGenerator]:
         )
 
         try:
-            try:
-                scenario.run(context)
-            except (ScenarioCannotContinueError, TestRunCannotContinueError):
-                pass
-            scenario.go_to_cleanup()
-            try:
-                scenario.cleanup()
-            except (ScenarioCannotContinueError, TestRunCannotContinueError):
-                scenario.ensure_cleanup_ended()
+            # Full asyncio: await run/cleanup and aclose on the executing task's
+            # loop rather than entering this synchronous Runner bridge.
+            with scenario.async_runtime():
+                try:
+                    scenario.run(context)
+                except (ScenarioCannotContinueError, TestRunCannotContinueError):
+                    pass
+                scenario.go_to_cleanup()
+                try:
+                    scenario.cleanup()
+                except (ScenarioCannotContinueError, TestRunCannotContinueError):
+                    scenario.ensure_cleanup_ended()
         except KeyboardInterrupt:
             raise
         except Exception as e:
-            scenario.record_execution_error(e)
+            scenario.record_execution_error(e, allow_after_completion=True)
         report = scenario.get_report()
         if "execution_error" in report and report.execution_error:
             lines = report.execution_error.stacktrace.split("\n")

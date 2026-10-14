@@ -1,5 +1,7 @@
 import asyncio
+from collections.abc import Coroutine, Iterable
 from datetime import datetime
+from typing import Any
 
 import s2sphere
 from implicitdict import ImplicitDict
@@ -91,7 +93,8 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         self._isa = isa
         self._isa_area = isa.s2_vertices()
 
-        # Note that when the test scenario ends prematurely, we may end up with an unclosed session.
+        # Construction stores configuration only; the client is opened on the
+        # execution loop by _initialize_async and always released by aclose.
         self._async_session = AsyncUTMTestSession(
             self._dss.base_url, self._dss.client.auth_adapter
         )
@@ -115,12 +118,14 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             alt_hi=self._isa.altitude_max,
         )
 
-        self._semaphore = asyncio.Semaphore(self._behavior.concurrency)
-
     def run(self, context: ExecutionContext):
         self._resolve_isa_time_bounds()
 
         self.begin_test_scenario(context)
+
+        # Full asyncio: await initialization and each request batch directly
+        # after run and the synchronous step methods become async.
+        self.run_async(self._initialize_async())
 
         self.begin_test_case("Setup")
         self.record_note(
@@ -164,6 +169,35 @@ class HeavyTrafficConcurrent(GenericTestScenario):
         self.end_test_case()
         self.end_test_scenario()
 
+    async def _initialize_async(self) -> None:
+        self._semaphore = asyncio.Semaphore(self._behavior.concurrency)
+        await self._async_session.build_session()
+
+    async def _run_batch[T](
+        self, requests: Iterable[Coroutine[Any, Any, T]]
+    ) -> list[T]:
+        # Finish or cancel every request before releasing the session on failure.
+        async with asyncio.TaskGroup() as group:
+            tasks = [group.create_task(request) for request in requests]
+        return [task.result() for task in tasks]
+
+    async def _get_isas_concurrently(self):
+        return await self._run_batch(self._get_isa(isa_id) for isa_id in self._isa_ids)
+
+    async def _create_isas_concurrently(self):
+        return await self._run_batch(
+            self._create_isa(isa_id) for isa_id in self._isa_ids
+        )
+
+    async def _delete_isas_concurrently(self):
+        return await self._run_batch(
+            self._delete_isa(isa_id, self._isa_versions[isa_id])
+            for isa_id in self._isa_ids
+        )
+
+    async def aclose(self) -> None:
+        await self._async_session.aclose()
+
     def _resolve_isa_time_bounds(self):
         start, end = self._isa.resolved_time_bounds(self.time_context.evaluate_now())
         self._isa_params.start_time = start
@@ -203,10 +237,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             )
 
     def _get_isas_by_id_concurrent_step(self):
-        loop = asyncio.get_event_loop()
-        results = loop.run_until_complete(
-            asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
-        )
+        results = self.run_async(self._get_isas_concurrently())
 
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
@@ -315,10 +346,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             raise ValueError(f"Unsupported RID version '{self._dss.rid_version}'")
 
     def _create_isas_concurrent_step(self):
-        loop = asyncio.get_event_loop()
-        results = loop.run_until_complete(
-            asyncio.gather(*[self._create_isa(isa_id) for isa_id in self._isa_ids])
-        )
+        results = self.run_async(self._create_isas_concurrently())
 
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
@@ -392,15 +420,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
             )
 
     def _delete_isas(self):
-        loop = asyncio.get_event_loop()
-        results = loop.run_until_complete(
-            asyncio.gather(
-                *[
-                    self._delete_isa(isa_id, self._isa_versions[isa_id])
-                    for isa_id in self._isa_ids
-                ]
-            )
-        )
+        results = self.run_async(self._delete_isas_concurrently())
 
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
@@ -431,10 +451,7 @@ class HeavyTrafficConcurrent(GenericTestScenario):
                     )
 
     def _get_deleted_isas(self):
-        loop = asyncio.get_event_loop()
-        results = loop.run_until_complete(
-            asyncio.gather(*[self._get_isa(isa_id) for isa_id in self._isa_ids])
-        )
+        results = self.run_async(self._get_isas_concurrently())
 
         for _, fetched_isa in results:
             self.record_query(fetched_isa.query)
@@ -473,6 +490,4 @@ class HeavyTrafficConcurrent(GenericTestScenario):
 
         self._dss_wrapper.cleanup_sub(self._sub_id)
         self._delete_isas_if_exists()
-        self._async_session.close()
-
         self.end_cleanup()
