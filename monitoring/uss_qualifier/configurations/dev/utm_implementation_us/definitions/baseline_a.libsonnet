@@ -23,6 +23,7 @@ function(env) {
             flight_planners: 'flight_planners',
             flight_planners_to_clear: 'flight_planners_to_clear',
             conflicting_flights: 'conflicting_flights',
+            conflicting_flights_provider: 'conflicting_flights_provider',
             priority_preemption_flights_provider: 'conflicting_flights_provider',
             invalid_flight_intents: 'invalid_flight_intents',
             non_conflicting_flights: 'non_conflicting_flights',
