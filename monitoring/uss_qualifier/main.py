@@ -148,6 +148,7 @@ def execute_test_run(
     )
     action = TestSuiteAction(config.action, resources)
     logger.info("Running top-level test suite action")
+    context.begin_action(action)
     report = action.run(context)
     logger.info("Top-level test suite action complete")
 

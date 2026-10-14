@@ -1,8 +1,10 @@
+import asyncio
 import inspect
 import time as pytime
 import traceback
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Coroutine, Iterable, Iterator
+from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Any, TypeVar
@@ -291,6 +293,8 @@ class GenericTestScenario(ABC):
     context = None
     """Execution context; set at begin_test_scenario."""
 
+    _async_runner: asyncio.Runner | None = None
+
     def __init__(self):
         self.documentation = get_documentation(self.__class__)
         self._phase = ScenarioPhase.NotStarted
@@ -345,6 +349,36 @@ class GenericTestScenario(ABC):
     def cleanup(self):
         """Test scenarios needing to clean up after attempting to run should override this method."""
         self.skip_cleanup()
+
+    @contextmanager
+    def async_runtime(self) -> Iterator[None]:
+        """Keep one loop alive through execution, cleanup, and async resource closure."""
+        # Synchronous lifecycle bridge. With async run/cleanup, remove the Runner
+        # and await aclose() in the executing task's finally block instead.
+        with asyncio.Runner() as runner:
+            self._async_runner = runner
+            try:
+                yield
+            finally:
+                try:
+                    runner.run(self.aclose())
+                finally:
+                    self._async_runner = None
+
+    def run_async[T](self, coroutine: Coroutine[Any, Any, T]) -> T:
+        """Synchronous bridge; replace run_async(coroutine) with await coroutine
+        when the calling scenario method becomes async.
+        """
+        if self._async_runner is None:
+            coroutine.close()
+            raise RuntimeError(
+                "Async operations require an active scenario async_runtime"
+            )
+        return self._async_runner.run(coroutine)
+
+    async def aclose(self) -> None:
+        """Release async resources, including when execution or cleanup fails."""
+        pass
 
     def me(self) -> str:
         return inspection.fullname(self.__class__)
@@ -648,8 +682,11 @@ class GenericTestScenario(ABC):
             assert self._step_report is not None
             self._phase = ScenarioPhase.Complete
 
-    def record_execution_error(self, e: Exception) -> None:
-        if self._phase == ScenarioPhase.Complete:
+    def record_execution_error(
+        self, e: Exception, *, allow_after_completion: bool = False
+    ) -> None:
+        # Resource finalization can fail after scenario cleanup has completed.
+        if self._phase == ScenarioPhase.Complete and not allow_after_completion:
             raise RuntimeError(
                 f"Test scenario `{self.me()}` indicated an execution error even though it was already Complete"
             )

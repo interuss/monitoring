@@ -303,22 +303,34 @@ class AsyncUTMTestSession:
         auth_adapter: AuthAdapter | None = None,
         timeout_seconds: float | None = None,
     ):
-        self._client = None
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.build_session())
+        self._client: ClientSession | None = None
+        self._closed = False
 
         self._prefix_url = prefix_url[0:-1] if prefix_url[-1] == "/" else prefix_url
         self.auth_adapter = auth_adapter
         self.default_scopes: list[str] | None = None
         self.timeout_seconds = timeout_seconds or CLIENT_TIMEOUT
 
-    async def build_session(self):
-        self._client = ClientSession()
+    async def build_session(self) -> ClientSession:
+        """Initialize on the running loop, reusing the client across request batches."""
+        if self._closed:
+            raise RuntimeError("Session is closed")
+        if self._client is None:
+            self._client = ClientSession()
+        return self._client
+
+    async def aclose(self) -> None:
+        self._closed = True
+        if self._client is not None:
+            await self._client.close()
 
     def close(self):
-        if self._client:
+        # Legacy synchronous prober bridge; async callers should await aclose().
+        if self._client is not None and not self._client.closed:
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(self._client.close())
+            loop.run_until_complete(self.aclose())
+        else:
+            self._closed = True
 
     def adjust_request_kwargs(self, url, method, kwargs):
         if self.auth_adapter:
@@ -350,10 +362,9 @@ class AsyncUTMTestSession:
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "PUT", kwargs)
 
-        if not self._client:
-            raise ValueError("Client is not ready")
+        client = await self.build_session()
 
-        async with self._client.put(url, **kwargs) as response:
+        async with client.put(url, **kwargs) as response:
             return (
                 response.status,
                 {k: v for k, v in response.headers.items()},
@@ -366,10 +377,9 @@ class AsyncUTMTestSession:
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "GET", kwargs)
 
-        if not self._client:
-            raise ValueError("Client is not ready")
+        client = await self.build_session()
 
-        async with self._client.get(url, **kwargs) as response:
+        async with client.get(url, **kwargs) as response:
             return (
                 response.status,
                 {k: v for k, v in response.headers.items()},
@@ -382,10 +392,9 @@ class AsyncUTMTestSession:
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "POST", kwargs)
 
-        if not self._client:
-            raise ValueError("Client is not ready")
+        client = await self.build_session()
 
-        async with self._client.post(url, **kwargs) as response:
+        async with client.post(url, **kwargs) as response:
             return (
                 response.status,
                 {k: v for k, v in response.headers.items()},
@@ -398,10 +407,9 @@ class AsyncUTMTestSession:
         if "auth" not in kwargs:
             kwargs = self.adjust_request_kwargs(url, "DELETE", kwargs)
 
-        if not self._client:
-            raise ValueError("Client is not ready")
+        client = await self.build_session()
 
-        async with self._client.delete(url, **kwargs) as response:
+        async with client.delete(url, **kwargs) as response:
             return (
                 response.status,
                 {k: v for k, v in response.headers.items()},
