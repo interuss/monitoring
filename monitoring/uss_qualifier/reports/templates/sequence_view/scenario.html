@@ -28,6 +28,29 @@
       {% set collapsible.queries = collapsible.queries + ["resource_origin_list"] %}
     </div>
   </div>
+  <div id="execution_section" class="collapseable">
+    <div class="node_key" onclick="showHide(document.getElementById('execution_section'))"><h4>Execution</h4></div>
+    <div class="node_value">
+      <table>
+        <tr>
+          <th>Execution characteristic</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td>Start time</td>
+          <td>{{ test_scenario.start_time.strftime("%Y-%m-%d %H:%M:%S %Z") }}</td>
+        </tr>
+        <tr>
+          <td>End time</td>
+          <td>{{ test_scenario.end_time.strftime("%Y-%m-%d %H:%M:%S %Z") }}</td>
+        </tr>
+        <tr>
+          <td>Duration</td>
+          <td>{{ test_scenario.duration }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
   {% if kml_file %}
     <h4>
       <a href="{{ kml_file }}">KML visualization</a>
