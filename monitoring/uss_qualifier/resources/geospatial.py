@@ -24,10 +24,14 @@ class GeospatialResource(Resource, ABC):
 
 class TriangularCascadeSoutheastSpecification(ImplicitDict):
     meters_east_margin: float
-    """Modify the resource by moving it this far along the east-west axis to separate it from other modification instances."""
+    """Modify the resource by moving it this far along the east-west axis to separate it from other modification instances.
+
+    Note that a positive value will cascade to the east while a negative value will cascade to the west."""
 
     meters_north_margin: float
-    """Modify the resource by moving it this far along the north-south axis to separate it from other modification instances."""
+    """Modify the resource by moving it this far along the north-south axis to separate it from other modification instances.
+
+    Note that a positive value will cascade to the north while a negative value will cascade to the south."""
 
 
 class TriangularCascadeSoutheastResource[GeospatialResourceType: GeospatialResource](
@@ -35,7 +39,14 @@ class TriangularCascadeSoutheastResource[GeospatialResourceType: GeospatialResou
         TriangularCascadeSoutheastSpecification, GeospatialResourceType
     ]
 ):
-    """Provides modified copies of a base geospatial resource which are offset east and south of the original resource."""
+    """Provides modified copies of a base geospatial resource which are offset west/east and north/south of the original resource.
+
+    For a cascade to the southeast (positive east, negative north), positioning looks like:
+    0 1 3 6
+    2 4 7
+    5 8
+    9
+    """
 
     base_resource: GeospatialResourceType
 

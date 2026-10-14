@@ -1,0 +1,27 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/configurations/configuration/ParallelismRule.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.configurations.configuration.ParallelismRule, as defined in monitoring/uss_qualifier/configurations/configuration.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "conditions": {
+      "description": "Apply the parallelism in this rule when any of these conditions are met.",
+      "items": {
+        "$ref": "TestSuiteActionSelectionCondition.json"
+      },
+      "type": "array"
+    },
+    "max_parallelism": {
+      "description": "Maximum number of actions to execute simultaneously at the selected level.",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "conditions",
+    "max_parallelism"
+  ],
+  "type": "object"
+}
