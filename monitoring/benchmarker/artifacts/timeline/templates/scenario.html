@@ -197,7 +197,7 @@
 
     .help-hint {
       position: absolute;
-      bottom: 0.5rem;
+      bottom: calc(14px + 0.5rem);
       left: 0.75rem;
       background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(4px);
@@ -251,6 +251,11 @@
           <button id="btn-reset-view" class="btn-sm" title="Reset to Full Scenario View">Reset View</button>
         </div>
 
+        <div class="btn-group">
+          <button id="btn-hzoom-in" class="btn-sm" title="Widen lanes (or Ctrl/Alt + Wheel Up)">Lanes (+)</button>
+          <button id="btn-hzoom-out" class="btn-sm" title="Narrow lanes (or Ctrl/Alt + Wheel Down)">Lanes (-)</button>
+        </div>
+
         <span class="badge">Duration: {{ timeline_data.duration_shorthand }}</span>
         <span class="badge">{{ timeline_data.stats.total_steps }} Steps</span>
         <span class="badge">{{ timeline_data.stats.total_origins }} Origins</span>
@@ -263,7 +268,7 @@
     <canvas id="timeline-canvas"></canvas>
     <div id="tooltip"></div>
     <div class="help-hint">
-      <strong>Controls:</strong> Left-drag or Mouse wheel to scroll &bull; Shift + Left-drag or Shift + Wheel to zoom &bull; Hover Time column to inspect active operations
+      <strong>Controls:</strong> Left-drag or Mouse wheel to scroll &bull; Shift + Left-drag or Shift + Wheel to zoom time &bull; Ctrl/Alt + Wheel or pinch to zoom lanes &bull; Horizontal wheel or bottom bar to scroll lanes &bull; Hover Time column to inspect active operations
     </div>
   </div>
 
@@ -311,11 +316,29 @@
       let viewT0 = scenarioStart;
       let viewT1 = scenarioEnd;
 
+      // Visible lane window [viewL0, viewL1], in lane units across all origins
+      const totalLanes = Math.max(1, data.total_operation_lanes);
+      const minLaneSpan = Math.min(1, totalLanes);
+      let viewL0 = 0;
+      let viewL1 = totalLanes;
+
+      // First lane index of each origin, for mapping lanes back to origins
+      const originLaneStarts = [];
+      {
+        let offset = 0;
+        data.origins.forEach((origin) => {
+          originLaneStarts.push(offset);
+          offset += origin.num_lanes;
+        });
+      }
+
       // Layout constants
       const H_HEADER = 36;
       const W_EVENTS = 130;
       const W_TIME = 75;
       const W_SCROLLBAR = 24;
+      const H_HSCROLLBAR = 14;
+      const X_OPS_START = W_EVENTS + W_TIME;
 
       let width = 0;
       let height = 0;
@@ -331,6 +354,66 @@
       let dragStartT0 = 0;
       let dragStartT1 = 0;
       let dragWithShift = false;
+      let isDraggingHScrollbar = false;
+      let dragAnchorX = 0;
+      let dragStartL0 = 0;
+      let dragStartL1 = 0;
+
+      function clampLanes() {
+        let span = viewL1 - viewL0;
+        if (span >= totalLanes) {
+          viewL0 = 0;
+          viewL1 = totalLanes;
+          return;
+        }
+        if (span < minLaneSpan) {
+          const center = (viewL0 + viewL1) / 2;
+          span = minLaneSpan;
+          viewL0 = center - span / 2;
+          viewL1 = center + span / 2;
+        }
+        if (viewL0 < 0) {
+          viewL0 = 0;
+          viewL1 = span;
+        }
+        if (viewL1 > totalLanes) {
+          viewL1 = totalLanes;
+          viewL0 = totalLanes - span;
+        }
+      }
+
+      function zoomLanesAround(lane, factor) {
+        const span = viewL1 - viewL0;
+        const newSpan = span * factor;
+        const ratio = (lane - viewL0) / span;
+        viewL0 = lane - newSpan * ratio;
+        viewL1 = lane + newSpan * (1 - ratio);
+        clampLanes();
+      }
+
+      function opsWidth() {
+        return Math.max(10, width - X_OPS_START - W_SCROLLBAR);
+      }
+
+      function laneWidth() {
+        return opsWidth() / (viewL1 - viewL0);
+      }
+
+      function laneToX(lane) {
+        return X_OPS_START + (lane - viewL0) * laneWidth();
+      }
+
+      function xToLane(x) {
+        return viewL0 + (x - X_OPS_START) / laneWidth();
+      }
+
+      function hScrollbarXToLane(x) {
+        return ((x - X_OPS_START) / opsWidth()) * totalLanes;
+      }
+
+      function timelineHeight() {
+        return Math.max(10, height - H_HEADER - H_HSCROLLBAR);
+      }
 
       function clampView() {
         let span = viewT1 - viewT0;
@@ -372,22 +455,22 @@
       window.addEventListener('resize', resizeCanvas);
 
       function timeToY(t) {
-        const timelineH = Math.max(10, height - H_HEADER);
+        const timelineH = timelineHeight();
         return H_HEADER + ((t - viewT0) / (viewT1 - viewT0)) * timelineH;
       }
 
       function yToTime(y) {
-        const timelineH = Math.max(10, height - H_HEADER);
+        const timelineH = timelineHeight();
         return viewT0 + ((y - H_HEADER) / timelineH) * (viewT1 - viewT0);
       }
 
       function timeToScrollbarY(t) {
-        const timelineH = Math.max(10, height - H_HEADER);
+        const timelineH = timelineHeight();
         return H_HEADER + ((t - scenarioStart) / fullDuration) * timelineH;
       }
 
       function scrollbarYToTime(y) {
-        const timelineH = Math.max(10, height - H_HEADER);
+        const timelineH = timelineHeight();
         return scenarioStart + ((y - H_HEADER) / timelineH) * fullDuration;
       }
 
@@ -432,11 +515,12 @@
 
         ctx.clearRect(0, 0, width, height);
 
-        const timelineH = Math.max(10, height - H_HEADER);
-        const totalOpLanes = Math.max(1, data.total_operation_lanes);
-        const xOpsStart = W_EVENTS + W_TIME;
-        const wOpsAvailable = Math.max(10, width - xOpsStart - W_SCROLLBAR);
-        const laneW = wOpsAvailable / totalOpLanes;
+        const timelineH = timelineHeight();
+        const yBottom = H_HEADER + timelineH;
+        const xOpsStart = X_OPS_START;
+        const xOpsEnd = width - W_SCROLLBAR;
+        const wOpsAvailable = opsWidth();
+        const laneW = laneWidth();
 
         // 1. Column Backgrounds & Vertical Dividers
         // Scenario Events Lane background
@@ -459,8 +543,8 @@
         ctx.lineTo(W_EVENTS, height);
         ctx.moveTo(xOpsStart, 0);
         ctx.lineTo(xOpsStart, height);
-        ctx.moveTo(width - W_SCROLLBAR, 0);
-        ctx.lineTo(width - W_SCROLLBAR, height);
+        ctx.moveTo(xOpsEnd, 0);
+        ctx.lineTo(xOpsEnd, height);
         ctx.stroke();
 
         // 2. Time Scale Ticks & Guidelines across lanes
@@ -481,13 +565,13 @@
 
         for (let t = firstTick; t <= viewT1; t += tickInterval) {
           const y = timeToY(t);
-          if (y >= H_HEADER && y <= height) {
+          if (y >= H_HEADER && y <= yBottom) {
             // Horizontal guideline
             ctx.strokeStyle = 'rgba(226, 232, 240, 0.8)';
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(W_EVENTS, y);
-            ctx.lineTo(width - W_SCROLLBAR, y);
+            ctx.lineTo(xOpsEnd, y);
             ctx.stroke();
 
             // Tick in time column
@@ -506,7 +590,7 @@
         data.steps.forEach((step) => {
           // Event 1: Step Start (Yellow Arrow + Load Factor)
           const yStart = timeToY(step.start_time);
-          if (yStart >= H_HEADER - 12 && yStart <= height + 12) {
+          if (yStart >= H_HEADER - 12 && yStart <= yBottom + 12) {
             ctx.fillStyle = '#b45309';
             ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
             ctx.textAlign = 'left';
@@ -521,7 +605,7 @@
           // Event 2: Throughput Stability (Green Arrow + 👍)
           if (step.throughput_stability_time !== null && step.throughput_stability_time !== undefined) {
             const yStab = timeToY(step.throughput_stability_time);
-            if (yStab >= H_HEADER - 12 && yStab <= height + 12) {
+            if (yStab >= H_HEADER - 12 && yStab <= yBottom + 12) {
               ctx.fillStyle = '#15803d';
               ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
               ctx.textAlign = 'left';
@@ -534,7 +618,7 @@
 
           // Event 3: Step Termination (Red Arrow + Unicode Symbol)
           const yEnd = timeToY(step.end_time);
-          if (yEnd >= H_HEADER - 12 && yEnd <= height + 12) {
+          if (yEnd >= H_HEADER - 12 && yEnd <= yBottom + 12) {
             ctx.fillStyle = '#b91c1c';
             ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
             ctx.textAlign = 'left';
@@ -545,11 +629,17 @@
           }
         });
 
-        // 4. Origin Swim Lanes & Operation Rectangles
-        let currentLaneOffset = 0;
+        // 4. Origin Swim Lanes & Operation Rectangles (clipped to the operations area)
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(xOpsStart, 0, wOpsAvailable, yBottom);
+        ctx.clip();
 
-        data.origins.forEach((origin) => {
-          const originX = xOpsStart + currentLaneOffset * laneW;
+        data.origins.forEach((origin, originIdx) => {
+          const firstLane = originLaneStarts[originIdx];
+          if (firstLane + origin.num_lanes < viewL0 || firstLane > viewL1) return;
+
+          const originX = laneToX(firstLane);
           const originW = origin.num_lanes * laneW;
 
           // Subtle divider between sublanes within origin
@@ -559,7 +649,7 @@
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(subX, H_HEADER);
-            ctx.lineTo(subX, height);
+            ctx.lineTo(subX, yBottom);
             ctx.stroke();
           }
 
@@ -568,17 +658,19 @@
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(originX + originW, 0);
-          ctx.lineTo(originX + originW, height);
+          ctx.lineTo(originX + originW, yBottom);
           ctx.stroke();
 
-          // Draw operations in each lane
+          // Draw operations in each visible lane
           origin.lanes.forEach((laneOps, laneIdx) => {
-            const laneX = originX + laneIdx * laneW;
+            const lane = firstLane + laneIdx;
+            if (lane + 1 < viewL0 || lane > viewL1) return;
+            const laneX = laneToX(lane);
             laneOps.forEach((op) => {
               if (op.t1 < viewT0 || op.t0 > viewT1) return;
 
               const y0 = Math.max(H_HEADER, timeToY(op.t0));
-              const y1 = Math.min(height, timeToY(op.t1));
+              const y1 = Math.min(yBottom, timeToY(op.t1));
               const rectH = Math.max(2, y1 - y0);
 
               const rectX = laneX + 1;
@@ -590,7 +682,7 @@
 
               // Termination indicator line
               const termY = timeToY(op.t1);
-              if (termY >= H_HEADER && termY <= height) {
+              if (termY >= H_HEADER && termY <= yBottom) {
                 const indH = Math.min(rectH, op.indicator_width || 2);
                 ctx.fillStyle = op.success ? '#22c55e' : '#ef4444';
                 ctx.fillRect(rectX, termY - indH, rectW, indH);
@@ -604,9 +696,8 @@
               }
             });
           });
-
-          currentLaneOffset += origin.num_lanes;
         });
+        ctx.restore();
 
         // 5. Header Row at Top (Origin Labels & Column Titles)
         ctx.fillStyle = '#f8fafc';
@@ -626,36 +717,40 @@
         ctx.fillText('Scenario Events', W_EVENTS / 2, H_HEADER / 2);
         ctx.fillText('Time', W_EVENTS + W_TIME / 2, H_HEADER / 2);
 
-        let headerOffset = 0;
-        data.origins.forEach((origin) => {
-          const originX = xOpsStart + headerOffset * laneW;
+        data.origins.forEach((origin, originIdx) => {
+          const firstLane = originLaneStarts[originIdx];
+          if (firstLane + origin.num_lanes < viewL0 || firstLane > viewL1) return;
+          const originX = laneToX(firstLane);
           const originW = origin.num_lanes * laneW;
+
+          // Keep the label inside both the origin column and the operations area
+          const clipX0 = Math.max(originX + 1, xOpsStart);
+          const clipX1 = Math.min(originX + originW - 1, xOpsEnd);
+          if (clipX1 <= clipX0) return;
 
           ctx.save();
           ctx.beginPath();
-          ctx.rect(originX + 1, 0, originW - 2, H_HEADER);
+          ctx.rect(clipX0, 0, clipX1 - clipX0, H_HEADER);
           ctx.clip();
-          ctx.fillText(origin.origin, originX + originW / 2, H_HEADER / 2);
+          ctx.fillText(origin.origin, (clipX0 + clipX1) / 2, H_HEADER / 2);
           ctx.restore();
-
-          headerOffset += origin.num_lanes;
         });
 
         // 6. Hovered Time Line (Dashed line across full width of display)
-        if (hoveredItem && hoveredItem.type === 'time' && hoveredItem.y >= H_HEADER && hoveredItem.y <= height) {
+        if (hoveredItem && hoveredItem.type === 'time' && hoveredItem.y >= H_HEADER && hoveredItem.y <= yBottom) {
           ctx.save();
           ctx.strokeStyle = '#2563eb';
           ctx.lineWidth = 1.5;
           ctx.setLineDash([4, 4]);
           ctx.beginPath();
           ctx.moveTo(0, hoveredItem.y);
-          ctx.lineTo(width - W_SCROLLBAR, hoveredItem.y);
+          ctx.lineTo(xOpsEnd, hoveredItem.y);
           ctx.stroke();
           ctx.restore();
         }
 
         // 7. Scroll Bar (Far Right)
-        const sbX = width - W_SCROLLBAR;
+        const sbX = xOpsEnd;
         ctx.fillStyle = '#f1f5f9';
         ctx.fillRect(sbX, H_HEADER, W_SCROLLBAR, timelineH);
 
@@ -680,16 +775,31 @@
           ctx.lineTo(sbX + 4, sy);
           ctx.stroke();
         });
+
+        // 8. Horizontal Scroll Bar (Bottom of the operations area)
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(xOpsStart, yBottom, wOpsAvailable, H_HSCROLLBAR);
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(xOpsStart, yBottom);
+        ctx.lineTo(xOpsEnd, yBottom);
+        ctx.stroke();
+
+        const thumbX0 = xOpsStart + (viewL0 / totalLanes) * wOpsAvailable;
+        const thumbW = Math.max(8, ((viewL1 - viewL0) / totalLanes) * wOpsAvailable);
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.35)';
+        ctx.fillRect(thumbX0, yBottom + 2, thumbW, H_HSCROLLBAR - 4);
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(thumbX0, yBottom + 2, thumbW, H_HSCROLLBAR - 4);
       }
 
       // Hit-testing
       function hitTest(x, y) {
-        if (y < H_HEADER) return null;
+        if (y < H_HEADER || y > H_HEADER + timelineHeight()) return null;
 
-        const xOpsStart = W_EVENTS + W_TIME;
-        const wOpsAvailable = Math.max(10, width - xOpsStart - W_SCROLLBAR);
-        const totalOpLanes = Math.max(1, data.total_operation_lanes);
-        const laneW = wOpsAvailable / totalOpLanes;
+        const xOpsStart = X_OPS_START;
 
         // Check if in Scenario Events lane
         if (x < W_EVENTS) {
@@ -720,14 +830,13 @@
 
         // Check operations swim lanes
         if (x >= xOpsStart && x < width - W_SCROLLBAR) {
-          let currentLaneOffset = 0;
-          for (let origin of data.origins) {
-            const originX = xOpsStart + currentLaneOffset * laneW;
-            const originW = origin.num_lanes * laneW;
-
-            if (x >= originX && x < originX + originW) {
-              const laneIdx = Math.floor((x - originX) / laneW);
-              if (laneIdx >= 0 && laneIdx < origin.lanes.length) {
+          const lane = Math.floor(xToLane(x));
+          for (let originIdx = 0; originIdx < data.origins.length; originIdx++) {
+            const origin = data.origins[originIdx];
+            const firstLane = originLaneStarts[originIdx];
+            if (lane >= firstLane && lane < firstLane + origin.num_lanes) {
+              const laneIdx = lane - firstLane;
+              if (laneIdx < origin.lanes.length) {
                 const laneOps = origin.lanes[laneIdx];
                 for (let op of laneOps) {
                   const y0 = timeToY(op.t0);
@@ -743,7 +852,6 @@
               const hoveredTime = yToTime(y);
               return { type: 'time', time: hoveredTime, y: y, activeCounts: getActiveOperationsAt(hoveredTime) };
             }
-            currentLaneOffset += origin.num_lanes;
           }
         }
 
@@ -829,6 +937,17 @@
       }
 
       // Mouse Events
+      function inHScrollbar(x, y) {
+        return y >= H_HEADER + timelineHeight() && x >= X_OPS_START && x < width - W_SCROLLBAR;
+      }
+
+      function centerLanesOn(lane) {
+        const span = viewL1 - viewL0;
+        viewL0 = lane - span / 2;
+        viewL1 = lane + span / 2;
+        clampLanes();
+      }
+
       canvas.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return; // Left click only
 
@@ -845,13 +964,21 @@
           viewT1 = targetTime + currentSpan / 2;
           clampView();
           draw();
+        } else if (inHScrollbar(x, y)) {
+          // Click on horizontal scrollbar
+          isDraggingHScrollbar = true;
+          centerLanesOn(hScrollbarXToLane(x));
+          draw();
         } else {
           // Click on main timeline
           isDraggingMain = true;
+          dragAnchorX = x;
           dragAnchorY = y;
           dragAnchorTime = yToTime(y);
           dragStartT0 = viewT0;
           dragStartT1 = viewT1;
+          dragStartL0 = viewL0;
+          dragStartL1 = viewL1;
           dragWithShift = e.shiftKey;
           canvas.style.cursor = 'grabbing';
         }
@@ -872,8 +999,14 @@
           return;
         }
 
+        if (isDraggingHScrollbar) {
+          centerLanesOn(hScrollbarXToLane(x));
+          draw();
+          return;
+        }
+
         if (isDraggingMain) {
-          const timelineH = Math.max(10, height - H_HEADER);
+          const timelineH = timelineHeight();
           if (e.shiftKey || dragWithShift) {
             // Shift + Drag: Zoom centered at dragAnchorTime
             // Dragging down (dy > 0) zooms in (smaller span); dragging up (dy < 0) zooms out (larger span)
@@ -884,10 +1017,14 @@
             viewT0 = dragAnchorTime - span * ratio;
             viewT1 = dragAnchorTime + span * (1 - ratio);
           } else {
-            // Left Drag: Pan view (keeping clicked time directly under cursor)
+            // Left Drag: Pan view (keeping clicked time and lane directly under cursor)
             const dt = ((y - dragAnchorY) / timelineH) * (dragStartT1 - dragStartT0);
             viewT0 = dragStartT0 - dt;
             viewT1 = dragStartT1 - dt;
+            const dl = ((x - dragAnchorX) / opsWidth()) * (dragStartL1 - dragStartL0);
+            viewL0 = dragStartL0 - dl;
+            viewL1 = dragStartL1 - dl;
+            clampLanes();
           }
           clampView();
           draw();
@@ -897,7 +1034,7 @@
         const item = hitTest(x, y);
 
         // Cursor style
-        if (x >= width - W_SCROLLBAR) {
+        if (x >= width - W_SCROLLBAR || inHScrollbar(x, y)) {
           canvas.style.cursor = 'pointer';
         } else if (item && (item.type === 'op' || item.type === 'event')) {
           canvas.style.cursor = 'pointer';
@@ -923,6 +1060,7 @@
       window.addEventListener('mouseup', () => {
         isDraggingMain = false;
         isDraggingScrollbar = false;
+        isDraggingHScrollbar = false;
         canvas.style.cursor = 'grab';
       });
 
@@ -930,8 +1068,33 @@
         e.preventDefault();
 
         const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         const cursorTime = yToTime(y);
+
+        if (e.ctrlKey || e.metaKey || e.altKey) {
+          // Ctrl/Cmd/Alt + Wheel (and trackpad pinch, reported as Ctrl + Wheel): zoom lanes centered at cursor
+          const delta = e.deltaY !== 0 ? e.deltaY : e.deltaX;
+          if (delta === 0) return;
+          // Pinch gestures report small deltas, so scale them up to a usable zoom speed
+          const scaled = e.ctrlKey && Math.abs(delta) < 10 ? delta * 10 : delta;
+          const zoomFactor = Math.max(0.5, Math.min(2.0, Math.exp((scaled / 100) * 0.2)));
+          const anchorLane = x >= X_OPS_START ? xToLane(x) : (viewL0 + viewL1) / 2;
+          zoomLanesAround(anchorLane, zoomFactor);
+          draw();
+          return;
+        }
+
+        if (!e.shiftKey && Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+          // Horizontal wheel / trackpad swipe: scroll lanes left / right
+          const span = viewL1 - viewL0;
+          const dl = (e.deltaX / opsWidth()) * span;
+          viewL0 += dl;
+          viewL1 += dl;
+          clampLanes();
+          draw();
+          return;
+        }
 
         // Normalize delta across platforms where shiftKey may convert deltaY to deltaX
         const delta = e.deltaY !== 0 ? e.deltaY : e.deltaX;
@@ -979,9 +1142,21 @@
         draw();
       });
 
+      document.getElementById('btn-hzoom-in').addEventListener('click', () => {
+        zoomLanesAround((viewL0 + viewL1) / 2, 0.5);
+        draw();
+      });
+
+      document.getElementById('btn-hzoom-out').addEventListener('click', () => {
+        zoomLanesAround((viewL0 + viewL1) / 2, 2.0);
+        draw();
+      });
+
       document.getElementById('btn-reset-view').addEventListener('click', () => {
         viewT0 = scenarioStart;
         viewT1 = scenarioEnd;
+        viewL0 = 0;
+        viewL1 = totalLanes;
         clampView();
         draw();
       });
