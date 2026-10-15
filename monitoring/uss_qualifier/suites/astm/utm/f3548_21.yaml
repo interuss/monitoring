@@ -32,6 +32,11 @@ local_resources:
     resource_type: resources.versioning.SystemIdentityResource
     specification:
       system_identity: astm.f3548.v21
+  dss_environments:
+    resource_type: resources.combinations.ResourceCombinationsResource
+    dependencies:
+      dss: dss_instances?
+    specification: {}
   priority_preemption_combinations:
     resource_type: resources.combinations.ResourceCombinationsResource
     dependencies:
@@ -84,8 +89,9 @@ actions:
       flight_intents2: non_conflicting_flights?
       flight_intents_environments: flight_intents_environments?
 - action_generator:
-    generator_type: action_generators.astm.f3548.ForEachDSS
+    generator_type: action_generators.resource_environments.ResourceEnvironmentsActionGenerator
     resources:
+      dss_environments: dss_environments
       dss_instances: dss_instances
       dss_datastore_cluster: dss_datastore_cluster?
       second_utm_auth: second_utm_auth?
@@ -96,6 +102,7 @@ actions:
       problematically_big_area: problematically_big_area
       test_exclusions: test_exclusions?
     specification:
+      resource_environments_source: dss_environments
       action_to_repeat:
         test_suite:
           suite_type: suites.astm.utm.dss_probing
@@ -110,8 +117,6 @@ actions:
             planning_area: planning_area
             problematically_big_area: problematically_big_area
             test_exclusions: test_exclusions?
-      dss_instances_source: dss_instances
-      dss_instance_id: dss
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
