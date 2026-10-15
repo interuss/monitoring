@@ -1,4 +1,5 @@
 import datetime
+from copy import deepcopy
 
 from implicitdict import ImplicitDict, Optional
 from uas_standards.astm.f3548.v21.api import (
@@ -11,11 +12,17 @@ from uas_standards.astm.f3548.v21.api import (
     UssBaseURL,
 )
 
-from monitoring.monitorlib.geo import make_latlng_rect
+from monitoring.monitorlib.geo import (
+    LatLngBoundingBox,
+    RelativeTranslation,
+    Transformation,
+    make_latlng_rect,
+)
 from monitoring.monitorlib.geotemporal import Volume4D
 from monitoring.monitorlib.subscription_params import SubscriptionParams
 from monitoring.monitorlib.temporal import TestTimeContext, Time
 from monitoring.monitorlib.testing import make_fake_url
+from monitoring.uss_qualifier.resources.geospatial import GeospatialResource
 from monitoring.uss_qualifier.resources.resource import Resource
 from monitoring.uss_qualifier.resources.volume import VolumeResource
 
@@ -42,7 +49,7 @@ class PlanningAreaSpecification(ImplicitDict):
         return make_fake_url(frames_above=frames_above + 1)
 
 
-class PlanningAreaResource(Resource[PlanningAreaSpecification]):
+class PlanningAreaResource(GeospatialResource, Resource[PlanningAreaSpecification]):
     specification: PlanningAreaSpecification
     _volume: VolumeResource
 
@@ -55,6 +62,29 @@ class PlanningAreaResource(Resource[PlanningAreaSpecification]):
         super().__init__(specification, resource_origin)
         self.specification = specification
         self._volume = volume
+
+    def get_extents(self) -> LatLngBoundingBox:
+        return LatLngBoundingBox.from_latlng_rect(
+            self.resolved_volume4d_with_times(None, None).rect_bounds
+        )
+
+    def move(self, meters_east: float, meters_north: float) -> "PlanningAreaResource":
+        volume_spec = deepcopy(self._volume.specification)
+        volume_spec.template.transformations = (
+            volume_spec.template.transformations or []
+        ) + [
+            Transformation(
+                relative_translation=RelativeTranslation(
+                    meters_east=meters_east,
+                    meters_north=meters_north,
+                )
+            )
+        ]
+        return PlanningAreaResource(
+            specification=deepcopy(self.specification),
+            resource_origin=self.resource_origin,
+            volume=VolumeResource(volume_spec, self._volume.resource_origin),
+        )
 
     def resolved_volume4d(self, context: TestTimeContext) -> Volume4D:
         return self._volume.specification.template.resolve(context)
