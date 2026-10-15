@@ -126,11 +126,12 @@ class SupportedKeysNotSpecifiedError(ValueError):
     pass
 
 
-class ResourceProvidingResource[
-    SpecificationType: ImplicitDict,
-    ResourceType: Resource,
-](Resource[SpecificationType], ABC):
-    """Resource capable of spawning ResourceType resources according to a desired key, such as an index."""
+class ResourceProvidingResource[ResourceType: Resource](Resource, ABC):
+    """Resource capable of spawning ResourceType resources according to a desired key, such as an index.
+
+    Concrete providers should also inherit Resource[TheirSpecification] to declare
+    their specification type independently of the type of resource they provide.
+    """
 
     @abstractmethod
     def provide_resource_for(self, **kwargs) -> ResourceType:

@@ -35,9 +35,8 @@ class TriangularCascadeSoutheastSpecification(ImplicitDict):
 
 
 class TriangularCascadeSoutheastResource[GeospatialResourceType: GeospatialResource](
-    ResourceProvidingResource[
-        TriangularCascadeSoutheastSpecification, GeospatialResourceType
-    ]
+    ResourceProvidingResource[GeospatialResourceType],
+    Resource[TriangularCascadeSoutheastSpecification],
 ):
     """Provides modified copies of a base geospatial resource which are offset west/east and north/south of the original resource.
 
