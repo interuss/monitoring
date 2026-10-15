@@ -43,3 +43,5 @@ The release notes should contain at least the following sections:
 ## Optional migration tasks
 
 ## Important information
+
+The obsolete deployment_manager tool has been removed from this repository.
