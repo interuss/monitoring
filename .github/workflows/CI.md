@@ -28,7 +28,7 @@ This repository contains a large number of shell scripts.  This check attempts t
 
 ### benchmarker minimal configuration
 
-This job runs [`minimal.jsonnet`](../../monitoring/benchmarker/configurations/interuss/minimal.jsonnet) on the Ubuntu runner with Python 3.13 and dependencies from `uv.lock`.  Configuration actions bring up and tear down a local DSS deployment within the benchmarker run.
+This job runs [`minimal.jsonnet`](../../monitoring/benchmarker/configurations/interuss/minimal.jsonnet) on the Ubuntu runner with uv (rather than the `monitoring` docker image like most others).  Configuration actions bring up and tear down a local DSS deployment within the benchmarker run.
 
 To run it locally from the repository root:
 
