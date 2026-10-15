@@ -26,7 +26,8 @@ local short_flights = {
   },
   throughput_instability_criteria: {
     any_of: [
-      { phase_duration_at_least: '15s' },
+      // Allow a complete flight cycle, including the longer planned window below.
+      { phase_duration_at_least: '30s' },
       {
         failures_more_than: {
           count: 2,
@@ -179,7 +180,8 @@ local short_flights = {
                       altitude_upper: { value: 20, reference: 'W84', units: 'M' },
                     },
                     time_start: '2026-01-01T00:00:00Z',
-                    time_end: '2026-01-01T00:00:02Z',
+                    // Leave room for DSS latency and retries even though execution ends early.
+                    time_end: '2026-01-01T00:00:10Z',
                   },
                 ],
               },
