@@ -6,7 +6,10 @@ resources:
   dss: resources.astm.f3548.v21.DSSInstanceResource
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
-  conflicting_flights: resources.flight_planning.FlightIntentsResource
+
+  # This input is DEPRECATED and may be removed in future versions.
+  conflicting_flights: resources.flight_planning.FlightIntentsResource?
+  
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
 
   # This resource should provide resources.flight_planning.FlightIntentsResource instances
@@ -29,7 +32,7 @@ actions:
     suite_type: suites.astm.utm.f3548_21
     resources:
       mock_uss: mock_uss
-      conflicting_flights: conflicting_flights
+      conflicting_flights: conflicting_flights?
       conflicting_flights_provider: conflicting_flights_provider
       non_conflicting_flights: non_conflicting_flights
       priority_preemption_flights_provider: priority_preemption_flights_provider?

@@ -108,6 +108,14 @@ class Resource[SpecificationType: ImplicitDict](ABC):
             self._get_type_annotation(), specified_type, self._get_typevar_map()
         )
 
+    def resolve_resource(self) -> "Resource":
+        """Return the resource to expose in the resource pool after construction.
+
+        Selectors may return another resource.  Its type metadata and origin are
+        preserved, and consumers receive that resource rather than the selector.
+        """
+        return self
+
 
 class ValueResource[T: ImplicitDict](Resource[T]):
     value: T
@@ -140,6 +148,45 @@ class ResourceProvidingResource[
     def _provided_resource_origin(self, key_name: str) -> str:
         """Method that should generally be used to describe the origin of a resource provided by this resource."""
         return f"Resource for {key_name} provided by {self.resource_origin}"
+
+
+class SingularResourceSpecification(ImplicitDict):
+    index: int
+    """Index of the resource to select from the provider."""
+
+
+class SingularResource[SingularResourceType: Resource](
+    Resource[SingularResourceSpecification]
+):
+    """Expose a single provider result as its actual resource type in the pool."""
+
+    _specification: SingularResourceSpecification
+    _provider: ResourceProvidingResource[ImplicitDict, SingularResourceType]
+
+    def __init__(
+        self,
+        specification: SingularResourceSpecification,
+        resource_origin: str,
+        provider: ResourceProvidingResource[ImplicitDict, SingularResourceType],
+    ):
+        super().__init__(specification, resource_origin)
+        self._specification = specification
+        self._provider = provider
+
+    def resolve_resource(self) -> SingularResourceType:
+        resource = self._provider.provide_resource_for(index=self._specification.index)
+        expected_type = substitute_typevars(
+            get_type_hints(SingularResource.resolve_resource)["return"],
+            self._get_typevar_map(),
+        )
+        if not isinstance(resource, Resource) or not is_type_covariant_match(
+            resource._get_type_annotation(), expected_type, resource._get_typevar_map()
+        ):
+            raise ValueError(
+                f"Resource provided by {self._provider.resource_origin} for index {self._specification.index} "
+                f"when resolving {self.resource_origin} does not match expected type {format_type_name(expected_type)}"
+            )
+        return resource
 
 
 class MissingResourceError(ValueError):
@@ -399,7 +446,7 @@ def _make_resource(
             **dependency_args,
         )
     resource._typevar_map = decl_types.typevar_map
-    return resource
+    return resource.resolve_resource()
 
 
 def make_child_resources[ResourceType: Resource](
