@@ -100,6 +100,64 @@ jobs:
       - name: Unit tests
         run: make unit-test
 
+  benchmarker-minimal-test:
+    name: benchmarker minimal configuration
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: .
+      PYTHONUNBUFFERED: '1'
+      MPLBACKEND: Agg
+    steps:
+    - name: Job information
+      run: |
+        docker version
+        docker compose version
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        submodules: true
+    # Run on the host because configuration actions invoke Docker and Docker Compose.
+    - name: Set up Python
+      uses: actions/setup-python@v7
+      with:
+        python-version: '3.13'
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        version: '0.12.21'
+        enable-cache: true
+    - name: Install benchmarker dependencies
+      run: uv sync --locked --no-install-project
+    - name: Run minimal benchmarker configuration
+      shell: bash
+      timeout-minutes: 10
+      run: |
+        mkdir -p logs monitoring/benchmarker/output/minimal
+        uv run --no-sync python monitoring/benchmarker/benchmark.py \
+          --config file://monitoring/benchmarker/configurations/interuss/minimal.jsonnet \
+          --config-output monitoring/benchmarker/output/minimal/config.json \
+          --output monitoring/benchmarker/output/minimal \
+          2>&1 | tee logs/benchmarker.log
+    - name: Collect remaining container logs
+      if: always()
+      timeout-minutes: 2
+      run: make collect-local-logs
+    - name: Clean up local DSS deployment
+      if: always()
+      timeout-minutes: 2
+      run: make clean-locally
+    - name: Save benchmarker reports and logs as artifact
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmarker-minimal
+        path: |
+          monitoring/benchmarker/output/minimal
+          logs
+
   mock_uss-test:
     name: mock_uss tests
     needs:
