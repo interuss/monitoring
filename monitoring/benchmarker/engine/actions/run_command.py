@@ -19,4 +19,32 @@ def run_command(cmd_spec: RunCommandActionSpecification) -> None:
 
     logger.info(f"Action: Running command `{cmd_spec.command}` in {cwd}")
 
-    subprocess.run(cmd_spec.command, shell=True, cwd=cwd, env=env, check=True)
+    # Merge the streams so both are logged live without one filling a pipe while
+    # we wait for the other.  Keep the output for the failure traceback as well.
+    output: list[str] = []
+    with subprocess.Popen(
+        cmd_spec.command,
+        shell=True,
+        cwd=cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        errors="replace",
+    ) as process:
+        assert process.stdout is not None
+        for line in process.stdout:
+            output.append(line)
+            logger.info("Command output: {}", line.rstrip("\r\n"))
+        returncode = process.wait()
+
+    if returncode:
+        combined_output = "".join(output)
+        error = subprocess.CalledProcessError(
+            returncode, cmd_spec.command, output=combined_output
+        )
+        error.add_note(
+            f"Working directory: {cwd}\n"
+            f"Combined stdout/stderr:\n{combined_output or '(no output)'}"
+        )
+        raise error
