@@ -1,0 +1,30 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/action_generators/documentation/definitions/PotentialTestSuiteAction.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.action_generators.documentation.definitions.PotentialTestSuiteAction, as defined in monitoring/uss_qualifier/action_generators/documentation/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "suite_definition": {
+      "description": "Definition of test suite internal to the configuration -- specified instead of `suite_type`.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "../../../suites/definitions/TestSuiteDefinition.json"
+        }
+      ]
+    },
+    "suite_type": {
+      "description": "Type/location of test suite.  Usually expressed as the file name of the suite definition (without extension) qualified relative to the `uss_qualifier` folder",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

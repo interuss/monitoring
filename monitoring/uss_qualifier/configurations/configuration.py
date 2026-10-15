@@ -6,6 +6,9 @@ from implicitdict import ImplicitDict, Optional, StringBasedTimeDelta
 
 from monitoring.monitorlib.dicts import JSONAddress
 from monitoring.uss_qualifier.action_generators.definitions import GeneratorTypeName
+from monitoring.uss_qualifier.action_generators.documentation.definitions import (
+    PotentialGeneratedAction,
+)
 from monitoring.uss_qualifier.reports.validation.definitions import (
     ValidationConfiguration,
 )
@@ -46,6 +49,12 @@ class ActionGeneratorSelectionCondition(ImplicitDict):
 
     types: Optional[list[GeneratorTypeName]]
     """Only select action generators of the specified types."""
+
+    potentially_generates_all_of: Optional[list[PotentialGeneratedAction]]
+    """Only select action generators whose list_potential_actions result contains every listed action (using exact equality).  An empty list imposes no restriction."""
+
+    potentially_generates_any_of: Optional[list[PotentialGeneratedAction]]
+    """Only select action generators whose list_potential_actions result contains at least one listed action (using exact equality).  An empty list selects no action generators."""
 
 
 class TestSuiteSelectionCondition(ImplicitDict):
