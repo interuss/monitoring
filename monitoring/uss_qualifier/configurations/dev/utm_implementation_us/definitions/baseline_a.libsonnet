@@ -33,7 +33,7 @@ function(env) {
             mock_uss: 'mock_uss',
             utm_auth: 'utm_auth',
             second_utm_auth: 'second_utm_auth',
-            planning_area: 'planning_area',
+            planning_area_provider: 'planning_area_provider',
             problematically_big_area: 'problematically_big_area',
             system_identity: 'system_identity',
             // dss_datastore_cluster: dss_datastore_cluster  # TODO: Provide once local DSS uses a multi-node cluster
@@ -151,6 +151,18 @@ function(env) {
             specification: {},
             dependencies: {
               volume: 'planning_area_volume',
+            },
+          },
+
+          // Provide variants of the planning_area base resource by shifting them geographically
+          planning_area_provider: {
+            resource_type: 'resources.geospatial.TriangularCascadeSoutheastResource',
+            dependencies: {
+              base_resource: 'planning_area',
+            },
+            specification: {
+              meters_east_margin: 10000,
+              meters_north_margin: 10000,
             },
           },
 

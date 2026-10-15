@@ -20,7 +20,7 @@ resources:
   utm_client_identity: resources.communications.ClientIdentityResource
   utm_auth: resources.communications.AuthAdapterResource?
   second_utm_auth: resources.communications.AuthAdapterResource?
-  planning_area: resources.PlanningAreaResource
+  planning_area_provider: resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]
   problematically_big_area: resources.VolumeResource
   system_identity: resources.versioning.SystemIdentityResource?
   test_exclusions: resources.dev.TestExclusionsResource?
@@ -45,7 +45,7 @@ actions:
       utm_client_identity: utm_client_identity
       utm_auth: utm_auth?
       second_utm_auth: second_utm_auth?
-      planning_area: planning_area
+      planning_area_provider: planning_area_provider
       problematically_big_area: problematically_big_area
       system_identity: system_identity?
       test_exclusions: test_exclusions?
