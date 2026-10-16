@@ -162,13 +162,13 @@ class SingularResource[SingularResourceType: Resource](
     """Expose a single provider result as its actual resource type in the pool."""
 
     _specification: SingularResourceSpecification
-    _provider: ResourceProvidingResource[ImplicitDict, SingularResourceType]
+    _provider: ResourceProvidingResource[SingularResourceType]
 
     def __init__(
         self,
         specification: SingularResourceSpecification,
         resource_origin: str,
-        provider: ResourceProvidingResource[ImplicitDict, SingularResourceType],
+        provider: ResourceProvidingResource[SingularResourceType],
     ):
         super().__init__(specification, resource_origin)
         self._specification = specification
