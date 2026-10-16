@@ -160,6 +160,19 @@ execution:
         types: [suites.astm.netrid.f3411_22a]
 ```
 
+### Skip action generators that may generate particular actions
+
+```yaml
+execution:
+  skip_action_when:
+    - is_action_generator:
+        potentially_generates_any_of:
+          - test_scenario:
+              scenario_type: scenarios.interuss.mock_uss.configure_locality.ConfigureLocality
+          - test_suite:
+              suite_type: suites.astm.netrid.f3411_22a
+```
+
 ### Only run two kinds of scenarios
 
 ```yaml
