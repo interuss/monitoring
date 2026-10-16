@@ -26,6 +26,9 @@ from monitoring.uss_qualifier.action_generators.action_generator import (
     ActionGenerator,
     action_generator_type_from_name,
 )
+from monitoring.uss_qualifier.action_generators.documentation.documentation import (
+    list_potential_actions_for_action_generator_definition,
+)
 from monitoring.uss_qualifier.configurations.configuration import (
     ExecutionConfiguration,
     FullyQualifiedCheck,
@@ -632,6 +635,31 @@ class ExecutionContext:
                         type(action.action_generator)
                         is action_generator_type_from_name(t)
                         for t in f.is_action_generator.types
+                    ):
+                        return False
+                if (
+                    f.is_action_generator.potentially_generates_all_of is not None
+                    or f.is_action_generator.potentially_generates_any_of is not None
+                ):
+                    potential_actions = (
+                        list_potential_actions_for_action_generator_definition(
+                            action.action_generator.definition
+                        )
+                    )
+                    if (
+                        f.is_action_generator.potentially_generates_all_of is not None
+                        and not all(
+                            a in potential_actions
+                            for a in f.is_action_generator.potentially_generates_all_of
+                        )
+                    ):
+                        return False
+                    if (
+                        f.is_action_generator.potentially_generates_any_of is not None
+                        and not any(
+                            a in potential_actions
+                            for a in f.is_action_generator.potentially_generates_any_of
+                        )
                     ):
                         return False
                 result = True
