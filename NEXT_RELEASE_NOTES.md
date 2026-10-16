@@ -45,3 +45,5 @@ The release notes should contain at least the following sections:
 * For uss_qualifier test configurations using `suites.astm.utm.f3548_21`, `suites.faa.uft.message_signing`, `suites.uspace.flight_auth`, or `suites.uspace.required_services`, the `conflicting_flights` input is now optional and its suite resource mapping can be removed.  By default, `f3548_21` selects index 0 from `conflicting_flights_provider`.  An explicitly supplied `conflicting_flights` still overrides this default for now.  Keep any base flight resource declaration needed by the provider.
 
 ## Important information
+
+The obsolete deployment_manager tool has been removed from this repository.
