@@ -2,7 +2,9 @@ name: U-space flight authorisation
 resources:
   test_env_version_providers: resources.versioning.VersionProvidersResource?
   prod_env_version_providers: resources.versioning.VersionProvidersResource?
-  conflicting_flights: resources.flight_planning.FlightIntentsResource
+
+  # This input is DEPRECATED and may be removed in future versions.
+  conflicting_flights: resources.flight_planning.FlightIntentsResource?
 
   # This resource should provide resources.flight_planning.FlightIntentsResource instances
   conflicting_flights_provider: resources.resource.ResourceProvidingResource
@@ -20,7 +22,7 @@ resources:
   utm_client_identity: resources.communications.ClientIdentityResource
   utm_auth: resources.communications.AuthAdapterResource?
   second_utm_auth: resources.communications.AuthAdapterResource?
-  planning_area: resources.PlanningAreaResource
+  planning_area_provider: resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]
   problematically_big_area: resources.VolumeResource
   system_identity: resources.versioning.SystemIdentityResource?
   test_exclusions: resources.dev.TestExclusionsResource?
@@ -30,7 +32,7 @@ actions:
     resources:
       test_env_version_providers: test_env_version_providers?
       prod_env_version_providers: prod_env_version_providers?
-      conflicting_flights: conflicting_flights
+      conflicting_flights: conflicting_flights?
       conflicting_flights_provider: conflicting_flights_provider
       priority_preemption_flights_provider: priority_preemption_flights_provider?
       invalid_flight_intents: invalid_flight_intents
@@ -45,7 +47,7 @@ actions:
       utm_client_identity: utm_client_identity
       utm_auth: utm_auth?
       second_utm_auth: second_utm_auth?
-      planning_area: planning_area
+      planning_area_provider: planning_area_provider
       problematically_big_area: problematically_big_area
       system_identity: system_identity?
       test_exclusions: test_exclusions?

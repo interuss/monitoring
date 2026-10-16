@@ -212,6 +212,15 @@ zurich_planning_area:
   specification:
     base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/zurich_planning_area
 
+zurich_planning_area_provider:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.geospatial.TriangularCascadeSoutheastResource
+  dependencies:
+    base_resource: zurich_planning_area
+  specification:
+    meters_east_margin: 10000
+    meters_north_margin: 10000
+
 zurich_problematically_big_area: # A huge (as in "too big") area for checks around area sizes
   $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
   resource_type: resources.VolumeResource
@@ -315,6 +324,15 @@ che_planning_area:
     volume: che_planning_area_volume
   specification:
     base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/library/resources/che_planning_area
+
+che_planning_area_provider:
+  $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
+  resource_type: resources.geospatial.TriangularCascadeSoutheastResource
+  dependencies:
+    base_resource: che_planning_area
+  specification:
+    meters_east_margin: 10000
+    meters_north_margin: 10000
 
 che_problematically_big_area:
   resource_type: resources.VolumeResource

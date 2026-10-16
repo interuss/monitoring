@@ -1,7 +1,7 @@
 USER_GROUP := $(shell id -u):$(shell id -g)
 
-# Find all .jsonnet configuration files in subfolders
-JSONNET_CONFIGS := $(patsubst ./%,%,$(shell find . -mindepth 2 -type f -name '*.jsonnet' | sort))
+# Find all .jsonnet configuration files here and in subfolders
+JSONNET_CONFIGS := $(patsubst ./%,%,$(shell find . -type f -name '*.jsonnet' | sort))
 # Generate the corresponding .yaml filenames from the .jsonnet filenames
 YAML_CONFIGS := $(patsubst %.jsonnet,%.yaml,$(JSONNET_CONFIGS))
 

@@ -131,13 +131,15 @@ def _find_specifications(
         ):
             _find_specifications(member, repo, already_checked)
         elif inspect.isclass(member):
-            if getattr(member, "__parameters__", ()):
-                continue
             if issubclass(member, Resource) and member != Resource:
                 if inspect.isabstract(member):
                     continue
                 spec_type = _resolve_resource_spec_type(member)
-                repo[fullname(spec_type)] = spec_type
+                # Generic resources can still have a concrete specification.
+                if isinstance(spec_type, type) and issubclass(spec_type, ImplicitDict):
+                    repo[fullname(spec_type)] = spec_type
+            elif getattr(member, "__parameters__", ()):
+                continue
             elif issubclass(member, ActionGenerator) and member != ActionGenerator:
                 spec_type = get_args(member.__orig_bases__[0])[0]
                 repo[fullname(spec_type)] = spec_type

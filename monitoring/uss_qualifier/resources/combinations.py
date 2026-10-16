@@ -33,6 +33,9 @@ class ResourceCombinationsResource(
     For example, with a pre-existing dependent `flight_planners` FlightPlannersResource, a
     ResourceCombinationsResource(tested_uss=flight_planners, control_uss=flight_planners) will produce each combination
     of tested_uss=FP1, control_uss=FP2 for all FP1, FP2 combinations in flight_planners.
+
+    A single dependent PluralResource enumerates its instances under the assigned resource ID.
+    If any dependent PluralResource is empty, no combinations are produced.
     """
 
     _resource_sources: dict[ResourceID, PluralResource]
@@ -53,13 +56,16 @@ class ResourceCombinationsResource(
                 raise ValueError(
                     f"Dependent resources for ResourceCombinationsResource must be PluralResources; dependent resource '{k}' was instead a {fullname(v.__class__)}"
                 )
-            if v.get_resource_instances_count() == 0:
-                # Can't fill this role because there are no resources to fill it with.
-                continue
             self._resource_sources[ResourceID(k)] = v
 
     def get_environments(self) -> Iterator[dict[ResourceID, Resource]]:
         """Get the combinations of resources fulfilling each specified role."""
+        if any(
+            resource.get_resource_instances_count() == 0
+            for resource in self._resource_sources.values()
+        ):
+            return
+
         roles = [
             _RoleCombination(role=k, resources=v, index=0)
             for k, v in self._resource_sources.items()

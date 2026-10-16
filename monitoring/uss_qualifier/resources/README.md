@@ -35,13 +35,30 @@ Resources for a given test configuration are all declared in a single global res
 Dependency resource IDs may be suffixed with `?` to indicate that the dependency is optional.  Explicit constructor parameters must have a default value to accept optional dependencies.  Dependencies accepted through `**kwargs` are treated as having an implicit default of `None`.  Missing optional dependencies are omitted from the constructor call, so they do not appear in the `kwargs` dictionary.
 
 
-## Resource-modifying resources
+## Resource-providing resources
 
-A `ResourceModifyingResource` is a resource capable of spawning other resources by modifying a template/base resource according to a desired key, such as an index.  This is useful when a test scenario needs multiple unique-but-related instances of a resource (e.g., distinct flights derived from a single base flight).
+A `ResourceProvidingResource[SpecificationType, ResourceType]` provides resources of `ResourceType` according to a desired key, such as an index.  This is useful when a test scenario needs multiple related instances of a resource (e.g., spatially separated flights derived from a single base flight).
 
-To use a `ResourceModifyingResource`:
+To use a `ResourceProvidingResource`:
 
-1. Declare it like any other resource, with its `base_resource` dependency pointing to the resource to be modified.
-2. When a variant of the base/template resource is needed, call `modify(key)` to obtain a modified copy of the base resource. Different `key` values generally produce different variants; the same `key` should produce equivalent results.
+1. Declare it like any other resource, with the dependencies its implementation requires.
+2. Call `provide_resource_for` with the supported keys (e.g., `provide_resource_for(index=0)`).
 
-The base/template resource itself remains available as `base_resource` on the modifier.
+## Selecting a single provided resource
+
+Use `resources.resource.SingularResource[ResourceType]` to place one indexed provider result in the resource pool:
+
+```yaml
+conflicting_flights:
+  resource_type: resources.resource.SingularResource[resources.flight_planning.FlightIntentsResource]
+  dependencies:
+    provider: conflicting_flights_provider
+  specification:
+    index: 0
+```
+
+The pool contains the actual resource returned by `provider.provide_resource_for(index=0)` rather than the SingularResource itself, so consumers can depend directly on `FlightIntentsResource`.  The selected resource retains its own origin and generic type metadata.  Providers must support an integer `index` key and return the declared resource type.
+
+## Resolving into pools
+
+Resource construction calls `resolve_resource()` after assigning generic type bindings.  The default implementation returns `self`; selectors may override it to return the resource to expose to consumers.  Resolution happens once during construction, and the result is reused by downstream dependencies.
