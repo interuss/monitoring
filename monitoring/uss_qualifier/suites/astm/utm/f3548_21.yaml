@@ -25,7 +25,7 @@ resources:
   utm_client_identity: resources.communications.ClientIdentityResource
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
   id_generator: resources.interuss.IDGeneratorResource
-  planning_area: resources.PlanningAreaResource
+  planning_area_provider: resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]
   problematically_big_area: resources.VolumeResource
   system_identity: resources.versioning.SystemIdentityResource?
   test_exclusions: resources.dev.TestExclusionsResource?
@@ -40,6 +40,18 @@ local_resources:
     resource_type: resources.versioning.SystemIdentityResource
     specification:
       system_identity: astm.f3548.v21
+  dss_environments:
+    resource_type: resources.combinations.ResourceCombinationsResource
+    dependencies:
+      dss: dss_instances?
+    specification: {}
+  dss_probing_environments:
+    resource_type: resources.environments.EnvironmentAugmentationResource
+    dependencies:
+      environments: dss_environments
+      planning_area: planning_area_provider
+      # TODO: populate flight_intents from non_conflicting_flights_provider
+    specification: {}
   priority_preemption_combinations:
     resource_type: resources.combinations.ResourceCombinationsResource
     dependencies:
@@ -92,18 +104,19 @@ actions:
       flight_intents2: non_conflicting_flights?
       flight_intents_environments: flight_intents_environments?
 - action_generator:
-    generator_type: action_generators.astm.f3548.ForEachDSS
+    generator_type: action_generators.resource_environments.ResourceEnvironmentsActionGenerator
     resources:
+      dss_probing_environments: dss_probing_environments
       dss_instances: dss_instances
       dss_datastore_cluster: dss_datastore_cluster?
       second_utm_auth: second_utm_auth?
       utm_client_identity: utm_client_identity
       flight_intents: non_conflicting_flights
       id_generator: id_generator
-      planning_area: planning_area
       problematically_big_area: problematically_big_area
       test_exclusions: test_exclusions?
     specification:
+      resource_environments_source: dss_probing_environments
       action_to_repeat:
         test_suite:
           suite_type: suites.astm.utm.dss_probing
@@ -118,8 +131,6 @@ actions:
             planning_area: planning_area
             problematically_big_area: problematically_big_area
             test_exclusions: test_exclusions?
-      dss_instances_source: dss_instances
-      dss_instance_id: dss
 - action_generator:
     generator_type: action_generators.flight_planning.FlightPlannerCombinations
     resources:
