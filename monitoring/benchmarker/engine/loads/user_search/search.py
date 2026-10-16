@@ -210,14 +210,6 @@ def _next_user_for_stability_boundary(
         return None
 
     stable_indices = [i for i, u in enumerate(sorted_users) if measured[u].is_stable]
-    if not stable_indices:
-        min_u = sorted_users[0]
-        if min_u <= 1:
-            raise RuntimeError(
-                "No stable step found and minimum tested user count is already <= 1"
-            )
-        return max(1, min_u // 2)
-
     s_top_idx = stable_indices[-1]
     s_top = sorted_users[s_top_idx]
 
@@ -387,6 +379,17 @@ def determine_next_user_count(
     measured = build_measured_steps(steps, operations, search.step_completion_criteria)
     sorted_users = sorted(measured.keys())
     adj = _get_adjacency(criteria)
+
+    # Every search strategy needs a stable measurement before it can characterize
+    # the throughput curve.  Reduce the load first if none has been obtained yet.
+    if not any(step.is_stable for step in measured.values()):
+        min_users = sorted_users[0]
+        if min_users <= 1:
+            raise RuntimeError(
+                "No stable step found and minimum tested user count is already <= 1"
+            )
+        return max(1, min_users // 2)
+
     expansion_ratio = (
         search.user_expansion_ratio
         if "user_expansion_ratio" in search and search.user_expansion_ratio

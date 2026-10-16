@@ -8,7 +8,9 @@ resources:
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   interuss_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
-  conflicting_flights: resources.flight_planning.FlightIntentsResource
+
+  # This input is DEPRECATED and may be removed in future versions.
+  conflicting_flights: resources.flight_planning.FlightIntentsResource?
 
   # This resource should provide resources.flight_planning.FlightIntentsResource instances
   conflicting_flights_provider: resources.resource.ResourceProvidingResource
@@ -28,6 +30,12 @@ resources:
   system_identity: resources.versioning.SystemIdentityResource?
   test_exclusions: resources.dev.TestExclusionsResource?
 local_resources:
+  conflicting_flights:
+    resource_type: resources.resource.SingularResource[resources.flight_planning.FlightIntentsResource]
+    dependencies:
+      provider: conflicting_flights_provider
+    specification:
+      index: 0
   system_identity:
     resource_type: resources.versioning.SystemIdentityResource
     specification:

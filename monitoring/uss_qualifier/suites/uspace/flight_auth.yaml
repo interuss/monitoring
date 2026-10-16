@@ -2,7 +2,9 @@ name: U-space flight authorisation
 resources:
   test_env_version_providers: resources.versioning.VersionProvidersResource?
   prod_env_version_providers: resources.versioning.VersionProvidersResource?
-  conflicting_flights: resources.flight_planning.FlightIntentsResource
+
+  # This input is DEPRECATED and may be removed in future versions.
+  conflicting_flights: resources.flight_planning.FlightIntentsResource?
 
   # This resource should provide resources.flight_planning.FlightIntentsResource instances
   conflicting_flights_provider: resources.resource.ResourceProvidingResource
@@ -30,7 +32,7 @@ actions:
     resources:
       test_env_version_providers: test_env_version_providers?
       prod_env_version_providers: prod_env_version_providers?
-      conflicting_flights: conflicting_flights
+      conflicting_flights: conflicting_flights?
       conflicting_flights_provider: conflicting_flights_provider
       priority_preemption_flights_provider: priority_preemption_flights_provider?
       invalid_flight_intents: invalid_flight_intents
