@@ -38,9 +38,8 @@ class NumberGeneratorModifierSpecification(ImplicitDict):
 
 
 class NumberGeneratorModifierResource(
-    ResourceProvidingResource[
-        NumberGeneratorModifierSpecification, NumberGeneratorResource
-    ]
+    ResourceProvidingResource[NumberGeneratorResource],
+    Resource[NumberGeneratorModifierSpecification],
 ):
     """Modifier for a NumberGeneratorResource. Used for unit tests."""
 
