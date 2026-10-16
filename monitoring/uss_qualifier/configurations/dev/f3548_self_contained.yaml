@@ -19,7 +19,6 @@ v1:
           prod_env_version_providers: prod_env_version_providers
           flight_planners: flight_planners
           flight_planners_to_clear: flight_planners
-          conflicting_flights: conflicting_flights
           conflicting_flights_provider: conflicting_flights_provider
           priority_preemption_flights_provider: conflicting_flights_provider
           invalid_flight_intents: invalid_flight_intents
@@ -30,7 +29,7 @@ v1:
           mock_uss: mock_uss
           utm_auth: utm_auth
           second_utm_auth: second_utm_auth
-          planning_area: planning_area
+          planning_area_provider: planning_area_provider
           problematically_big_area: problematically_big_area
 
     # When a test run is executed, a "baseline signature" is computed uniquely identifying the "baseline" of the test,
@@ -220,6 +219,15 @@ v1:
           specification:
             base_url: https://testdummy.interuss.org/interuss/monitoring/uss_qualifier/configurations/dev/f3548_self_contained/planning_area
 
+        # Provide variants of the planning_area base resource by shifting them geographically
+        planning_area_provider:
+          resource_type: resources.geospatial.TriangularCascadeSoutheastResource
+          dependencies:
+            base_resource: planning_area
+          specification:
+            meters_east_margin: 10000
+            meters_north_margin: 10000
+
         # An area designed to be soo big as to be refused by systems queries with it.
         problematically_big_area:
           $content_schema: monitoring/uss_qualifier/resources/definitions/ResourceDeclaration.json
@@ -299,6 +307,16 @@ v1:
 
       # Allow certain actions to execute their sub-actions in parallel.
       parallelism_rules:
+        # The DSS probing generator (action 3 in f3548_21) isn't ready to run its actions in parallel yet
+        - max_parallelism: 1
+          conditions:
+            - is_action_generator:
+                types:
+                  - action_generators.resource_environments.ResourceEnvironmentsActionGenerator
+              defined_at:
+                # TODO: add ability to condition on potential actions
+                - test_suite.actions[3].action_generator
+        # ...but other ResourceEnvironmentsActionGenerators can have their actions run in parallel
         - max_parallelism: 2
           conditions:
             - is_action_generator:

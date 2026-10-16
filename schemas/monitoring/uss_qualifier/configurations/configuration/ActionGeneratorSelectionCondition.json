@@ -7,6 +7,26 @@
       "description": "Path to content that replaces the $ref",
       "type": "string"
     },
+    "potentially_generates_all_of": {
+      "description": "Only select action generators whose list_potential_actions result contains every listed action (using exact equality).  An empty list imposes no restriction.",
+      "items": {
+        "$ref": "../../action_generators/documentation/definitions/PotentialGeneratedAction.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "potentially_generates_any_of": {
+      "description": "Only select action generators whose list_potential_actions result contains at least one listed action (using exact equality).  An empty list selects no action generators.",
+      "items": {
+        "$ref": "../../action_generators/documentation/definitions/PotentialGeneratedAction.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
     "types": {
       "description": "Only select action generators of the specified types.",
       "items": {

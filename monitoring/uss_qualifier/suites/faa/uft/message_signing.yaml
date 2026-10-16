@@ -6,7 +6,10 @@ resources:
   dss: resources.astm.f3548.v21.DSSInstanceResource
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
-  conflicting_flights: resources.flight_planning.FlightIntentsResource
+
+  # This input is DEPRECATED and may be removed in future versions.
+  conflicting_flights: resources.flight_planning.FlightIntentsResource?
+  
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource
 
   conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
@@ -16,7 +19,7 @@ resources:
   id_generator: resources.interuss.IDGeneratorResource
   utm_client_identity: resources.communications.ClientIdentityResource
   second_utm_auth: resources.communications.AuthAdapterResource?
-  planning_area: resources.PlanningAreaResource
+  planning_area_provider: resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]
   problematically_big_area: resources.VolumeResource
   test_exclusions: resources.dev.TestExclusionsResource?
 actions:
@@ -28,7 +31,7 @@ actions:
     suite_type: suites.astm.utm.f3548_21
     resources:
       mock_uss: mock_uss
-      conflicting_flights: conflicting_flights
+      conflicting_flights: conflicting_flights?
       conflicting_flights_provider: conflicting_flights_provider
       non_conflicting_flights: non_conflicting_flights
       priority_preemption_flights_provider: priority_preemption_flights_provider?
@@ -43,7 +46,7 @@ actions:
       id_generator: id_generator
       utm_client_identity: utm_client_identity
       second_utm_auth: second_utm_auth
-      planning_area: planning_area
+      planning_area_provider: planning_area_provider
       problematically_big_area: problematically_big_area
       test_exclusions: test_exclusions?
 - test_scenario:

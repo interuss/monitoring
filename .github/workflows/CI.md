@@ -4,7 +4,7 @@
 
 Before a pull request can be merged into the main branch, it must pass all automated tests for the repository.  This document describes the tests and how to run them locally.
 
-To run the equivalent of the full CI suite locally, simply execute `make presubmit`.  This should perform all of the steps below, including bringing up a local interoperability ecosystem and all local USS mocks necessary to conduct tests.  Therefore, `make presubmit` can (and should) be run starting without any pre-existing local infrastructure (interoperability ecosystem and/or USS mocks).
+To run the Docker-based CI checks locally, execute `make presubmit`.  This includes bringing up a local interoperability ecosystem and all local USS mocks necessary to conduct tests.  Therefore, `make presubmit` can (and should) be run starting without any pre-existing local infrastructure (interoperability ecosystem and/or USS mocks).  The benchmarker smoke test runs separately using the command below.
 
 The downside of `make presubmit` is that it takes a long time, and a lot of that time is spent bringing up and tearing down local infrastructure (interoperability ecosystem and USS mocks).  If your changes do not affect one or both of these things, you may save substantial time by bringing up an interoperability ecosystem once and leaving it up while developing, and possibly bringing up a set of USS mocks ([mock_uss](../../monitoring/mock_uss) instances) and leaving them up while developing (though obviously this will not work if developing changes that affect mock_uss).  See uss_qualifier tests section below.
 
@@ -25,6 +25,16 @@ uss_qualifier [scenario documentation](../../monitoring/uss_qualifier/scenarios/
 #### Shell lint (`make shell-lint`)
 
 This repository contains a large number of shell scripts.  This check attempts to have these scripts follow best practices and avoid common pitfalls.
+
+### benchmarker minimal configuration
+
+This job runs [`minimal.jsonnet`](../../monitoring/benchmarker/configurations/interuss/minimal.jsonnet) on the Ubuntu runner with uv (rather than the `monitoring` docker image like most others).  Configuration actions bring up and tear down a local DSS deployment within the benchmarker run.
+
+To run it locally from the repository root:
+
+```bash
+PYTHONPATH=. uv run --locked --no-install-project python monitoring/benchmarker/benchmark.py --config file://monitoring/benchmarker/configurations/interuss/minimal.jsonnet
+```
 
 ### mock_uss tests (`make test` in monitoring/mock_uss)
 
