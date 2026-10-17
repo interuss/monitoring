@@ -293,6 +293,9 @@ class TestScenarioReport(ImplicitDict):
     resource_origins: Optional[dict[ResourceID, str]]
     """For each resource used by this test scenario, the place that resource originated."""
 
+    resource_participants: Optional[dict[ResourceID, list[ParticipantID]]]
+    """For each resource used by this test scenario that is associated with one or more participants, the participants associated with that resource."""
+
     notes: Optional[dict[str, Note]]
     """Additional information about this scenario that may be useful"""
 

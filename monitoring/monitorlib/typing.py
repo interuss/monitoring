@@ -1,5 +1,5 @@
 import types
-from typing import TypeVar, Union, get_args, get_origin
+from typing import Any, TypeVar, Union, get_args, get_origin, get_type_hints
 
 TypeName = str
 """Plain string representing a Python class/type name without generic type arguments (e.g., `resources.flight_planning.FlightPlannerResource`)."""
@@ -12,6 +12,20 @@ ResolvedType = type | types.GenericAlias
 
 TypeAnnotation = ResolvedType | types.UnionType | TypeVar
 """A type annotation as may appear on a constructor/function parameter or generic base class."""
+
+
+def get_method_type_hints(cls: type, method_name: str) -> dict[str, Any]:
+    """Resolve method annotations using the namespace of its declaring class.
+
+    Python 3.13's get_type_hints does not automatically include class-scoped
+    PEP 695 type parameters when evaluating postponed method annotations.
+    Inherited methods need their declaring class's parameters, even when the
+    subclass defines type parameters with the same names.
+    """
+    owner = next(base for base in cls.__mro__ if method_name in vars(base))
+    localns = dict(vars(owner))
+    localns.update((p.__name__, p) for p in getattr(owner, "__type_params__", ()))
+    return get_type_hints(getattr(cls, method_name), localns=localns)
 
 
 def substitute_typevars(
