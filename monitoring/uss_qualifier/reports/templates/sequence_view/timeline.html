@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scenarios executed — Timeline</title>
+  {% include "timeline/style.html" %}
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div class="title-nav">
+        <a href="index.html" class="nav-link">&larr; Overview</a>
+        <h1>Scenarios executed — Timeline</h1>
+      </div>
+      <div class="controls-bar">
+        <div class="legend-bar">
+          {% for action_type in timeline_data.action_types %}
+            <span class="legend-chip">
+              <span class="legend-color-dot" style="background-color: {{ action_type.color }};"></span>
+              {{ action_type.name }}
+            </span>
+          {% endfor %}
+          <span class="legend-chip">Red outline: execution error</span>
+          <span class="legend-chip"><span class="legend-color-dot" style="background-color: #d1fae5;"></span>Participant: no failed checks</span>
+          <span class="legend-chip"><span class="legend-color-dot" style="background-color: #fee2e2;"></span>Participant: failed checks</span>
+        </div>
+        {% include "timeline/controls.html" %}
+        <span class="badge">Duration: {{ timeline_data.duration_shorthand }}</span>
+        <span class="badge">{{ timeline_data.scenario_count }} Scenarios</span>
+      </div>
+    </div>
+  </header>
+  {% set timeline_hover_hint = "Hover actions for details; click scenarios to open their events" %}
+  {% include "timeline/canvas.html" %}
+  <script id="timeline-data" type="application/json">{{ timeline_data|tojson }}</script>
+  <script>
+    (function() {
+      const data = JSON.parse(document.getElementById('timeline-data').textContent);
+      const W_TIME = 105;
+      {% include "timeline/viewport.js" %}
+
+      function actionLabel(action) {
+        return (action.scenario_index ? `s${action.scenario_index}: ` : '') + action.name;
+      }
+
+      // Estimate content once for the whole run so zooming does not shift columns.
+      const columnWeights = new Array(data.columns).fill(100);
+      const actionCounts = new Array(data.columns).fill(0);
+      ctx.save();
+      data.actions.forEach(action => {
+        actionCounts[action.column]++;
+        ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+        const labelWidth = ctx.measureText(actionLabel(action)).width + 12;
+        ctx.font = '600 12px -apple-system, BlinkMacSystemFont, sans-serif';
+        const badgeWidth = action.participant_checks.reduce(
+          (sum, p) => sum + ctx.measureText(p.id).width + 20, 12
+        );
+        columnWeights[action.column] = Math.max(columnWeights[action.column], labelWidth, badgeWidth);
+      });
+      ctx.restore();
+      const columnOffsets = [];
+      let totalWeight = 0;
+      columnWeights.forEach((weight, index) => {
+        // Cap very long text and give busy columns a modest bonus.
+        const countBonus = 1 + Math.min(0.5, Math.log2(Math.max(1, actionCounts[index])) * 0.1);
+        columnWeights[index] = Math.min(480, weight) * countBonus;
+        columnOffsets.push(totalWeight);
+        totalWeight += columnWeights[index];
+      });
+
+      function columnBounds(index) {
+        const available = Math.max(1, width - W_TIME - W_SCROLLBAR);
+        const minimum = Math.min(80, available / data.columns);
+        const extra = available - minimum * data.columns;
+        return {
+          x: W_TIME + index * minimum + extra * columnOffsets[index] / totalWeight,
+          w: minimum + extra * columnWeights[index] / totalWeight
+        };
+      }
+
+      function actionBounds(action) {
+        const y = Math.max(H_HEADER, timeToY(action.t0));
+        const column = columnBounds(action.column);
+        return {
+          x: column.x,
+          y,
+          w: column.w,
+          h: Math.min(height - y, Math.max(3, timeToY(action.t1) - y))
+        };
+      }
+
+      function drawParticipantBadges(action, bounds) {
+        ctx.font = '600 12px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.textBaseline = 'middle';
+        const left = bounds.x + 6;
+        const right = bounds.x + bounds.w - 6;
+        let x = left;
+        let y = bounds.y + 23;
+        for (const participant of action.participant_checks) {
+          const badgeWidth = Math.min(right - left, ctx.measureText(participant.id).width + 16);
+          if (x > left && x + badgeWidth > right) {
+            x = left;
+            y += 26;
+          }
+          if (y + 22 > bounds.y + bounds.h) break;
+          ctx.fillStyle = participant.has_failed_checks ? '#fee2e2' : '#d1fae5';
+          ctx.beginPath();
+          ctx.roundRect(x, y, badgeWidth, 22, 4);
+          ctx.fill();
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(x + 4, y, Math.max(0, badgeWidth - 8), 22);
+          ctx.clip();
+          ctx.fillStyle = participant.has_failed_checks ? '#991b1b' : '#065f46';
+          ctx.fillText(participant.id, x + 8, y + 11);
+          ctx.restore();
+          x += badgeWidth + 4;
+        }
+      }
+
+      function draw() {
+        if (width <= 0 || height <= H_HEADER) return;
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(0, 0, W_TIME, height);
+        drawTimeScale(0, W_TIME);
+
+        // Clip blocks and labels to the timeline below the fixed column headers.
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(W_TIME, H_HEADER, Math.max(1, width - W_TIME - W_SCROLLBAR), height - H_HEADER);
+        ctx.clip();
+        data.actions.forEach(action => {
+          if (action.t1 < viewT0 || action.t0 > viewT1) return;
+          const b = actionBounds(action);
+          ctx.fillStyle = action.color;
+          ctx.fillRect(b.x, b.y, b.w, b.h);
+          ctx.strokeStyle = action.execution_error ? '#ef4444' : '#ffffff';
+          ctx.lineWidth = action.execution_error ? 3 : 1;
+          ctx.strokeRect(b.x, b.y, b.w, b.h);
+          if (hoveredItem && hoveredItem.action === action) {
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(b.x + 1, b.y + 1, b.w - 2, b.h - 2);
+          }
+          if (b.h >= 16 && b.w >= 20) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(b.x + 4, b.y, Math.max(0, b.w - 8), b.h);
+            ctx.clip();
+            ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = '#0f172a';
+            ctx.fillText(actionLabel(action), b.x + 6, b.y + 3);
+            if (action.type === 'Scenario') drawParticipantBadges(action, b);
+            ctx.restore();
+          }
+        });
+        ctx.restore();
+
+        if (hoveredItem && hoveredItem.type === 'time') {
+          ctx.save();
+          ctx.strokeStyle = '#2563eb';
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(0, hoveredItem.y);
+          ctx.lineTo(width - W_SCROLLBAR, hoveredItem.y);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, width, H_HEADER);
+        ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#475569';
+        ctx.fillText('Time (UTC)', W_TIME / 2, H_HEADER / 2);
+        for (let index = 0; index < data.columns; index++) {
+          const column = columnBounds(index);
+          const x = column.x;
+          ctx.strokeStyle = '#cbd5e1';
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+          ctx.stroke();
+        }
+        drawScrollbar(data.actions.filter(a => a.type === 'Scenario').map(a => a.t0));
+      }
+
+      function hitTest(x, y) {
+        if (y < H_HEADER || y > height || x < 0 || x >= width - W_SCROLLBAR) return null;
+        if (x >= W_TIME) {
+          const columnIndex = columnWeights.findIndex((_, index) => {
+            const column = columnBounds(index);
+            return x < column.x + column.w;
+          });
+          for (const action of data.actions) {
+            if (action.column !== columnIndex || action.t1 < viewT0 || action.t0 > viewT1) continue;
+            const b = actionBounds(action);
+            if (x >= b.x && x < b.x + b.w && y >= b.y && y <= b.y + b.h) {
+              return {type: 'action', action, href: action.href};
+            }
+          }
+        }
+        return {type: 'time', time: yToTime(y), y};
+      }
+
+      function updateTooltip(e, item) {
+        tooltip.replaceChildren();
+        if (!item) {
+          tooltip.style.display = 'none';
+          return;
+        }
+        function line(label, value) {
+          const row = document.createElement('div');
+          const title = document.createElement('strong');
+          title.textContent = label + ': ';
+          row.append(title, document.createTextNode(String(value)));
+          tooltip.append(row);
+        }
+        if (item.type === 'action') {
+          const a = item.action;
+          line(a.type, (a.scenario_index ? `s${a.scenario_index}: ` : '') + a.name);
+          line('Class', a.class_name);
+          line('Start', new Date(a.t0 * 1000).toISOString());
+          line(a.end_inferred ? 'Last recorded time (unfinished)' : 'End', new Date(a.t1 * 1000).toISOString());
+          line('Duration', formatDuration(a.duration));
+          if (a.participants.length) line('Participants', a.participants.join(', '));
+          line('Passed checks', a.passed_checks);
+          line('Failed checks', a.failed_checks);
+          if (a.type === 'Scenario') line('Queries', a.query_count);
+          if (a.execution_error) line('Execution error', a.execution_error);
+          if (a.href) line('Click', 'Open scenario events');
+        } else {
+          line('Time (UTC)', new Date(item.time * 1000).toISOString());
+          data.actions.filter(a => a.t0 <= item.time && item.time <= a.t1)
+            .forEach(a => line(a.type, a.name));
+        }
+        tooltip.style.display = 'block';
+        positionTooltip(e);
+      }
+
+      resizeCanvas();
+    })();
+  </script>
+</body>
+</html>
