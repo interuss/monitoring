@@ -25,7 +25,7 @@ function(env) {
             conflicting_flights_provider: 'conflicting_flights_provider',
             priority_preemption_flights_provider: 'conflicting_flights_provider',
             invalid_flight_intents: 'invalid_flight_intents',
-            non_conflicting_flights: 'non_conflicting_flights',
+            non_conflicting_flights_provider: 'non_conflicting_flights_provider',
             test_exclusions: 'test_exclusions',
             dss: 'dss',
             dss_instances: 'dss_instances',
@@ -264,6 +264,18 @@ function(env) {
                   },
                 },
               ],
+            },
+          },
+
+          // Provide spatially separated non-conflicting flights for each DSS instance
+          non_conflicting_flights_provider: {
+            resource_type: 'resources.geospatial.TriangularCascadeSoutheastResource',
+            dependencies: {
+              base_resource: 'non_conflicting_flights',
+            },
+            specification: {
+              meters_east_margin: 10000,
+              meters_north_margin: 10000,
             },
           },
 
