@@ -307,15 +307,24 @@ v1:
 
       # Allow certain actions to execute their sub-actions in parallel.
       parallelism_rules:
-        # The DSS probing generator (action 3 in f3548_21) isn't ready to run its actions in parallel yet
+        # The DSS probing generator isn't ready to run its actions in parallel yet
         - max_parallelism: 1
           conditions:
             - is_action_generator:
                 types:
                   - action_generators.resource_environments.ResourceEnvironmentsActionGenerator
-              defined_at:
-                # TODO: add ability to condition on potential actions
-                - test_suite.actions[3].action_generator
+                potentially_generates_any_of:
+                  - test_suite:
+                      suite_type: suites.astm.utm.dss_probing
+        # The single-planner generator isn't ready to run its actions in parallel yet
+        - max_parallelism: 1
+          conditions:
+            - is_action_generator:
+                types:
+                  - action_generators.resource_environments.ResourceEnvironmentsActionGenerator
+                potentially_generates_any_of:
+                  - test_suite:
+                      suite_type: suites.astm.utm.single_planner
         # ...but other ResourceEnvironmentsActionGenerators can have their actions run in parallel
         - max_parallelism: 2
           conditions:
