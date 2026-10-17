@@ -170,6 +170,9 @@ class MockUSSSpecification(ImplicitDict):
 class MockUSSResource(Resource[MockUSSSpecification]):
     mock_uss: MockUSSClient
 
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return [self.mock_uss.participant_id]
+
     def __init__(
         self,
         specification: MockUSSSpecification,
@@ -191,6 +194,9 @@ class MockUSSsSpecification(ImplicitDict):
 
 class MockUSSsResource(Resource[MockUSSsSpecification]):
     mock_uss_instances: list[MockUSSClient]
+
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return list(dict.fromkeys(m.participant_id for m in self.mock_uss_instances))
 
     def __init__(
         self,

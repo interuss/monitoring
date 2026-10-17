@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 {% from "explorer.html" import explorer_header, explorer_content, explorer_footer %}
 {% from "sequence_view/severity.html" import severity_symbol, severity_class with context %}
+{% macro participant_list(participants) -%}
+  {%- if participants|length == 1 -%}
+    {{ participants[0]|e }}
+  {%- elif participants|length == 2 -%}
+    {{ participants[0]|e }} and {{ participants[1]|e }}
+  {%- else -%}
+    {{ participants[:-1]|join(', ')|e }}, and {{ participants[-1]|e }}
+  {%- endif -%}
+{%- endmacro %}
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -22,7 +31,8 @@
     <div class="node_value">
       <ul id="resource_origin_list">
         {% for local_resource_id, resource_origin in test_scenario.resource_origins.items() %}
-          <li><a href="{{ test_scenario.url }}#{{ local_resource_id }}"><code>{{ local_resource_id }}</code></a> provided by <a href="./index.html#resources-configuration">{{ resource_origin }}</a></li>
+          {% set participants = test_scenario.resource_participants.get(local_resource_id, []) %}
+          <li><a href="{{ test_scenario.url }}#{{ local_resource_id }}"><code>{{ local_resource_id }}</code></a>{% if participants %} for {{ participant_list(participants) }}{% endif %} provided by <a href="./index.html#resources-configuration">{{ resource_origin }}</a></li>
         {% endfor %}
       </ul>
       {% set collapsible.queries = collapsible.queries + ["resource_origin_list"] %}
