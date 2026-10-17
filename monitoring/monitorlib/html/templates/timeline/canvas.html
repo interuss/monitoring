@@ -1,0 +1,11 @@
+<div id="timeline-container">
+    <canvas id="timeline-canvas"></canvas>
+    <div id="tooltip"></div>
+    <div class="help-hint">
+      <strong>Controls:</strong> Left-drag or Mouse wheel to scroll &bull; Shift + Left-drag or Shift + Wheel to zoom time &bull;
+      {% if timeline_horizontal %}
+      Ctrl/Alt + Wheel or pinch to zoom lanes &bull; Horizontal wheel or bottom bar to scroll lanes &bull;
+      {% endif %}
+      {{ timeline_hover_hint|default("Hover Time column to inspect active operations") }}
+    </div>
+  </div>

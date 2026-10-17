@@ -38,6 +38,9 @@ from monitoring.uss_qualifier.reports.sequence_view.summary_types import (
     SuiteCell,
     format_duration,
 )
+from monitoring.uss_qualifier.reports.sequence_view.timeline import (
+    compute_timeline_data,
+)
 from monitoring.uss_qualifier.reports.tested_requirements.generate import (
     compute_test_run_information,
 )
@@ -169,7 +172,7 @@ def _compute_overview_rows(node: ActionNode) -> Iterator[OverviewRow]:
 
 
 def _align_overview_rows(rows: list[OverviewRow]) -> None:
-    max_suite_cols = max(len(r.suite_cells) for r in rows)
+    max_suite_cols = max((len(r.suite_cells) for r in rows), default=0)
     to_fill = 0
     for row in rows:
         if to_fill > 0:
@@ -335,10 +338,16 @@ def generate_sequence_view(
     os.makedirs(output_path, exist_ok=True)
     _generate_scenario_pages(node, config, output_path)
 
+    template = jinja_env.get_template("sequence_view/timeline.html")
+    with open(os.path.join(output_path, "timeline.html"), "w") as f:
+        f.write(
+            template.render(timeline_data=compute_timeline_data(report.report, node))
+        )
+
     overview_rows = list(_compute_overview_rows(node))
     _align_overview_rows(overview_rows)
     _compute_overview_durations(overview_rows)
-    max_suite_cols = max(len(r.suite_cells) for r in overview_rows)
+    max_suite_cols = max((len(r.suite_cells) for r in overview_rows), default=0)
     all_participants = _enumerate_all_participants(node)
     all_participants.sort()
     if UNATTRIBUTED_PARTICIPANT in all_participants:
