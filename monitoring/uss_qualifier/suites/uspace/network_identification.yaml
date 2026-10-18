@@ -42,34 +42,3 @@ actions:
     scenario_type: scenarios.uspace.netrid.msl.MSLAltitude
     resources:
       observers: observers
-participant_verifiable_capabilities:
-- id: uspace_netrid_service_provider
-  name: U-Space NetRID Service Provider
-  description: Participant fulfills testable requirements necessary to act as a provider of the mandatory NetRID U-space service via the use of ASTM F3411-22a as the primary means of compliance.
-  verification_condition:
-    all_conditions:
-      conditions:
-        - no_failed_checks: {}
-        - capability_verified:
-            capability_ids:
-              - service_provider
-              - display_provider
-              - service_provider_operator_id_provider # Operator Registration
-              - service_provider_uas_id_serial_number_provider # Serial Number
-              - service_provider_height_provider # Height
-              - service_provider_operator_position_provider # Operator Location
-              - service_provider_operator_altitude_provider # Operator Altitude
-              - service_provider_operator_location_type_provider # Operator Location Type
-              - service_provider_operational_status_provider # Operational Status
-              - display_provider_operator_id_transmitter # Operator Registration
-              - display_provider_uas_id_serial_number_transmitter # Serial Number
-              - display_provider_current_position_transmitter # UA Position
-              - display_provider_height_transmitter # Height
-              - display_provider_timestamp_transmitter # Timestamp
-              - display_provider_track_direction_transmitter # Track
-              - display_provider_speed_transmitter # Speed
-              - display_provider_operator_position_transmitter # Operator Location
-              - display_provider_operator_altitude_transmitter # Operator Altitude
-              - display_provider_operator_location_type_transmitter # Operator Location Type
-              - display_provider_operational_status_transmitter # Operational Status
-            capability_location: '$..*[?(@.suite_type=="suites.astm.netrid.f3411_22a")]'
