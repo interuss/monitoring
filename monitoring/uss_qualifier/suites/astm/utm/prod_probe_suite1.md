@@ -2,6 +2,16 @@
 # Minimal production probing for primary DSS instance test suite
 Defined in [parent suite](prod_probe.md) [`suites.astm.utm.prod_probe`](./prod_probe.yaml)
 
+## [Resource inputs](../../README.md#resources)
+
+- `primary_dss_instance`: `resources.astm.f3548.v21.DSSInstanceResource`
+- `second_utm_auth`: `resources.communications.AuthAdapterResource` (optional)
+- `all_dss_instances`: `resources.astm.f3548.v21.DSSInstancesResource` (optional)
+- `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `id_generator`: `resources.interuss.IDGeneratorResource`
+- `planning_area`: `resources.PlanningAreaResource`
+- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
+
 ## [Actions](../../README.md#actions)
 
 1. Scenario: [ASTM SCD DSS: Constraint Reference Synchronization](../../../scenarios/astm/utm/dss/synchronization/constraint_ref_synchronization.md) ([`scenarios.astm.utm.dss.synchronization.CRSynchronization`](../../../scenarios/astm/utm/dss/synchronization/constraint_ref_synchronization.py))

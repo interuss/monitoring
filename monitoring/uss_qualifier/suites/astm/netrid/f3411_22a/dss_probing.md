@@ -2,6 +2,19 @@
 # DSS testing for ASTM NetRID F3411-22a test suite
 [`suites.astm.netrid.f3411_22a.dss_probing`](./dss_probing.yaml)
 
+## [Resource inputs](../../../README.md#resources)
+
+- `dss`: `resources.astm.f3411.DSSInstanceResource`
+- `all_dss_instances`: `resources.astm.f3411.DSSInstancesResource` (optional)
+- `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `id_generator`: `resources.interuss.IDGeneratorResource`
+- `utm_client_identity`: `resources.communications.ClientIdentityResource`
+- `isa`: `resources.netrid.ServiceAreaResource`
+- `problematically_big_area`: `resources.VolumeResource`
+- `planning_area`: `resources.PlanningAreaResource`
+- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
+- `concurrency_behavior_adjustment`: `resources.interuss.scenarios.astm.netrid.common.dss.heavy_traffic_concurrent.HeavyTrafficConcurrentBehaviorResource` (optional)
+
 ## [Actions](../../../README.md#actions)
 
 1. Scenario: [ASTM NetRID DSS: Endpoint encryption](../../../../scenarios/astm/netrid/v22a/dss/endpoint_encryption.md) ([`scenarios.astm.netrid.v22a.dss.EndpointEncryption`](../../../../scenarios/astm/netrid/v22a/dss/endpoint_encryption.py))

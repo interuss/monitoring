@@ -2,6 +2,19 @@
 # DSS testing for ASTM F3548-21 test suite
 [`suites.astm.utm.dss_probing`](./dss_probing.yaml)
 
+## [Resource inputs](../../README.md#resources)
+
+- `dss`: `resources.astm.f3548.v21.DSSInstanceResource`
+- `utm_client_identity`: `resources.communications.ClientIdentityResource`
+- `second_utm_auth`: `resources.communications.AuthAdapterResource` (optional)
+- `all_dss_instances`: `resources.astm.f3548.v21.DSSInstancesResource` (optional)
+- `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `flight_intents`: `resources.flight_planning.FlightIntentsResource`
+- `id_generator`: `resources.interuss.IDGeneratorResource`
+- `planning_area`: `resources.PlanningAreaResource`
+- `problematically_big_area`: `resources.VolumeResource`
+- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
+
 ## [Actions](../../README.md#actions)
 
 1. Scenario: [ASTM SCD DSS: Operational Intent Explicit Subscription handling](../../../scenarios/astm/utm/dss/oir_explicit_sub_handling.md) ([`scenarios.astm.utm.dss.OIRExplicitSubHandling`](../../../scenarios/astm/utm/dss/oir_explicit_sub_handling.py))

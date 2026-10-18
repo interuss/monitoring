@@ -2,6 +2,11 @@
 # U-Space Common Information Service test suite
 [`suites.uspace.geo_awareness_cis`](./geo_awareness_cis.yaml)
 
+## [Resource inputs](../README.md#resources)
+
+- `source_document_ed269`: `resources.eurocae.ed269.source_document.SourceDocument`
+- `source_document_ed318`: `resources.eurocae.ed318.source_document.SourceDocument`
+
 ## [Actions](../README.md#actions)
 
 1. Scenario: [EUROCAE ED-269 UAS geographical zone model](../../scenarios/eurocae/ed269/source_data_model.md) ([`scenarios.eurocae.ed269.source_data_model.SourceDataModelValidation`](../../scenarios/eurocae/ed269/source_data_model.py))

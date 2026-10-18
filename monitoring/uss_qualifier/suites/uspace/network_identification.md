@@ -2,6 +2,26 @@
 # U-Space network identification test suite
 [`suites.uspace.network_identification`](./network_identification.yaml)
 
+## [Resource inputs](../README.md#resources)
+
+- `test_env_version_providers`: `resources.versioning.VersionProvidersResource` (optional)
+- `system_identity`: `resources.versioning.SystemIdentityResource` (optional)
+- `flights_data`: `resources.netrid.FlightDataResource`
+- `service_providers`: `resources.netrid.NetRIDServiceProviders` (optional)
+- `observers`: `resources.netrid.NetRIDObserversResource`
+- `evaluation_configuration`: `resources.netrid.EvaluationConfigurationResource`
+- `dss_instances`: `resources.astm.f3411.DSSInstancesResource` (optional)
+- `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `utm_client_identity`: `resources.communications.ClientIdentityResource`
+- `id_generator`: `resources.interuss.IDGeneratorResource`
+- `service_area`: `resources.netrid.ServiceAreaResource`
+- `problematically_big_area`: `resources.VolumeResource`
+- `planning_area`: `resources.PlanningAreaResource`
+- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
+- `mock_uss_dp`: `resources.interuss.mock_uss.client.MockUSSResource` (optional)
+- `mock_uss_sp`: `resources.interuss.mock_uss.client.MockUSSResource` (optional)
+- `uss_identification`: `resources.interuss.uss_identification.USSIdentificationResource` (optional)
+
 ## [Actions](../README.md#actions)
 
 1. Suite: [ASTM F3411-22a](../astm/netrid/f3411_22a.md) ([`suites.astm.netrid.f3411_22a`](../astm/netrid/f3411_22a.yaml))
