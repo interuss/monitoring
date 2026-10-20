@@ -10,6 +10,7 @@ from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib import fetch, schema_validation
 from monitoring.monitorlib.fetch import QueryError
+from monitoring.monitorlib.fetch.scd import FetchedSubscriptions
 from monitoring.monitorlib.schema_validation import F3548_21
 from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources import PlanningAreaResource
@@ -218,6 +219,7 @@ class OIRKeyValidation(TestScenario):
                     base_url=oir_params.uss_base_url,
                     oi_id=oir_id,
                     ovn=ovn,
+                    subscription_id=oir_params.subscription_id,
                 )
                 self.record_query(q)
                 check.record_failed(
@@ -280,9 +282,11 @@ class OIRKeyValidation(TestScenario):
         )
 
         self.begin_test_step("Attempt OIR creation overlapping with both OIRs")
+        subs_before = self._query_own_subs()
         self._attempt_creation_expect_conflict(
             third_oir_id, conflict_both, [first_oir.id, second_oir.id]
         )
+        self._check_subscriptions_unchanged(subs_before)
         self.end_test_step()
 
         # Finally, we create the third OIR with the correct key, so we may try to mutate it at the next step
@@ -403,6 +407,66 @@ class OIRKeyValidation(TestScenario):
             oir_to_mutate.id, conflict_with_first, [first_oir.id], oir_to_mutate.ovn
         )
         self.end_test_step()
+
+        # Try to extend the third OIR beyond the end of the second one without providing the conflicting OVNs
+        expand_implicit_sub = self._planning_area.get_new_operational_intent_ref_params(
+            key=[],
+            state=oir_to_mutate.state,
+            uss_base_url=oir_to_mutate.uss_base_url,
+            time_start=oir_to_mutate.time_start.value.datetime,
+            time_end=oir_to_mutate.time_end.value.datetime + timedelta(minutes=10),
+            subscription_id=oir_to_mutate.subscription_id,
+        )
+
+        self.begin_test_step(
+            "Attempt mutation requiring expansion of the implicit subscription"
+        )
+        subs_before = self._query_own_subs()
+        self._attempt_update_expect_conflict(
+            oir_to_mutate.id,
+            expand_implicit_sub,
+            [first_oir.id, second_oir.id],
+            oir_to_mutate.ovn,
+        )
+        self._check_subscriptions_unchanged(subs_before)
+        self.end_test_step()
+
+    def _query_own_subs(self) -> FetchedSubscriptions:
+        """Queries the subscriptions owned by the client in the planning area."""
+        query = self._dss.query_subscriptions(
+            self._planning_area_volume4d.to_f3548v21()
+        )
+        self.record_query(query)
+        with self.check("Successful subscription search query", self._pid) as check:
+            if query.status_code != 200:
+                check.record_failed(
+                    summary="Could not query subscriptions",
+                    details=f"When attempting to query subscriptions from the DSS, received {query.status_code}",
+                    query_timestamps=[query.request.timestamp],
+                )
+        return query
+
+    def _check_subscriptions_unchanged(self, query_before: FetchedSubscriptions):
+        """Checks that the subscriptions owned by the client are the same as before a rejected request."""
+        query = self._query_own_subs()
+        subs_before = {s.id: s.version for s in query_before.subscriptions.values()}
+        subs_after = {s.id: s.version for s in query.subscriptions.values()}
+        with self.check(
+            "Rejected request did not create or modify subscriptions", self._pid
+        ) as check:
+            created = subs_after.keys() - subs_before.keys()
+            deleted = subs_before.keys() - subs_after.keys()
+            modified = {
+                sub_id
+                for sub_id in subs_before.keys() & subs_after.keys()
+                if subs_before[sub_id] != subs_after[sub_id]
+            }
+            if created or deleted or modified:
+                check.record_failed(
+                    summary="Subscriptions changed by rejected request",
+                    details=f"The request was rejected because of a conflict, but subscriptions were changed: created {created}, deleted {deleted}, modified {modified}",
+                    query_timestamps=[query.request.timestamp],
+                )
 
     def _setup_case(self):
         self.begin_test_case("Setup")
