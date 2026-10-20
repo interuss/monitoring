@@ -531,14 +531,19 @@ class SCDHandler(CoordinationSubscriber):
 
         if op_intent_ref:
             # TODO: delete op intent ref asynchronously
-            _, _, query = await self.user.run_sync_client_call(
-                dss_instance.delete_op_intent,
-                id=op_intent_id,
-                ovn=op_intent_ref.ovn,
-            )
+            try:
+                _, _, query = await self.user.run_sync_client_call(
+                    dss_instance.delete_op_intent,
+                    id=op_intent_id,
+                    ovn=op_intent_ref.ovn,
+                )
+                queries = [query]
+            except QueryError as e:
+                queries = e.queries
 
-            success = query.status_code == 200
-            self.user.record_query(query, success)
+            success = bool(queries) and queries[0].status_code == 200
+            for query in queries:
+                self.user.record_query(query, success)
             flight.completed_actions.append(
                 CompletedFlightAction(
                     type=FlightActionType.DeleteOpIntent,
