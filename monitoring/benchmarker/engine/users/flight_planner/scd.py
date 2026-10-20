@@ -520,8 +520,11 @@ class SCDHandler(CoordinationSubscriber):
                 run_on_shutdown=True,
             )
 
-    def _remove_ovn(self, ovn: api.EntityOVN) -> None:
+    def _remove_ovn(self, ovn: api.EntityOVN | None) -> None:
         """Remove the OVN of an op intent that no longer exists from the key of all coordinating users."""
+        if ovn is None:
+            return
+
         if (
             "ovn_coordination_group" in self.op_intent_ref_creation_strategy
             and self.op_intent_ref_creation_strategy.ovn_coordination_group
