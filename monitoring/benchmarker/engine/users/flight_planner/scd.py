@@ -65,7 +65,7 @@ class SCDHandler(CoordinationSubscriber):
 
     op_intent_refs: dict[FlightID, api.OperationalIntentReference]
 
-    key: list[api.EntityOVN]
+    key: set[api.EntityOVN]
     """OVNs currently known by this user."""
 
     key_lock: Lock
@@ -79,7 +79,7 @@ class SCDHandler(CoordinationSubscriber):
     ):
         self.user = user
 
-        self.key = []
+        self.key = set()
         self.key_lock = Lock()
 
         self.dss_instances = []
@@ -178,14 +178,14 @@ class SCDHandler(CoordinationSubscriber):
                     f"Expected an EntityOVN content in a CoordinationMessage with subject {msg.subject} but instead found a {type(msg.content).__name__}"
                 )
             with self.key_lock:
-                self.key.append(msg.content)
+                self.key.add(msg.content)
         elif msg.subject == COORDINATION_SUBJECT_REMOVE_OVN:
             if not isinstance(msg.content, api.EntityOVN):
                 raise RuntimeError(
                     f"Expected an EntityOVN content in a CoordinationMessage with subject {msg.subject} but instead found a {type(msg.content).__name__}"
                 )
             with self.key_lock:
-                self.key.remove(msg.content)
+                self.key.discard(msg.content)
 
     def select_dss_instance(self) -> DSSInstance:
         if self.dss_selection_strategy == ASTMDSSSelectionStrategy.First:
@@ -425,7 +425,7 @@ class SCDHandler(CoordinationSubscriber):
                     CoordinationMessage(
                         group_id=None,
                         subject=COORDINATION_SUBJECT_REMOVE_OVN,
-                        content=op_intent_ref.ovn,
+                        content=old_ovn,
                     )
                 )
             if old_ovn is None or op_intent_ref.ovn != old_ovn:
@@ -520,6 +520,26 @@ class SCDHandler(CoordinationSubscriber):
                 run_on_shutdown=True,
             )
 
+    def _remove_ovn(self, ovn: api.EntityOVN) -> None:
+        """Remove the OVN of an op intent that no longer exists from the key of all coordinating users."""
+        if (
+            "ovn_coordination_group" in self.op_intent_ref_creation_strategy
+            and self.op_intent_ref_creation_strategy.ovn_coordination_group
+        ):
+            self.user.coordinator.publish(
+                self.op_intent_ref_creation_strategy.ovn_coordination_group,
+                COORDINATION_SUBJECT_REMOVE_OVN,
+                ovn,
+            )
+        else:
+            self.receive_coordination_message(
+                CoordinationMessage(
+                    group_id=None,
+                    subject=COORDINATION_SUBJECT_REMOVE_OVN,
+                    content=ovn,
+                )
+            )
+
     async def delete_op_intent_ref(
         self, flight: Flight, op_intent_id: api.EntityID
     ) -> list[FlightAction]:
@@ -548,23 +568,7 @@ class SCDHandler(CoordinationSubscriber):
             )
 
             if success:
-                if (
-                    "ovn_coordination_group" in self.op_intent_ref_creation_strategy
-                    and self.op_intent_ref_creation_strategy.ovn_coordination_group
-                ):
-                    self.user.coordinator.publish(
-                        self.op_intent_ref_creation_strategy.ovn_coordination_group,
-                        COORDINATION_SUBJECT_REMOVE_OVN,
-                        op_intent_ref.ovn,
-                    )
-                else:
-                    self.receive_coordination_message(
-                        CoordinationMessage(
-                            group_id=None,
-                            subject=COORDINATION_SUBJECT_REMOVE_OVN,
-                            content=op_intent_ref.ovn,
-                        )
-                    )
+                self._remove_ovn(op_intent_ref.ovn)
             else:
                 with self.key_lock:
                     self.op_intent_refs[flight.id] = op_intent_ref
@@ -589,12 +593,14 @@ class SCDHandler(CoordinationSubscriber):
                 )
                 self.user.record_query(query, True)
                 n_deleted += 1
+                self._remove_ovn(op_intent_ref.ovn)
             except QueryError as e:
                 success = e.queries[0].status_code == 404
                 for query in e.queries:
                     self.user.record_query(query, success)
                 if success:
                     n_already_gone += 1
+                    self._remove_ovn(op_intent_ref.ovn)
                 else:
                     logger.warning(
                         f"{self.user.user_id}'s SCDHandler was unable to clean up op intent {op_intent_ref.id} for flight {flight_id} from {dss_instance.participant_id}'s DSS; HTTP code {e.queries[0].status_code}"
@@ -612,6 +618,14 @@ class SCDHandler(CoordinationSubscriber):
             if len(undeleted_ids) > 0:
                 msg += f"; {len(undeleted_ids)} could not be deleted"
             logger.debug(msg)
+
+        if (
+            "ovn_coordination_group" in self.op_intent_ref_creation_strategy
+            and self.op_intent_ref_creation_strategy.ovn_coordination_group
+        ):
+            self.user.coordinator.unsubscribe(
+                self, self.op_intent_ref_creation_strategy.ovn_coordination_group
+            )
 
     @staticmethod
     def enumerate_coordination_groups(
