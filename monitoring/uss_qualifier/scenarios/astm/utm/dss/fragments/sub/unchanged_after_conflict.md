@@ -4,8 +4,9 @@ This test step fragment validates that a request to create or mutate an operatio
 because of a conflict did not create, modify or delete any subscription, including implicit subscriptions.
 
 The subscriptions owned by the client within the planning area are queried before and after the rejected request, and compared.
+If either query fails, the comparison is skipped.
 
-## 🛑 Successful subscription search query check
+## ⚠️ Successful subscription search query check
 
 **[astm.f3548.v21.DSS0005,5](../../../../../../requirements/astm/f3548/v21.md)** requires the implementation of the DSS endpoint to allow callers to retrieve the subscriptions they created.
 

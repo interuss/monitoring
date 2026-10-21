@@ -432,8 +432,9 @@ class OIRKeyValidation(TestScenario):
         self._check_subscriptions_unchanged(subs_before)
         self.end_test_step()
 
-    def _query_own_subs(self) -> FetchedSubscriptions:
-        """Queries the subscriptions owned by the client in the planning area."""
+    def _query_own_subs(self) -> FetchedSubscriptions | None:
+        """Queries the subscriptions owned by the client in the planning area.
+        Returns None if the query failed."""
         query = self._dss.query_subscriptions(
             self._planning_area_volume4d.to_f3548v21()
         )
@@ -445,11 +446,17 @@ class OIRKeyValidation(TestScenario):
                     details=f"When attempting to query subscriptions from the DSS, received {query.status_code}",
                     query_timestamps=[query.request.timestamp],
                 )
+                return None
         return query
 
-    def _check_subscriptions_unchanged(self, query_before: FetchedSubscriptions):
-        """Checks that the subscriptions owned by the client are the same as before a rejected request."""
+    def _check_subscriptions_unchanged(self, query_before: FetchedSubscriptions | None):
+        """Checks that the subscriptions owned by the client are the same as before a rejected request.
+        The check is skipped if the subscriptions could not be queried before or after the request."""
+        if query_before is None:
+            return
         query = self._query_own_subs()
+        if query is None:
+            return
         subs_before = {s.id: s.version for s in query_before.subscriptions.values()}
         subs_after = {s.id: s.version for s in query.subscriptions.values()}
         with self.check(
