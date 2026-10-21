@@ -9,7 +9,7 @@ The subscriptions owned by the client within the planning area are queried befor
 
 **[astm.f3548.v21.DSS0005,5](../../../../../../requirements/astm/f3548/v21.md)** requires the implementation of the DSS endpoint to allow callers to retrieve the subscriptions they created.
 
-## 🛑 Rejected request did not create or modify subscriptions check
+## ⚠️ Rejected request did not create or modify subscriptions check
 
 A request to create or mutate an operational intent reference that is rejected because of missing OVNs is not expected to have any effect.
 In particular, the DSS is not expected to create an implicit subscription requested by such a request, nor to expand
