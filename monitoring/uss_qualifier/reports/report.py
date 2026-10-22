@@ -13,6 +13,7 @@ from implicitdict import (
 )
 
 from monitoring.monitorlib import fetch, inspection
+from monitoring.monitorlib.dicts import JSONAddress
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.fileio import FileReference
 from monitoring.uss_qualifier.action_generators.definitions import GeneratorTypeName
@@ -20,10 +21,6 @@ from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.configurations.configuration import (
     ParticipantID,
     USSQualifierConfiguration,
-)
-from monitoring.uss_qualifier.reports.capability_definitions import (
-    CapabilityID,
-    JSONPathExpression,
 )
 from monitoring.uss_qualifier.requirements.definitions import RequirementID
 from monitoring.uss_qualifier.resources.definitions import ResourceID
@@ -144,26 +141,16 @@ class TestStepReport(ImplicitDict):
                 participants.add(p)
         return participants
 
-    def all_participants(self) -> set[ParticipantID]:
-        participants = set()
-        for pc in self.passed_checks:
-            for p in pc.participants:
-                participants.add(p)
-        for fc in self.failed_checks:
-            for p in fc.participants:
-                participants.add(p)
-        return participants
-
     def query_passed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[tuple[JSONAddress, PassedCheck]]:
         for i, pc in enumerate(self.passed_checks):
             if participant_id is None or participant_id in pc.participants:
                 yield f"passed_checks[{i}]", pc
 
     def query_failed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
+    ) -> Iterator[tuple[JSONAddress, FailedCheck]]:
         for i, fc in enumerate(self.failed_checks):
             if participant_id is None or participant_id in fc.participants:
                 yield f"failed_checks[{i}]", fc
@@ -215,22 +202,16 @@ class TestCaseReport(ImplicitDict):
     def has_critical_problem(self):
         return any(s.has_critical_problem() for s in self.steps)
 
-    def all_participants(self) -> set[ParticipantID]:
-        participants = set()
-        for step in self.steps:
-            participants = participants.union(step.all_participants())
-        return participants
-
     def query_passed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[tuple[JSONAddress, PassedCheck]]:
         for i, step in enumerate(self.steps):
             for path, pc in step.query_passed_checks(participant_id):
                 yield f"steps[{i}].{path}", pc
 
     def query_failed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
+    ) -> Iterator[tuple[JSONAddress, FailedCheck]]:
         for i, step in enumerate(self.steps):
             for path, fc in step.query_failed_checks(participant_id):
                 yield f"steps[{i}].{path}", fc
@@ -326,17 +307,9 @@ class TestScenarioReport(ImplicitDict):
             return True
         return False
 
-    def all_participants(self) -> set[ParticipantID]:
-        participants = set()
-        for case in self.cases:
-            participants = participants.union(case.all_participants())
-        if "cleanup" in self and self.cleanup:
-            participants = participants.union(self.cleanup.all_participants())
-        return participants
-
     def query_passed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[tuple[JSONAddress, PassedCheck]]:
         for i, case in enumerate(self.cases):
             for path, pc in case.query_passed_checks(participant_id):
                 yield f"cases[{i}].{path}", pc
@@ -346,7 +319,7 @@ class TestScenarioReport(ImplicitDict):
 
     def query_failed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
+    ) -> Iterator[tuple[JSONAddress, FailedCheck]]:
         for i, case in enumerate(self.cases):
             for path, fc in case.query_failed_checks(participant_id):
                 yield f"cases[{i}].{path}", fc
@@ -428,22 +401,16 @@ class ActionGeneratorReport(ImplicitDict):
     def has_critical_problem(self) -> bool:
         return any(a.has_critical_problem() for a in self.actions)
 
-    def all_participants(self) -> set[ParticipantID]:
-        participants = set()
-        for action in self.actions:
-            participants = participants.union(action.all_participants())
-        return participants
-
     def query_passed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[tuple[JSONAddress, PassedCheck]]:
         for i, action in enumerate(self.actions):
             for path, pc in action.query_passed_checks(participant_id):
                 yield f"actions[{i}].{path}", pc
 
     def query_failed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
+    ) -> Iterator[tuple[JSONAddress, FailedCheck]]:
         for i, action in enumerate(self.actions):
             for path, fc in action.query_failed_checks(participant_id):
                 yield f"actions[{i}].{path}", fc
@@ -523,12 +490,9 @@ class TestSuiteActionReport(ImplicitDict):
     def has_critical_problem(self) -> bool:
         return self._conditional(lambda report: report.has_critical_problem())
 
-    def all_participants(self) -> set[ParticipantID]:
-        return self._conditional(lambda report: report.all_participants())
-
     def query_passed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[tuple[JSONAddress, PassedCheck]]:
         if "test_suite" in self and self.test_suite:
             report = self.test_suite
             prefix = "test_suite"
@@ -546,7 +510,7 @@ class TestSuiteActionReport(ImplicitDict):
 
     def query_failed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
+    ) -> Iterator[tuple[JSONAddress, FailedCheck]]:
         if "test_suite" in self and self.test_suite:
             report = self.test_suite
             prefix = "test_suite"
@@ -595,136 +559,6 @@ class TestSuiteActionReport(ImplicitDict):
             return "unknown"
 
 
-class AllConditionsEvaluationReport(ImplicitDict):
-    """Result of an evaluation of AllConditions determined by whether all the subconditions are satisfied."""
-
-    satisfied_conditions: list[ParticipantCapabilityConditionEvaluationReport]
-    """All of the conditions that were satisfied (there must be at least one)."""
-
-    unsatisfied_conditions: list[ParticipantCapabilityConditionEvaluationReport]
-    """All of the conditions that were unsatisfied (if any, then this condition will not be satisfied)."""
-
-
-class AnyConditionEvaluationReport(ImplicitDict):
-    """Result of an evaluation of AnyCondition determined by whether any of the subconditions are satisfied."""
-
-    satisfied_options: list[ParticipantCapabilityConditionEvaluationReport]
-    """Which of the specified options were satisfied (if any were satisfied, then this condition should be satisfied)."""
-
-    unsatisfied_options: list[ParticipantCapabilityConditionEvaluationReport]
-    """Which of the specified options were not satisfied (these are informational only and do not affect the evaluation)."""
-
-
-class NoFailedChecksConditionEvaluationReport(ImplicitDict):
-    """Result of an evaluation of NoFailedChecksCondition dependent on whether any checks failed within the scope of the test suite in which this condition is located."""
-
-    failed_checks: list[JSONPathExpression]
-    """The location of each FailedCheck, relative to the TestSuiteReport in which this report is located."""
-
-
-class CheckedRequirement(ImplicitDict):
-    """A single requirement being checked for participant-verifiable capability verification."""
-
-    requirement_id: RequirementID
-    """The requirement being checked."""
-
-    passed_checks: list[JSONPathExpression]
-    """The location of each PassedCheck involving the requirement of interest, relative to the TestSuiteReport in which the RequirementsCheckedConditionEvaluationReport containing this checked requirement is located."""
-
-    failed_checks: list[JSONPathExpression]
-    """The location of each PassedCheck involving the requirement of interest, relative to the TestSuiteReport in which the RequirementsCheckedConditionEvaluationReport containing this checked requirement is located."""
-
-
-class RequirementsCheckedConditionEvaluationReport(ImplicitDict):
-    """Result of an evaluation of RequirementsCheckedCondition dependent on whether a set of requirements were successfully checked."""
-
-    passed_requirements: list[CheckedRequirement]
-    """Requirements with only PassedChecks."""
-
-    failed_requirements: list[CheckedRequirement]
-    """Requirements with FailedChecks."""
-
-    untested_requirements: list[RequirementID]
-    """Requirements that didn't have any PassedChecks or FailedChecks within the scope of the test suite in which this condition is located."""
-
-
-class CheckedCapability(ImplicitDict):
-    """Existing/previous participant-verifiable capability upon which a CapabilityVerifiedCondition depends."""
-
-    report_location: JSONPathExpression
-    """Location of the ParticipantCapabilityEvaluationReport for the existing/previous capability, relative to the TestSuiteReport in which the CapabilityVerifiedConditionEvaluationReport containing this CheckedCapability is located."""
-
-    capability_id: CapabilityID
-    """ID of the existing/previous participant-verifiable capability."""
-
-    capability_location: JSONPathExpression
-    """The location of the ParticipantCapabilityConditionEvaluationReport for the capability, relative to the TestSuiteReport in which this checked requirement is located."""
-
-    capability_verified: bool
-    """Whether this capability was successfully verified"""
-
-
-class SpuriousReportMatch(ImplicitDict):
-    """Participant-verifiable capability evaluations are only present in TestSuiteReports.  If a CapabilityVerifiedCondition points to a report element that is not a TestSuiteReport, an instance of this class will be generated."""
-
-    location: JSONPathExpression
-    """Location of the non-TestSuiteReport report element matching the CapabilityVerifiedCondition's `capability_location`, relative to the TestSuiteReport in which this condition is located."""
-
-    type: str
-    """Data type of the report element (not TestSuiteReport)."""
-
-
-class CapabilityVerifiedConditionEvaluationReport(ImplicitDict):
-    """Result of an evaluation of a CapabilityVerifiedCondition dependent on whether other capabilities were verified."""
-
-    checked_capabilities: list[CheckedCapability]
-    """All capability evaluations checked for this condition."""
-
-    missing_capabilities: list[CapabilityID]
-    """Capabilities specified for this condition but not found in the report."""
-
-    spurious_matches: list[SpuriousReportMatch]
-    """Report elements matching the condition's `capability_location`, but not of the type TestSuiteReport."""
-
-
-class ParticipantCapabilityConditionEvaluationReport(ImplicitDict):
-    """Result of an evaluation of a condition related to whether a participant capability should be verified.
-
-    Exactly one field other than `condition_satisfied` must be specified."""
-
-    condition_satisfied: bool
-    """Whether the condition was satisfied for the relevant participant."""
-
-    all_conditions: Optional[AllConditionsEvaluationReport]
-    """When specified, the condition evaluated was AllConditions."""
-
-    any_conditions: Optional[AnyConditionEvaluationReport]
-    """When specified, the condition evaluated was AnyCondition."""
-
-    no_failed_checks: Optional[NoFailedChecksConditionEvaluationReport]
-    """When specified, the condition evaluated was NoFailedChecksCondition."""
-
-    requirements_checked: Optional[RequirementsCheckedConditionEvaluationReport]
-    """When specified, the condition evaluated was RequirementsCheckedCondition."""
-
-    capability_verified: Optional[CapabilityVerifiedConditionEvaluationReport]
-    """When specified, the condition evaluated was CapabilityVerifiedCondition."""
-
-
-class ParticipantCapabilityEvaluationReport(ImplicitDict):
-    capability_id: CapabilityID
-    """ID of capability being evaluated."""
-
-    participant_id: ParticipantID
-    """ID of participant for which capability is being evaluated."""
-
-    verified: bool
-    """Whether the capability was successfully verified."""
-
-    condition_evaluation: ParticipantCapabilityConditionEvaluationReport
-    """Report produced by evaluating the condition for verifying this capability."""
-
-
 class SkippedActionReport(ImplicitDict):
     timestamp: StringBasedDateTime
     """The time at which the action was skipped."""
@@ -742,9 +576,6 @@ class SkippedActionReport(ImplicitDict):
 
     def has_critical_problem(self) -> bool:
         return False
-
-    def all_participants(self) -> set[ParticipantID]:
-        return set()
 
     def queries(self) -> list[fetch.Query]:
         return []
@@ -783,28 +614,19 @@ class TestSuiteReport(ImplicitDict):
     successful: bool = False
     """DEPRECATED.  True iff test suite completed normally with no failed checks"""
 
-    capability_evaluations: list[ParticipantCapabilityEvaluationReport]
-    """List of capabilities defined in this test suite, evaluated for each participant."""
-
     def has_critical_problem(self) -> bool:
         return any(a.has_critical_problem() for a in self.actions)
 
-    def all_participants(self) -> set[ParticipantID]:
-        participants = set()
-        for action in self.actions:
-            participants = participants.union(action.all_participants())
-        return participants
-
     def query_passed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, PassedCheck]]:
+    ) -> Iterator[tuple[JSONAddress, PassedCheck]]:
         for i, action in enumerate(self.actions):
             for path, pc in action.query_passed_checks(participant_id):
                 yield f"actions[{i}].{path}", pc
 
     def query_failed_checks(
         self, participant_id: str | None = None
-    ) -> Iterator[tuple[JSONPathExpression, FailedCheck]]:
+    ) -> Iterator[tuple[JSONAddress, FailedCheck]]:
         for i, action in enumerate(self.actions):
             for path, fc in action.query_failed_checks(participant_id):
                 yield f"actions[{i}].{path}", fc

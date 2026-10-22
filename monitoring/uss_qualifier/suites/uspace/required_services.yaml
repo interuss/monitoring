@@ -89,15 +89,3 @@ actions:
       mock_uss_dp: mock_uss_dp?
       mock_uss_sp: mock_uss_sp?
       uss_identification: uss_identification?
-participant_verifiable_capabilities:
-    - id: required_services
-      name: U-space Required Services (work in progress)
-      description: Participant fulfills all implemented tests for all testable requirements necessary to provide all required services in U-space.  Note that this test suite is not yet complete, so this capability is not yet a good indication that all testable requirements have been met.
-      verification_condition:
-        all_conditions:
-          conditions:
-            - no_failed_checks: {}
-            - capability_verified:
-                capability_ids:
-                  - uspace_netrid_service_provider
-                capability_location: '$.actions[?(@.test_suite)].test_suite[?(@.suite_type=="suites.uspace.network_identification")]'
