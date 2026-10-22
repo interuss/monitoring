@@ -117,6 +117,7 @@ class TestedScenario:
     participants: dict[ParticipantID, TestedParticipant]
     execution_error: ErrorReport | None
     resource_origins: dict[ResourceID, str]
+    resource_participants: dict[ResourceID, list[ParticipantID]]
 
     @property
     def rows(self) -> int:

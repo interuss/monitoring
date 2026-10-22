@@ -8,6 +8,7 @@ from uas_standards.interuss.automated_testing.rid.v1.constants import Scope
 
 from monitoring.monitorlib import fetch, infrastructure
 from monitoring.monitorlib.fetch import QueryType
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.resource import Resource
 
@@ -95,6 +96,9 @@ class NetRIDObserversSpecification(ImplicitDict):
 
 class NetRIDObserversResource(Resource[NetRIDObserversSpecification]):
     observers: list[RIDSystemObserver]
+
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return list(dict.fromkeys(o.participant_id for o in self.observers))
 
     def __init__(
         self,

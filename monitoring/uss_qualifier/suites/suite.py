@@ -220,6 +220,10 @@ class TestSuiteAction[T: ActionGenerator]:
 
         _run_actions(self.action_generator.actions(), context, report)
 
+        resources_provided = self.action_generator.get_resources_provided()
+        if resources_provided is not None:
+            report.resources_provided = resources_provided
+
         return report
 
 

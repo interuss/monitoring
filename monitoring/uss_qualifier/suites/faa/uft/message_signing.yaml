@@ -11,9 +11,8 @@ resources:
   conflicting_flights: resources.flight_planning.FlightIntentsResource?
   non_conflicting_flights: resources.flight_planning.FlightIntentsResource?
 
-  # This resource should provide resources.flight_planning.FlightIntentsResource instances
-  conflicting_flights_provider: resources.resource.ResourceProvidingResource
-  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource?
+  conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
+  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
   non_conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
 
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource

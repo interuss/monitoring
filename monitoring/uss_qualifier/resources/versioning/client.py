@@ -34,6 +34,9 @@ class VersionProvidersSpecification(ImplicitDict):
 class VersionProvidersResource(Resource[VersionProvidersSpecification]):
     version_providers: list[VersioningClient]
 
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return list(dict.fromkeys(v.participant_id for v in self.version_providers))
+
     def __init__(
         self,
         specification: VersionProvidersSpecification,
