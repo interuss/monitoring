@@ -406,6 +406,13 @@ class ActionGeneratorReport(ImplicitDict):
     generator_type: GeneratorTypeName
     """Type of action generator"""
 
+    resources_provided: Optional[list[ResourceID]]
+    """Resource IDs supplied while constructing generated actions, in the generator's resource namespace before child action resource mappings.
+
+    Each ID occurs once, in first-seen order.  Different generated actions may have different resources available.
+    Includes resources for actions that may subsequently be skipped.  An empty list means no resources were supplied; absent when unknown.
+    """
+
     start_time: StringBasedDateTime
     """Time at which the action generator started"""
 

@@ -35,6 +35,7 @@ class ResourceEnvironmentsActionGenerator(
 ):
     _actions: list[TestSuiteAction]
     _current_action: int
+    _resources_provided: list[ResourceID]
 
     @classmethod
     def list_potential_actions(
@@ -67,14 +68,20 @@ class ResourceEnvironmentsActionGenerator(
             )
 
         self._actions = []
+        resources_provided: dict[ResourceID, None] = {}
         for resource_env in environments_source.get_environments():
+            resources_provided.update(dict.fromkeys(resource_env))
             modified_resources = resources | resource_env
 
             self._actions.append(
                 TestSuiteAction(specification.action_to_repeat, modified_resources)
             )
 
+        self._resources_provided = list(resources_provided)
         self._current_action = 0
 
     def actions(self) -> Iterator[TestSuiteAction]:
         yield from self._actions
+
+    def get_resources_provided(self) -> list[ResourceID]:
+        return self._resources_provided.copy()
