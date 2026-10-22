@@ -12,6 +12,7 @@ from monitoring.monitorlib.rid_automated_testing.injection_api import (
     SCOPE_RID_QUALIFIER_INJECT,
     CreateTestParameters,
 )
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.resource import Resource
 
@@ -108,6 +109,9 @@ class NetRIDServiceProvider:
 
 class NetRIDServiceProviders(Resource[NetRIDServiceProvidersSpecification]):
     service_providers: list[NetRIDServiceProvider]
+
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return list(dict.fromkeys(s.participant_id for s in self.service_providers))
 
     def __init__(
         self,

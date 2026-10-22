@@ -36,6 +36,9 @@ class AuthAdapterResource(Resource[AuthAdapterSpecification]):
     scopes: set[str]
     participant_id: ParticipantID | None = None
 
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return [self.participant_id] if self.participant_id else []
+
     def __init__(self, specification: AuthAdapterSpecification, resource_origin: str):
         super().__init__(specification, resource_origin)
         if (
