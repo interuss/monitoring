@@ -1,0 +1,16 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/interuss/id_generator/IDGeneratorProviderSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.interuss.id_generator.IDGeneratorProviderSpecification, as defined in monitoring/uss_qualifier/resources/interuss/id_generator.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "first_instance_index": {
+      "description": "First allocated instance index; environment index i uses first_instance_index + i.\n\nAllocated indices must fit in 0..255.  Independent providers used concurrently\nwith the same client identity must be configured with disjoint ranges.",
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}

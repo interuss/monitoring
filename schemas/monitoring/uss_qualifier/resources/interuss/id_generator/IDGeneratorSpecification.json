@@ -1,11 +1,15 @@
 {
   "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/interuss/id_generator/IDGeneratorSpecification.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "No fields required for the ID generator\n\nmonitoring.uss_qualifier.resources.interuss.id_generator.IDGeneratorSpecification, as defined in monitoring/uss_qualifier/resources/interuss/id_generator.py",
+  "description": "monitoring.uss_qualifier.resources.interuss.id_generator.IDGeneratorSpecification, as defined in monitoring/uss_qualifier/resources/interuss/id_generator.py",
   "properties": {
     "$ref": {
       "description": "Path to content that replaces the $ref",
       "type": "string"
+    },
+    "instance_index": {
+      "description": "Namespace for this invocation, from 0 to 255.  Zero preserves legacy IDs.",
+      "type": "integer"
     }
   },
   "type": "object"

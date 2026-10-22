@@ -62,8 +62,14 @@ def encode_resource_type_code(resource_type: int) -> str:
 
 
 def decode_owner(owner_id: str) -> str:
-    """Decode an owner name from an 18-character hexidecimal string"""
-    if len(owner_id) != 18:
+    """Decode an owner name, marking a truncated final character as unknown.
+
+    IDFactory preserves only the first 17 of the original 18 hexadecimal digits.
+    """
+    truncated = len(owner_id) == 17
+    if truncated:
+        owner_id += "0"
+    elif len(owner_id) != 18:
         raise ValueError("Invalid owner id.")
     hex_splits = split_by(owner_id, num=2)
     bits = ""
@@ -73,15 +79,17 @@ def decode_owner(owner_id: str) -> str:
     for seq in split_by(bits, 6):
         num = bin_to_dec(seq)
         test_owner += get_ascii_val_from_bit_value(num)
+    if truncated:
+        test_owner = test_owner[:-1] + "?"
     if test_owner[0] != "?":
         return (
             test_owner[: math.ceil(MAX_OWNER_LENGTH / 2)]
             + ".."
             + test_owner[-math.floor(MAX_OWNER_LENGTH / 2) :]
         )
-    while test_owner[0] == "?":
-        test_owner = test_owner[1:]
-    return test_owner
+    if truncated:
+        return test_owner[:-1].lstrip("?") + "?"
+    return test_owner.lstrip("?")
 
 
 def decode_resouce_type(id: str) -> int:
