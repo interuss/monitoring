@@ -1,6 +1,7 @@
 import functools
 import inspect
 import os
+from dataclasses import dataclass
 
 import pytest
 
@@ -111,7 +112,7 @@ def register_resource_type(code: int, description: str) -> ResourceType:
     """
     test_filename = inspect.stack()[1].filename
     this_folder = os.path.dirname(os.path.abspath(__file__))
-    test = test_filename[len(this_folder) + 1 :]
+    test = os.path.relpath(test_filename, this_folder)
     full_description = f"{test}: {description}"
     if code in resource_type_code_descriptions:
         raise ValueError(
@@ -121,10 +122,17 @@ def register_resource_type(code: int, description: str) -> ResourceType:
     return code
 
 
+@dataclass(frozen=True)
+class DecodedTestID:
+    owner_name: str
+    resource_type: ResourceType
+    instance_index: int
+
+
 class IDFactory:
     """Creates UUIDv4 (as described in RFC4122) formatted IDs encoding the kind of ID and owner.
 
-    Format: 0000XXXX-YYYY-4ZYY-8YYY-YYYYYYYY0000
+    Format: 000HXXXX-YYYY-4LYY-8YYY-YYYYYYYY0000
 
     Note that a UUID V4 needs to conform to the following regexp, which is why we
     set the first digit of the fourth group to 8.
@@ -133,35 +141,62 @@ class IDFactory:
 
     XXXX encodes the kind of ID according to id_codes.
     YYYYYYYYYYYYYYYYY encodes the owner/creator of the resource having the ID and
-    consists of 11 characters encoded as 6-bit groups.
-    Z is reserved and currently set to 0.
+    consists of 11 complete characters and 2 bits of a twelfth character,
+    encoded as 6-bit groups.  Decoding marks the incomplete character with '?'.
+    HL encodes an instance index from 0 to 255 in hexadecimal.  Index 0 produces
+    the original ID format; other indices separate repeated invocations of a test.
     """
 
     owner_id: str
+    _instance_index: int
 
-    def __init__(self, test_owner: str):
+    def __init__(self, test_owner: str, instance_index: int = 0):
+        self.validate_instance_index(instance_index)
         self.owner_id = utils.encode_owner(test_owner)
+        self._instance_index = instance_index
+
+    @staticmethod
+    def validate_instance_index(instance_index: int) -> None:
+        if type(instance_index) is not int or not 0 <= instance_index <= 255:
+            raise ValueError("instance_index must be an integer from 0 to 255")
+
+    @property
+    def instance_index(self) -> int:
+        return self._instance_index
 
     def make_id(self, resource_type: ResourceType):
         """Make a test ID with the specified resource type code"""
-        return f"0000{utils.encode_resource_type_code(resource_type)}-{self.owner_id[0:4]}-40{self.owner_id[4:6]}-8{self.owner_id[6:9]}-{self.owner_id[9:17]}0000"
+        return f"000{self.instance_index >> 4:x}{utils.encode_resource_type_code(resource_type)}-{self.owner_id[0:4]}-4{self.instance_index & 0xF:x}{self.owner_id[4:6]}-8{self.owner_id[6:9]}-{self.owner_id[9:17]}0000"
 
     @classmethod
     def decode(cls, id: str) -> tuple[str, ResourceType]:
-        hex_digits = id.replace("-", "")
+        """Decode an ID, retaining the original two-item return value."""
+        decoded = cls.decode_details(id)
+        return decoded.owner_name, decoded.resource_type
+
+    @classmethod
+    def decode_details(cls, id: str) -> DecodedTestID:
+        """Decode the owner, resource type, and instance index of a test ID."""
+        hex_digits = id.replace("-", "").lower()
         if len(hex_digits) != 32:
             raise ValueError(f"ID {id} has the wrong number of characters for a UUID")
-        if hex_digits[0:4] != "0000" or hex_digits[-4:] != "0000":
+        if any(c not in "0123456789abcdef" for c in hex_digits):
+            raise ValueError(f"ID {id} contains non-hexadecimal characters")
+        if hex_digits[0:3] != "000" or hex_digits[-4:] != "0000":
             raise ValueError(
                 f"ID {id} does not have the leading and trailing zeros indicating a test ID"
             )
-        if hex_digits[12:14] != "40":
+        if hex_digits[12] != "4" or hex_digits[16] != "8":
             raise ValueError(f"ID {id} is not formatted like a v4 test ID")
         x = hex_digits[4:8]
-        y = hex_digits[8:12] + hex_digits[14:28]
+        y = hex_digits[8:12] + hex_digits[14:16] + hex_digits[17:28]
         resource_type_code = ResourceType(int(x, 16))
         owner_name = utils.decode_owner(y)
-        return owner_name, resource_type_code
+        return DecodedTestID(
+            owner_name=owner_name,
+            resource_type=resource_type_code,
+            instance_index=int(hex_digits[3] + hex_digits[13], 16),
+        )
 
 
 check_scd_write_subscription_id = register_resource_type(

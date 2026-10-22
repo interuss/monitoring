@@ -19,6 +19,7 @@ from monitoring.uss_qualifier.resources.resource import (
     Resource,
     SupportedKeysNotSpecifiedError,
     create_resources,
+    get_resource_types,
 )
 
 
@@ -129,6 +130,44 @@ class TestModifierResource(unittest.TestCase):
             60,
             61,
         ]
+
+    # This test is AI-generated and has not been closely inspected by a human.
+    def test_provider_type_matching_and_dependency_validation(self):
+        declarations = self._build_modifier_declaration(42, 10)
+        declarations["consumer"] = ResourceDeclaration(
+            resource_type="resources.resources_test.GenericContainerResource[resources.resource.ResourceProvidingResource[resources.dev.NumberGeneratorResource]]",
+            specification=NumberGeneratorSpecification(base_id=1),
+            dependencies={"dependency": "modifier"},
+        )
+        resources = create_resources(declarations, "unittest", True)
+        provider = resources["modifier"]
+
+        assert (
+            get_resource_types(declarations["modifier"]).specification_type
+            is NumberGeneratorModifierSpecification
+        )
+        assert isinstance(
+            declarations["modifier"].specification, NumberGeneratorModifierSpecification
+        )
+        assert provider.is_or_inherits(
+            "resources.resource.Resource[resources.dev.test_modifier.NumberGeneratorModifierSpecification]"
+        )
+        assert provider.is_or_inherits(
+            "resources.resource.ResourceProvidingResource[resources.dev.NumberGeneratorResource]"
+        )
+        assert provider.is_or_inherits(
+            "resources.resource.ResourceProvidingResource[resources.resource.Resource]"
+        )
+        assert not provider.is_or_inherits(
+            "resources.resource.ResourceProvidingResource[resources.dev.TestSquareResource]"
+        )
+        assert resources["consumer"].dependency is provider
+
+        declarations[
+            "consumer"
+        ].resource_type = "resources.resources_test.GenericContainerResource[resources.resource.ResourceProvidingResource[resources.dev.TestSquareResource]]"
+        with pytest.raises(ValueError, match='Dependency "dependency"'):
+            create_resources(declarations, "unittest", True)
 
     def test_modifier_resource_shift(self):
         """Test shift usage of the resource modifier"""

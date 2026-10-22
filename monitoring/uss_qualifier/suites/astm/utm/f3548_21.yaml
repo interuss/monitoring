@@ -9,27 +9,47 @@ resources:
   interuss_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
 
-  # This input is DEPRECATED and may be removed in future versions.
+  # These inputs are DEPRECATED and may be removed in future versions.
   conflicting_flights: resources.flight_planning.FlightIntentsResource?
+  non_conflicting_flights: resources.flight_planning.FlightIntentsResource?
 
-  # This resource should provide resources.flight_planning.FlightIntentsResource instances
-  conflicting_flights_provider: resources.resource.ResourceProvidingResource
-  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource?
+  conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
+  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
+  non_conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
 
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
-  non_conflicting_flights: resources.flight_planning.FlightIntentsResource
   nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   priority_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   utm_auth: resources.communications.AuthAdapterResource?
   second_utm_auth: resources.communications.AuthAdapterResource?
   utm_client_identity: resources.communications.ClientIdentityResource
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
-  id_generator: resources.interuss.IDGeneratorResource
+
+  # Zero or one of the following two resources must be provided
+  id_generator: resources.interuss.id_generator.IDGeneratorResource?
+  id_generator_provider: resources.interuss.id_generator.IDGeneratorProviderResource?
+  
   planning_area_provider: resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]
   problematically_big_area: resources.VolumeResource
   system_identity: resources.versioning.SystemIdentityResource?
   test_exclusions: resources.dev.TestExclusionsResource?
 local_resources:
+  id_generator:
+    resource_type: resources.interuss.id_generator.IDGeneratorResource
+    dependencies:
+      client_identity: utm_client_identity
+    specification: {}
+  id_generator_provider:
+    resource_type: resources.interuss.id_generator.IDGeneratorProviderResource
+    dependencies:
+      base_resource: id_generator
+    specification: {}
+  non_conflicting_flights:
+    resource_type: resources.resource.SingularResource[resources.flight_planning.FlightIntentsResource]
+    dependencies:
+      provider: non_conflicting_flights_provider
+    specification:
+      index: 0
   conflicting_flights:
     resource_type: resources.resource.SingularResource[resources.flight_planning.FlightIntentsResource]
     dependencies:
@@ -50,7 +70,8 @@ local_resources:
     dependencies:
       environments: dss_environments
       planning_area: planning_area_provider
-      # TODO: populate flight_intents from non_conflicting_flights_provider
+      id_generator: id_generator_provider
+      flight_intents: non_conflicting_flights_provider
     specification: {}
   priority_preemption_combinations:
     resource_type: resources.combinations.ResourceCombinationsResource
@@ -81,6 +102,7 @@ local_resources:
   flight_intents_environments:
     resource_type: resources.environments.ConcatenatedResourceEnvironmentsResource
     dependencies:
+      dss_probing: dss_probing_environments
       priority_preemption: priority_preemption_environments?
       equal_priority_conflict: equal_priority_conflict_environments
     specification: {}
@@ -111,8 +133,6 @@ actions:
       dss_datastore_cluster: dss_datastore_cluster?
       second_utm_auth: second_utm_auth?
       utm_client_identity: utm_client_identity
-      flight_intents: non_conflicting_flights
-      id_generator: id_generator
       problematically_big_area: problematically_big_area
       test_exclusions: test_exclusions?
     specification:

@@ -288,6 +288,9 @@ class TestScenarioReport(ImplicitDict):
     resource_origins: Optional[dict[ResourceID, str]]
     """For each resource used by this test scenario, the place that resource originated."""
 
+    resource_participants: Optional[dict[ResourceID, list[ParticipantID]]]
+    """For each resource used by this test scenario that is associated with one or more participants, the participants associated with that resource."""
+
     notes: Optional[dict[str, Note]]
     """Additional information about this scenario that may be useful"""
 
@@ -397,6 +400,13 @@ class TestScenarioReport(ImplicitDict):
 class ActionGeneratorReport(ImplicitDict):
     generator_type: GeneratorTypeName
     """Type of action generator"""
+
+    resources_provided: Optional[list[ResourceID]]
+    """Resource IDs supplied while constructing generated actions, in the generator's resource namespace before child action resource mappings.
+
+    Each ID occurs once, in first-seen order.  Different generated actions may have different resources available.
+    Includes resources for actions that may subsequently be skipped.  An empty list means no resources were supplied; absent when unknown.
+    """
 
     start_time: StringBasedDateTime
     """Time at which the action generator started"""

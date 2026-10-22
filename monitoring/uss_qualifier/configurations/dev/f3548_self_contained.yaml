@@ -22,7 +22,7 @@ v1:
           conflicting_flights_provider: conflicting_flights_provider
           priority_preemption_flights_provider: conflicting_flights_provider
           invalid_flight_intents: invalid_flight_intents
-          non_conflicting_flights: non_conflicting_flights
+          non_conflicting_flights_provider: non_conflicting_flights_provider
           dss: dss
           dss_instances: dss_instances
           interuss_dss_instances: dss_instances
@@ -295,6 +295,15 @@ v1:
                   degrees_north: 32.7181
                   degrees_east: -96.7587
                   meters_up: 93
+
+        # Provide spatially separated non-conflicting flights for each DSS instance
+        non_conflicting_flights_provider:
+          resource_type: resources.geospatial.TriangularCascadeSoutheastResource
+          dependencies:
+            base_resource: non_conflicting_flights
+          specification:
+            meters_east_margin: 10000
+            meters_north_margin: 10000
 
     # How to execute a test run using this configuration
     execution:
