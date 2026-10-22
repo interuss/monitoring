@@ -1,0 +1,31 @@
+# Local test services use private addresses and cleartext HTTP.  These checks can still run but
+# their findings are acceptable when explicitly referenced.
+private_address_f3411_19:
+  scenario_type: scenarios.astm.netrid.v19.DSSInteroperability
+  test_case_name: Prerequisites
+  test_step_name: Test environment requirements
+  check_name: DSS instance is publicly addressable
+
+private_address_f3411_22a:
+  scenario_type: scenarios.astm.netrid.v22a.DSSInteroperability
+  test_case_name: Prerequisites
+  test_step_name: Test environment requirements
+  check_name: DSS instance is publicly addressable
+
+private_address_f3548_21:
+  scenario_type: scenarios.astm.utm.dss.DSSInteroperability
+  test_case_name: Prerequisites
+  test_step_name: Test environment requirements
+  check_name: DSS instance is publicly addressable
+
+cleartext_f3411_19:
+  scenario_type: scenarios.astm.netrid.v19.AggregateChecks
+  test_case_name: Verify https is in use
+  test_step_name: Verify https is in use
+  check_name: All interactions happen over https
+
+cleartext_f3411_22a:
+  scenario_type: scenarios.astm.netrid.v22a.AggregateChecks
+  test_case_name: Verify https is in use
+  test_step_name: Verify https is in use
+  check_name: All interactions happen over https
