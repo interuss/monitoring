@@ -67,7 +67,8 @@ class IDGeneratorProviderSpecification(ImplicitDict):
 
 
 class IDGeneratorProviderResource(
-    ResourceProvidingResource[IDGeneratorProviderSpecification, IDGeneratorResource]
+    ResourceProvidingResource[IDGeneratorResource],
+    Resource[IDGeneratorProviderSpecification],
 ):
     """Provide deterministic ID namespaces for enumerated resource environments."""
 
