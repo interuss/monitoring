@@ -24,12 +24,26 @@ resources:
   second_utm_auth: resources.communications.AuthAdapterResource?
   utm_client_identity: resources.communications.ClientIdentityResource
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
-  id_generator: resources.interuss.IDGeneratorResource
+
+  # Zero or one of the following two resources must be provided
+  id_generator: resources.interuss.id_generator.IDGeneratorResource?
+  id_generator_provider: resources.interuss.id_generator.IDGeneratorProviderResource?
+  
   planning_area_provider: resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]
   problematically_big_area: resources.VolumeResource
   system_identity: resources.versioning.SystemIdentityResource?
   test_exclusions: resources.dev.TestExclusionsResource?
 local_resources:
+  id_generator:
+    resource_type: resources.interuss.id_generator.IDGeneratorResource
+    dependencies:
+      client_identity: utm_client_identity
+    specification: {}
+  id_generator_provider:
+    resource_type: resources.interuss.id_generator.IDGeneratorProviderResource
+    dependencies:
+      base_resource: id_generator
+    specification: {}
   non_conflicting_flights:
     resource_type: resources.resource.SingularResource[resources.flight_planning.FlightIntentsResource]
     dependencies:
@@ -56,6 +70,7 @@ local_resources:
     dependencies:
       environments: dss_environments
       planning_area: planning_area_provider
+      id_generator: id_generator_provider
       flight_intents: non_conflicting_flights_provider
     specification: {}
   priority_preemption_combinations:
@@ -118,7 +133,6 @@ actions:
       dss_datastore_cluster: dss_datastore_cluster?
       second_utm_auth: second_utm_auth?
       utm_client_identity: utm_client_identity
-      id_generator: id_generator
       problematically_big_area: problematically_big_area
       test_exclusions: test_exclusions?
     specification:
