@@ -9,14 +9,15 @@ resources:
   interuss_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
 
-  # This input is DEPRECATED and may be removed in future versions.
+  # These inputs are DEPRECATED and may be removed in future versions.
   conflicting_flights: resources.flight_planning.FlightIntentsResource?
+  non_conflicting_flights: resources.flight_planning.FlightIntentsResource?
 
   conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
   priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
+  non_conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
 
   invalid_flight_intents: resources.flight_planning.FlightIntentsResource
-  non_conflicting_flights: resources.flight_planning.FlightIntentsResource
   nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   priority_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   utm_auth: resources.communications.AuthAdapterResource?
@@ -43,6 +44,12 @@ local_resources:
     dependencies:
       base_resource: id_generator
     specification: {}
+  non_conflicting_flights:
+    resource_type: resources.resource.SingularResource[resources.flight_planning.FlightIntentsResource]
+    dependencies:
+      provider: non_conflicting_flights_provider
+    specification:
+      index: 0
   conflicting_flights:
     resource_type: resources.resource.SingularResource[resources.flight_planning.FlightIntentsResource]
     dependencies:
@@ -64,7 +71,7 @@ local_resources:
       environments: dss_environments
       planning_area: planning_area_provider
       id_generator: id_generator_provider
-      # TODO: populate flight_intents from non_conflicting_flights_provider
+      flight_intents: non_conflicting_flights_provider
     specification: {}
   priority_preemption_combinations:
     resource_type: resources.combinations.ResourceCombinationsResource
@@ -95,6 +102,7 @@ local_resources:
   flight_intents_environments:
     resource_type: resources.environments.ConcatenatedResourceEnvironmentsResource
     dependencies:
+      dss_probing: dss_probing_environments
       priority_preemption: priority_preemption_environments?
       equal_priority_conflict: equal_priority_conflict_environments
     specification: {}
@@ -125,7 +133,6 @@ actions:
       dss_datastore_cluster: dss_datastore_cluster?
       second_utm_auth: second_utm_auth?
       utm_client_identity: utm_client_identity
-      flight_intents: non_conflicting_flights
       problematically_big_area: problematically_big_area
       test_exclusions: test_exclusions?
     specification:
