@@ -1,5 +1,6 @@
 import itertools
 
+from monitoring.uss_qualifier.common_data_definitions import Severity
 from monitoring.uss_qualifier.resources.dev.noop import NoOpResource, NoOpSpecification
 from monitoring.uss_qualifier.resources.resource import MissingResourceError
 from monitoring.uss_qualifier.scenarios.scenario import (
@@ -818,10 +819,9 @@ def test_get_report_state_machine():
         report = gtsi.get_report()
 
         if "end_cleanup" in steps[:steps_to_do]:  # Meaning the scenario is done
-            assert report.successful
             assert "execution_error" not in report
+            assert not list(report.query_failed_checks())
         else:
-            assert not report.successful
             assert report.execution_error
             assert report.execution_error.type == "RuntimeError"
             assert (
@@ -839,7 +839,6 @@ def test_record_execution_error():
     gtsi.record_execution_error(ErrorForTests("test-exception"))
 
     report = gtsi.get_report()
-    assert not report.successful
     assert report.execution_error
     assert report.execution_error.type.endswith(".ErrorForTests")
     assert report.execution_error.message == "test-exception"
@@ -882,7 +881,6 @@ def test_record_execution_error_during_flow():
             gtsi.record_execution_error(ErrorForTests("test-exception"))
             report = gtsi.get_report()
 
-            assert not report.successful
             assert report.execution_error
             assert report.execution_error.type.endswith(".ErrorForTests")
             assert report.execution_error.message == "test-exception"
@@ -897,7 +895,8 @@ def test_get_report_return_cases_ran_no_cases():
     terminate_gtsi_during_scenario(gtsi)
 
     report = gtsi.get_report()
-    assert report.successful
+    assert report.execution_error is None
+    assert not list(report.query_failed_checks())
     assert not report.cases
 
 
@@ -912,7 +911,8 @@ def test_get_report_return_cases_ran_one_cases():
     terminate_gtsi_during_scenario(gtsi)
 
     report = gtsi.get_report()
-    assert report.successful
+    assert report.execution_error is None
+    assert not list(report.query_failed_checks())
     assert report.cases
     names = [c.name for c in report.cases]
     assert "test-case-1" in names
@@ -932,7 +932,8 @@ def test_get_report_return_cases_ran_two_cases():
     terminate_gtsi_during_scenario(gtsi)
 
     report = gtsi.get_report()
-    assert report.successful
+    assert report.execution_error is None
+    assert not list(report.query_failed_checks())
     assert report.cases
     names = [c.name for c in report.cases]
     assert "test-case-1" in names
@@ -1526,8 +1527,9 @@ def test_stop_fast_enabled():
             pass
 
 
-def test_report_status_should_be_ok_if_low_failled():
-    """Test report status should be maked as successfull if a low check failled"""
+# This test is AI-generated and has not been closely inspected by a human.
+def test_report_records_failed_low_check():
+    """Test that the report records a failed check with low severity."""
 
     gtsi = _build_generic_test_scenario_instance()
     advance_new_gtsi_to_step(gtsi)
@@ -1537,11 +1539,16 @@ def test_report_status_should_be_ok_if_low_failled():
 
     report = gtsi.get_report()
 
-    assert report.successful
+    assert report.execution_error is None
+    failed_checks = [check for _, check in report.query_failed_checks()]
+    assert len(failed_checks) == 1
+    assert failed_checks[0].name == "test-check-1-1-2-low"
+    assert failed_checks[0].severity == Severity.Low
 
 
-def test_report_status_should_be_unsuccessfull_if_medium_failled():
-    """Test report status should be maked as unsuccessfull if a medium check failled"""
+# This test is AI-generated and has not been closely inspected by a human.
+def test_report_records_failed_medium_check():
+    """Test that the report records a failed check with medium severity."""
 
     gtsi = _build_generic_test_scenario_instance()
     advance_new_gtsi_to_step(gtsi)
@@ -1551,11 +1558,16 @@ def test_report_status_should_be_unsuccessfull_if_medium_failled():
 
     report = gtsi.get_report()
 
-    assert not report.successful
+    assert report.execution_error is None
+    failed_checks = [check for _, check in report.query_failed_checks()]
+    assert len(failed_checks) == 1
+    assert failed_checks[0].name == "test-check-1-1-3-medium"
+    assert failed_checks[0].severity == Severity.Medium
 
 
-def test_report_status_should_be_unsuccessfull_if_high_failled():
-    """Test report status should be maked as unsuccessfull if a high check failled"""
+# This test is AI-generated and has not been closely inspected by a human.
+def test_report_records_failed_high_check():
+    """Test that the report records a failed check with high severity."""
 
     gtsi = _build_generic_test_scenario_instance()
     advance_new_gtsi_to_step(gtsi)
@@ -1569,11 +1581,16 @@ def test_report_status_should_be_unsuccessfull_if_high_failled():
 
     report = gtsi.get_report()
 
-    assert not report.successful
+    assert report.execution_error is None
+    failed_checks = [check for _, check in report.query_failed_checks()]
+    assert len(failed_checks) == 1
+    assert failed_checks[0].name == "test-check-1-1-4-high"
+    assert failed_checks[0].severity == Severity.High
 
 
-def test_report_status_should_be_unsuccessfull_if_critical_failled():
-    """Test report status should be maked as unsuccessfull if a critical check failled"""
+# This test is AI-generated and has not been closely inspected by a human.
+def test_report_records_failed_critical_check():
+    """Test that the report records a failed check with critical severity."""
 
     gtsi = _build_generic_test_scenario_instance()
     advance_new_gtsi_to_step(gtsi)
@@ -1587,11 +1604,16 @@ def test_report_status_should_be_unsuccessfull_if_critical_failled():
 
     report = gtsi.get_report()
 
-    assert not report.successful
+    assert report.execution_error is None
+    failed_checks = [check for _, check in report.query_failed_checks()]
+    assert len(failed_checks) == 1
+    assert failed_checks[0].name == "test-check-1-1-5-critical"
+    assert failed_checks[0].severity == Severity.Critical
 
 
-def test_report_status_should_be_ok_if_low_failled_in_cleanup():
-    """Test report status should be maked as successfull if a low check failled during cleanup"""
+# This test is AI-generated and has not been closely inspected by a human.
+def test_report_records_failed_low_check_in_cleanup():
+    """Test that the report records a failed check with low severity during cleanup."""
 
     gtsi = _build_generic_test_scenario_instance()
     advance_new_gtsi_during_cleanup(gtsi)
@@ -1601,11 +1623,16 @@ def test_report_status_should_be_ok_if_low_failled_in_cleanup():
 
     report = gtsi.get_report()
 
-    assert report.successful
+    assert report.execution_error is None
+    failed_checks = [check for _, check in report.query_failed_checks()]
+    assert len(failed_checks) == 1
+    assert failed_checks[0].name == "test-check-c-2-low"
+    assert failed_checks[0].severity == Severity.Low
 
 
-def test_report_status_should_be_unsuccessfull_if_medium_failled_in_cleanup():
-    """Test report status should be maked as unsuccessfull if a medium check failled during cleanup"""
+# This test is AI-generated and has not been closely inspected by a human.
+def test_report_records_failed_medium_check_in_cleanup():
+    """Test that the report records a failed check with medium severity during cleanup."""
 
     gtsi = _build_generic_test_scenario_instance()
     advance_new_gtsi_during_cleanup(gtsi)
@@ -1615,11 +1642,16 @@ def test_report_status_should_be_unsuccessfull_if_medium_failled_in_cleanup():
 
     report = gtsi.get_report()
 
-    assert not report.successful
+    assert report.execution_error is None
+    failed_checks = [check for _, check in report.query_failed_checks()]
+    assert len(failed_checks) == 1
+    assert failed_checks[0].name == "test-check-c-3-medium"
+    assert failed_checks[0].severity == Severity.Medium
 
 
-def test_report_status_should_be_unsuccessfull_if_high_failled_in_cleanup():
-    """Test report status should be maked as unsuccessfull if a high check failled during cleanup"""
+# This test is AI-generated and has not been closely inspected by a human.
+def test_report_records_failed_high_check_in_cleanup():
+    """Test that the report records a failed check with high severity during cleanup."""
 
     gtsi = _build_generic_test_scenario_instance()
     advance_new_gtsi_during_cleanup(gtsi)
@@ -1633,11 +1665,16 @@ def test_report_status_should_be_unsuccessfull_if_high_failled_in_cleanup():
 
     report = gtsi.get_report()
 
-    assert not report.successful
+    assert report.execution_error is None
+    failed_checks = [check for _, check in report.query_failed_checks()]
+    assert len(failed_checks) == 1
+    assert failed_checks[0].name == "test-check-c-4-high"
+    assert failed_checks[0].severity == Severity.High
 
 
-def test_report_status_should_be_unsuccessfull_if_critical_failled_in_cleanup():
-    """Test report status should be maked as unsuccessfull if a critical check failled during cleanup"""
+# This test is AI-generated and has not been closely inspected by a human.
+def test_report_records_failed_critical_check_in_cleanup():
+    """Test that the report records a failed check with critical severity during cleanup."""
 
     gtsi = _build_generic_test_scenario_instance()
     advance_new_gtsi_during_cleanup(gtsi)
@@ -1651,7 +1688,11 @@ def test_report_status_should_be_unsuccessfull_if_critical_failled_in_cleanup():
 
     report = gtsi.get_report()
 
-    assert not report.successful
+    assert report.execution_error is None
+    failed_checks = [check for _, check in report.query_failed_checks()]
+    assert len(failed_checks) == 1
+    assert failed_checks[0].name == "test-check-c-5-critical"
+    assert failed_checks[0].severity == Severity.Critical
 
 
 # TODO Ensure unkown participan or query type is tested in record query
