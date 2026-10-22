@@ -40,7 +40,7 @@ Test scenarios will usually be enumerated/identified/created by mapping a list o
     While unmapped requirements still exist:
         Create new, simple test scenario that verifies a set of remaining unmapped requirements.
 
-See [CONTRIBUTING.md](../../../CONTRIBUTING.md#ussqualifier-test-scenarios) for more information on how to develop test scenarios.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how to develop test scenarios.
 
 ### Delays
 
