@@ -68,3 +68,10 @@ class Coordinator:
             group.subscribers.add(subscriber)
             for msg in group.messages:
                 subscriber.receive_coordination_message(msg)
+
+    def unsubscribe(
+        self, subscriber: CoordinationSubscriber, group_id: CoordinationGroupID
+    ) -> None:
+        group = self._groups[group_id]
+        with group.lock:
+            group.subscribers.discard(subscriber)

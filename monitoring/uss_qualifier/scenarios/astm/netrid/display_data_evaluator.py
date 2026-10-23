@@ -367,7 +367,7 @@ class RIDObservationEvaluator:
             self._evaluate_sp_observation(rect, sp_observation, mapping_by_injection_id)
 
             step_report = self._test_scenario.end_test_step()
-            perform_observation = step_report.successful()
+            perform_observation = not step_report.failed_checks
             verified_sps = {
                 obs.participant_id
                 for obs in observers

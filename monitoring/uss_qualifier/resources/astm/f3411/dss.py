@@ -70,6 +70,9 @@ class DSSInstance:
 class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     dss_instance: DSSInstance
 
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return [self.dss_instance.participant_id]
+
     def __init__(
         self,
         specification: DSSInstanceSpecification,
@@ -118,6 +121,9 @@ class DSSInstancesSpecification(ImplicitDict):
 
 class DSSInstancesResource(Resource[DSSInstancesSpecification]):
     dss_instances: list[DSSInstance]
+
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return list(dict.fromkeys(d.participant_id for d in self.dss_instances))
 
     def __init__(
         self,

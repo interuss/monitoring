@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 import psycopg
 from implicitdict import ImplicitDict
 
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.resource import Resource
 
 
@@ -29,6 +30,9 @@ class DatastoreDBNodeSpecification(ImplicitDict):
 
 class DatastoreDBNodeResource(Resource[DatastoreDBNodeSpecification]):
     _specification: DatastoreDBNodeSpecification
+
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return [self.participant_id]
 
     def __init__(
         self,
@@ -65,6 +69,9 @@ class DatastoreDBClusterSpecification(ImplicitDict):
 
 class DatastoreDBClusterResource(Resource[DatastoreDBClusterSpecification]):
     nodes: list[DatastoreDBNodeResource]
+
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return list(dict.fromkeys(n.participant_id for n in self.nodes))
 
     def __init__(
         self,

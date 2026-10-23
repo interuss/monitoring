@@ -22,6 +22,7 @@ from implicitdict import (
 from loguru import logger
 
 from monitoring.monitorlib import infrastructure
+from monitoring.monitorlib.auth import AccessTokenError
 from monitoring.monitorlib.errors import stacktrace_string
 from monitoring.monitorlib.infrastructure import AUTHORIZATION_DT
 from monitoring.monitorlib.rid import RIDVersion
@@ -768,6 +769,12 @@ def query_and_describe(
                 logger.warning(failure_message)
             failures.append(failure_message)
 
+            return build_failing_query(t0)
+
+        except AccessTokenError as e:
+            failure_message = f"query_and_describe attempt {attempt + 1} from PID {os.getpid()} to {verb} {url} failed with non-retryable AccessTokenError {type(e).__name__}: {str(e)}\nAt {get_traceback_location()}"
+            # We ignore expect_failure here as failing to retrieve the access token is not supported as an expected failure.
+            failures.append(failure_message)
             return build_failing_query(t0)
 
         previous_query = build_failing_query(

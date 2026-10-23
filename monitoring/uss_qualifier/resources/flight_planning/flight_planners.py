@@ -29,6 +29,9 @@ class FlightPlannerResource(Resource[FlightPlannerSpecification]):
     client: FlightPlannerClient
     participant_id: ParticipantID
 
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return [self.participant_id]
+
     def __init__(
         self,
         specification: FlightPlannerSpecification,

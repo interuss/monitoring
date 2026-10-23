@@ -85,6 +85,16 @@ class ActionGenerator[ActionGeneratorSpecificationType](ABC):
         """
         return cls.__name__
 
+    def get_resources_provided(self) -> list[ResourceID] | None:
+        """Return IDs of resources supplied to generated actions, if known.
+
+        IDs are unique, in first-seen order, in this generator's resource
+        namespace before child action resource mappings.  This describes resources
+        supplied while constructing actions, including actions that may subsequently
+        be skipped.  Return None when this information is unavailable.
+        """
+        return None
+
     @staticmethod
     def make_from_definition(
         definition: ActionGeneratorDefinition, resources: dict[ResourceID, ResourceType]
