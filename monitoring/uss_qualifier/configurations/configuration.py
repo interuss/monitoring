@@ -325,7 +325,7 @@ class USSQualifierConfigurationV1(ImplicitDict):
     """If specified, configuration describing the artifacts related to the test run"""
 
     validation: Optional[ValidationConfiguration] = None
-    """If specified, configuration describing how to validate the output report (and return an error code if validation fails)"""
+    """If specified, configuration describing how to validate the output report to return an error code if validation fails."""
 
 
 class USSQualifierConfiguration(ImplicitDict):
