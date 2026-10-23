@@ -158,7 +158,24 @@ class TestSuiteDefinition(ImplicitDict):
             raise ValueError(
                 "May not specify both resources and resource_inputs in the same TestSuiteDefinition"
             )
+        if (
+            "resources" not in supplied_fields
+            and "resource_inputs" not in supplied_fields
+        ):
+            raise ValueError(
+                "Must specify one of resources or resource_inputs in a TestSuiteDefinition"
+            )
         super().__init__(previous_instance, **kwargs)
+
+        # Verify there are no duplicate keys
+        if self.resource_inputs:
+            keys = set()
+            for resource_input in self.resource_inputs:
+                if resource_input.resource_id in keys:
+                    raise ValueError(
+                        f"Only one resource_id of '{resource_input.resource_id}' may be specified in TestSuiteDefinition.resource_inputs"
+                    )
+                keys.add(resource_input.resource_id)
 
     def get_resource_inputs(self) -> list[ResourceInput]:
         """Return input resources in a common format, including legacy declarations."""
