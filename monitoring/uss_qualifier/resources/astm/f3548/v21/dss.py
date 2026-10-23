@@ -51,6 +51,7 @@ from monitoring.monitorlib.infrastructure import (
 from monitoring.monitorlib.inspection import calling_function_name, fullname
 from monitoring.monitorlib.mutate import scd as mutate
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
+from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.dss import NotificationIndexImplementation
 from monitoring.uss_qualifier.resources.communications import AuthAdapterResource
 from monitoring.uss_qualifier.resources.plural import PluralResource
@@ -75,7 +76,7 @@ class DSSInstanceSpecification(ImplicitDict):
 
     notification_index_implementation: Optional[NotificationIndexImplementation]
     """Style of implementation this instance uses for notification index.
-    
+
     If not specified, TimeBased is assumed."""
 
     def __init__(self, *args, **kwargs):
@@ -712,6 +713,9 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     _specification: DSSInstanceSpecification
     _auth_adapter: AuthAdapterResource
     _client: UTMClientSession
+
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return [self.participant_id]
 
     def __init__(
         self,

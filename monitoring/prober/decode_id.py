@@ -4,6 +4,7 @@ import pkgutil
 import sys
 
 import monitoring.prober
+import monitoring.uss_qualifier.scenarios
 from monitoring.prober import infrastructure
 
 
@@ -26,9 +27,6 @@ def import_submodules(package, recursive=True):
     return results
 
 
-import_submodules(monitoring.prober)
-
-
 def parse_args(argv: list[str]):
     parser = argparse.ArgumentParser(description="Decode a test ID")
     parser.add_argument(
@@ -39,8 +37,12 @@ def parse_args(argv: list[str]):
 
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
-    owner_name, id_code = infrastructure.IDFactory.decode(args.id)
-    print(f"Owner: {owner_name}")
+    import_submodules(monitoring.prober)
+    import_submodules(monitoring.uss_qualifier.scenarios)
+    decoded = infrastructure.IDFactory.decode_details(args.id)
+    id_code = decoded.resource_type
+    print(f"Owner: {decoded.owner_name}")
+    print(f"Instance index: {decoded.instance_index}")
     if id_code in infrastructure.resource_type_code_descriptions:
         print(
             f"Resource type: {infrastructure.resource_type_code_descriptions[id_code]}"

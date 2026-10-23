@@ -54,6 +54,9 @@ class GeospatialInfoProviderResource(Resource[GeospatialInfoProviderSpecificatio
     client: GeospatialInfoClient
     participant_id: ParticipantID
 
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return [self.participant_id]
+
     def __init__(
         self,
         specification: GeospatialInfoProviderSpecification,

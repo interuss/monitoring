@@ -26,14 +26,20 @@
       "description": "Type of action generator",
       "type": "string"
     },
+    "resources_provided": {
+      "description": "Resource IDs supplied while constructing generated actions, in the generator's resource namespace before child action resource mappings.\n\nEach ID occurs once, in first-seen order.  Different generated actions may have different resources available.\nIncludes resources for actions that may subsequently be skipped.  An empty list means no resources were supplied; absent when unknown.",
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
     "start_time": {
       "description": "Time at which the action generator started",
       "format": "date-time",
       "type": "string"
-    },
-    "successful": {
-      "description": "DEPRECATED.  True iff all actions completed normally with no failed checks",
-      "type": "boolean"
     }
   },
   "required": [
