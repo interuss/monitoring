@@ -48,3 +48,5 @@ The release notes should contain at least the following sections:
 * For the same test suites, the `non_conflicting_flights` input is now optional and its suite resource mapping can be removed.  By default, `f3548_21` selects index 0 from `non_conflicting_flights_provider` for scenarios using a single set of flight intents.  An explicitly supplied `non_conflicting_flights` still overrides this default for now; `dss_probing` always uses the provider's per-DSS flight intents.  Keep any base flight resource declaration needed by the provider.
 
 ## Important information
+
+The obsolete deployment_manager tool has been removed from this repository.
