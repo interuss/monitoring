@@ -7,17 +7,13 @@ import uas_standards.astm.f3411.v19.constants as v19_constants
 import uas_standards.astm.f3548.v21.constants as v21_constants
 
 from monitoring.monitorlib import auth, scd
+from monitoring.monitorlib.ids import IDFactory, ResourceType
 from monitoring.monitorlib.infrastructure import (
     AsyncUTMTestSession,
     UTMClientSession,
     utm_client_session_factory,
 )
-from monitoring.prober.infrastructure import (
-    IDFactory,
-    ResourceType,
-    VersionString,
-    add_test_result,
-)
+from monitoring.prober.infrastructure import VersionString, add_test_result
 
 OPT_RID_AUTH = "rid_auth"
 OPT_RID_V2_AUTH = "rid_v2_auth"
@@ -252,7 +248,7 @@ def ids(pytestconfig, subscriber) -> Callable[[ResourceType], str]:
     This fixture is a function that accepts a ResourceType as the argument and
     returns a UUIDv4-format string containing an ID for that resource.
 
-    See register_resource_type in infrastructure.py for how to create
+    See register_resource_type in monitoring.monitorlib.ids for how to create
     ResourceTypes to provide to this fixture, and also the "Resources" section of
     the README.
     """

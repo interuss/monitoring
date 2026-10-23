@@ -1,6 +1,6 @@
 from implicitdict import ImplicitDict
 
-from monitoring.prober.infrastructure import IDFactory
+from monitoring.monitorlib.ids import IDFactory
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.resource import (
     Resource,

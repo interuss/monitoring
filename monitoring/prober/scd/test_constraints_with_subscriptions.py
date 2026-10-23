@@ -13,10 +13,11 @@ import datetime
 from monitoring.monitorlib import scd
 from monitoring.monitorlib.geo import Circle
 from monitoring.monitorlib.geotemporal import Volume4D
+from monitoring.monitorlib.ids import register_resource_type
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib.scd import SCOPE_CM, SCOPE_CP, SCOPE_SC
 from monitoring.monitorlib.testing import make_fake_url
-from monitoring.prober.infrastructure import for_api_versions, register_resource_type
+from monitoring.prober.infrastructure import for_api_versions
 from monitoring.prober.scd import actions
 
 CONSTRAINT_BASE_URL_1 = make_fake_url("con1/uss")
