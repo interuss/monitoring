@@ -26,6 +26,27 @@
       let dpr = window.devicePixelRatio || 1;
 
       let hoveredItem = null;
+      let drawPending = false;
+
+      // Multiple input events can arrive before the browser paints a frame.
+      function requestDraw() {
+        if (drawPending) return;
+        drawPending = true;
+        requestAnimationFrame(() => {
+          drawPending = false;
+          draw();
+        });
+      }
+
+      function setHoveredItem(item) {
+        // Hit tests return new wrappers; compare the underlying report objects.
+        const changed = item?.type !== hoveredItem?.type ||
+          item?.op !== hoveredItem?.op ||
+          item?.action !== hoveredItem?.action ||
+          (item?.type === 'time' && item.y !== hoveredItem?.y);
+        hoveredItem = item;
+        if (changed) requestDraw();
+      }
 
       // Drag & Interaction state
       let isDraggingMain = false;
@@ -76,7 +97,7 @@
         ctx.resetTransform();
         ctx.scale(dpr, dpr);
 
-        draw();
+        requestDraw();
       }
 
       window.addEventListener('resize', resizeCanvas);
@@ -232,12 +253,12 @@
           viewT0 = targetTime - currentSpan / 2;
           viewT1 = targetTime + currentSpan / 2;
           clampView();
-          draw();
+          requestDraw();
         {% if timeline_horizontal %}
         } else if (inHScrollbar(x, y)) {
           isDraggingHScrollbar = true;
           centerLanesOn(hScrollbarXToLane(x));
-          draw();
+          requestDraw();
         {% endif %}
         } else {
           // Click on main timeline
@@ -268,14 +289,14 @@
           viewT0 = targetTime - currentSpan / 2;
           viewT1 = targetTime + currentSpan / 2;
           clampView();
-          draw();
+          requestDraw();
           return;
         }
 
         {% if timeline_horizontal %}
         if (isDraggingHScrollbar) {
           centerLanesOn(hScrollbarXToLane(x));
-          draw();
+          requestDraw();
           return;
         }
         {% endif %}
@@ -305,23 +326,26 @@
             {% endif %}
           }
           clampView();
-          draw();
+          requestDraw();
           return;
         }
 
         if (x < 0 || x > width || y < H_HEADER || y > height) {
-          hoveredItem = null;
+          setHoveredItem(null);
           tooltip.style.display = 'none';
           canvas.style.cursor = 'grab';
-          draw();
           return;
         }
         const item = hitTest(x, y);
         canvas.style.cursor = x >= width - W_SCROLLBAR {% if timeline_horizontal %}|| inHScrollbar(x, y) {% endif %}|| (item && (item.href || item.type === 'op' || item.type === 'event'))
           ? 'pointer' : item && item.type === 'time' ? 'crosshair' : 'grab';
-        hoveredItem = item;
-        draw();
+        setHoveredItem(item);
         updateTooltip(e, item);
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        setHoveredItem(null);
+        tooltip.style.display = 'none';
       });
 
       window.addEventListener('mouseup', (e) => {
@@ -365,7 +389,7 @@
           zoomLanesAround(anchorLane, zoomFactor);
           hoveredItem = null;
           tooltip.style.display = 'none';
-          draw();
+          requestDraw();
           return;
         }
 
@@ -378,7 +402,7 @@
           clampLanes();
           hoveredItem = null;
           tooltip.style.display = 'none';
-          draw();
+          requestDraw();
           return;
         }
 
@@ -410,7 +434,7 @@
         tooltip.style.display = 'none';
         hoveredItem = null;
         clampView();
-        draw();
+        requestDraw();
       }, { passive: false });
 
       // Button controls
@@ -420,7 +444,7 @@
         viewT0 = center - newSpan / 2;
         viewT1 = center + newSpan / 2;
         clampView();
-        draw();
+        requestDraw();
       });
 
       document.getElementById('btn-zoom-out').addEventListener('click', () => {
@@ -429,18 +453,18 @@
         viewT0 = center - newSpan / 2;
         viewT1 = center + newSpan / 2;
         clampView();
-        draw();
+        requestDraw();
       });
 
       {% if timeline_horizontal %}
       document.getElementById('btn-hzoom-in').addEventListener('click', () => {
         zoomLanesAround((viewL0 + viewL1) / 2, 0.5);
-        draw();
+        requestDraw();
       });
 
       document.getElementById('btn-hzoom-out').addEventListener('click', () => {
         zoomLanesAround((viewL0 + viewL1) / 2, 2.0);
-        draw();
+        requestDraw();
       });
 
       {% endif %}
@@ -452,5 +476,5 @@
         viewL1 = totalLanes;
         {% endif %}
         clampView();
-        draw();
+        requestDraw();
       });
