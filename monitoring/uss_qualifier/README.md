@@ -61,6 +61,10 @@ For a concrete example of how to invoke uss_qualifier in the manner described ab
 
 uss_qualifier is generally designed to skip test components when some prerequisites for those components are not met to enable testing of other parts of the systems under test until those prerequisites can be met.  Components are generally skipped when a necessary resource is not provided.  If you believe you have provided the resource that is claimed not to be provided, it is possible the resource could not be created due to another prerequisite not being met.  See console warnings at the beginning of test execution for more information, and/or set [`stop_when_resource_not_created`](./configurations/configuration.py) to `true` in your configuration's `execution` configuration to stop test execution when such a prerequisite is not met.
 
+### Orphaned DSS entities
+
+If a test entity (subscription, etc) is orphaned in the DSS, its origin can be determined using [monitorlib's test ID decoder](../monitorlib/README.md#test-resource-ids).
+
 ## Architecture
 
 ### Structure

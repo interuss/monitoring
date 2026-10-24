@@ -9,9 +9,9 @@ from monitoring.monitorlib.clients.mock_uss.interactions import (
     QueryDirection,
 )
 from monitoring.monitorlib.fetch import Query, QueryType
+from monitoring.monitorlib.ids import register_resource_type
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.temporal import Time
-from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstancesResource
 from monitoring.uss_qualifier.resources.interuss import IDGeneratorResource

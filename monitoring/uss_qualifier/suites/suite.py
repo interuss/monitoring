@@ -220,6 +220,10 @@ class TestSuiteAction[T: ActionGenerator]:
 
         _run_actions(self.action_generator.actions(), context, report)
 
+        resources_provided = self.action_generator.get_resources_provided()
+        if resources_provided is not None:
+            report.resources_provided = resources_provided
+
         return report
 
 
@@ -279,7 +283,9 @@ class TestSuite:
                         f"Overriding local resource {local_resource_id} in test suite {declaration.suite_type} with externally-provided resource"
                     )
 
-        for resource_id, resource_type in self.definition.resources.items():
+        for resource_input in self.definition.get_resource_inputs():
+            resource_id = resource_input.resource_id
+            resource_type = resource_input.type
             is_optional = resource_type.endswith("?")
             if is_optional:
                 resource_type = resource_type[:-1]
@@ -436,9 +442,6 @@ def _run_actions(
             result.result() if isinstance(result, Future) else result
             for result in results
         )
-    report.successful = all(
-        not a.has_critical_problem() and a.successful() for a in report.actions
-    )
     report.end_time = StringBasedDateTime(datetime.now(UTC))
 
 

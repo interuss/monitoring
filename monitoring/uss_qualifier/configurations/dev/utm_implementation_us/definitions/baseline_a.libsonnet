@@ -25,7 +25,7 @@ function(env) {
             conflicting_flights_provider: 'conflicting_flights_provider',
             priority_preemption_flights_provider: 'conflicting_flights_provider',
             invalid_flight_intents: 'invalid_flight_intents',
-            non_conflicting_flights: 'non_conflicting_flights',
+            non_conflicting_flights_provider: 'non_conflicting_flights_provider',
             test_exclusions: 'test_exclusions',
             dss: 'dss',
             dss_instances: 'dss_instances',
@@ -267,6 +267,18 @@ function(env) {
             },
           },
 
+          // Provide spatially separated non-conflicting flights for each DSS instance
+          non_conflicting_flights_provider: {
+            resource_type: 'resources.geospatial.TriangularCascadeSoutheastResource',
+            dependencies: {
+              base_resource: 'non_conflicting_flights',
+            },
+            specification: {
+              meters_east_margin: 10000,
+              meters_north_margin: 10000,
+            },
+          },
+
           // Name of the system under test for which the system version should be obtained from participants who provide version information
           system_identity: {
             resource_type: 'resources.versioning.SystemIdentityResource',
@@ -282,6 +294,7 @@ function(env) {
         // Since we expect no failed checks and want to stop execution immediately if there are any failed checks, we set
         // this parameter to true.
         stop_fast: true,
+        do_not_stop_fast_for_acceptable_findings: true,
       },
     }, // test_run
 
@@ -296,6 +309,15 @@ function(env) {
         // Write out a human-readable reports of the requirements tested
         {
           report_name: 'scd',
+          // This configuration runs locally with private DSS addresses.
+          acceptable_findings: [
+            {
+              scenario_type: 'scenarios.astm.utm.dss.DSSInteroperability',
+              test_case_name: 'Prerequisites',
+              test_step_name: 'Test environment requirements',
+              check_name: 'DSS instance is publicly addressable',
+            },
+          ],
           aggregate_participants: env.aggregate_participants,
           requirement_collections: {
             'Basic SCD': {
@@ -419,6 +441,7 @@ function(env) {
           applicability: {
             // We also want to make sure there are no failed checks...
             failed_checks: {
+              is_acceptable: false,
               // ...at least, no failed checks with severity higher than "Low".
               has_severity: {
                 higher_than: 'Low',

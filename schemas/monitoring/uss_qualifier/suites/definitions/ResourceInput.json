@@ -1,0 +1,31 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/suites/definitions/ResourceInput.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.suites.definitions.ResourceInput, as defined in monitoring/uss_qualifier/suites/definitions.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "description": {
+      "description": "Description of the purpose/usage of this resource.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resource_id": {
+      "description": "The ID of the resource as it will be made available to actions in the test suite.",
+      "type": "string"
+    },
+    "type": {
+      "description": "The type of this resource, optionally suffixed with '?' to indicate it is optional.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "resource_id",
+    "type"
+  ],
+  "type": "object"
+}

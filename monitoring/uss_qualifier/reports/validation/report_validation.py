@@ -8,12 +8,14 @@ from loguru import logger
 from monitoring.monitorlib.dicts import JSONAddress
 from monitoring.monitorlib.inspection import fullname
 from monitoring.uss_qualifier.common_data_definitions import Severity
+from monitoring.uss_qualifier.configurations.configuration import FullyQualifiedCheck
 from monitoring.uss_qualifier.reports.report import (
     ActionGeneratorReport,
     FailedCheck,
     SkippedActionReport,
     TestRunReport,
     TestScenarioReport,
+    TestStepReport,
     TestSuiteActionReport,
     TestSuiteReport,
 )
@@ -27,6 +29,9 @@ from monitoring.uss_qualifier.reports.validation.definitions import (
     ValidationCriterion,
     ValidationCriterionApplicability,
 )
+from monitoring.uss_qualifier.scenarios.scenario import (
+    fully_qualified_check_in_collection,
+)
 
 # ===== Shared logic =====
 
@@ -35,6 +40,7 @@ from monitoring.uss_qualifier.reports.validation.definitions import (
 class TestReportElement:
     element: FailedCheck | SkippedActionReport | TestScenarioReport
     location: JSONAddress
+    is_acceptable: bool = False
 
 
 def _compare_number(value: float, comparison: NumericComparison) -> bool:
@@ -93,6 +99,9 @@ def _is_applicable(
                 element.element.severity, applicability.failed_checks.has_severity
             ):
                 return False
+        if applicability.failed_checks.is_acceptable is not None:
+            if element.is_acceptable != applicability.failed_checks.is_acceptable:
+                return False
         return True
 
     elif (
@@ -127,26 +136,49 @@ def _get_applicable_elements_from_test_scenario(
     applicability: ValidationCriterionApplicability,
     report: TestScenarioReport,
     location: JSONAddress,
+    acceptable_findings: list[FullyQualifiedCheck],
 ) -> Iterator[TestReportElement]:
     element = TestReportElement(element=report, location=location)
     if _is_applicable(element, applicability):
         yield element
-    for i, (fc_location, fc) in enumerate(report.query_failed_checks()):
-        element = TestReportElement(
-            element=fc, location=JSONAddress(location + "." + fc_location)
-        )
-        if _is_applicable(element, applicability):
-            yield element
+    steps: list[tuple[str, TestStepReport, str]] = [
+        (case.name, step, f"cases[{c}].steps[{s}]")
+        for c, case in enumerate(report.cases)
+        for s, step in enumerate(case.steps)
+    ]
+    if report.cleanup:
+        steps.append(("Cleanup", report.cleanup, "cleanup"))
+    for case_name, step, step_location in steps:
+        for i, fc in enumerate(step.failed_checks):
+            check = FullyQualifiedCheck(
+                scenario_type=report.scenario_type,
+                test_case_name=case_name,
+                test_step_name=step.name,
+                check_name=fc.name,
+            )
+            element = TestReportElement(
+                element=fc,
+                location=JSONAddress(f"{location}.{step_location}.failed_checks[{i}]"),
+                is_acceptable=fully_qualified_check_in_collection(
+                    check, acceptable_findings
+                ),
+            )
+            if _is_applicable(element, applicability):
+                yield element
 
 
 def _get_applicable_elements_from_test_suite(
     applicability: ValidationCriterionApplicability,
     report: TestSuiteReport,
     location: JSONAddress,
+    acceptable_findings: list[FullyQualifiedCheck],
 ) -> Iterator[TestReportElement]:
     for a, action in enumerate(report.actions):
         yield from _get_applicable_elements_from_action(
-            applicability, action, JSONAddress(location + f".actions[{a}]")
+            applicability,
+            action,
+            JSONAddress(location + f".actions[{a}]"),
+            acceptable_findings,
         )
 
 
@@ -154,10 +186,14 @@ def _get_applicable_elements_from_action_generator(
     applicability: ValidationCriterionApplicability,
     report: ActionGeneratorReport,
     location: JSONAddress,
+    acceptable_findings: list[FullyQualifiedCheck],
 ) -> Iterator[TestReportElement]:
     for a, action in enumerate(report.actions):
         yield from _get_applicable_elements_from_action(
-            applicability, action, JSONAddress(location + f".actions[{a}]")
+            applicability,
+            action,
+            JSONAddress(location + f".actions[{a}]"),
+            acceptable_findings,
         )
 
 
@@ -175,22 +211,28 @@ def _get_applicable_elements_from_action(
     applicability: ValidationCriterionApplicability,
     report: TestSuiteActionReport,
     location: JSONAddress,
+    acceptable_findings: list[FullyQualifiedCheck],
 ) -> Iterator[TestReportElement]:
     if "test_scenario" in report and report.test_scenario:
         return _get_applicable_elements_from_test_scenario(
             applicability,
             report.test_scenario,
             JSONAddress(location + ".test_scenario"),
+            acceptable_findings,
         )
     elif "test_suite" in report and report.test_suite:
         return _get_applicable_elements_from_test_suite(
-            applicability, report.test_suite, JSONAddress(location + ".test_suite")
+            applicability,
+            report.test_suite,
+            JSONAddress(location + ".test_suite"),
+            acceptable_findings,
         )
     elif "action_generator" in report and report.action_generator:
         return _get_applicable_elements_from_action_generator(
             applicability,
             report.action_generator,
             JSONAddress(location + ".action_generator"),
+            acceptable_findings,
         )
     elif "skipped_action" in report and report.skipped_action:
         return _get_applicable_elements_from_skipped_action(
@@ -278,9 +320,11 @@ def _evaluate_condition(
 
 
 def _criterion_validated(criterion: ValidationCriterion, report: TestRunReport) -> bool:
+    artifacts = report.configuration.v1.artifacts if report.configuration.v1 else None
+    acceptable_findings = list(artifacts.acceptable_findings) if artifacts else []
     elements = list(
         _get_applicable_elements_from_action(
-            criterion.applicability, report.report, "$.report"
+            criterion.applicability, report.report, "$.report", acceptable_findings
         )
     )
     return _evaluate_condition(criterion.pass_condition, elements)

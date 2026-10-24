@@ -12,6 +12,10 @@ Test suites are tolerant of incomplete resources available for an action.  All r
 
 Test suite documentation is generated automatically; use `make format` from the repository root to regenerate it.
 
+### Resources
+
+This section lists the input resources used/accepted by the suite, their types, whether they are optional, and any descriptions of their purpose or usage.
+
 ### Actions
 
 This section of a test suite documentation page summarizes the actions that will be taken when the test suite is run.

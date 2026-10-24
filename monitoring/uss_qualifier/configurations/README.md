@@ -86,6 +86,14 @@ The contents of a test configuration are a JSON-like representation of an instan
 
 An optional convention encouraged in test configurations is to annotate the type of objects whose type may be unclear (especially resource declarations) with a `$content_schema` key containing, as its value, the path to the JSON schema of the object type relative to the [`schemas`](../../../schemas) folder.  These annotations are not required and are not used at runtime by uss_qualifier, but [can be used](../../../schemas/README.md) to improve the ease of editing test configuration files.  Note these annotations take advantage of the behavior that all keys present in a test configuration, but not specified in the appropriate schema, are ignored by uss_qualifier.
 
+#### Acceptable findings
+
+Configurations for local environments can list checks in `v1.artifacts.tested_requirements[].acceptable_findings`, for example when local services use private addresses or cleartext HTTP.  Each entry identifies the scenario, test case, test step, and check by name.  The checks still run and record failures, while the tested requirements report marks their findings as acceptable.
+
+When using `stop_fast`, also set `v1.test_run.execution.do_not_stop_fast_for_acceptable_findings: true` to allow subsequent test activities to run after acceptable findings of Medium severity.  Higher severities still stop the scenario or test run according to their normal behavior.
+
+Exit-code validation is configured separately.  To omit acceptable findings from a failed-check criterion, set `applicability.failed_checks.is_acceptable: false`.  This uses the same `acceptable_findings` declarations from the test run's configuration.  If this selector is omitted, acceptable findings are included in validation like other failures.
+
 #### Personalization
 
 When designing personalized/custom configuration files for specific, non-standard systems, the configuration files should generally be stored in either [uss_qualifier/configurations/personal](personal), or in an external repository and provided via `file://` prefix or `http(s)://` prefix.

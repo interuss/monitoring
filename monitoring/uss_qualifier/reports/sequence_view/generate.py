@@ -140,8 +140,18 @@ def compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Acti
         generator_type = action_generator_type_from_name(
             report.action_generator.generator_type
         )
+        name = generator_type.get_name()
+        resource_ids = report.action_generator.resources_provided
+        if resource_ids:
+            if len(resource_ids) > 2:
+                resource_list = (
+                    ", ".join(resource_ids[:-1]) + ", and " + resource_ids[-1]
+                )
+            else:
+                resource_list = " and ".join(resource_ids)
+            name += f" supplying {resource_list}"
         return ActionNode(
-            name=generator_type.get_name(),
+            name=name,
             node_type=ActionNodeType.ActionGenerator,
             children=[
                 compute_action_node(a, indexer) for a in report.action_generator.actions

@@ -43,7 +43,9 @@ def _assert_operator_id(value_inj: str, value_obs: str, outcome: bool):
         evaluator._evaluate_operator_id(value_inj, value_obs, [])
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
-    assert unit_test_scenario.get_report().successful == outcome
+    report = unit_test_scenario.get_report()
+    assert report.execution_error is None
+    assert (not list(report.query_failed_checks())) == outcome
 
 
 def test_operator_id_non_ascii():
@@ -371,7 +373,9 @@ def _assert_generic_evaluator(testcase: GenericEvaluatorTestCase, outcome: bool)
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
 
-    assert unit_test_scenario.get_report().successful == outcome
+    report = unit_test_scenario.get_report()
+    assert report.execution_error is None
+    assert (not list(report.query_failed_checks())) == outcome
 
     if not outcome:
         found_correct_reason = False
@@ -545,7 +549,9 @@ def _assert_generic_evaluator_call(
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
 
-    assert unit_test_scenario.get_report().successful == outcome
+    report = unit_test_scenario.get_report()
+    assert report.execution_error is None
+    assert (not list(report.query_failed_checks())) == outcome
 
     if wanted_fail:
         found_correct_reason = False

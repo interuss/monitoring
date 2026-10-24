@@ -274,6 +274,7 @@ def compute_tested_scenario(
             if "resource_origins" in report and report.resource_origins is not None
             else {}
         ),
+        resource_participants=report.get("resource_participants") or {},
     )
     action_indexer.index += 1
     return scenario

@@ -1,0 +1,49 @@
+name: Single flight planner testing for ASTM F3548-21
+resources:
+  tested_uss: resources.flight_planning.FlightPlannerResource
+  invalid_flight_intents: resources.flight_planning.FlightIntentsResource
+  non_conflicting_flights: resources.flight_planning.FlightIntentsResource
+  conflicting_flights: resources.flight_planning.FlightIntentsResource
+  dss: resources.astm.f3548.v21.DSSInstanceResource
+  mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
+  utm_auth: resources.communications.AuthAdapterResource?
+actions:
+- test_scenario:
+    scenario_type: scenarios.astm.utm.FlightIntentValidation
+    resources:
+      flight_intents: invalid_flight_intents
+      tested_uss: tested_uss
+      dss: dss
+- test_scenario:
+    scenario_type: scenarios.astm.utm.data_exchange_validation.GetOpResponseDataValidationByUSS
+    resources:
+      tested_uss: tested_uss
+      mock_uss: mock_uss
+      dss: dss
+      flight_intents: non_conflicting_flights
+- test_scenario:
+    scenario_type: scenarios.astm.utm.subscription_notifications.ReceiveNotificationsForAwareness
+    resources:
+      tested_uss: tested_uss
+      mock_uss: mock_uss
+      dss: dss
+      flight_intents: non_conflicting_flights
+- test_scenario:
+    scenario_type: scenarios.astm.utm.uss_authentication.scd_authentication_validation.SCDAuthenticationValidation
+    resources:
+      tested_uss: tested_uss
+      utm_auth: utm_auth
+      dss: dss
+      flight_intents: non_conflicting_flights
+- test_scenario:
+    scenario_type: scenarios.astm.utm.DownUSS
+    resources:
+      flight_intents: conflicting_flights
+      tested_uss: tested_uss
+      dss: dss
+- test_scenario:
+    scenario_type: scenarios.astm.utm.DownUSSEqualPriorityNotPermitted
+    resources:
+      flight_intents: conflicting_flights
+      tested_uss: tested_uss
+      dss: dss

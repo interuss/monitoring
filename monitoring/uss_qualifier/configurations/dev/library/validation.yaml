@@ -5,11 +5,12 @@ execution_error_none:
     each_element:
       has_execution_error: false
 
-failed_check_severity_max_low:
+failed_check_severity_max_low_except_acceptable:
   applicability:
     failed_checks:
       has_severity:
         higher_than: Low
+      is_acceptable: false
   pass_condition:
     elements:
       count:
@@ -27,5 +28,5 @@ normal_test:
   $content_schema: monitoring/uss_qualifier/reports/validation/report_validation/ValidationConfiguration.json
   criteria:
     - $ref: '#/execution_error_none'
-    - $ref: '#/failed_check_severity_max_low'
+    - $ref: '#/failed_check_severity_max_low_except_acceptable'
     - $ref: '#/skipped_action_none'
