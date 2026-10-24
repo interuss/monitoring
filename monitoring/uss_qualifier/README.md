@@ -63,7 +63,7 @@ uss_qualifier is generally designed to skip test components when some prerequisi
 
 ### Orphaned DSS entities
 
-If a test entity (subscription, etc) is orphaned in the DSS, its origin can be determined by running (from the repository root) `uv run ./monitoring/prober/decode_id.py <ID>`.  This displays the owner, instance index, and registered resource description, including qualifier scenarios. Owner encoding truncates its final character; the decoder displays `?` for that character.
+If a test entity (subscription, etc) is orphaned in the DSS, its origin can be determined using [monitorlib's test ID decoder](../monitorlib/README.md#test-resource-ids).
 
 ## Architecture
 

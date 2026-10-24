@@ -3,9 +3,10 @@
 import json
 
 from monitoring.monitorlib import scd
+from monitoring.monitorlib.ids import register_resource_type
 from monitoring.monitorlib.infrastructure import default_scope
 from monitoring.monitorlib.scd import SCOPE_SC
-from monitoring.prober.infrastructure import for_api_versions, register_resource_type
+from monitoring.prober.infrastructure import for_api_versions
 from monitoring.prober.scd import actions
 
 OP_TYPE = register_resource_type(8, "Operational intent")

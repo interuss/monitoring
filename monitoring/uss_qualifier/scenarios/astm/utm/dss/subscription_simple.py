@@ -6,8 +6,8 @@ from uas_standards.astm.f3548.v21.constants import Scope
 from monitoring.monitorlib import geo
 from monitoring.monitorlib.geo import Polygon, Volume3D
 from monitoring.monitorlib.geotemporal import Volume4D
+from monitoring.monitorlib.ids import register_resource_type
 from monitoring.monitorlib.mutate.scd import MutatedSubscription
-from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
