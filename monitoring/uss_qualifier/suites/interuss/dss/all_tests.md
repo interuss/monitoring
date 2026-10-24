@@ -2,6 +2,21 @@
 # ASTM DSS tests test suite
 [`suites.interuss.dss.all_tests`](./all_tests.yaml)
 
+## [Resource inputs](../../README.md#resources)
+
+- `f3411v19_dss_instances`: `resources.astm.f3411.DSSInstancesResource` (optional)
+- `f3411v22a_dss_instances`: `resources.astm.f3411.DSSInstancesResource` (optional)
+- `f3548v21_dss_instances`: `resources.astm.f3548.v21.dss.DSSInstancesResource` (optional)
+- `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `utm_client_identity`: `resources.communications.ClientIdentityResource`
+- `id_generator`: `resources.interuss.IDGeneratorResource`
+- `service_area`: `resources.netrid.ServiceAreaResource` (optional)
+- `planning_area`: `resources.PlanningAreaResource` (optional)
+- `problematically_big_area`: `resources.VolumeResource` (optional)
+- `second_utm_auth`: `resources.communications.AuthAdapterResource` (optional)
+- `flight_intents`: `resources.flight_planning.FlightIntentsResource` (optional)
+- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
+
 ## [Actions](../../README.md#actions)
 
 1. Action generator: [`action_generators.astm.f3548.ForEachDSS`](../../../action_generators/astm/f3548/for_each_dss.py)

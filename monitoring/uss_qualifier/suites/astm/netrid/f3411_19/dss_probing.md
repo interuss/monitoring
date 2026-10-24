@@ -2,6 +2,18 @@
 # DSS testing for ASTM NetRID F3411-19 test suite
 [`suites.astm.netrid.f3411_19.dss_probing`](./dss_probing.yaml)
 
+## [Resource inputs](../../../README.md#resources)
+
+- `dss`: `resources.astm.f3411.DSSInstanceResource`
+- `all_dss_instances`: `resources.astm.f3411.DSSInstancesResource` (optional)
+- `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `id_generator`: `resources.interuss.IDGeneratorResource`
+- `utm_client_identity`: `resources.communications.ClientIdentityResource`
+- `isa`: `resources.netrid.ServiceAreaResource`
+- `problematically_big_area`: `resources.VolumeResource`
+- `planning_area`: `resources.PlanningAreaResource`
+- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
+
 ## [Actions](../../../README.md#actions)
 
 1. Scenario: [ASTM NetRID DSS: Endpoint encryption](../../../../scenarios/astm/netrid/v19/dss/endpoint_encryption.md) ([`scenarios.astm.netrid.v19.dss.EndpointEncryption`](../../../../scenarios/astm/netrid/v19/dss/endpoint_encryption.py))

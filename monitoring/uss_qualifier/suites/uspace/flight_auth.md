@@ -2,6 +2,31 @@
 # U-space flight authorisation test suite
 [`suites.uspace.flight_auth`](./flight_auth.yaml)
 
+## [Resource inputs](../README.md#resources)
+
+- `test_env_version_providers`: `resources.versioning.VersionProvidersResource` (optional)
+- `prod_env_version_providers`: `resources.versioning.VersionProvidersResource` (optional)
+- `conflicting_flights`: `resources.flight_planning.FlightIntentsResource` (optional)
+- `non_conflicting_flights`: `resources.flight_planning.FlightIntentsResource` (optional)
+- `conflicting_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
+- `priority_preemption_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]` (optional)
+- `non_conflicting_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
+- `invalid_flight_auth_flights`: `resources.flight_planning.FlightIntentsResource`
+- `invalid_flight_intents`: `resources.flight_planning.FlightIntentsResource`
+- `flight_planners`: `resources.flight_planning.FlightPlannersResource` (optional)
+- `mock_uss`: `resources.interuss.mock_uss.client.MockUSSResource` (optional)
+- `dss`: `resources.astm.f3548.v21.DSSInstanceResource`
+- `dss_instances`: `resources.astm.f3548.v21.DSSInstancesResource` (optional)
+- `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `id_generator`: `resources.interuss.IDGeneratorResource`
+- `utm_client_identity`: `resources.communications.ClientIdentityResource`
+- `utm_auth`: `resources.communications.AuthAdapterResource` (optional)
+- `second_utm_auth`: `resources.communications.AuthAdapterResource` (optional)
+- `planning_area_provider`: `resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]`
+- `problematically_big_area`: `resources.VolumeResource`
+- `system_identity`: `resources.versioning.SystemIdentityResource` (optional)
+- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
+
 ## [Actions](../README.md#actions)
 
 1. Suite: [ASTM F3548-21](../astm/utm/f3548_21.md) ([`suites.astm.utm.f3548_21`](../astm/utm/f3548_21.yaml))

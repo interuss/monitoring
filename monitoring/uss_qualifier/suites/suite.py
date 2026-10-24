@@ -283,7 +283,9 @@ class TestSuite:
                         f"Overriding local resource {local_resource_id} in test suite {declaration.suite_type} with externally-provided resource"
                     )
 
-        for resource_id, resource_type in self.definition.resources.items():
+        for resource_input in self.definition.get_resource_inputs():
+            resource_id = resource_input.resource_id
+            resource_type = resource_input.type
             is_optional = resource_type.endswith("?")
             if is_optional:
                 resource_type = resource_type[:-1]

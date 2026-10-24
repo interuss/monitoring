@@ -1,23 +1,43 @@
 name: ASTM F3411-22a
-resources:
-  test_env_version_providers: resources.versioning.VersionProvidersResource?
-  system_identity: resources.versioning.SystemIdentityResource?
-  flights_data: resources.netrid.FlightDataResource
-  service_providers: resources.netrid.NetRIDServiceProviders?
-  observers: resources.netrid.NetRIDObserversResource?
-  mock_uss_dp: resources.interuss.mock_uss.client.MockUSSResource?
-  mock_uss_sp: resources.interuss.mock_uss.client.MockUSSResource?
-  evaluation_configuration: resources.netrid.EvaluationConfigurationResource
-  dss_instances: resources.astm.f3411.DSSInstancesResource?
-  dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
-  utm_client_identity: resources.communications.ClientIdentityResource
-  id_generator: resources.interuss.IDGeneratorResource
-  service_area: resources.netrid.ServiceAreaResource
-  problematically_big_area: resources.VolumeResource
-  planning_area: resources.PlanningAreaResource
-  test_exclusions: resources.dev.TestExclusionsResource?
-  uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
-  concurrency_behavior_adjustment: resources.interuss.scenarios.astm.netrid.common.dss.heavy_traffic_concurrent.HeavyTrafficConcurrentBehaviorResource?
+description: Verify compliance to ASTM F3411-22a requirements for a collection of Service Providers, Display Providers, and/or DSS providers.
+resource_inputs:
+  - resource_id: test_env_version_providers
+    type: resources.versioning.VersionProvidersResource?
+    description: Means by which to retrieve and record the versions of the systems under test.
+  - resource_id: system_identity
+    type: resources.versioning.SystemIdentityResource?
+  - resource_id: flights_data
+    type: resources.netrid.FlightDataResource
+  - resource_id: service_providers
+    type: resources.netrid.NetRIDServiceProviders?
+  - resource_id: observers
+    type: resources.netrid.NetRIDObserversResource?
+  - resource_id: mock_uss_dp
+    type: resources.interuss.mock_uss.client.MockUSSResource?
+  - resource_id: mock_uss_sp
+    type: resources.interuss.mock_uss.client.MockUSSResource?
+  - resource_id: evaluation_configuration
+    type: resources.netrid.EvaluationConfigurationResource
+  - resource_id: dss_instances
+    type: resources.astm.f3411.DSSInstancesResource?
+  - resource_id: dss_datastore_cluster
+    type: resources.interuss.datastore.DatastoreDBClusterResource?
+  - resource_id: utm_client_identity
+    type: resources.communications.ClientIdentityResource
+  - resource_id: id_generator
+    type: resources.interuss.IDGeneratorResource
+  - resource_id: service_area
+    type: resources.netrid.ServiceAreaResource
+  - resource_id: problematically_big_area
+    type: resources.VolumeResource
+  - resource_id: planning_area
+    type: resources.PlanningAreaResource
+  - resource_id: test_exclusions
+    type: resources.dev.TestExclusionsResource?
+  - resource_id: uss_identification
+    type: resources.interuss.uss_identification.USSIdentificationResource?
+  - resource_id: concurrency_behavior_adjustment
+    type: resources.interuss.scenarios.astm.netrid.common.dss.heavy_traffic_concurrent.HeavyTrafficConcurrentBehaviorResource?
 actions:
   - test_scenario:
       scenario_type: scenarios.versioning.GetSystemVersions

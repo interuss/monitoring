@@ -2,6 +2,27 @@
 # UFT message signing test suite
 [`suites.faa.uft.message_signing`](./message_signing.yaml)
 
+## [Resource inputs](../../README.md#resources)
+
+- `mock_uss`: `resources.interuss.mock_uss.client.MockUSSResource`
+- `flight_planners`: `resources.flight_planning.FlightPlannersResource`
+- `combination_selector`: `resources.flight_planning.FlightPlannerCombinationSelectorResource`
+- `dss`: `resources.astm.f3548.v21.DSSInstanceResource`
+- `dss_instances`: `resources.astm.f3548.v21.DSSInstancesResource` (optional)
+- `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `conflicting_flights`: `resources.flight_planning.FlightIntentsResource` (optional)
+- `non_conflicting_flights`: `resources.flight_planning.FlightIntentsResource` (optional)
+- `conflicting_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
+- `priority_preemption_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]` (optional)
+- `non_conflicting_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
+- `invalid_flight_intents`: `resources.flight_planning.FlightIntentsResource`
+- `id_generator`: `resources.interuss.IDGeneratorResource`
+- `utm_client_identity`: `resources.communications.ClientIdentityResource`
+- `second_utm_auth`: `resources.communications.AuthAdapterResource` (optional)
+- `planning_area_provider`: `resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]`
+- `problematically_big_area`: `resources.VolumeResource`
+- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
+
 ## [Actions](../../README.md#actions)
 
 1. Scenario: [Start message signing](../../../scenarios/faa/uft/message_signing_start.md) ([`scenarios.faa.uft.StartMessageSigningReport`](../../../scenarios/faa/uft/message_signing_start.py))
