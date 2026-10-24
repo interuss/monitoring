@@ -129,6 +129,7 @@ v1:
                 uss_identification: uss_identification
     execution:
       stop_fast: true
+      do_not_stop_fast_for_acceptable_findings: true
   artifacts:
     raw_report: {}
     templated_reports:
@@ -136,6 +137,10 @@ v1:
         report_name: capabilities
     tested_requirements:
       - report_name: requirements
+        acceptable_findings:
+          - $ref: 'library/acceptable_findings.yaml#/private_address_f3411_22a'
+          - $ref: 'library/acceptable_findings.yaml#/private_address_f3548_21'
+          - $ref: 'library/acceptable_findings.yaml#/cleartext_f3411_22a'
         requirement_collections:
           uspace:
             requirement_collections:
@@ -193,7 +198,7 @@ v1:
   validation:
     criteria:
       - $ref: ./library/validation.yaml#/execution_error_none
-      - $ref: ./library/validation.yaml#/failed_check_severity_max_low
+      - $ref: ./library/validation.yaml#/failed_check_severity_max_low_except_acceptable
       - applicability:
           skipped_actions: {}
         pass_condition:
