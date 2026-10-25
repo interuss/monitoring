@@ -48,8 +48,9 @@ unit-test:
 
 .PHONY: test-benchmarker-minimal
 test-benchmarker-minimal:
+	uv sync --locked --no-install-project
 	mkdir -p monitoring/benchmarker/output/minimal
-	PYTHONPATH=. uv run --locked --no-install-project python monitoring/benchmarker/benchmark.py \
+	PYTHONPATH=. uv run --no-sync python monitoring/benchmarker/benchmark.py \
 		--config file://monitoring/benchmarker/configurations/interuss/minimal.jsonnet \
 		--config-output monitoring/benchmarker/output/minimal/config.json \
 		--output monitoring/benchmarker/output/minimal
