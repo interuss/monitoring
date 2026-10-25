@@ -32,8 +32,6 @@ resource_inputs:
     type: resources.VolumeResource
   - resource_id: planning_area
     type: resources.PlanningAreaResource
-  - resource_id: test_exclusions
-    type: resources.dev.TestExclusionsResource?
   - resource_id: uss_identification
     type: resources.interuss.uss_identification.USSIdentificationResource?
   - resource_id: concurrency_behavior_adjustment
@@ -106,7 +104,6 @@ actions:
         service_area: service_area
         problematically_big_area: problematically_big_area
         planning_area: planning_area
-        test_exclusions: test_exclusions?
         concurrency_behavior_adjustment: concurrency_behavior_adjustment?
       specification:
         action_to_repeat:
@@ -122,7 +119,6 @@ actions:
               client_identity: utm_client_identity
               problematically_big_area: problematically_big_area
               planning_area: planning_area
-              test_exclusions: test_exclusions?
               concurrency_behavior_adjustment: concurrency_behavior_adjustment?
         dss_instances_source: dss_instances
         dss_instance_id: dss
@@ -132,7 +128,6 @@ actions:
         service_providers: service_providers
         observers: observers?
         dss_instances: dss_instances
-        test_exclusions: test_exclusions?
 participant_verifiable_capabilities:
   - id: service_provider
     name: NetRID Service Provider

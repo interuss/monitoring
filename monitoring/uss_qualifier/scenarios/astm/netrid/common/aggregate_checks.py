@@ -8,7 +8,6 @@ from monitoring.monitorlib.rid import RIDVersion
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.astm.f3411 import DSSInstancesResource
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstance
-from monitoring.uss_qualifier.resources.dev import TestExclusionsResource
 from monitoring.uss_qualifier.resources.netrid import (
     NetRIDObserversResource,
     NetRIDServiceProviders,
@@ -29,7 +28,6 @@ class AggregateChecks(GenericTestScenario):
 
     _queries: list[fetch.Query]
     _participants_by_base_url: dict[str, ParticipantID] = dict()
-    _allow_cleartext_queries: bool = False
     _queries_by_participant: dict[ParticipantID, list[fetch.Query]]
 
     def __init__(
@@ -37,7 +35,6 @@ class AggregateChecks(GenericTestScenario):
         service_providers: NetRIDServiceProviders,
         dss_instances: DSSInstancesResource,
         observers: NetRIDObserversResource | None = None,
-        test_exclusions: TestExclusionsResource | None = None,
     ):
         super().__init__()
         self._service_providers = service_providers.service_providers
@@ -52,9 +49,6 @@ class AggregateChecks(GenericTestScenario):
         self._participants_by_base_url.update(
             {dp.base_url: dp.participant_id for dp in self._observers}
         )
-
-        if test_exclusions is not None:
-            self._allow_cleartext_queries = test_exclusions.allow_cleartext_queries
 
     def _init_queries(self, context: ExecutionContext):
         self._queries = list(context.sibling_queries())
@@ -133,17 +127,8 @@ class AggregateChecks(GenericTestScenario):
         self.end_test_scenario()
 
     def _verify_https_everywhere(self):
-        if not self._allow_cleartext_queries:
-            for (
-                participant_id,
-                participant_queries,
-            ) in self._queries_by_participant.items():
-                self._inspect_participant_queries(participant_id, participant_queries)
-        else:
-            self.record_note(
-                "https-check",
-                "cleartext queries are allowed by test exclusions, skipping HTTPS check",
-            )
+        for participant_id, participant_queries in self._queries_by_participant.items():
+            self._inspect_participant_queries(participant_id, participant_queries)
 
         # Check that all queries have been attributed to a participant
         unattr_queries = [

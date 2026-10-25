@@ -5,7 +5,6 @@ resources:
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
   id_generator: resources.interuss.IDGeneratorResource
   planning_area: resources.PlanningAreaResource
-  test_exclusions: resources.dev.TestExclusionsResource?
   utm_client_identity: resources.communications.ClientIdentityResource
 actions:
   - action_generator:
@@ -16,7 +15,6 @@ actions:
         second_utm_auth: second_utm_auth?
         id_generator: id_generator
         planning_area: planning_area
-        test_exclusions: test_exclusions?
         utm_client_identity: utm_client_identity
       specification:
         dss_instances_source: dss_instances
@@ -30,7 +28,6 @@ actions:
               dss_datastore_cluster: dss_datastore_cluster?
               id_generator: id_generator
               planning_area: planning_area
-              test_exclusions: test_exclusions?
               utm_client_identity: utm_client_identity
             suite_definition:
               name: Minimal production probing for primary DSS instance
@@ -41,7 +38,6 @@ actions:
                 dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
                 id_generator: resources.interuss.IDGeneratorResource
                 planning_area: resources.PlanningAreaResource
-                test_exclusions: resources.dev.TestExclusionsResource?
               actions:
                 - test_scenario:
                     scenario_type: scenarios.astm.utm.dss.synchronization.CRSynchronization
@@ -93,7 +89,6 @@ actions:
                       primary_dss_instance: primary_dss_instance
                       all_dss_instances: all_dss_instances
                       planning_area: planning_area
-                      test_exclusions: test_exclusions?
                 - test_scenario:
                     scenario_type: scenarios.astm.utm.dss.synchronization.SubscriptionSynchronization
                     resources:

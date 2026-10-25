@@ -13,7 +13,6 @@ resources:
   service_area: resources.netrid.ServiceAreaResource
   problematically_big_area: resources.VolumeResource
   planning_area: resources.PlanningAreaResource
-  test_exclusions: resources.dev.TestExclusionsResource?
   uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
 actions:
   - test_scenario:
@@ -79,7 +78,6 @@ actions:
         service_area: service_area
         problematically_big_area: problematically_big_area
         planning_area: planning_area
-        test_exclusions: test_exclusions?
       specification:
         action_to_repeat:
           test_suite:
@@ -93,7 +91,6 @@ actions:
               isa: service_area
               problematically_big_area: problematically_big_area
               planning_area: planning_area
-              test_exclusions: test_exclusions?
         dss_instances_source: dss_instances
         dss_instance_id: dss
   - test_scenario:
@@ -102,7 +99,6 @@ actions:
         service_providers: service_providers
         observers: observers
         dss_instances: dss_instances
-        test_exclusions: test_exclusions?
 participant_verifiable_capabilities:
     - id: service_provider
       name: NetRID Service Provider

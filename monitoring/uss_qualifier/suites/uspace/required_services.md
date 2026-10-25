@@ -33,7 +33,6 @@
 - `planning_area`: `resources.PlanningAreaResource`
 - `planning_area_provider`: `resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]`
 - `problematically_big_area`: `resources.VolumeResource`
-- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
 - `uss_identification`: `resources.interuss.uss_identification.USSIdentificationResource` (optional)
 
 ## [Actions](../README.md#actions)

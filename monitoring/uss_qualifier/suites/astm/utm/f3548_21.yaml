@@ -32,7 +32,6 @@ resources:
   planning_area_provider: resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]
   problematically_big_area: resources.VolumeResource
   system_identity: resources.versioning.SystemIdentityResource?
-  test_exclusions: resources.dev.TestExclusionsResource?
 local_resources:
   id_generator:
     resource_type: resources.interuss.id_generator.IDGeneratorResource
@@ -139,7 +138,6 @@ actions:
       second_utm_auth: second_utm_auth?
       utm_client_identity: utm_client_identity
       problematically_big_area: problematically_big_area
-      test_exclusions: test_exclusions?
     specification:
       resource_environments_source: dss_probing_environments
       action_to_repeat:
@@ -155,7 +153,6 @@ actions:
             id_generator: id_generator
             planning_area: planning_area
             problematically_big_area: problematically_big_area
-            test_exclusions: test_exclusions?
 - action_generator:
     generator_type: action_generators.resource_environments.ResourceEnvironmentsActionGenerator
     resources:

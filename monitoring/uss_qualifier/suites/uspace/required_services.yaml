@@ -35,7 +35,6 @@ resources:
   planning_area_provider: resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]
   problematically_big_area: resources.VolumeResource
 
-  test_exclusions: resources.dev.TestExclusionsResource?
   uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
 local_resources:
   system_identity:
@@ -72,7 +71,6 @@ actions:
       planning_area_provider: planning_area_provider
       problematically_big_area: problematically_big_area
       system_identity: system_identity
-      test_exclusions: test_exclusions?
 - test_suite:
     suite_type: suites.uspace.network_identification
     resources:
@@ -87,7 +85,6 @@ actions:
       service_area: service_area
       problematically_big_area: problematically_big_area
       planning_area: planning_area
-      test_exclusions: test_exclusions?
       mock_uss_dp: mock_uss_dp?
       mock_uss_sp: mock_uss_sp?
       uss_identification: uss_identification?

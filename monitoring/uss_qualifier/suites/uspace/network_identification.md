@@ -17,7 +17,6 @@
 - `service_area`: `resources.netrid.ServiceAreaResource`
 - `problematically_big_area`: `resources.VolumeResource`
 - `planning_area`: `resources.PlanningAreaResource`
-- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
 - `mock_uss_dp`: `resources.interuss.mock_uss.client.MockUSSResource` (optional)
 - `mock_uss_sp`: `resources.interuss.mock_uss.client.MockUSSResource` (optional)
 - `uss_identification`: `resources.interuss.uss_identification.USSIdentificationResource` (optional)

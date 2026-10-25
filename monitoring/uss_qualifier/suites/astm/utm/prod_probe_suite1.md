@@ -10,7 +10,6 @@ Defined in [parent suite](prod_probe.md) [`suites.astm.utm.prod_probe`](./prod_p
 - `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
 - `id_generator`: `resources.interuss.IDGeneratorResource`
 - `planning_area`: `resources.PlanningAreaResource`
-- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
 
 ## [Actions](../../README.md#actions)
 

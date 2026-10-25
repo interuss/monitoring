@@ -12,7 +12,6 @@
 - `isa`: `resources.netrid.ServiceAreaResource`
 - `problematically_big_area`: `resources.VolumeResource`
 - `planning_area`: `resources.PlanningAreaResource`
-- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
 - `concurrency_behavior_adjustment`: `resources.interuss.scenarios.astm.netrid.common.dss.heavy_traffic_concurrent.HeavyTrafficConcurrentBehaviorResource` (optional)
 
 ## [Actions](../../../README.md#actions)
