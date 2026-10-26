@@ -68,7 +68,7 @@ class PlanningAreaResource(GeospatialResource, Resource[PlanningAreaSpecificatio
             self.resolved_volume4d_with_times(None, None).rect_bounds
         )
 
-    def move(self, meters_east: float, meters_north: float) -> "PlanningAreaResource":
+    def move(self, meters_east: float, meters_north: float) -> PlanningAreaResource:
         volume_spec = deepcopy(self._volume.specification)
         volume_spec.template.transformations = (
             volume_spec.template.transformations or []

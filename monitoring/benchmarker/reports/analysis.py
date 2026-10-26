@@ -264,7 +264,7 @@ class USLFit:
         x_data: Sequence[float],
         y_data: Sequence[float],
         discard_probability: float | None = 0.05,
-    ) -> "USLFit":
+    ) -> USLFit:
         x_arr = np.array(x_data, dtype=float)
         y_arr = np.array(y_data, dtype=float)
         if len(x_arr) != len(y_arr):

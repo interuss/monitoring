@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from multiprocessing import Process
+from multiprocessing import get_context
 
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -169,7 +169,10 @@ def generate_artifacts(
         make_timing_report,
         make_ai_helpers,
     ]
-    generators = [Process(target=g, daemon=True) for g in artifact_generators]
+    generators = [
+        get_context("fork").Process(target=g, daemon=True)
+        for g in artifact_generators  # Note: fork is used, since make_* are not pickable
+    ]
     for p in generators:
         p.start()
     for p in generators:

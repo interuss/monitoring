@@ -174,12 +174,12 @@ class TestSuiteAction[T: ActionGenerator]:
             with scenario.async_runtime():
                 try:
                     scenario.run(context)
-                except (ScenarioCannotContinueError, TestRunCannotContinueError):
+                except ScenarioCannotContinueError, TestRunCannotContinueError:
                     pass
                 scenario.go_to_cleanup()
                 try:
                     scenario.cleanup()
-                except (ScenarioCannotContinueError, TestRunCannotContinueError):
+                except ScenarioCannotContinueError, TestRunCannotContinueError:
                     scenario.ensure_cleanup_ended()
         except KeyboardInterrupt:
             raise

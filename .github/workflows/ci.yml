@@ -28,6 +28,10 @@ jobs:
         fetch-tags: true
         fetch-depth: 0
         filter: tree:0
+    - name: Set up Python
+      uses: actions/setup-python@v7
+      with:
+        python-version: '3.14'
     - name: Build monitoring images
       run: |
         make image
@@ -123,11 +127,11 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v7
       with:
-        python-version: '3.13'
+        python-version: '3.14'
     - name: Install uv
       uses: astral-sh/setup-uv@v7
       with:
-        version: '0.12.21'
+        version: '0.13.5'
         enable-cache: true
     - name: Run minimal benchmarker configuration
       shell: bash

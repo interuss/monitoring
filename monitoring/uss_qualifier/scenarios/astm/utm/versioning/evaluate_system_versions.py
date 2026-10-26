@@ -183,7 +183,7 @@ class EvaluateSystemVersions(TestScenario):
             ):
                 try:
                     resp = ImplicitDict.parse(q.response.json, GetVersionResponse)
-                except (ValueError, KeyError):
+                except ValueError, KeyError:
                     # Something was wrong with the response payload; ignore this query
                     continue
                 with self.check(

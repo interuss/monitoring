@@ -243,7 +243,7 @@ def get_pep440_version(
     try:
         info = get_git_info(component)
         return derive_pep440_version(info)
-    except (subprocess.SubprocessError, FileNotFoundError, OSError):
+    except subprocess.SubprocessError, FileNotFoundError, OSError:
         pass
 
     if os.path.exists(VERSION_FILE_PATH):

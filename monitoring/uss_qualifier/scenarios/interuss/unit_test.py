@@ -6,7 +6,7 @@ from monitoring.uss_qualifier.suites.suite import ExecutionContext
 
 
 class UnitTestScenario(GenericTestScenario):
-    def __init__(self, step_under_test: Callable[["UnitTestScenario"], None]):
+    def __init__(self, step_under_test: Callable[[UnitTestScenario], None]):
         self._allow_undocumented_checks = True
         self.step_under_test = step_under_test
         self.declaration = TestScenarioDeclaration(

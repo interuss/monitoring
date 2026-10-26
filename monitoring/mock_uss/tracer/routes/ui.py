@@ -195,7 +195,7 @@ def tracer_observation_area_ui(observation_area_id: str):
     try:
         bbox = geo.make_latlng_rect(v)
         bbox_str = f"{bbox.lo().lat().degrees:6f},{bbox.lo().lng().degrees:6f},{bbox.hi().lat().degrees:6f},{bbox.hi().lng().degrees:6f}"
-    except (ValueError, KeyError):
+    except ValueError, KeyError:
         bbox_str = "[unavailable]"
     if v.altitude_lower:
         alt_lo = f"{v.altitude_lower.value} {v.altitude_lower.units} {v.altitude_lower.reference}"

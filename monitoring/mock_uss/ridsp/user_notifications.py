@@ -37,7 +37,7 @@ class ServiceProviderUserNotifications(ImplicitDict):
             UserNotification(observed_at=observed_at_time, message=message)
         )
 
-    def create_notifications_if_needed(self, record: "database.TestRecord"):
+    def create_notifications_if_needed(self, record: database.TestRecord):
         for notif in check_and_generate_slow_update_notification(record.flights):
             self.record_notification("Insufficient update rate", notif)
 
