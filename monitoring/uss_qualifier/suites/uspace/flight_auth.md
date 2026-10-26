@@ -12,7 +12,7 @@
 - `priority_preemption_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]` (optional)
 - `non_conflicting_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
 - `invalid_flight_auth_flights`: `resources.flight_planning.FlightIntentsResource`
-- `invalid_flight_intents`: `resources.flight_planning.FlightIntentsResource`
+- `invalid_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
 - `flight_planners`: `resources.flight_planning.FlightPlannersResource` (optional)
 - `mock_uss`: `resources.interuss.mock_uss.client.MockUSSResource` (optional)
 - `dss`: `resources.astm.f3548.v21.DSSInstanceResource`

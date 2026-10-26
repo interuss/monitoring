@@ -15,7 +15,7 @@ resources:
   priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
   non_conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
 
-  invalid_flight_intents: resources.flight_planning.FlightIntentsResource
+  invalid_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
   id_generator: resources.interuss.IDGeneratorResource
   utm_client_identity: resources.communications.ClientIdentityResource
   second_utm_auth: resources.communications.AuthAdapterResource?
@@ -39,7 +39,7 @@ actions:
       flight_planners: flight_planners
       flight_planners_to_clear: flight_planners
       nominal_planning_selector: combination_selector
-      invalid_flight_intents: invalid_flight_intents
+      invalid_flights_provider: invalid_flights_provider
       priority_planning_selector: combination_selector
       dss: dss
       dss_instances: dss_instances

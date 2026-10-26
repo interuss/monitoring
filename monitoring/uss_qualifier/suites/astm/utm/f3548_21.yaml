@@ -16,8 +16,8 @@ resources:
   conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
   priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
   non_conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
+  invalid_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
 
-  invalid_flight_intents: resources.flight_planning.FlightIntentsResource
   nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   priority_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   utm_auth: resources.communications.AuthAdapterResource?
@@ -28,7 +28,7 @@ resources:
   # Zero or one of the following two resources must be provided
   id_generator: resources.interuss.id_generator.IDGeneratorResource?
   id_generator_provider: resources.interuss.id_generator.IDGeneratorProviderResource?
-  
+
   planning_area_provider: resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]
   problematically_big_area: resources.VolumeResource
   system_identity: resources.versioning.SystemIdentityResource?
@@ -99,17 +99,29 @@ local_resources:
       environments: equal_priority_conflict_combinations  # provides uss1, uss2
       flight_intents: conflicting_flights_provider
     specification: {}
+  single_planner_planner_environments:
+    resource_type: resources.combinations.ResourceCombinationsResource
+    dependencies:
+      tested_uss: flight_planners
+    specification: {}
+  invalid_intents_environments:
+    resource_type: resources.environments.EnvironmentAugmentationResource
+    dependencies:
+      environments: single_planner_planner_environments
+      flight_intents: invalid_flights_provider
+    specification: {}
+  single_planner_environments:
+    resource_type: resources.environments.EnvironmentAugmentationResource
+    dependencies:
+      environments: single_planner_planner_environments
+      invalid_flight_intents: invalid_flights_provider
   flight_intents_environments:
     resource_type: resources.environments.ConcatenatedResourceEnvironmentsResource
     dependencies:
       dss_probing: dss_probing_environments
       priority_preemption: priority_preemption_environments?
       equal_priority_conflict: equal_priority_conflict_environments
-    specification: {}
-  single_planner_environments:
-    resource_type: resources.combinations.ResourceCombinationsResource
-    dependencies:
-      tested_uss: flight_planners
+      invalid: invalid_intents_environments
     specification: {}
 actions:
 - test_scenario:
@@ -127,8 +139,7 @@ actions:
       flight_planners: flight_planners_to_clear
       mock_uss: mock_uss?
       dss: dss
-      flight_intents: invalid_flight_intents
-      flight_intents2: non_conflicting_flights?
+      flight_intents: non_conflicting_flights?
       flight_intents_environments: flight_intents_environments?
 - action_generator:
     generator_type: action_generators.resource_environments.ResourceEnvironmentsActionGenerator
@@ -190,7 +201,6 @@ actions:
     generator_type: action_generators.resource_environments.ResourceEnvironmentsActionGenerator
     resources:
       single_planner_environments: single_planner_environments
-      invalid_flight_intents: invalid_flight_intents
       non_conflicting_flights: non_conflicting_flights
       conflicting_flights: conflicting_flights
       dss: dss
@@ -215,8 +225,7 @@ actions:
       flight_planners: flight_planners
       mock_uss: mock_uss?
       dss: dss
-      flight_intents: invalid_flight_intents
-      flight_intents2: non_conflicting_flights?
+      flight_intents: non_conflicting_flights?
       flight_intents_environments: flight_intents_environments?
 - test_scenario:
     scenario_type: scenarios.astm.utm.make_uss_report.MakeUssReport

@@ -24,7 +24,7 @@ function(env) {
             flight_planners_to_clear: 'flight_planners_to_clear',
             conflicting_flights_provider: 'conflicting_flights_provider',
             priority_preemption_flights_provider: 'conflicting_flights_provider',
-            invalid_flight_intents: 'invalid_flight_intents',
+            invalid_flights_provider: 'invalid_flights_provider',
             non_conflicting_flights_provider: 'non_conflicting_flights_provider',
             test_exclusions: 'test_exclusions',
             dss: 'dss',
@@ -245,6 +245,18 @@ function(env) {
                   },
                 },
               ],
+            },
+          },
+
+          // Provide spatially separated invalid flights for each flight planner
+          invalid_flights_provider: {
+            resource_type: 'resources.geospatial.TriangularCascadeSoutheastResource',
+            dependencies: {
+              base_resource: 'invalid_flight_intents',
+            },
+            specification: {
+              meters_east_margin: 10000,
+              meters_north_margin: 10000,
             },
           },
 

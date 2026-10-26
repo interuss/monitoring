@@ -11,7 +11,7 @@ resources:
   priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
   non_conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
 
-  invalid_flight_intents: resources.flight_planning.FlightIntentsResource
+  invalid_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
   invalid_flight_auth_flights: resources.flight_planning.FlightIntentsResource
   flight_planners: resources.flight_planning.FlightPlannersResource?
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
@@ -56,7 +56,7 @@ actions:
       conflicting_flights: conflicting_flights?
       conflicting_flights_provider: conflicting_flights_provider
       priority_preemption_flights_provider: priority_preemption_flights_provider?
-      invalid_flight_intents: invalid_flight_intents
+      invalid_flights_provider: invalid_flights_provider
       invalid_flight_auth_flights: invalid_flight_auth_flights
       non_conflicting_flights: non_conflicting_flights?
       non_conflicting_flights_provider: non_conflicting_flights_provider

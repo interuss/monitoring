@@ -15,7 +15,7 @@
 - `conflicting_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
 - `priority_preemption_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]` (optional)
 - `non_conflicting_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
-- `invalid_flight_intents`: `resources.flight_planning.FlightIntentsResource`
+- `invalid_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
 - `id_generator`: `resources.interuss.IDGeneratorResource`
 - `utm_client_identity`: `resources.communications.ClientIdentityResource`
 - `second_utm_auth`: `resources.communications.AuthAdapterResource` (optional)
