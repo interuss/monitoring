@@ -2,7 +2,7 @@
 #
 # `docker build` should be run from this folder
 
-FROM ghcr.io/astral-sh/uv:python3.13-alpine
+FROM ghcr.io/astral-sh/uv:python3.14-alpine
 
 ADD . /app
 WORKDIR /app
