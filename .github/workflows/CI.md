@@ -26,14 +26,14 @@ uss_qualifier [scenario documentation](../../monitoring/uss_qualifier/scenarios/
 
 This repository contains a large number of shell scripts.  This check attempts to have these scripts follow best practices and avoid common pitfalls.
 
-### benchmarker minimal configuration
+### benchmarker minimal configuration (`make test-benchmarker-minimal`)
 
 This job runs [`minimal.jsonnet`](../../monitoring/benchmarker/configurations/interuss/minimal.jsonnet) on the Ubuntu runner with uv (rather than the `monitoring` docker image like most others).  Configuration actions bring up and tear down a local DSS deployment within the benchmarker run.
 
 To run it locally from the repository root:
 
 ```bash
-PYTHONPATH=. uv run --locked --no-install-project python monitoring/benchmarker/benchmark.py --config file://monitoring/benchmarker/configurations/interuss/minimal.jsonnet
+make test-benchmarker-minimal
 ```
 
 ### mock_uss tests (`make test` in monitoring/mock_uss)

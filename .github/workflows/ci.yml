@@ -129,18 +129,12 @@ jobs:
       with:
         version: '0.12.21'
         enable-cache: true
-    - name: Install benchmarker dependencies
-      run: uv sync --locked --no-install-project
     - name: Run minimal benchmarker configuration
       shell: bash
       timeout-minutes: 10
       run: |
-        mkdir -p logs monitoring/benchmarker/output/minimal
-        uv run --no-sync python monitoring/benchmarker/benchmark.py \
-          --config file://monitoring/benchmarker/configurations/interuss/minimal.jsonnet \
-          --config-output monitoring/benchmarker/output/minimal/config.json \
-          --output monitoring/benchmarker/output/minimal \
-          2>&1 | tee logs/benchmarker.log
+        mkdir -p logs
+        make test-benchmarker-minimal 2>&1 | tee logs/benchmarker.log
     - name: Collect remaining container logs
       if: always()
       timeout-minutes: 2
