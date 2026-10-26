@@ -191,6 +191,7 @@ def scd_session(pytestconfig) -> UTMClientSession:
 
 @pytest.fixture(scope="session")
 def scd_session_async(pytestconfig):
+    asyncio.set_event_loop(asyncio.new_event_loop())
     session = make_session_async(pytestconfig, "/dss/v1", "scd_auth1")
     yield session
     session.close()
