@@ -2,6 +2,16 @@
 # Single flight planner testing for ASTM F3548-21 test suite
 [`suites.astm.utm.single_planner`](./single_planner.yaml)
 
+## [Resource inputs](../../README.md#resources)
+
+- `tested_uss`: `resources.flight_planning.FlightPlannerResource`
+- `invalid_flight_intents`: `resources.flight_planning.FlightIntentsResource`
+- `non_conflicting_flights`: `resources.flight_planning.FlightIntentsResource`
+- `conflicting_flights`: `resources.flight_planning.FlightIntentsResource`
+- `dss`: `resources.astm.f3548.v21.DSSInstanceResource`
+- `mock_uss`: `resources.interuss.mock_uss.client.MockUSSResource` (optional)
+- `utm_auth`: `resources.communications.AuthAdapterResource` (optional)
+
 ## [Actions](../../README.md#actions)
 
 1. Scenario: [Validation of operational intents](../../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.md) ([`scenarios.astm.utm.FlightIntentValidation`](../../../scenarios/astm/utm/flight_intent_validation/flight_intent_validation.py))
