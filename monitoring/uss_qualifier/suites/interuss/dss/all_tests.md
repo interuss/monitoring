@@ -15,7 +15,6 @@
 - `problematically_big_area`: `resources.VolumeResource` (optional)
 - `second_utm_auth`: `resources.communications.AuthAdapterResource` (optional)
 - `flight_intents`: `resources.flight_planning.FlightIntentsResource` (optional)
-- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
 
 ## [Actions](../../README.md#actions)
 

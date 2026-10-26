@@ -25,11 +25,6 @@ A [resources.PlanningAreaResource](../../../../resources/planning_area.py) conta
 
 Note that the bounding box of the area will be used, not the area itself.
 
-### test_exclusions
-
-A [resources.dev.TestExclusionsResource](../../../../resources/dev/test_exclusions.py) containing test exclusions parameters like whether private addresses are allowed.
-This resource is optional.
-
 ## Test sequence legend
 
 * *P*: Primary DSS instance under test.  The sequence below is
@@ -55,15 +50,13 @@ This resource is optional.
 
 ### Test environment requirements test step
 
-#### 🛑 DSS instance is publicly addressable check
+#### ⚠️ DSS instance is publicly addressable check
 As per **[astm.f3411.v19.DSS0210](../../../../requirements/astm/f3411/v19.md)** the DSS instance should be publicly addressable.
 As such, this check will fail if the resolved IP of the DSS host is a private IP address.
-This check is skipped if the test exclusion `allow_private_addresses` is set to `True`.
 
 #### 🛑 DSS instance is reachable check
 As per **[astm.f3411.v19.DSS0210](../../../../requirements/astm/f3411/v19.md)** the DSS instance should be publicly addressable.
 As such, this check will fail if the DSS is not reachable with a dummy query,
-
 
 ## Interoperability sequence test case
 

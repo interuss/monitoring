@@ -8,7 +8,6 @@ resources:
   isa: resources.netrid.ServiceAreaResource
   problematically_big_area: resources.VolumeResource
   planning_area: resources.PlanningAreaResource
-  test_exclusions: resources.dev.TestExclusionsResource?
   concurrency_behavior_adjustment: resources.interuss.scenarios.astm.netrid.common.dss.heavy_traffic_concurrent.HeavyTrafficConcurrentBehaviorResource?
 actions:
   - test_scenario:
@@ -61,7 +60,6 @@ actions:
         primary_dss_instance: dss
         all_dss_instances: all_dss_instances
         planning_area: planning_area
-        test_exclusions: test_exclusions?
   - test_scenario:
       scenario_type: scenarios.astm.netrid.v22a.dss.TokenValidation
       resources:

@@ -26,7 +26,6 @@ function(env) {
             priority_preemption_flights_provider: 'conflicting_flights_provider',
             invalid_flights_provider: 'invalid_flights_provider',
             non_conflicting_flights_provider: 'non_conflicting_flights_provider',
-            test_exclusions: 'test_exclusions',
             dss: 'dss',
             dss_instances: 'dss_instances',
             mock_uss: 'mock_uss',
@@ -72,17 +71,6 @@ function(env) {
             specification: {
               // Allow additional time for requests to complete
               read_timeout_seconds: 30.0,
-            },
-          },
-
-          // Controls tests behavior
-          test_exclusions: {
-            resource_type: 'resources.dev.TestExclusionsResource',
-            specification: {
-              // Tests should allow private addresses that are not publicly addressable since this configuration runs locally
-              allow_private_addresses: true,
-              // Tests should allow cleartext queries since this configuration runs locally without generalized usage of HTTPS
-              allow_cleartext_queries: true,
             },
           },
 

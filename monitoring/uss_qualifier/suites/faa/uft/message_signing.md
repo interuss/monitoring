@@ -21,7 +21,6 @@
 - `second_utm_auth`: `resources.communications.AuthAdapterResource` (optional)
 - `planning_area_provider`: `resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]`
 - `problematically_big_area`: `resources.VolumeResource`
-- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
 
 ## [Actions](../../README.md#actions)
 

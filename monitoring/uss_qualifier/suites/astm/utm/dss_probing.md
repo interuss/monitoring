@@ -13,7 +13,6 @@
 - `id_generator`: `resources.interuss.IDGeneratorResource`
 - `planning_area`: `resources.PlanningAreaResource`
 - `problematically_big_area`: `resources.VolumeResource`
-- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
 
 ## [Actions](../../README.md#actions)
 

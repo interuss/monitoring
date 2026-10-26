@@ -9,7 +9,6 @@
 - `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
 - `id_generator`: `resources.interuss.IDGeneratorResource`
 - `planning_area`: `resources.PlanningAreaResource`
-- `test_exclusions`: `resources.dev.TestExclusionsResource` (optional)
 - `utm_client_identity`: `resources.communications.ClientIdentityResource`
 
 ## [Actions](../../README.md#actions)
