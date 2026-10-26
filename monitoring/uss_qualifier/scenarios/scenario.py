@@ -309,7 +309,7 @@ class GenericTestScenario(ABC):
     def make_test_scenario(
         declaration: TestScenarioDeclaration,
         resource_pool: dict[ResourceID, ResourceType],
-    ) -> "TestScenario":
+    ) -> TestScenario:
         scenario_type = get_scenario_type_by_name(declaration.scenario_type)
 
         constructor_signature = inspect.signature(scenario_type.__init__)

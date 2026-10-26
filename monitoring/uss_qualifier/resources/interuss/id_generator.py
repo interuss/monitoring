@@ -37,7 +37,7 @@ class IDGeneratorResource(Resource[IDGeneratorSpecification]):
 
     def with_instance_index(
         self, instance_index: int, resource_origin: str | None = None
-    ) -> "IDGeneratorResource":
+    ) -> IDGeneratorResource:
         """Derive an independent generator, replacing rather than adding an index."""
         return IDGeneratorResource(
             specification=IDGeneratorSpecification(instance_index=instance_index),
