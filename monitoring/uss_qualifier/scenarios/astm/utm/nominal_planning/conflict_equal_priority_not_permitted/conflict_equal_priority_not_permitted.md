@@ -104,7 +104,100 @@ DSSInstanceResource that provides access to a DSS instance where flight creation
 
 While this scenario assumes that the area used is already clear of any pre-existing flights (using, for instance, PrepareFlightPlanners scenario) in order to avoid a large number of area-clearing operations, the scenario will not proceed correctly if the area was left in a dirty state following a previous scenario that was supposed to leave the area clear.  This test step verifies that the area is clear.
 
-## Attempt to plan flight into conflict test case
+
+## Attempt to plan flight into conflict with planned flight test case
+![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict.svg)
+
+### Plan Flight 2 test step
+
+#### [Plan Flight 2](../../../../flight_planning/plan_flight_intent.md)
+Flight 2 should be successfully planned by the control USS.
+
+#### [Validate Flight 2 sharing](../../validate_shared_operational_intent.md)
+
+### Attempt to plan Flight 1 test step
+
+#### [Attempt to plan Flight 1](../../../../flight_planning/plan_conflict_flight_intent.md)
+The test driver attempts to plan the Flight 1 via the tested USS. However, it conflicts with planned Flight 2
+which is of equal priority but came first. As such it should be rejected
+per **[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### [Validate Flight 1 not shared](../../validate_not_shared_operational_intent.md)
+Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
+
+## Attempt to activate flight into conflict with planned flight test case
+![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict.svg)
+
+### Attempt to directly activate conflicting Flight 1 test step
+
+#### [Attempt to activate Flight 1](../../../../flight_planning/activate_conflict_flight_intent.md)
+The test driver attempts to activate directly Flight 1, i.e. without the flight being planned before.
+However, this conflicts with planned Flight 2, which is of equal priority. As such it should be rejected
+per **[astm.f3548.v21.SCD0045](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### [Validate Flight 1 not shared](../../validate_not_shared_operational_intent.md)
+Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
+
+## Attempt to modify planned flight into conflict with planned flight test case
+![Test case summary illustration](assets/attempt_to_modify_planned_flight_into_conflict.svg)
+
+### Plan Flight 1c test step
+
+#### [Plan Flight 1c](../../../../flight_planning/plan_flight_intent.md)
+The smaller Flight 1c form (which doesn't conflict with Flight 2) should be successfully planned by the tested USS.
+
+#### ⚠️ Validate tested USS intersection algorithm check
+Because Flight 2 is nearby Flight 1c, successful planning of Flight 1c indicates the tested USS is complying with the portion of
+**[astm.f3548.v21.GEN0500](../../../../../requirements/astm/f3548/v21.md)** that requires a USS to indicate two 4D volumes are non-intersecting when they are separated by more than 1 cm.
+
+This check is not relevant if the planning is rejected.
+
+#### [Validate Flight 1c sharing](../../validate_shared_operational_intent.md)
+
+### Attempt to modify planned Flight 1c into conflict test step
+
+#### [Attempt to modify Flight 1c](../../../../flight_planning/modify_planned_conflict_flight_intent.md)
+The test driver attempts to enlarge Flight 1c so that it conflicts with planned Flight 2.
+However, Flight 2 is of equal priority but was planned first.
+As such the change to Flight 1c should be rejected per **[astm.f3548.v21.SCD0040](../../../../../requirements/astm/f3548/v21.md)**.
+
+#### [Validate Flight 1c not modified](../../validate_shared_operational_intent.md)
+Because the modification attempt was invalid, either Flight 1c should not have been modified (because the USS kept the
+original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
+
+## Attempt to modify activated flight into conflict with planned flight test case
+![Test case summary illustration](assets/attempt_to_modify_activated_flight_into_conflict.svg)
+
+### Activate Flight 1c test step
+
+#### [Activate Flight 1c](../../../../flight_planning/activate_flight_intent.md)
+The test driver activates the smaller Flight 1c form, which should be done successfully.
+Note that Flight 1c could be either planned or non-existent before this step. In the latter case, the "user" will
+directly activate the flight without planning it beforehand.
+
+#### [Validate Flight 1c sharing](../../validate_shared_operational_intent.md)
+
+### Attempt to modify activated Flight 1c into conflict test step
+
+#### [Attempt to modify Flight 1c](../../../../flight_planning/modify_activated_conflict_flight_intent.md)
+The test driver attempts to enlarge Flight 1c so that it conflicts with planned Flight 2.
+Because the conflict did not exist when the modification was initiated, it should be rejected
+per **[astm.f3548.v21.SCD0050](../../../../../requirements/astm/f3548/v21.md)**.
+In addition, Flight 1c should not have been removed, because doing so would leave an aircraft in flight without any flight plan.
+
+#### [Validate Flight 1c not modified](../../validate_not_shared_operational_intent.md)
+Because the modification attempt was invalid, Flight 1c should not have been modified.
+
+### [Delete Flight 1c if USS did not support its modification test step](../../../../flight_planning/delete_flight_intent.md)
+If, during the previous step, the USS indicated that it does not support modifications, the test driver deletes Flight 1c.
+
+### [Delete Flight 2 test step](../../../../flight_planning/delete_flight_intent.md)
+To prepare for the next test case, Flight 2 must be removed from the system.
+
+### [Delete Flight 1c test step](../../../../flight_planning/delete_flight_intent.md)
+To prepare for the next test case, Flight 1c must be removed from the system if it was not already.
+
+## Attempt to plan flight into conflict with activated flight test case
 ![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict.svg)
 
 ### Plan Flight 2 test step
@@ -131,7 +224,7 @@ per **[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**.
 #### [Validate Flight 1 not shared](../../validate_not_shared_operational_intent.md)
 Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
 
-## Attempt to activate flight into conflict test case
+## Attempt to activate flight into conflict with activated flight test case
 ![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict.svg)
 
 ### Attempt to directly activate conflicting Flight 1 test step
@@ -144,7 +237,7 @@ per **[astm.f3548.v21.SCD0045](../../../../../requirements/astm/f3548/v21.md)**.
 #### [Validate Flight 1 not shared](../../validate_not_shared_operational_intent.md)
 Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
 
-## Attempt to modify planned flight into conflict test case
+## Attempt to modify planned flight into conflict with activated flight test case
 ![Test case summary illustration](assets/attempt_to_modify_planned_flight_into_conflict.svg)
 
 ### Plan Flight 1c test step
@@ -171,7 +264,7 @@ As such the change to Flight 1c should be rejected per **[astm.f3548.v21.SCD0040
 Because the modification attempt was invalid, either Flight 1c should not have been modified (because the USS kept the
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
-## Attempt to modify activated flight into conflict test case
+## Attempt to modify activated flight into conflict with activated flight test case
 ![Test case summary illustration](assets/attempt_to_modify_activated_flight_into_conflict.svg)
 
 ### Activate Flight 1c test step
