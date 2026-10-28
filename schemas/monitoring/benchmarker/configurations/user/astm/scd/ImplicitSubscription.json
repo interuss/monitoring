@@ -6,6 +6,20 @@
     "$ref": {
       "description": "Path to content that replaces the $ref",
       "type": "string"
+    },
+    "create_when_activated": {
+      "description": "If true, do not request an implicit subscription when writing an operational intent in the Accepted state; the implicit subscription is requested when the operational intent is first activated.",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "reuse_subscription": {
+      "description": "If true, include the subscription ID returned by the DSS in subsequent updates of the same operational intent instead of requesting a new implicit subscription.",
+      "type": [
+        "boolean",
+        "null"
+      ]
     }
   },
   "type": "object"

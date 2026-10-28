@@ -39,6 +39,9 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
     DSSInstancesResource,
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID
+from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.oir import (
+    NULL_SUBSCRIPTION_ID,
+)
 
 COORDINATION_SUBJECT_ADD_OVN = "enging.users.flight_planner.scd.add_ovn"
 COORDINATION_SUBJECT_REMOVE_OVN = "enging.users.flight_planner.scd.remove_ovn"
@@ -278,6 +281,8 @@ class SCDHandler(CoordinationSubscriber):
             else None
         )
 
+        op_intent_ref = self.op_intent_refs.get(flight.id, None)
+
         kwargs = {}
         if (
             "single_subscription" in self.subscription_strategy
@@ -290,13 +295,23 @@ class SCDHandler(CoordinationSubscriber):
             "implicit_subscription" in self.subscription_strategy
             and self.subscription_strategy.implicit_subscription is not None
         ):
-            pass
+            implicit = self.subscription_strategy.implicit_subscription
+            if (
+                implicit.reuse_subscription
+                and op_intent_ref
+                and op_intent_ref.subscription_id != NULL_SUBSCRIPTION_ID
+            ):
+                kwargs["subscription_id"] = op_intent_ref.subscription_id
+            elif (
+                implicit.create_when_activated
+                and state == api.OperationalIntentState.Accepted
+            ):
+                kwargs["force_no_implicit_subscription"] = True
         else:
             raise ValueError(
                 f"No valid subscription strategy specified in scd_behavior.subscription_strategy for user `{self.user.user_id}`"
             )
 
-        op_intent_ref = self.op_intent_refs.get(flight.id, None)
         old_ovn = op_intent_ref.ovn if op_intent_ref else None
         ovn_suffix = None
         requested_ovn = None
