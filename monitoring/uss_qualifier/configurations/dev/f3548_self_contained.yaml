@@ -245,7 +245,7 @@ v1:
                   - lat: 38
                     lng: -80
 
-        # Details of conflicting flights (used in nominal planning scenario)
+        # Base conflicting flight intents used by the provider below
         conflicting_flights:
           resource_type: resources.flight_planning.FlightIntentsResource
           specification:
@@ -262,16 +262,16 @@ v1:
                   # Therefore, ground level is at roughly 93m above the WGS84 ellipsoid
                   meters_up: 93
 
-        # Provide variants of the conflicting_flights base resource by shifting them geographically
+        # Provide spatially separated conflicting flights for each planner combination and individual planner
         conflicting_flights_provider:
-          resource_type: resources.geospatial.TriangularCascadeSoutheastResource
+          resource_type: resources.geospatial.TriangularCascadeSoutheastResource[resources.flight_planning.FlightIntentsResource]
           dependencies:
             base_resource: conflicting_flights
           specification:
             meters_east_margin: 10000
             meters_north_margin: 10000
 
-        # Details of flights with invalid operational intents (used in flight intent validation scenario)
+        # Base invalid flight intents used by the provider below
         invalid_flight_intents:
           resource_type: resources.flight_planning.FlightIntentsResource
           specification:
@@ -285,14 +285,14 @@ v1:
 
         # Provide spatially separated invalid flights for each flight planner
         invalid_flights_provider:
-          resource_type: resources.geospatial.TriangularCascadeSoutheastResource
+          resource_type: resources.geospatial.TriangularCascadeSoutheastResource[resources.flight_planning.FlightIntentsResource]
           dependencies:
             base_resource: invalid_flight_intents
           specification:
             meters_east_margin: 10000
             meters_north_margin: 10000
 
-        # Details of non-conflicting flights (used in data validation scenario)
+        # Base non-conflicting flight intents used by the provider below
         non_conflicting_flights:
           resource_type: resources.flight_planning.FlightIntentsResource
           specification:
@@ -305,9 +305,9 @@ v1:
                   degrees_east: -96.7587
                   meters_up: 93
 
-        # Provide spatially separated non-conflicting flights for each DSS instance
+        # Provide spatially separated non-conflicting flights for each DSS instance and flight planner
         non_conflicting_flights_provider:
-          resource_type: resources.geospatial.TriangularCascadeSoutheastResource
+          resource_type: resources.geospatial.TriangularCascadeSoutheastResource[resources.flight_planning.FlightIntentsResource]
           dependencies:
             base_resource: non_conflicting_flights
           specification:

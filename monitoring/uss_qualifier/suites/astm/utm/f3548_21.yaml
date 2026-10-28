@@ -9,10 +9,6 @@ resources:
   interuss_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
 
-  # These inputs are DEPRECATED and may be removed in future versions.
-  conflicting_flights: resources.flight_planning.FlightIntentsResource?
-  non_conflicting_flights: resources.flight_planning.FlightIntentsResource?
-
   conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
   priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
   non_conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
@@ -43,18 +39,6 @@ local_resources:
     dependencies:
       base_resource: id_generator
     specification: {}
-  non_conflicting_flights:
-    resource_type: resources.resource.SingularResource[resources.flight_planning.FlightIntentsResource]
-    dependencies:
-      provider: non_conflicting_flights_provider
-    specification:
-      index: 0
-  conflicting_flights:
-    resource_type: resources.resource.SingularResource[resources.flight_planning.FlightIntentsResource]
-    dependencies:
-      provider: conflicting_flights_provider
-    specification:
-      index: 0
   system_identity:
     resource_type: resources.versioning.SystemIdentityResource
     specification:
@@ -109,11 +93,25 @@ local_resources:
       environments: single_planner_planner_environments
       flight_intents: invalid_flights_provider
     specification: {}
+  conflicting_flights_environments:
+    resource_type: resources.environments.EnvironmentAugmentationResource
+    dependencies:
+      environments: single_planner_planner_environments
+      flight_intents: conflicting_flights_provider
+    specification: {}
+  non_conflicting_flights_environments:
+    resource_type: resources.environments.EnvironmentAugmentationResource
+    dependencies:
+      environments: single_planner_planner_environments
+      flight_intents: non_conflicting_flights_provider
+    specification: {}
   single_planner_environments:
     resource_type: resources.environments.EnvironmentAugmentationResource
     dependencies:
       environments: single_planner_planner_environments
       invalid_flight_intents: invalid_flights_provider
+      conflicting_flights: conflicting_flights_provider
+      non_conflicting_flights: non_conflicting_flights_provider
   flight_intents_environments:
     resource_type: resources.environments.ConcatenatedResourceEnvironmentsResource
     dependencies:
@@ -121,6 +119,8 @@ local_resources:
       priority_preemption: priority_preemption_environments?
       equal_priority_conflict: equal_priority_conflict_environments
       invalid: invalid_intents_environments
+      conflicting: conflicting_flights_environments
+      non_conflicting: non_conflicting_flights_environments
     specification: {}
 actions:
 - test_scenario:
@@ -138,7 +138,6 @@ actions:
       flight_planners: flight_planners_to_clear
       mock_uss: mock_uss?
       dss: dss
-      flight_intents: non_conflicting_flights?
       flight_intents_environments: flight_intents_environments?
 - action_generator:
     generator_type: action_generators.resource_environments.ResourceEnvironmentsActionGenerator
@@ -198,8 +197,6 @@ actions:
     generator_type: action_generators.resource_environments.ResourceEnvironmentsActionGenerator
     resources:
       single_planner_environments: single_planner_environments
-      non_conflicting_flights: non_conflicting_flights
-      conflicting_flights: conflicting_flights
       dss: dss
       mock_uss: mock_uss?
       utm_auth: utm_auth?
@@ -222,7 +219,6 @@ actions:
       flight_planners: flight_planners
       mock_uss: mock_uss?
       dss: dss
-      flight_intents: non_conflicting_flights?
       flight_intents_environments: flight_intents_environments?
 - test_scenario:
     scenario_type: scenarios.astm.utm.make_uss_report.MakeUssReport

@@ -31,7 +31,7 @@ class PrepareFlightPlannersScenario(TestScenario):
     def __init__(
         self,
         flight_planners: FlightPlannersResource,
-        flight_intents: FlightIntentsResource,
+        flight_intents: FlightIntentsResource | None = None,
         mock_uss: MockUSSResource | None = None,
         flight_intents2: FlightIntentsResource | None = None,
         flight_intents3: FlightIntentsResource | None = None,

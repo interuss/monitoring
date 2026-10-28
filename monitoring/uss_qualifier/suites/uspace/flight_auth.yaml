@@ -3,10 +3,6 @@ resources:
   test_env_version_providers: resources.versioning.VersionProvidersResource?
   prod_env_version_providers: resources.versioning.VersionProvidersResource?
 
-  # These inputs are DEPRECATED and may be removed in future versions.
-  conflicting_flights: resources.flight_planning.FlightIntentsResource?
-  non_conflicting_flights: resources.flight_planning.FlightIntentsResource?
-
   conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
   priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
   non_conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
@@ -31,11 +27,9 @@ actions:
     resources:
       test_env_version_providers: test_env_version_providers?
       prod_env_version_providers: prod_env_version_providers?
-      conflicting_flights: conflicting_flights?
       conflicting_flights_provider: conflicting_flights_provider
       priority_preemption_flights_provider: priority_preemption_flights_provider?
       invalid_flights_provider: invalid_flights_provider
-      non_conflicting_flights: non_conflicting_flights?
       non_conflicting_flights_provider: non_conflicting_flights_provider
       flight_planners: flight_planners?
       flight_planners_to_clear: flight_planners?
