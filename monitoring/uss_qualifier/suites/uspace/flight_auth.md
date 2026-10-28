@@ -6,8 +6,6 @@
 
 - `test_env_version_providers`: `resources.versioning.VersionProvidersResource` (optional)
 - `prod_env_version_providers`: `resources.versioning.VersionProvidersResource` (optional)
-- `conflicting_flights`: `resources.flight_planning.FlightIntentsResource` (optional)
-- `non_conflicting_flights`: `resources.flight_planning.FlightIntentsResource` (optional)
 - `conflicting_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
 - `priority_preemption_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]` (optional)
 - `non_conflicting_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`

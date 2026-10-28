@@ -182,7 +182,7 @@ function(env) {
             },
           },
 
-          // Details of conflicting flights (used in nominal planning scenario)
+          // Base conflicting flight intents used by the provider below
           conflicting_flights: {
             resource_type: 'resources.flight_planning.FlightIntentsResource',
             specification: {
@@ -205,9 +205,9 @@ function(env) {
             },
           },
 
-          // Provide variants of the conflicting_flights base resource by shifting them geographically
+          // Provide spatially separated conflicting flights for each planner combination and individual planner
           conflicting_flights_provider: {
-            resource_type: 'resources.geospatial.TriangularCascadeSoutheastResource',
+            resource_type: 'resources.geospatial.TriangularCascadeSoutheastResource[resources.flight_planning.FlightIntentsResource]',
             dependencies: {
               base_resource: 'conflicting_flights',
             },
@@ -217,7 +217,7 @@ function(env) {
             },
           },
 
-          // Details of flights with invalid operational intents (used in flight intent validation scenario)
+          // Base invalid flight intents used by the provider below
           invalid_flight_intents: {
             resource_type: 'resources.flight_planning.FlightIntentsResource',
             specification: {
@@ -238,7 +238,7 @@ function(env) {
 
           // Provide spatially separated invalid flights for each flight planner
           invalid_flights_provider: {
-            resource_type: 'resources.geospatial.TriangularCascadeSoutheastResource',
+            resource_type: 'resources.geospatial.TriangularCascadeSoutheastResource[resources.flight_planning.FlightIntentsResource]',
             dependencies: {
               base_resource: 'invalid_flight_intents',
             },
@@ -248,7 +248,7 @@ function(env) {
             },
           },
 
-          // Details of non-conflicting flights (used in data validation scenario)
+          // Base non-conflicting flight intents used by the provider below
           non_conflicting_flights: {
             resource_type: 'resources.flight_planning.FlightIntentsResource',
             specification: {
@@ -267,9 +267,9 @@ function(env) {
             },
           },
 
-          // Provide spatially separated non-conflicting flights for each DSS instance
+          // Provide spatially separated non-conflicting flights for each DSS instance and flight planner
           non_conflicting_flights_provider: {
-            resource_type: 'resources.geospatial.TriangularCascadeSoutheastResource',
+            resource_type: 'resources.geospatial.TriangularCascadeSoutheastResource[resources.flight_planning.FlightIntentsResource]',
             dependencies: {
               base_resource: 'non_conflicting_flights',
             },
