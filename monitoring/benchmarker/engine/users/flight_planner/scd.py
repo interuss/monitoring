@@ -303,7 +303,6 @@ class SCDHandler(CoordinationSubscriber):
             ):
                 kwargs["subscription_id"] = op_intent_ref.subscription_id
             elif (
-                "create_when_activated" in implicit
                 and implicit.create_when_activated
                 and state == api.OperationalIntentState.Accepted
             ):
