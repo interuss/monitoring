@@ -7,9 +7,6 @@ from monitoring.uss_qualifier import package_root
 from monitoring.uss_qualifier.action_generators.definitions import (
     ActionGeneratorDefinition,
 )
-from monitoring.uss_qualifier.reports.capability_definitions import (
-    ParticipantCapabilityDefinition,
-)
 from monitoring.uss_qualifier.resources.definitions import (
     ResourceDeclaration,
     ResourceID,
@@ -148,9 +145,6 @@ class TestSuiteDefinition(ImplicitDict):
 
     actions: list[TestSuiteActionDeclaration]
     """The actions to take when running the test suite.  Components will be executed in order."""
-
-    participant_verifiable_capabilities: Optional[list[ParticipantCapabilityDefinition]]
-    """Definitions of capabilities verified by this test suite for individual participants."""
 
     def __init__(self, previous_instance: dict | None = None, **kwargs):
         supplied_fields = (previous_instance or {}).keys() | kwargs.keys()

@@ -34,13 +34,9 @@ from monitoring.uss_qualifier.configurations.configuration import (
     FullyQualifiedCheck,
     TestSuiteActionSelectionCondition,
 )
-from monitoring.uss_qualifier.reports.capabilities import (
-    evaluate_condition_for_test_suite,
-)
 from monitoring.uss_qualifier.reports.report import (
     ActionGeneratorReport,
     FailedCheck,
-    ParticipantCapabilityEvaluationReport,
     Severity,
     SkippedActionReport,
     TestScenarioReport,
@@ -326,41 +322,12 @@ class TestSuite:
             documentation_url=self.documentation_url,
             start_time=StringBasedDateTime(datetime.now(UTC)),
             actions=[],
-            capability_evaluations=[],
         )
 
         def actions() -> Iterator[TestSuiteAction | SkippedActionReport]:
             yield from self.actions
 
         _run_actions(actions(), context, report)
-
-        # Evaluate participants' capabilities
-        if (
-            "participant_verifiable_capabilities" in self.definition
-            and self.definition.participant_verifiable_capabilities
-        ):
-            all_participants = report.all_participants()
-            for capability in self.definition.participant_verifiable_capabilities:
-                for participant_id in all_participants:
-                    cond_eval_report = evaluate_condition_for_test_suite(
-                        capability.verification_condition, participant_id, report
-                    )
-                    report.capability_evaluations.append(
-                        ParticipantCapabilityEvaluationReport(
-                            capability_id=capability.id,
-                            participant_id=participant_id,
-                            verified=cond_eval_report.condition_satisfied,
-                            condition_evaluation=cond_eval_report,
-                        )
-                    )
-                    if cond_eval_report.condition_satisfied:
-                        logger.info(
-                            "Test suite {} verified {} capability '{}' for {}",
-                            self.declaration.type_name,
-                            capability.id,
-                            capability.name,
-                            participant_id,
-                        )
 
         return report
 

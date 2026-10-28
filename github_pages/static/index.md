@@ -11,7 +11,6 @@ These reports were generated during continuous integration for the most recent P
 * [Sequence view](./artifacts/uss_qualifier/reports/uspace/sequence)
 * [Tested requirements](./artifacts/uss_qualifier/reports/uspace/requirements)
 * [Timing report](./artifacts/uss_qualifier/reports/uspace/timing)
-* [Demonstrated capabilities](./artifacts/uss_qualifier/reports/uspace/capabilities.html)
 * [Raw report](./artifacts/uss_qualifier/reports/uspace/report.json) (large)
 
 ### [No-op test configuration](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/configurations/dev/noop.yaml)
