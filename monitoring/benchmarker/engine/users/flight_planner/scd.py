@@ -297,11 +297,8 @@ class SCDHandler(CoordinationSubscriber):
         ):
             implicit = self.subscription_strategy.implicit_subscription
             if (
-                "reuse_subscription" in implicit
-                and implicit.reuse_subscription
+                implicit.reuse_subscription
                 and op_intent_ref
-                and "subscription_id" in op_intent_ref
-                and op_intent_ref.subscription_id
                 and op_intent_ref.subscription_id != NULL_SUBSCRIPTION_ID
             ):
                 kwargs["subscription_id"] = op_intent_ref.subscription_id
