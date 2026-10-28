@@ -76,6 +76,14 @@ extend-exclude = [
 ]
 line-length = 88
 
+[tool.ruff.per-file-target-version]
+# Host/build utilities must work with the system Python (3.11+), without uv.
+# Add new host entry points here; Docker/uv code uses the project version above.
+"scripts/git/get_version.py" = "py311"
+"scripts/git/write_version_file.py" = "py311"
+"build/dev/extract_json_field.py" = "py311"
+"setup.py" = "py311"
+
 [tool.ruff.lint]
 # Default + isort + pyupgrade
 select = [
