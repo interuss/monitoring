@@ -106,7 +106,7 @@ While this scenario assumes that the area used is already clear of any pre-exist
 
 
 ## Attempt to plan flight into conflict with planned flight test case
-![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict.svg)
+![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict_with_planned_flight.svg)
 
 ### Plan Flight 2 test step
 
@@ -126,7 +126,7 @@ per **[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**.
 Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
 
 ## Attempt to activate flight into conflict with planned flight test case
-![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict.svg)
+![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict_with_planned_flight.svg)
 
 ### Attempt to directly activate conflicting Flight 1 test step
 
@@ -139,7 +139,7 @@ per **[astm.f3548.v21.SCD0045](../../../../../requirements/astm/f3548/v21.md)**.
 Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
 
 ## Attempt to modify planned flight into conflict with planned flight test case
-![Test case summary illustration](assets/attempt_to_modify_planned_flight_into_conflict.svg)
+![Test case summary illustration](assets/attempt_to_modify_planned_flight_into_conflict_with_planned_flight.svg)
 
 ### Plan Flight 1c test step
 
@@ -166,7 +166,7 @@ Because the modification attempt was invalid, either Flight 1c should not have b
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
 ## Attempt to modify activated flight into conflict with planned flight test case
-![Test case summary illustration](assets/attempt_to_modify_activated_flight_into_conflict.svg)
+![Test case summary illustration](assets/attempt_to_modify_activated_flight_into_conflict_with_planned_flight.svg)
 
 ### Activate Flight 1c test step
 
@@ -198,7 +198,7 @@ To prepare for the next test case, Flight 2 must be removed from the system.
 To prepare for the next test case, Flight 1c must be removed from the system if it was not already.
 
 ## Attempt to plan flight into conflict with activated flight test case
-![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict.svg)
+![Test case summary illustration](assets/attempt_to_plan_flight_into_conflict_with_activated_flight.svg)
 
 ### Plan Flight 2 test step
 
@@ -225,7 +225,7 @@ per **[astm.f3548.v21.SCD0035](../../../../../requirements/astm/f3548/v21.md)**.
 Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
 
 ## Attempt to activate flight into conflict with activated flight test case
-![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict.svg)
+![Test case summary illustration](assets/attempt_to_activate_flight_into_conflict_with_activated_flight.svg)
 
 ### Attempt to directly activate conflicting Flight 1 test step
 
@@ -238,7 +238,7 @@ per **[astm.f3548.v21.SCD0045](../../../../../requirements/astm/f3548/v21.md)**.
 Flight 1 should not have been shared with the interoperability ecosystem since it was rejected.
 
 ## Attempt to modify planned flight into conflict with activated flight test case
-![Test case summary illustration](assets/attempt_to_modify_planned_flight_into_conflict.svg)
+![Test case summary illustration](assets/attempt_to_modify_planned_flight_into_conflict_with_activated_flight.svg)
 
 ### Plan Flight 1c test step
 
@@ -265,7 +265,7 @@ Because the modification attempt was invalid, either Flight 1c should not have b
 original accepted request), or it should have been removed (because the USS rejected the replacement plan provided).
 
 ## Attempt to modify activated flight into conflict with activated flight test case
-![Test case summary illustration](assets/attempt_to_modify_activated_flight_into_conflict.svg)
+![Test case summary illustration](assets/attempt_to_modify_activated_flight_into_conflict_with_activated_flight.svg)
 
 ### Activate Flight 1c test step
 
