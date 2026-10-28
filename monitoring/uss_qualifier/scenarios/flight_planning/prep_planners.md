@@ -16,7 +16,7 @@ FlightPlannersResource listing all USSs undergoing planning tests so that they c
 
 ### flight_intents
 
-FlightIntentsResource containing flight intents that will be used in subsequent tests, so all planners should be instructed to clear any area involved with any of these intents of flights it manages.
+(Optional) FlightIntentsResource containing flight intents that will be used in subsequent tests, so all planners should be instructed to clear any area involved with any of these intents of flights it manages.
 
 ### flight_intents2
 
