@@ -26,6 +26,10 @@ The "Resources configuration" section presents the resources components of the t
 
 The "Full configuration" section presents the full, literal test configuration in a mostly raw form.  It can be somewhat harder to read/understand than the "Resources configuration" view if looking only for resources, but it more directly corresponds to the actual instructions provided to uss_qualifier and contains all configuration elements (not just resources).
 
+### Timeline page
+
+The "timeline" link in the "Scenarios executed" heading opens an alternate index with time increasing downward.  This is useful for visualizing timing of test suite actions relative to each other, especially when some actions are executed in parallel.  Suites, action generators, and scenarios occupy blocks spanning their recorded start and end times.  Skipped actions are omitted.  Click a scenario block to open its event page.
+
 ### Scenarios executed
 
 The "Scenarios executed" table shows how test scenarios came to be run (e.g., test suite A included action generator B which ran test suite C which included test scenario D), and then the list of actual test scenarios run in the "Scenario" column.  Test scenarios are the core unit of test execution, so each test scenario run is numbered in the order it was run.  The shorthand to refer to a particular scenario is "s" followed by the test scenario run index.  So, for instance, the first scenario run is "s1".  Clicking on the name of a test scenario will navigate to a page detailing the execution of that scenario, named s[N].html.
