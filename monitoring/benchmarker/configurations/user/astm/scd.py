@@ -14,13 +14,17 @@ class SingleSubscription(ImplicitDict):
 
 
 class ImplicitSubscription(ImplicitDict):
-    pass
+    reuse_subscription: Optional[bool]
+    """If true, include the subscription ID returned by the DSS in subsequent updates of the same operational intent instead of requesting a new implicit subscription."""
+
+    create_when_activated: Optional[bool]
+    """If true, do not request an implicit subscription when writing an operational intent in the Accepted state; the implicit subscription is requested when the operational intent is first activated."""
 
 
 class SubscriptionStrategy(ImplicitDict):
     single_subscription: Optional[SingleSubscription]
     """Planner expects there to be a single subscription established at the start of operations covering all their flights.
-    
+
     A configuration specifying this strategy must separately ensure this subscription exists, such as via an f3548.create_subscription action."""
 
     implicit_subscription: Optional[ImplicitSubscription]
@@ -58,7 +62,7 @@ class OpIntentRefCleanupStrategy(ImplicitDict):
 class BehaviorSpecification(ImplicitDict):
     dss_pool: list[ResourceID]
     """Means to interact with the ASTM DSS.
-    
+
     Benchmark configuration must contain a `resources.astm.f3548.v21.DSSInstanceResource` resource with each of these names."""
 
     dss_selection_strategy: Optional[ASTMDSSSelectionStrategy]
