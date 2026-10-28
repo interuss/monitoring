@@ -6,9 +6,9 @@ import s2sphere
 from uas_standards.astm.f3411 import v19, v22a
 
 from monitoring.monitorlib.fetch import QueryType, query_and_describe
+from monitoring.monitorlib.ids import register_resource_type
 from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
-from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.netrid.service_area import ServiceAreaResource

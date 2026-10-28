@@ -24,9 +24,8 @@ function(env) {
             flight_planners_to_clear: 'flight_planners_to_clear',
             conflicting_flights_provider: 'conflicting_flights_provider',
             priority_preemption_flights_provider: 'conflicting_flights_provider',
-            invalid_flight_intents: 'invalid_flight_intents',
-            non_conflicting_flights: 'non_conflicting_flights',
-            test_exclusions: 'test_exclusions',
+            invalid_flights_provider: 'invalid_flights_provider',
+            non_conflicting_flights_provider: 'non_conflicting_flights_provider',
             dss: 'dss',
             dss_instances: 'dss_instances',
             mock_uss: 'mock_uss',
@@ -72,17 +71,6 @@ function(env) {
             specification: {
               // Allow additional time for requests to complete
               read_timeout_seconds: 30.0,
-            },
-          },
-
-          // Controls tests behavior
-          test_exclusions: {
-            resource_type: 'resources.dev.TestExclusionsResource',
-            specification: {
-              // Tests should allow private addresses that are not publicly addressable since this configuration runs locally
-              allow_private_addresses: true,
-              // Tests should allow cleartext queries since this configuration runs locally without generalized usage of HTTPS
-              allow_cleartext_queries: true,
             },
           },
 
@@ -248,6 +236,18 @@ function(env) {
             },
           },
 
+          // Provide spatially separated invalid flights for each flight planner
+          invalid_flights_provider: {
+            resource_type: 'resources.geospatial.TriangularCascadeSoutheastResource',
+            dependencies: {
+              base_resource: 'invalid_flight_intents',
+            },
+            specification: {
+              meters_east_margin: 10000,
+              meters_north_margin: 10000,
+            },
+          },
+
           // Details of non-conflicting flights (used in data validation scenario)
           non_conflicting_flights: {
             resource_type: 'resources.flight_planning.FlightIntentsResource',
@@ -267,6 +267,18 @@ function(env) {
             },
           },
 
+          // Provide spatially separated non-conflicting flights for each DSS instance
+          non_conflicting_flights_provider: {
+            resource_type: 'resources.geospatial.TriangularCascadeSoutheastResource',
+            dependencies: {
+              base_resource: 'non_conflicting_flights',
+            },
+            specification: {
+              meters_east_margin: 10000,
+              meters_north_margin: 10000,
+            },
+          },
+
           // Name of the system under test for which the system version should be obtained from participants who provide version information
           system_identity: {
             resource_type: 'resources.versioning.SystemIdentityResource',
@@ -282,6 +294,7 @@ function(env) {
         // Since we expect no failed checks and want to stop execution immediately if there are any failed checks, we set
         // this parameter to true.
         stop_fast: true,
+        do_not_stop_fast_for_acceptable_findings: true,
       },
     }, // test_run
 
@@ -296,6 +309,15 @@ function(env) {
         // Write out a human-readable reports of the requirements tested
         {
           report_name: 'scd',
+          // This configuration runs locally with private DSS addresses.
+          acceptable_findings: [
+            {
+              scenario_type: 'scenarios.astm.utm.dss.DSSInteroperability',
+              test_case_name: 'Prerequisites',
+              test_step_name: 'Test environment requirements',
+              check_name: 'DSS instance is publicly addressable',
+            },
+          ],
           aggregate_participants: env.aggregate_participants,
           requirement_collections: {
             'Basic SCD': {
@@ -419,6 +441,7 @@ function(env) {
           applicability: {
             // We also want to make sure there are no failed checks...
             failed_checks: {
+              is_acceptable: false,
               // ...at least, no failed checks with severity higher than "Low".
               has_severity: {
                 higher_than: 'Low',

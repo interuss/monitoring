@@ -21,8 +21,8 @@ v1:
           flight_planners_to_clear: flight_planners
           conflicting_flights_provider: conflicting_flights_provider
           priority_preemption_flights_provider: conflicting_flights_provider
-          invalid_flight_intents: invalid_flight_intents
-          non_conflicting_flights: non_conflicting_flights
+          invalid_flights_provider: invalid_flights_provider
+          non_conflicting_flights_provider: non_conflicting_flights_provider
           dss: dss
           dss_instances: dss_instances
           interuss_dss_instances: dss_instances
@@ -283,6 +283,15 @@ v1:
                   degrees_east: -96.7587
                   meters_up: 93
 
+        # Provide spatially separated invalid flights for each flight planner
+        invalid_flights_provider:
+          resource_type: resources.geospatial.TriangularCascadeSoutheastResource
+          dependencies:
+            base_resource: invalid_flight_intents
+          specification:
+            meters_east_margin: 10000
+            meters_north_margin: 10000
+
         # Details of non-conflicting flights (used in data validation scenario)
         non_conflicting_flights:
           resource_type: resources.flight_planning.FlightIntentsResource
@@ -296,6 +305,15 @@ v1:
                   degrees_east: -96.7587
                   meters_up: 93
 
+        # Provide spatially separated non-conflicting flights for each DSS instance
+        non_conflicting_flights_provider:
+          resource_type: resources.geospatial.TriangularCascadeSoutheastResource
+          dependencies:
+            base_resource: non_conflicting_flights
+          specification:
+            meters_east_margin: 10000
+            meters_north_margin: 10000
+
     # How to execute a test run using this configuration
     execution:
       # Since we want to stop execution immediately if there are any unexpected failed checks, we set this parameter to
@@ -307,15 +325,24 @@ v1:
 
       # Allow certain actions to execute their sub-actions in parallel.
       parallelism_rules:
-        # The DSS probing generator (action 3 in f3548_21) isn't ready to run its actions in parallel yet
+        # The DSS probing generator isn't ready to run its actions in parallel yet
         - max_parallelism: 1
           conditions:
             - is_action_generator:
                 types:
                   - action_generators.resource_environments.ResourceEnvironmentsActionGenerator
-              defined_at:
-                # TODO: add ability to condition on potential actions
-                - test_suite.actions[3].action_generator
+                potentially_generates_any_of:
+                  - test_suite:
+                      suite_type: suites.astm.utm.dss_probing
+        # The single-planner generator isn't ready to run its actions in parallel yet
+        - max_parallelism: 1
+          conditions:
+            - is_action_generator:
+                types:
+                  - action_generators.resource_environments.ResourceEnvironmentsActionGenerator
+                potentially_generates_any_of:
+                  - test_suite:
+                      suite_type: suites.astm.utm.single_planner
         # ...but other ResourceEnvironmentsActionGenerators can have their actions run in parallel
         - max_parallelism: 2
           conditions:

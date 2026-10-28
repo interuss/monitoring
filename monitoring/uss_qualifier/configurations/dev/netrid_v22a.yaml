@@ -21,7 +21,6 @@ v1:
         mock_uss_instance_dp_v22a: {$ref: 'library/environment.yaml#/mock_uss_instance_dp_v22a'}
         mock_uss_instance_sp_v22a: {$ref: 'library/environment.yaml#/mock_uss_instance_sp_v22a'}
 
-        test_exclusions: { $ref: 'library/resources.yaml#/test_exclusions' }
         uss_identification: { $ref: 'library/environment.yaml#/uss_identification' }
         concurrency_behavior_adjustment: { $ref: 'library/resources.yaml#/concurrency_behavior_adjustment' }
     non_baseline_inputs:
@@ -45,15 +44,18 @@ v1:
           service_area: kentland_service_area
           problematically_big_area: au_problematically_big_area
           planning_area: kentland_planning_area
-          test_exclusions: test_exclusions
           uss_identification: uss_identification
           concurrency_behavior_adjustment: concurrency_behavior_adjustment
     execution:
       stop_fast: true
+      do_not_stop_fast_for_acceptable_findings: true
   artifacts:
     raw_report: {}
     tested_requirements:
       - report_name: requirements
+        acceptable_findings:
+          - $ref: 'library/acceptable_findings.yaml#/private_address_f3411_22a'
+          - $ref: 'library/acceptable_findings.yaml#/cleartext_f3411_22a'
         requirement_collections:
           sp_dp_dss:
             requirement_sets:
@@ -72,7 +74,7 @@ v1:
   validation:
     criteria:
       - $ref: ./library/validation.yaml#/execution_error_none
-      - $ref: ./library/validation.yaml#/failed_check_severity_max_low
+      - $ref: ./library/validation.yaml#/failed_check_severity_max_low_except_acceptable
       - applicability:
           skipped_actions: {}
         pass_condition:

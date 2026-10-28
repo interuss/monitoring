@@ -94,6 +94,8 @@ This step will validate the response body for the `HTTP 409` error response from
 
 Checks that an attempt to create an OIR without specifying the OVNs of the already existing and overlapping OIRs fails.
 
+#### [Subscriptions are unchanged](fragments/sub/unchanged_after_conflict.md)
+
 ### Attempt valid OIR creation overlapping with both OIRs test step
 
 This test step will attempt to create an operational intent reference that intersects with both of the previously created OIRs,
@@ -140,5 +142,18 @@ while omitting the first OVN in the `key` field.
 The expectation is that the DSS will require the missing OVN.
 
 #### [Non de-conflicted mutation request fails](fragments/oir/crud/update_conflict.md)
+
+### Attempt mutation requiring expansion of the implicit subscription test step
+
+This test step attempts to mutate the third operational intent reference so that it ends 10 minutes later, while:
+- specifying, as its subscription, the implicit subscription that was created along with it, and
+- omitting the OVNs of the two other operational intent references in the `key` field.
+
+The mutated operational intent reference would end after its implicit subscription, which the DSS would therefore need to expand.
+Because the OVNs are missing, the DSS is expected to reject the request, and to leave the implicit subscription unchanged.
+
+#### [Non de-conflicted mutation request fails](fragments/oir/crud/update_conflict.md)
+
+#### [Subscriptions are unchanged](fragments/sub/unchanged_after_conflict.md)
 
 ## [Cleanup](./clean_workspace_op_intents_during_cleanup.md)

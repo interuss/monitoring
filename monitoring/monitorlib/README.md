@@ -37,3 +37,20 @@ AuthAdapter's `__init__` constructor.  Both ordinal (e.g.,
 
 Use [`get_access_token.py`](../get_access_token.py) to retrieve an access token
 using a provided auth spec.
+
+## Test resource IDs
+
+[ids.py](ids.py) provides `register_resource_type` and `IDFactory` for creating
+recognizable UUIDv4-format test IDs.  Register each resource type with a code
+that is unique across all monitoring tools.  The comment above
+`register_resource_type` identifies the next available code; update it after
+allocating codes.  `IDFactory` encodes the owner, resource type code, and an
+instance index from 0 to 255.  The default index of 0 preserves legacy IDs.
+
+If a test resource (subscription, operational intent, etc.) is orphaned in a DSS,
+use [decode_id.py](decode_id.py) to identify its owner and origin.  From the
+repository root, run:
+
+```shell
+uv run python -m monitoring.monitorlib.decode_id <ID>
+```

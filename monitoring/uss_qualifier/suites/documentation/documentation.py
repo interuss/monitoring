@@ -93,11 +93,35 @@ def make_test_suite_documentation(
     )
     lines.append("")
 
+    if suite_def.description:
+        lines.append(suite_def.description)
+        lines.append("")
+
     suite_readme_abspath = os.path.join(
         os.path.dirname(suite_module.__file__), "README.md"
     )
     base_path = os.path.dirname(suite_yaml_file)
     suites_readme_path = os.path.relpath(suite_readme_abspath, start=base_path)
+    resource_inputs = suite_def.get_resource_inputs()
+    if resource_inputs:
+        lines.append(f"## [Resource inputs]({suites_readme_path}#resources)")
+        lines.append("")
+        for resource_input in resource_inputs:
+            resource_type = resource_input.type
+            optional = resource_type.endswith("?")
+            if optional:
+                resource_type = resource_type[:-1]
+            suffix = " (optional)" if optional else ""
+            lines.append(f"- `{resource_input.resource_id}`: `{resource_type}`{suffix}")
+            if resource_input.description:
+                lines.append("")
+                lines.extend(
+                    "  " + line if line else ""
+                    for line in resource_input.description.splitlines()
+                )
+                lines.append("")
+        lines.append("")
+
     lines.append(f"## [Actions]({suites_readme_path}#actions)")
     lines.append("")
     i = 0

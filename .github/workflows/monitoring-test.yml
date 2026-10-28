@@ -30,7 +30,7 @@ jobs:
         docker version
         docker compose version
     - name: Checkout
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         submodules: true
     - name: Load monitoring image
@@ -39,7 +39,7 @@ jobs:
       run: ${{ inputs.script }}
     - name: Save containers and tracer logs as artifact
       if: always()
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: monitoring-test-${{ inputs.name }}-logs
         path: |
@@ -47,7 +47,7 @@ jobs:
           monitoring/mock_uss/output
     - name: Save USS qualifier reports as artifact
       if: always()
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
         name: monitoring-test-${{ inputs.name }}-reports
         path: |

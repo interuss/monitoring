@@ -280,6 +280,9 @@ class GenericTestScenario(ABC):
     resource_origins: dict[ResourceID, str]
     """Map between local resource name (as defined in test scenario) to where that resource originated."""
 
+    resource_participants: dict[ResourceID, list[ParticipantID]]
+    """Participants associated with each local resource that has participant associations."""
+
     _phase: ScenarioPhase = ScenarioPhase.Undefined
     _scenario_report: TestScenarioReport | None = None
     _current_case: TestCaseDocumentation | None = None
@@ -300,17 +303,19 @@ class GenericTestScenario(ABC):
         self._phase = ScenarioPhase.NotStarted
         self.time_context = TestTimeContext()
         self.cache = {}
+        self.resource_participants = {}
 
     @staticmethod
     def make_test_scenario(
         declaration: TestScenarioDeclaration,
         resource_pool: dict[ResourceID, ResourceType],
-    ) -> "TestScenario":
+    ) -> TestScenario:
         scenario_type = get_scenario_type_by_name(declaration.scenario_type)
 
         constructor_signature = inspect.signature(scenario_type.__init__)
         constructor_args = {}
         resource_origins = {}
+        resource_participants = {}
         for arg_name, arg in constructor_signature.parameters.items():
             if arg_name == "self":
                 continue
@@ -328,10 +333,14 @@ class GenericTestScenario(ABC):
                 )
             constructor_args[arg_name] = resource_pool[arg_name]
             resource_origins[arg_name] = resource_pool[arg_name].resource_origin
+            participants = resource_pool[arg_name].get_associated_participants()
+            if participants:
+                resource_participants[arg_name] = participants
 
         scenario = scenario_type(**constructor_args)
         scenario.declaration = declaration
         scenario.resource_origins = resource_origins
+        scenario.resource_participants = resource_participants
         return scenario
 
     @abstractmethod
@@ -395,6 +404,7 @@ class GenericTestScenario(ABC):
             scenario_type=self.declaration.scenario_type,
             documentation_url=self.documentation.url,
             resource_origins=self.resource_origins,
+            resource_participants=self.resource_participants,
             start_time=StringBasedDateTime(datetime.now(UTC)),
             cases=[],
         )
@@ -694,7 +704,6 @@ class GenericTestScenario(ABC):
             self._make_scenario_report()
             assert self._scenario_report is not None
         self._scenario_report.execution_error = ErrorReport.create_from_exception(e)
-        self._scenario_report.successful = False
         self._phase = ScenarioPhase.Complete
 
     def get_report(self) -> TestScenarioReport:
@@ -713,23 +722,6 @@ class GenericTestScenario(ABC):
             self._scenario_report.end_time = StringBasedDateTime(
                 arrow.utcnow().datetime
             )
-
-        # Evaluate success
-        self._scenario_report.successful = (
-            "execution_error" not in self._scenario_report
-        )
-        for case_report in self._scenario_report.cases:
-            for step_report in case_report.steps:
-                for failed_check in step_report.failed_checks:
-                    if failed_check.severity != Severity.Low:
-                        self._scenario_report.successful = False
-        if (
-            "cleanup" in self._scenario_report
-            and self._scenario_report.cleanup is not None
-        ):
-            for failed_check in self._scenario_report.cleanup.failed_checks:
-                if failed_check.severity != Severity.Low:
-                    self._scenario_report.successful = False
 
         return self._scenario_report
 

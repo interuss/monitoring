@@ -37,7 +37,7 @@ def _extract_numbers(val) -> list[float]:
         return res
     try:
         return [float(val)]
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return []
 
 

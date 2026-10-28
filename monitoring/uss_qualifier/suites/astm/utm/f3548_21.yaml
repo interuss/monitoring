@@ -9,27 +9,46 @@ resources:
   interuss_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
 
-  # This input is DEPRECATED and may be removed in future versions.
+  # These inputs are DEPRECATED and may be removed in future versions.
   conflicting_flights: resources.flight_planning.FlightIntentsResource?
+  non_conflicting_flights: resources.flight_planning.FlightIntentsResource?
 
-  # This resource should provide resources.flight_planning.FlightIntentsResource instances
-  conflicting_flights_provider: resources.resource.ResourceProvidingResource
-  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource?
+  conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
+  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
+  non_conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
+  invalid_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
 
-  invalid_flight_intents: resources.flight_planning.FlightIntentsResource
-  non_conflicting_flights: resources.flight_planning.FlightIntentsResource
   nominal_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   priority_planning_selector: resources.flight_planning.FlightPlannerCombinationSelectorResource?
   utm_auth: resources.communications.AuthAdapterResource?
   second_utm_auth: resources.communications.AuthAdapterResource?
   utm_client_identity: resources.communications.ClientIdentityResource
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
-  id_generator: resources.interuss.IDGeneratorResource
+
+  # Zero or one of the following two resources must be provided
+  id_generator: resources.interuss.id_generator.IDGeneratorResource?
+  id_generator_provider: resources.interuss.id_generator.IDGeneratorProviderResource?
+
   planning_area_provider: resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]
   problematically_big_area: resources.VolumeResource
   system_identity: resources.versioning.SystemIdentityResource?
-  test_exclusions: resources.dev.TestExclusionsResource?
 local_resources:
+  id_generator:
+    resource_type: resources.interuss.id_generator.IDGeneratorResource
+    dependencies:
+      client_identity: utm_client_identity
+    specification: {}
+  id_generator_provider:
+    resource_type: resources.interuss.id_generator.IDGeneratorProviderResource
+    dependencies:
+      base_resource: id_generator
+    specification: {}
+  non_conflicting_flights:
+    resource_type: resources.resource.SingularResource[resources.flight_planning.FlightIntentsResource]
+    dependencies:
+      provider: non_conflicting_flights_provider
+    specification:
+      index: 0
   conflicting_flights:
     resource_type: resources.resource.SingularResource[resources.flight_planning.FlightIntentsResource]
     dependencies:
@@ -50,7 +69,8 @@ local_resources:
     dependencies:
       environments: dss_environments
       planning_area: planning_area_provider
-      # TODO: populate flight_intents from non_conflicting_flights_provider
+      id_generator: id_generator_provider
+      flight_intents: non_conflicting_flights_provider
     specification: {}
   priority_preemption_combinations:
     resource_type: resources.combinations.ResourceCombinationsResource
@@ -78,11 +98,29 @@ local_resources:
       environments: equal_priority_conflict_combinations  # provides uss1, uss2
       flight_intents: conflicting_flights_provider
     specification: {}
+  single_planner_planner_environments:
+    resource_type: resources.combinations.ResourceCombinationsResource
+    dependencies:
+      tested_uss: flight_planners
+    specification: {}
+  invalid_intents_environments:
+    resource_type: resources.environments.EnvironmentAugmentationResource
+    dependencies:
+      environments: single_planner_planner_environments
+      flight_intents: invalid_flights_provider
+    specification: {}
+  single_planner_environments:
+    resource_type: resources.environments.EnvironmentAugmentationResource
+    dependencies:
+      environments: single_planner_planner_environments
+      invalid_flight_intents: invalid_flights_provider
   flight_intents_environments:
     resource_type: resources.environments.ConcatenatedResourceEnvironmentsResource
     dependencies:
+      dss_probing: dss_probing_environments
       priority_preemption: priority_preemption_environments?
       equal_priority_conflict: equal_priority_conflict_environments
+      invalid: invalid_intents_environments
     specification: {}
 actions:
 - test_scenario:
@@ -100,8 +138,7 @@ actions:
       flight_planners: flight_planners_to_clear
       mock_uss: mock_uss?
       dss: dss
-      flight_intents: invalid_flight_intents
-      flight_intents2: non_conflicting_flights?
+      flight_intents: non_conflicting_flights?
       flight_intents_environments: flight_intents_environments?
 - action_generator:
     generator_type: action_generators.resource_environments.ResourceEnvironmentsActionGenerator
@@ -111,10 +148,7 @@ actions:
       dss_datastore_cluster: dss_datastore_cluster?
       second_utm_auth: second_utm_auth?
       utm_client_identity: utm_client_identity
-      flight_intents: non_conflicting_flights
-      id_generator: id_generator
       problematically_big_area: problematically_big_area
-      test_exclusions: test_exclusions?
     specification:
       resource_environments_source: dss_probing_environments
       action_to_repeat:
@@ -130,26 +164,6 @@ actions:
             id_generator: id_generator
             planning_area: planning_area
             problematically_big_area: problematically_big_area
-            test_exclusions: test_exclusions?
-- action_generator:
-    generator_type: action_generators.flight_planning.FlightPlannerCombinations
-    resources:
-      flight_planners: flight_planners
-      flight_intent_validation_selector: flight_intent_validation_selector?
-      invalid_flight_intents: invalid_flight_intents
-      dss: dss
-    specification:
-      action_to_repeat:
-        test_scenario:
-          scenario_type: scenarios.astm.utm.FlightIntentValidation
-          resources:
-            flight_intents: invalid_flight_intents
-            tested_uss: uss1
-            dss: dss
-      combination_selector_source: flight_intent_validation_selector?
-      flight_planners_source: flight_planners
-      roles:
-        - uss1
 - action_generator:
     generator_type: action_generators.resource_environments.ResourceEnvironmentsActionGenerator
     resources:
@@ -181,108 +195,34 @@ actions:
             control_uss: uss2
             dss: dss
 - action_generator:
-    generator_type: action_generators.flight_planning.FlightPlannerCombinations
+    generator_type: action_generators.resource_environments.ResourceEnvironmentsActionGenerator
     resources:
-      flight_planners: flight_planners
+      single_planner_environments: single_planner_environments
       non_conflicting_flights: non_conflicting_flights
+      conflicting_flights: conflicting_flights
       dss: dss
-      mock_uss: mock_uss
-    specification:
-      action_to_repeat:
-        test_scenario:
-          scenario_type: scenarios.astm.utm.data_exchange_validation.GetOpResponseDataValidationByUSS
-          resources:
-            tested_uss: tested_uss
-            mock_uss: mock_uss
-            dss: dss
-            flight_intents: non_conflicting_flights
-      flight_planners_source: flight_planners
-      roles:
-        - tested_uss
-- action_generator:
-    generator_type: action_generators.flight_planning.FlightPlannerCombinations
-    resources:
-      flight_planners: flight_planners
-      non_conflicting_flights: non_conflicting_flights
-      dss: dss
-      mock_uss: mock_uss
-    specification:
-      action_to_repeat:
-        test_scenario:
-          scenario_type: scenarios.astm.utm.subscription_notifications.ReceiveNotificationsForAwareness
-          resources:
-            tested_uss: tested_uss
-            mock_uss: mock_uss
-            dss: dss
-            flight_intents: non_conflicting_flights
-      flight_planners_source: flight_planners
-      roles:
-        - tested_uss
-- action_generator:
-    generator_type: action_generators.flight_planning.FlightPlannerCombinations
-    resources:
-      flight_planners: flight_planners
+      mock_uss: mock_uss?
       utm_auth: utm_auth?
-      dss: dss
-      non_conflicting_flights: non_conflicting_flights
     specification:
+      resource_environments_source: single_planner_environments
       action_to_repeat:
-        test_scenario:
-          scenario_type: scenarios.astm.utm.uss_authentication.scd_authentication_validation.SCDAuthenticationValidation
+        test_suite:
+          suite_type: suites.astm.utm.single_planner
           resources:
             tested_uss: tested_uss
-            utm_auth: utm_auth
+            invalid_flight_intents: invalid_flight_intents
+            non_conflicting_flights: non_conflicting_flights
+            conflicting_flights: conflicting_flights
             dss: dss
-            flight_intents: non_conflicting_flights
-      flight_planners_source: flight_planners
-      roles:
-        - tested_uss
-- action_generator:
-    generator_type: action_generators.flight_planning.FlightPlannerCombinations
-    resources:
-      flight_planners: flight_planners
-      nominal_planning_selector: nominal_planning_selector?
-      conflicting_flights: conflicting_flights
-      dss: dss
-    specification:
-      action_to_repeat:
-        test_scenario:
-          scenario_type: scenarios.astm.utm.DownUSS
-          resources:
-            flight_intents: conflicting_flights
-            tested_uss: uss1
-            dss: dss
-      combination_selector_source: nominal_planning_selector
-      flight_planners_source: flight_planners
-      roles:
-        - uss1
-- action_generator:
-    generator_type: action_generators.flight_planning.FlightPlannerCombinations
-    resources:
-      flight_planners: flight_planners
-      nominal_planning_selector: nominal_planning_selector?
-      conflicting_flights: conflicting_flights
-      dss: dss
-    specification:
-      action_to_repeat:
-        test_scenario:
-          scenario_type: scenarios.astm.utm.DownUSSEqualPriorityNotPermitted
-          resources:
-            flight_intents: conflicting_flights
-            tested_uss: uss1
-            dss: dss
-      combination_selector_source: nominal_planning_selector
-      flight_planners_source: flight_planners
-      roles:
-        - uss1
+            mock_uss: mock_uss?
+            utm_auth: utm_auth?
 - test_scenario:
     scenario_type: scenarios.astm.utm.PrepareFlightPlanners  # TODO: Convert this to a scenario which only clears the area (does not check readiness)
     resources:
       flight_planners: flight_planners
       mock_uss: mock_uss?
       dss: dss
-      flight_intents: invalid_flight_intents
-      flight_intents2: non_conflicting_flights?
+      flight_intents: non_conflicting_flights?
       flight_intents_environments: flight_intents_environments?
 - test_scenario:
     scenario_type: scenarios.astm.utm.make_uss_report.MakeUssReport

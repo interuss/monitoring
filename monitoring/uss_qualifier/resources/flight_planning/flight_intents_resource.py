@@ -86,7 +86,7 @@ class FlightIntentsResource(GeospatialResource, Resource[FlightIntentsSpecificat
                 rect = rect.union(v4d.rect_bounds)
         return LatLngBoundingBox.from_latlng_rect(rect)
 
-    def move(self, meters_east: float, meters_north: float) -> "FlightIntentsResource":
+    def move(self, meters_east: float, meters_north: float) -> FlightIntentsResource:
 
         # Create a new copy
         new_spec = ImplicitDict.parse(

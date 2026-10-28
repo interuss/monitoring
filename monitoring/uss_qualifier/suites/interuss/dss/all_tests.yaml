@@ -15,7 +15,6 @@ resources:
   second_utm_auth: resources.communications.AuthAdapterResource?
   flight_intents: resources.flight_planning.FlightIntentsResource?
 
-  test_exclusions: resources.dev.TestExclusionsResource?
 actions:
   - action_generator:
       generator_type: action_generators.astm.f3548.ForEachDSS
@@ -28,7 +27,6 @@ actions:
         id_generator: id_generator
         planning_area: planning_area
         problematically_big_area: problematically_big_area
-        test_exclusions: test_exclusions?
       specification:
         action_to_repeat:
           test_suite:
@@ -43,7 +41,6 @@ actions:
               id_generator: id_generator
               planning_area: planning_area
               problematically_big_area: problematically_big_area
-              test_exclusions: test_exclusions?
         dss_instances_source: dss_instances
         dss_instance_id: dss
   - action_generator:
@@ -56,7 +53,6 @@ actions:
         service_area: service_area
         problematically_big_area: problematically_big_area
         planning_area: planning_area
-        test_exclusions: test_exclusions?
       specification:
         action_to_repeat:
           test_suite:
@@ -70,7 +66,6 @@ actions:
               isa: service_area
               problematically_big_area: problematically_big_area
               planning_area: planning_area
-              test_exclusions: test_exclusions?
         dss_instances_source: dss_instances
         dss_instance_id: dss
   - action_generator:
@@ -83,7 +78,6 @@ actions:
         service_area: service_area
         problematically_big_area: problematically_big_area
         planning_area: planning_area
-        test_exclusions: test_exclusions?
       specification:
         action_to_repeat:
           test_suite:
@@ -97,7 +91,6 @@ actions:
               isa: service_area
               problematically_big_area: problematically_big_area
               planning_area: planning_area
-              test_exclusions: test_exclusions?
         dss_instances_source: dss_instances
         dss_instance_id: dss
 # TODO: enable usage of aggregate checks when there are no service providers or observers
@@ -107,4 +100,3 @@ actions:
 #      service_providers: service_providers
 #      observers: observers
 #      dss_instances: dss_instances
-#      test_exclusions: test_exclusions?

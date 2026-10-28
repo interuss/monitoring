@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import inspect
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TypeVar, get_origin, get_type_hints
+from typing import TYPE_CHECKING, TypeVar, get_origin
 
 from implicitdict import ImplicitDict
 from loguru import logger
@@ -14,6 +16,7 @@ from monitoring.monitorlib.typing import (
     TypeAnnotation,
     collect_typevars,
     format_type_name,
+    get_method_type_hints,
     infer_typevars_from_arg,
     is_type_covariant_match,
     substitute_typevars,
@@ -24,6 +27,9 @@ from monitoring.uss_qualifier.resources.definitions import (
     ResourceID,
     ResourceTypeName,
 )
+
+if TYPE_CHECKING:
+    from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 
 SpecificationType = TypeVar("SpecificationType", bound=ImplicitDict)
 
@@ -65,7 +71,7 @@ class Resource[SpecificationType: ImplicitDict](ABC):
         params: tuple[TypeVar, ...] = getattr(self.__class__, "__parameters__", ())
         if params:
             try:
-                hints = get_type_hints(self.__class__.__init__)
+                hints = get_method_type_hints(self.__class__, "__init__")
                 for arg_name, hint in hints.items():
                     if (
                         isinstance(hint, TypeVar)
@@ -108,7 +114,11 @@ class Resource[SpecificationType: ImplicitDict](ABC):
             self._get_type_annotation(), specified_type, self._get_typevar_map()
         )
 
-    def resolve_resource(self) -> "Resource":
+    def get_associated_participants(self) -> list[ParticipantID]:
+        """Return distinct participant IDs associated with this resource, if any."""
+        return []
+
+    def resolve_resource(self) -> Resource:
         """Return the resource to expose in the resource pool after construction.
 
         Selectors may return another resource.  Its type metadata and origin are
@@ -134,11 +144,12 @@ class SupportedKeysNotSpecifiedError(ValueError):
     pass
 
 
-class ResourceProvidingResource[
-    SpecificationType: ImplicitDict,
-    ResourceType: Resource,
-](Resource[SpecificationType], ABC):
-    """Resource capable of spawning ResourceType resources according to a desired key, such as an index."""
+class ResourceProvidingResource[ResourceType: Resource](Resource, ABC):
+    """Resource capable of spawning ResourceType resources according to a desired key, such as an index.
+
+    Concrete providers should also inherit Resource[TheirSpecification] to declare
+    their specification type independently of the type of resource they provide.
+    """
 
     @abstractmethod
     def provide_resource_for(self, **kwargs) -> ResourceType:
@@ -161,13 +172,13 @@ class SingularResource[SingularResourceType: Resource](
     """Expose a single provider result as its actual resource type in the pool."""
 
     _specification: SingularResourceSpecification
-    _provider: ResourceProvidingResource[ImplicitDict, SingularResourceType]
+    _provider: ResourceProvidingResource[SingularResourceType]
 
     def __init__(
         self,
         specification: SingularResourceSpecification,
         resource_origin: str,
-        provider: ResourceProvidingResource[ImplicitDict, SingularResourceType],
+        provider: ResourceProvidingResource[SingularResourceType],
     ):
         super().__init__(specification, resource_origin)
         self._specification = specification
@@ -176,7 +187,7 @@ class SingularResource[SingularResourceType: Resource](
     def resolve_resource(self) -> SingularResourceType:
         resource = self._provider.provide_resource_for(index=self._specification.index)
         expected_type = substitute_typevars(
-            get_type_hints(SingularResource.resolve_resource)["return"],
+            get_method_type_hints(SingularResource, "resolve_resource")["return"],
             self._get_typevar_map(),
         )
         if not isinstance(resource, Resource) or not is_type_covariant_match(
@@ -329,7 +340,7 @@ def get_resource_types(
 
     collect_typevars(resource_type, typevar_map)
 
-    raw_signature = get_type_hints(resource_type.__init__)
+    raw_signature = get_method_type_hints(resource_type, "__init__")
     constructor_signature: dict[str, TypeAnnotation] = {
         name: substitute_typevars(t, typevar_map) for name, t in raw_signature.items()
     }

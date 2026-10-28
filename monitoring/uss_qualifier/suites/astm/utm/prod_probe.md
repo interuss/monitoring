@@ -2,6 +2,15 @@
 # Minimal production probing test suite
 [`suites.astm.utm.prod_probe`](./prod_probe.yaml)
 
+## [Resource inputs](../../README.md#resources)
+
+- `second_utm_auth`: `resources.communications.AuthAdapterResource` (optional)
+- `dss_instances`: `resources.astm.f3548.v21.DSSInstancesResource` (optional)
+- `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `id_generator`: `resources.interuss.IDGeneratorResource`
+- `planning_area`: `resources.PlanningAreaResource`
+- `utm_client_identity`: `resources.communications.ClientIdentityResource`
+
 ## [Actions](../../README.md#actions)
 
 1. Action generator: [`action_generators.astm.f3548.ForEachDSS`](../../../action_generators/astm/f3548/for_each_dss.py)

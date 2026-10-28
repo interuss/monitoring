@@ -18,6 +18,8 @@ This set of tests including  [miscellaneous hygiene checks](../../test/repo_hygi
 
 To maintain consistency across this large codebase, InterUSS employs a very strict Python linter.  But, there is no need to satisfy the linter manually; simply run `make format` from the repo root to resolve most mere-formatting issues that this check will detect.
 
+Standalone host/build utilities must support Python 3.11 and later.  The explicit `tool.ruff.per-file-target-version` list in [pyproject.toml](../../pyproject.toml) covers the Git version utilities, the JSON field extractor, and the packaging entry point.  Add new scripts invoked directly with system Python to this list.  Both `make python-lint` and `make format` use these targets to reject unsupported syntax and avoid introducing newer syntax when fixing or formatting these files.
+
 #### uss_qualifier documentation validation (`make validate-uss-qualifier-docs`)
 
 uss_qualifier [scenario documentation](../../monitoring/uss_qualifier/scenarios/README.md#documentation) is required and has strict requirements to ensure a strong, consistent, and correct interface between regulators and others concerned only with the concept of what scenarios are doing, and InterUSS contributors concerned with writing the actual code to perform the test.  This check validates many of these documentation requirements.
@@ -26,14 +28,14 @@ uss_qualifier [scenario documentation](../../monitoring/uss_qualifier/scenarios/
 
 This repository contains a large number of shell scripts.  This check attempts to have these scripts follow best practices and avoid common pitfalls.
 
-### benchmarker minimal configuration
+### benchmarker minimal configuration (`make test-benchmarker-minimal`)
 
 This job runs [`minimal.jsonnet`](../../monitoring/benchmarker/configurations/interuss/minimal.jsonnet) on the Ubuntu runner with uv (rather than the `monitoring` docker image like most others).  Configuration actions bring up and tear down a local DSS deployment within the benchmarker run.
 
 To run it locally from the repository root:
 
 ```bash
-PYTHONPATH=. uv run --locked --no-install-project python monitoring/benchmarker/benchmark.py --config file://monitoring/benchmarker/configurations/interuss/minimal.jsonnet
+make test-benchmarker-minimal
 ```
 
 ### mock_uss tests (`make test` in monitoring/mock_uss)

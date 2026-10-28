@@ -3,16 +3,16 @@ resources:
   test_env_version_providers: resources.versioning.VersionProvidersResource?
   prod_env_version_providers: resources.versioning.VersionProvidersResource?
 
-  # This input is DEPRECATED and may be removed in future versions.
+  # These inputs are DEPRECATED and may be removed in future versions.
   conflicting_flights: resources.flight_planning.FlightIntentsResource?
+  non_conflicting_flights: resources.flight_planning.FlightIntentsResource?
 
-  # This resource should provide resources.flight_planning.FlightIntentsResource instances
-  conflicting_flights_provider: resources.resource.ResourceProvidingResource
-  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource?
+  conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
+  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
+  non_conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
 
-  invalid_flight_intents: resources.flight_planning.FlightIntentsResource
+  invalid_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
   invalid_flight_auth_flights: resources.flight_planning.FlightIntentsResource
-  non_conflicting_flights: resources.flight_planning.FlightIntentsResource
   flight_planners: resources.flight_planning.FlightPlannersResource?
   mock_uss: resources.interuss.mock_uss.client.MockUSSResource?
   mock_uss_dp: resources.interuss.mock_uss.client.MockUSSResource?
@@ -35,7 +35,6 @@ resources:
   planning_area_provider: resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]
   problematically_big_area: resources.VolumeResource
 
-  test_exclusions: resources.dev.TestExclusionsResource?
   uss_identification: resources.interuss.uss_identification.USSIdentificationResource?
 local_resources:
   system_identity:
@@ -56,9 +55,10 @@ actions:
       conflicting_flights: conflicting_flights?
       conflicting_flights_provider: conflicting_flights_provider
       priority_preemption_flights_provider: priority_preemption_flights_provider?
-      invalid_flight_intents: invalid_flight_intents
+      invalid_flights_provider: invalid_flights_provider
       invalid_flight_auth_flights: invalid_flight_auth_flights
-      non_conflicting_flights: non_conflicting_flights
+      non_conflicting_flights: non_conflicting_flights?
+      non_conflicting_flights_provider: non_conflicting_flights_provider
       flight_planners: flight_planners?
       mock_uss: mock_uss
       dss: scd_dss
@@ -71,7 +71,6 @@ actions:
       planning_area_provider: planning_area_provider
       problematically_big_area: problematically_big_area
       system_identity: system_identity
-      test_exclusions: test_exclusions?
 - test_suite:
     suite_type: suites.uspace.network_identification
     resources:
@@ -86,7 +85,6 @@ actions:
       service_area: service_area
       problematically_big_area: problematically_big_area
       planning_area: planning_area
-      test_exclusions: test_exclusions?
       mock_uss_dp: mock_uss_dp?
       mock_uss_sp: mock_uss_sp?
       uss_identification: uss_identification?

@@ -143,7 +143,7 @@ Specifically:
    obtained using the `ids` fixture providing a registered resource type code.
    E.g.:
    ```python
-   from monitoring.prober.infrastructure import register_resource_type
+   from monitoring.monitorlib.ids import register_resource_type
 
    [...]
    CONFLICTING_OI_TYPE = register_resource_type(103, "OI that conflicts with first OI")
@@ -153,9 +153,9 @@ Specifically:
    def test_create_conflict(ids):
        conflicting_id = ids(CONFLICTING_OI_TYPE)
    ```
-   The resource type code must be unique among all prober tests. To determine
+   The resource type code must be unique across all monitoring tools. To determine
    an appropriate resource type code for a new resource, see the comment above
-   `register_resource_type` in [infrastructure.py](infrastructure.py), and then
+   `register_resource_type` in [ids.py](../monitorlib/ids.py), and then
    make sure to update that comment after adding new resource type codes.
 1. Tests should be designed to pass even with pre-existing resources which may
    even be in the same area/time range/etc as the test resources.  Toward this
@@ -165,6 +165,5 @@ Specifically:
 The guidelines above should allow the prober to be used on production DSS
 instances without any nominal adverse effects.
 
-If an orphaned resource with a test ID is found in a DSS, the owner and origin
-of that resource can be determined from the ID with
-[decode_id.py](decode_id.py).
+For decoding orphaned test resource IDs, see the
+[monitorlib ID documentation](../monitorlib/README.md#test-resource-ids).

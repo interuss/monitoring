@@ -2,6 +2,26 @@
 # UFT message signing test suite
 [`suites.faa.uft.message_signing`](./message_signing.yaml)
 
+## [Resource inputs](../../README.md#resources)
+
+- `mock_uss`: `resources.interuss.mock_uss.client.MockUSSResource`
+- `flight_planners`: `resources.flight_planning.FlightPlannersResource`
+- `combination_selector`: `resources.flight_planning.FlightPlannerCombinationSelectorResource`
+- `dss`: `resources.astm.f3548.v21.DSSInstanceResource`
+- `dss_instances`: `resources.astm.f3548.v21.DSSInstancesResource` (optional)
+- `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `conflicting_flights`: `resources.flight_planning.FlightIntentsResource` (optional)
+- `non_conflicting_flights`: `resources.flight_planning.FlightIntentsResource` (optional)
+- `conflicting_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
+- `priority_preemption_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]` (optional)
+- `non_conflicting_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
+- `invalid_flights_provider`: `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]`
+- `id_generator`: `resources.interuss.IDGeneratorResource`
+- `utm_client_identity`: `resources.communications.ClientIdentityResource`
+- `second_utm_auth`: `resources.communications.AuthAdapterResource` (optional)
+- `planning_area_provider`: `resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]`
+- `problematically_big_area`: `resources.VolumeResource`
+
 ## [Actions](../../README.md#actions)
 
 1. Scenario: [Start message signing](../../../scenarios/faa/uft/message_signing_start.md) ([`scenarios.faa.uft.StartMessageSigningReport`](../../../scenarios/faa/uft/message_signing_start.py))
@@ -41,7 +61,7 @@
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0005,5</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/oir_implicit_sub_handling.md">ASTM SCD DSS: Implicit Subscription handling</a><br><a href="../../../scenarios/astm/utm/dss/authentication/authentication_validation.md">ASTM SCD DSS: Interfaces authentication</a><br><a href="../../../scenarios/astm/utm/dss/oir_explicit_sub_handling.md">ASTM SCD DSS: Operational Intent Explicit Subscription handling</a><br><a href="../../../scenarios/astm/utm/dss/subscription_simple.md">ASTM SCD DSS: Subscription Simple</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions_deletion.md">ASTM SCD DSS: Subscription and entity deletion interaction</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions.md">ASTM SCD DSS: Subscription and entity interaction</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/oir_implicit_sub_handling.md">ASTM SCD DSS: Implicit Subscription handling</a><br><a href="../../../scenarios/astm/utm/dss/authentication/authentication_validation.md">ASTM SCD DSS: Interfaces authentication</a><br><a href="../../../scenarios/astm/utm/dss/oir_explicit_sub_handling.md">ASTM SCD DSS: Operational Intent Explicit Subscription handling</a><br><a href="../../../scenarios/astm/utm/dss/op_intent_ref_key_validation.md">ASTM SCD DSS: Operational Intent Reference Key Validation</a><br><a href="../../../scenarios/astm/utm/dss/subscription_simple.md">ASTM SCD DSS: Subscription Simple</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/subscription_validation.md">ASTM SCD DSS: Subscription Validation</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions_deletion.md">ASTM SCD DSS: Subscription and entity deletion interaction</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions.md">ASTM SCD DSS: Subscription and entity interaction</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0015</a></td>

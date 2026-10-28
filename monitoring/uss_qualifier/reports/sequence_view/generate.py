@@ -38,6 +38,9 @@ from monitoring.uss_qualifier.reports.sequence_view.summary_types import (
     SuiteCell,
     format_duration,
 )
+from monitoring.uss_qualifier.reports.sequence_view.timeline import (
+    compute_timeline_data,
+)
 from monitoring.uss_qualifier.reports.tested_requirements.generate import (
     compute_test_run_information,
 )
@@ -137,8 +140,18 @@ def compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Acti
         generator_type = action_generator_type_from_name(
             report.action_generator.generator_type
         )
+        name = generator_type.get_name()
+        resource_ids = report.action_generator.resources_provided
+        if resource_ids:
+            if len(resource_ids) > 2:
+                resource_list = (
+                    ", ".join(resource_ids[:-1]) + ", and " + resource_ids[-1]
+                )
+            else:
+                resource_list = " and ".join(resource_ids)
+            name += f" supplying {resource_list}"
         return ActionNode(
-            name=generator_type.get_name(),
+            name=name,
             node_type=ActionNodeType.ActionGenerator,
             children=[
                 compute_action_node(a, indexer) for a in report.action_generator.actions
@@ -169,7 +182,7 @@ def _compute_overview_rows(node: ActionNode) -> Iterator[OverviewRow]:
 
 
 def _align_overview_rows(rows: list[OverviewRow]) -> None:
-    max_suite_cols = max(len(r.suite_cells) for r in rows)
+    max_suite_cols = max((len(r.suite_cells) for r in rows), default=0)
     to_fill = 0
     for row in rows:
         if to_fill > 0:
@@ -335,10 +348,16 @@ def generate_sequence_view(
     os.makedirs(output_path, exist_ok=True)
     _generate_scenario_pages(node, config, output_path)
 
+    template = jinja_env.get_template("sequence_view/timeline.html")
+    with open(os.path.join(output_path, "timeline.html"), "w") as f:
+        f.write(
+            template.render(timeline_data=compute_timeline_data(report.report, node))
+        )
+
     overview_rows = list(_compute_overview_rows(node))
     _align_overview_rows(overview_rows)
     _compute_overview_durations(overview_rows)
-    max_suite_cols = max(len(r.suite_cells) for r in overview_rows)
+    max_suite_cols = max((len(r.suite_cells) for r in overview_rows), default=0)
     all_participants = _enumerate_all_participants(node)
     all_participants.sort()
     if UNATTRIBUTED_PARTICIPANT in all_participants:

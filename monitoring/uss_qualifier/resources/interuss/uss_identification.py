@@ -48,6 +48,9 @@ class USSIdentificationResource(Resource[USSIdentificationSpecification]):
         super().__init__(specification, resource_origin)
         self.identifiers = specification.uss_identifiers or {}
 
+    def get_associated_participants(self) -> list[ParticipantID]:
+        return list(self.identifiers)
+
     def attribute_query_server(self, query: Query) -> None:
         """Identify the participant ID of the server responding to this query and mutate `query` accordingly, if possible"""
         claims = query.request.token

@@ -127,7 +127,9 @@ def _assert_evaluate_sp_flight_recent_positions(
         )
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
-    assert unit_test_scenario.get_report().successful == outcome
+    report = unit_test_scenario.get_report()
+    assert report.execution_error is None
+    assert (not list(report.query_failed_checks())) == outcome
 
 
 def test_evaluate_sp_flight_recent_positions():
@@ -161,7 +163,9 @@ def _assert_evaluate_sp_flight_recent_positions_crossing_area_boundary(
         )
 
     unit_test_scenario = UnitTestScenario(step_under_test).execute_unit_test()
-    assert unit_test_scenario.get_report().successful == outcome
+    report = unit_test_scenario.get_report()
+    assert report.execution_error is None
+    assert (not list(report.query_failed_checks())) == outcome
 
 
 def test_evaluate_sp_flight_recent_positions_crossing_area_boundary():

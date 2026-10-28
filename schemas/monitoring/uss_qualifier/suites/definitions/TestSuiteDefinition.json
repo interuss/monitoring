@@ -14,6 +14,13 @@
       },
       "type": "array"
     },
+    "description": {
+      "description": "Description of the purpose/behavior of the test suite.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "local_resources": {
       "additionalProperties": {
         "$ref": "../../resources/definitions/ResourceDeclaration.json"
@@ -34,24 +41,36 @@
       "description": "Name of the test suite",
       "type": "string"
     },
+    "resource_inputs": {
+      "description": "Enumeration of the resources used by this test suite.  May not be specified together with `resources`.",
+      "items": {
+        "$ref": "ResourceInput.json"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
     "resources": {
       "additionalProperties": {
         "type": "string"
       },
-      "description": "Enumeration of the resources used by this test suite",
+      "description": "DEPRECATED; use resource_inputs.\n\nEnumeration of the resources used by this test suite",
       "properties": {
         "$ref": {
           "description": "Path to content that replaces the $ref",
           "type": "string"
         }
       },
-      "type": "object"
+      "type": [
+        "object",
+        "null"
+      ]
     }
   },
   "required": [
     "actions",
-    "name",
-    "resources"
+    "name"
   ],
   "type": "object"
 }

@@ -112,20 +112,73 @@ ResourceTypeNameSpecifyingOptional = ResourceTypeName
 """This string is a ResourceTypeName (which may include generic type arguments in brackets), but then may be suffixed with '?' (e.g., `resources.SomeGenericResource[resources.SubResource]?`).  If the value ends in '?', that indicates the resource is optional and does not need to be provided."""
 
 
+class ResourceInput(ImplicitDict):
+    resource_id: ResourceID
+    """The ID of the resource as it will be made available to actions in the test suite."""
+
+    type: ResourceTypeNameSpecifyingOptional
+    """The type of this resource, optionally suffixed with '?' to indicate it is optional."""
+
+    description: Optional[str]
+    """Description of the purpose/usage of this resource."""
+
+
 class TestSuiteDefinition(ImplicitDict):
     """Schema for the definition of a test suite, analogous to the Python TestScenario subclass for scenarios"""
 
     name: str
     """Name of the test suite"""
 
-    resources: dict[ResourceID, ResourceTypeNameSpecifyingOptional]
-    """Enumeration of the resources used by this test suite"""
+    description: Optional[str]
+    """Description of the purpose/behavior of the test suite."""
+
+    resources: Optional[dict[ResourceID, ResourceTypeNameSpecifyingOptional]]
+    """DEPRECATED; use resource_inputs.
+
+    Enumeration of the resources used by this test suite"""
+
+    resource_inputs: Optional[list[ResourceInput]]
+    """Enumeration of the resources used by this test suite.  May not be specified together with `resources`."""
 
     local_resources: Optional[dict[ResourceID, ResourceDeclaration]]
     """Declarations of resources originating in this test suite, which may depend on `resources` passed into the test suite.  If a resource is defined in both `resources` and `local_resources`, the resource in `local_resources` will be ignored (`resources` overrides `local_resources`)."""
 
     actions: list[TestSuiteActionDeclaration]
     """The actions to take when running the test suite.  Components will be executed in order."""
+
+    def __init__(self, previous_instance: dict | None = None, **kwargs):
+        supplied_fields = (previous_instance or {}).keys() | kwargs.keys()
+        if "resources" in supplied_fields and "resource_inputs" in supplied_fields:
+            raise ValueError(
+                "May not specify both resources and resource_inputs in the same TestSuiteDefinition"
+            )
+        if (
+            "resources" not in supplied_fields
+            and "resource_inputs" not in supplied_fields
+        ):
+            raise ValueError(
+                "Must specify one of resources or resource_inputs in a TestSuiteDefinition"
+            )
+        super().__init__(previous_instance, **kwargs)
+
+        # Verify there are no duplicate keys
+        if self.resource_inputs:
+            keys = set()
+            for resource_input in self.resource_inputs:
+                if resource_input.resource_id in keys:
+                    raise ValueError(
+                        f"Only one resource_id of '{resource_input.resource_id}' may be specified in TestSuiteDefinition.resource_inputs"
+                    )
+                keys.add(resource_input.resource_id)
+
+    def get_resource_inputs(self) -> list[ResourceInput]:
+        """Return input resources in a common format, including legacy declarations."""
+        if self.resource_inputs is not None:
+            return self.resource_inputs
+        return [
+            ResourceInput(resource_id=resource_id, type=resource_type)
+            for resource_id, resource_type in (self.resources or {}).items()
+        ]
 
     @staticmethod
     def load_from_declaration(

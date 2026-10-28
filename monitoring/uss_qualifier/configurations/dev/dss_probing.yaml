@@ -18,7 +18,6 @@ v1:
         netrid_dss_instances_v19: { $ref: 'library/environment.yaml#/netrid_dss_instances_v19' }
         che_non_conflicting_flights: {$ref: 'library/resources.yaml#/che_non_conflicting_flights'}
 
-        test_exclusions: { $ref: 'library/resources.yaml#/test_exclusions' }
     non_baseline_inputs:
       - v1.test_run.resources.resource_declarations.utm_auth
       - v1.test_run.resources.resource_declarations.second_utm_auth
@@ -39,14 +38,18 @@ v1:
           problematically_big_area: kentland_problematically_big_area
           second_utm_auth: second_utm_auth
           flight_intents: che_non_conflicting_flights
-          test_exclusions: test_exclusions
     execution:
       stop_fast: true
+      do_not_stop_fast_for_acceptable_findings: true
   artifacts:
     raw_report: { }
     sequence_view: { }
     tested_requirements:
       - report_name: requirements
+        acceptable_findings:
+          - $ref: 'library/acceptable_findings.yaml#/private_address_f3411_19'
+          - $ref: 'library/acceptable_findings.yaml#/private_address_f3411_22a'
+          - $ref: 'library/acceptable_findings.yaml#/private_address_f3548_21'
         requirement_collections:
           all_astm_dss_requirements:
             requirement_collections:
@@ -61,7 +64,7 @@ v1:
   validation:
     criteria:
       - $ref: ./library/validation.yaml#/execution_error_none
-      - $ref: ./library/validation.yaml#/failed_check_severity_max_low
+      - $ref: ./library/validation.yaml#/failed_check_severity_max_low_except_acceptable
       - applicability:
           skipped_actions: {}
         pass_condition:

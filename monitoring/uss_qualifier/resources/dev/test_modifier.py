@@ -38,9 +38,8 @@ class NumberGeneratorModifierSpecification(ImplicitDict):
 
 
 class NumberGeneratorModifierResource(
-    ResourceProvidingResource[
-        NumberGeneratorModifierSpecification, NumberGeneratorResource
-    ]
+    ResourceProvidingResource[NumberGeneratorResource],
+    Resource[NumberGeneratorModifierSpecification],
 ):
     """Modifier for a NumberGeneratorResource. Used for unit tests."""
 
@@ -111,7 +110,7 @@ class TestSquareResource(GeospatialResource, Resource[TestSquareSpecification]):
             west_meters=self.SQUARE_SIDE_M / 2,
         )
 
-    def move(self, meters_east: float, meters_north: float) -> "TestSquareResource":
+    def move(self, meters_east: float, meters_north: float) -> TestSquareResource:
         shifted = self.get_extents().expand(
             north_meters=meters_north,
             east_meters=meters_east,

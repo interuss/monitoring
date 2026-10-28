@@ -13,12 +13,12 @@ from monitoring.monitorlib.fetch import (
     fetch_async,
 )
 from monitoring.monitorlib.fetch.rid import FetchedISA
+from monitoring.monitorlib.ids import register_resource_type
 from monitoring.monitorlib.infrastructure import AsyncUTMTestSession
 from monitoring.monitorlib.mutate import rid as mutate
 from monitoring.monitorlib.mutate.rid import ChangedISA
 from monitoring.monitorlib.rid import RIDVersion
 from monitoring.monitorlib.testing import make_fake_url
-from monitoring.prober.infrastructure import register_resource_type
 from monitoring.uss_qualifier.resources.astm.f3411.dss import DSSInstanceResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
 from monitoring.uss_qualifier.resources.interuss.scenarios.astm.netrid.common.dss.heavy_traffic_concurrent import (

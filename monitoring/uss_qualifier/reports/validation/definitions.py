@@ -43,6 +43,9 @@ class FailedCheckApplicability(ImplicitDict):
     has_severity: Optional[SeverityComparison]
     """If specified, only FailedChecks with specified severity are applicable."""
 
+    is_acceptable: Optional[bool]
+    """If specified, only FailedChecks whose presence in the configuration's acceptable_findings matches this value are applicable."""
+
 
 class SkippedCheckApplicability(ImplicitDict):
     """SkippedCheckReport test report elements are applicable according to this specification."""

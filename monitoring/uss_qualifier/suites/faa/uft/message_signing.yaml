@@ -7,22 +7,20 @@ resources:
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
 
-  # This input is DEPRECATED and may be removed in future versions.
+  # These inputs are DEPRECATED and may be removed in future versions.
   conflicting_flights: resources.flight_planning.FlightIntentsResource?
-  
-  non_conflicting_flights: resources.flight_planning.FlightIntentsResource
+  non_conflicting_flights: resources.flight_planning.FlightIntentsResource?
 
-  # This resource should provide resources.flight_planning.FlightIntentsResource instances
-  conflicting_flights_provider: resources.resource.ResourceProvidingResource
-  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource?
+  conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
+  priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
+  non_conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
 
-  invalid_flight_intents: resources.flight_planning.FlightIntentsResource
+  invalid_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
   id_generator: resources.interuss.IDGeneratorResource
   utm_client_identity: resources.communications.ClientIdentityResource
   second_utm_auth: resources.communications.AuthAdapterResource?
   planning_area_provider: resources.resource.ResourceProvidingResource[resources.planning_area.PlanningAreaResource]
   problematically_big_area: resources.VolumeResource
-  test_exclusions: resources.dev.TestExclusionsResource?
 actions:
 - test_scenario:
     scenario_type: scenarios.faa.uft.StartMessageSigningReport
@@ -34,12 +32,13 @@ actions:
       mock_uss: mock_uss
       conflicting_flights: conflicting_flights?
       conflicting_flights_provider: conflicting_flights_provider
-      non_conflicting_flights: non_conflicting_flights
+      non_conflicting_flights: non_conflicting_flights?
+      non_conflicting_flights_provider: non_conflicting_flights_provider
       priority_preemption_flights_provider: priority_preemption_flights_provider?
       flight_planners: flight_planners
       flight_planners_to_clear: flight_planners
       nominal_planning_selector: combination_selector
-      invalid_flight_intents: invalid_flight_intents
+      invalid_flights_provider: invalid_flights_provider
       priority_planning_selector: combination_selector
       dss: dss
       dss_instances: dss_instances
@@ -49,7 +48,6 @@ actions:
       second_utm_auth: second_utm_auth
       planning_area_provider: planning_area_provider
       problematically_big_area: problematically_big_area
-      test_exclusions: test_exclusions?
 - test_scenario:
     scenario_type: scenarios.faa.uft.FinalizeMessageSigningReport
     resources:
