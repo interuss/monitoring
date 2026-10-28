@@ -1,6 +1,6 @@
 # Requires svg.py 1.4.2
+# Can be run with: uv run --with svg.py make_assets.py
 
-import inspect
 from textwrap import dedent
 
 import svg
@@ -51,24 +51,24 @@ common_elements = [
 ]
 
 
-def make_attempt_to_plan_flight_into_conflict():
+def make_attempt_to_plan_flight_into_conflict(flight2_fill: str, suffix: str):
     elements = [
         svg.Polygon(
             points=flight2_points,
             stroke=outline,
-            fill=activated,
+            fill=flight2_fill,
             fill_opacity=0.4,
             stroke_width=8,
         ),
-        svg.Text(x=60, y=90, class_=["heavy"], text="Flight 2"),
+        svg.Text(x=75, y=90, class_=["heavy"], text="Flight 2"),
         svg.Polygon(
             points=translate(flight2_points, 440, 0),
             stroke=outline,
-            fill=activated,
+            fill=flight2_fill,
             fill_opacity=0.4,
             stroke_width=8,
         ),
-        svg.Text(x=60 + 440, y=90, class_=["heavy"], text="Flight 2"),
+        svg.Text(x=75 + 440, y=90, class_=["heavy"], text="Flight 2"),
         svg.Polygon(
             points=translate(flight1_points, 440, 0),
             stroke=outline,
@@ -94,28 +94,28 @@ def make_attempt_to_plan_flight_into_conflict():
         height=200,
         elements=common_elements + elements,
     )
-    with open(inspect.currentframe().f_code.co_name[len("make_") :] + ".svg", "w") as f:
+    with open(f"attempt_to_plan_flight_into_conflict{suffix}.svg", "w") as f:
         f.write(str(canvas))
 
 
-def make_attempt_to_activate_flight_into_conflict():
+def make_attempt_to_activate_flight_into_conflict(flight2_fill: str, suffix: str):
     elements = [
         svg.Polygon(
             points=flight2_points,
             stroke=outline,
-            fill=activated,
+            fill=flight2_fill,
             fill_opacity=0.4,
             stroke_width=8,
         ),
-        svg.Text(x=60, y=90, class_=["heavy"], text="Flight 2"),
+        svg.Text(x=75, y=90, class_=["heavy"], text="Flight 2"),
         svg.Polygon(
             points=translate(flight2_points, 440, 0),
             stroke=outline,
-            fill=activated,
+            fill=flight2_fill,
             fill_opacity=0.4,
             stroke_width=8,
         ),
-        svg.Text(x=60 + 440, y=90, class_=["heavy"], text="Flight 2"),
+        svg.Text(x=75 + 440, y=90, class_=["heavy"], text="Flight 2"),
         svg.Polygon(
             points=translate(flight1_points, 440, 0),
             stroke=outline,
@@ -141,20 +141,20 @@ def make_attempt_to_activate_flight_into_conflict():
         height=200,
         elements=common_elements + elements,
     )
-    with open(inspect.currentframe().f_code.co_name[len("make_") :] + ".svg", "w") as f:
+    with open(f"attempt_to_activate_flight_into_conflict{suffix}.svg", "w") as f:
         f.write(str(canvas))
 
 
-def make_attempt_to_modify_planned_flight_into_conflict():
+def make_attempt_to_modify_planned_flight_into_conflict(flight2_fill: str, suffix: str):
     elements = [
         svg.Polygon(
             points=flight2_points,
             stroke=outline,
-            fill=activated,
+            fill=flight2_fill,
             fill_opacity=0.4,
             stroke_width=8,
         ),
-        svg.Text(x=60, y=90, class_=["heavy"], text="Flight 2"),
+        svg.Text(x=75, y=90, class_=["heavy"], text="Flight 2"),
         svg.Polygon(
             points=flight1c_points,
             stroke=outline,
@@ -162,15 +162,21 @@ def make_attempt_to_modify_planned_flight_into_conflict():
             fill_opacity=0.4,
             stroke_width=8,
         ),
-        svg.Text(x=217, y=145, class_=["heavy"], text="Flight 1c"),
+        svg.Text(
+            x=225,
+            y=145,
+            class_=["heavy"],
+            style="font-size: 24px",
+            text="Flight 1c",
+        ),
         svg.Polygon(
             points=translate(flight2_points, 440, 0),
             stroke=outline,
-            fill=activated,
+            fill=flight2_fill,
             fill_opacity=0.4,
             stroke_width=8,
         ),
-        svg.Text(x=60 + 440, y=90, class_=["heavy"], text="Flight 2"),
+        svg.Text(x=75 + 440, y=90, class_=["heavy"], text="Flight 2"),
         svg.Polygon(
             points=translate(flight1_points, 440, 0),
             stroke=outline,
@@ -179,7 +185,7 @@ def make_attempt_to_modify_planned_flight_into_conflict():
             stroke_width=8,
             stroke_dasharray=[16],
         ),
-        svg.Text(x=222 + 440, y=145, class_=["heavy"], text="Flight 1"),
+        svg.Text(x=220 + 440, y=140, class_=["heavy"], text="Flight 1"),
         svg.Text(x=560, y=150, class_=["heavy"], text="X", fill="red"),
         svg.Line(
             x1=370,
@@ -196,20 +202,22 @@ def make_attempt_to_modify_planned_flight_into_conflict():
         height=200,
         elements=common_elements + elements,
     )
-    with open(inspect.currentframe().f_code.co_name[len("make_") :] + ".svg", "w") as f:
+    with open(f"attempt_to_modify_planned_flight_into_conflict{suffix}.svg", "w") as f:
         f.write(str(canvas))
 
 
-def make_attempt_to_modify_activated_flight_into_conflict():
+def make_attempt_to_modify_activated_flight_into_conflict(
+    flight2_fill: str, suffix: str
+):
     elements = [
         svg.Polygon(
             points=flight2_points,
             stroke=outline,
-            fill=activated,
+            fill=flight2_fill,
             fill_opacity=0.4,
             stroke_width=8,
         ),
-        svg.Text(x=60, y=90, class_=["heavy"], text="Flight 2"),
+        svg.Text(x=75, y=90, class_=["heavy"], text="Flight 2"),
         svg.Polygon(
             points=flight1c_points,
             stroke=outline,
@@ -217,15 +225,21 @@ def make_attempt_to_modify_activated_flight_into_conflict():
             fill_opacity=0.4,
             stroke_width=8,
         ),
-        svg.Text(x=217, y=145, class_=["heavy"], text="Flight 1c"),
+        svg.Text(
+            x=225,
+            y=145,
+            class_=["heavy"],
+            style="font-size: 24px",
+            text="Flight 1c",
+        ),
         svg.Polygon(
             points=translate(flight2_points, 440, 0),
             stroke=outline,
-            fill=activated,
+            fill=flight2_fill,
             fill_opacity=0.4,
             stroke_width=8,
         ),
-        svg.Text(x=60 + 440, y=90, class_=["heavy"], text="Flight 2"),
+        svg.Text(x=75 + 440, y=90, class_=["heavy"], text="Flight 2"),
         svg.Polygon(
             points=translate(flight1_points, 440, 0),
             stroke=outline,
@@ -234,7 +248,7 @@ def make_attempt_to_modify_activated_flight_into_conflict():
             stroke_width=8,
             stroke_dasharray=[16],
         ),
-        svg.Text(x=222 + 440, y=145, class_=["heavy"], text="Flight 1"),
+        svg.Text(x=220 + 440, y=140, class_=["heavy"], text="Flight 1"),
         svg.Text(x=560, y=150, class_=["heavy"], text="X", fill="red"),
         svg.Line(
             x1=370,
@@ -251,7 +265,9 @@ def make_attempt_to_modify_activated_flight_into_conflict():
         height=200,
         elements=common_elements + elements,
     )
-    with open(inspect.currentframe().f_code.co_name[len("make_") :] + ".svg", "w") as f:
+    with open(
+        f"attempt_to_modify_activated_flight_into_conflict{suffix}.svg", "w"
+    ) as f:
         f.write(str(canvas))
 
 
@@ -272,7 +288,7 @@ def make_modify_activated_flight_with_preexisting_conflict():
             fill_opacity=0.4,
             stroke_width=8,
         ),
-        svg.Text(x=60, y=90, class_=["heavy"], text="Flight 2"),
+        svg.Text(x=75, y=90, class_=["heavy"], text="Flight 2"),
         svg.Polygon(
             points=translate(flight2_points, 440, 0),
             stroke=outline,
@@ -280,7 +296,7 @@ def make_modify_activated_flight_with_preexisting_conflict():
             fill_opacity=0.4,
             stroke_width=8,
         ),
-        svg.Text(x=60 + 440, y=90, class_=["heavy"], text="Flight 2"),
+        svg.Text(x=75 + 440, y=90, class_=["heavy"], text="Flight 2"),
         svg.Polygon(
             points=translate(flight1m_points, 440, 0),
             stroke=outline,
@@ -304,12 +320,16 @@ def make_modify_activated_flight_with_preexisting_conflict():
         height=200,
         elements=common_elements + elements,
     )
-    with open(inspect.currentframe().f_code.co_name[len("make_") :] + ".svg", "w") as f:
+    with open("modify_activated_flight_with_preexisting_conflict.svg", "w") as f:
         f.write(str(canvas))
 
 
-make_attempt_to_plan_flight_into_conflict()
-make_attempt_to_activate_flight_into_conflict()
-make_attempt_to_modify_planned_flight_into_conflict()
-make_attempt_to_modify_activated_flight_into_conflict()
+for flight2_fill, suffix in (
+    (activated, "_with_activated_flight"),
+    (accepted, "_with_planned_flight"),
+):
+    make_attempt_to_plan_flight_into_conflict(flight2_fill, suffix)
+    make_attempt_to_activate_flight_into_conflict(flight2_fill, suffix)
+    make_attempt_to_modify_planned_flight_into_conflict(flight2_fill, suffix)
+    make_attempt_to_modify_activated_flight_into_conflict(flight2_fill, suffix)
 make_modify_activated_flight_with_preexisting_conflict()

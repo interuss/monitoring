@@ -151,19 +151,59 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
         )
 
     def run_planning_sequence(self, context: ExecutionContext):
-        self.begin_test_case("Attempt to plan flight into conflict")
-        self._attempt_plan_flight_conflict()
+        self.begin_test_case("Attempt to plan flight into conflict with planned flight")
+        self._attempt_plan_flight_conflict(activate_flight2=False)
         self.end_test_case()
 
-        self.begin_test_case("Attempt to activate flight into conflict")
+        self.begin_test_case(
+            "Attempt to activate flight into conflict with planned flight"
+        )
         self._attempt_activate_flight_conflict()
         self.end_test_case()
 
-        self.begin_test_case("Attempt to modify planned flight into conflict")
+        self.begin_test_case(
+            "Attempt to modify planned flight into conflict with planned flight"
+        )
         flight_1_oi_ref = self._attempt_modify_planned_flight_conflict()
         self.end_test_case()
 
-        self.begin_test_case("Attempt to modify activated flight into conflict")
+        self.begin_test_case(
+            "Attempt to modify activated flight into conflict with planned flight"
+        )
+        self._attempt_modify_activated_flight_conflict(flight_1_oi_ref)
+        if self.flight1_id is not None:
+            self.begin_test_step("Delete Flight 1c")
+            delete_flight(
+                self,
+                self.tested_uss,
+                self.flight1_id,
+                flight_planning_state=self.flight_planning_state,
+            )
+            self.flight1_id = None
+            self.end_test_step()
+        self.end_test_case()
+
+        self.begin_test_case(
+            "Attempt to plan flight into conflict with activated flight"
+        )
+        self._attempt_plan_flight_conflict(activate_flight2=True)
+        self.end_test_case()
+
+        self.begin_test_case(
+            "Attempt to activate flight into conflict with activated flight"
+        )
+        self._attempt_activate_flight_conflict()
+        self.end_test_case()
+
+        self.begin_test_case(
+            "Attempt to modify planned flight into conflict with activated flight"
+        )
+        flight_1_oi_ref = self._attempt_modify_planned_flight_conflict()
+        self.end_test_case()
+
+        self.begin_test_case(
+            "Attempt to modify activated flight into conflict with activated flight"
+        )
         flight_1_oi_ref = self._attempt_modify_activated_flight_conflict(
             flight_1_oi_ref
         )
@@ -173,7 +213,8 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
         self._modify_activated_flight_preexisting_conflict(flight_1_oi_ref)
         self.end_test_case()
 
-    def _attempt_plan_flight_conflict(self):
+    def _attempt_plan_flight_conflict(self, activate_flight2: bool):
+
         self.begin_test_step("Plan Flight 2")
         flight2_planned = self.resolve_flight(self.equal_prio_flight2_planned)
 
@@ -194,27 +235,28 @@ class ConflictEqualPriorityNotPermitted(PlanningSequenceScenario):
             flight_2_oi_ref = validator.expect_shared(flight2_planned)
         self.end_test_step()
 
-        self.begin_test_step("Activate Flight 2")
-        flight2_activated = self.resolve_flight(self.equal_prio_flight2_activated)
+        if activate_flight2:
+            self.begin_test_step("Activate Flight 2")
+            flight2_activated = self.resolve_flight(self.equal_prio_flight2_activated)
 
-        with OpIntentValidator(
-            self,
-            self.control_uss,
-            self.dss,
-            flight2_activated,
-            flight_2_oi_ref,
-        ) as validator:
-            _, _, as_planned = activate_flight(
+            with OpIntentValidator(
                 self,
                 self.control_uss,
+                self.dss,
                 flight2_activated,
-                self.flight2_id,
-                flight_planning_state=self.flight_planning_state,
-            )
-            # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
-            flight2_activated = as_planned
-            validator.expect_shared(flight2_activated)
-        self.end_test_step()
+                flight_2_oi_ref,
+            ) as validator:
+                _, _, as_planned = activate_flight(
+                    self,
+                    self.control_uss,
+                    flight2_activated,
+                    self.flight2_id,
+                    flight_planning_state=self.flight_planning_state,
+                )
+                # TODO(#1326): Validate that flight as planned still allows this scenario to proceed
+                flight2_activated = as_planned
+                validator.expect_shared(flight2_activated)
+            self.end_test_step()
 
         self.begin_test_step("Attempt to plan Flight 1")
         flight1_planned = self.resolve_flight(self.flight1_planned)
