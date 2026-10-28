@@ -303,7 +303,7 @@ class SCDHandler(CoordinationSubscriber):
             ):
                 kwargs["subscription_id"] = op_intent_ref.subscription_id
             elif (
-                and implicit.create_when_activated
+                implicit.create_when_activated
                 and state == api.OperationalIntentState.Accepted
             ):
                 kwargs["force_no_implicit_subscription"] = True
