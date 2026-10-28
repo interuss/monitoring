@@ -53,4 +53,5 @@ The release notes should contain at least the following sections:
 
 ## Important information
 
-The obsolete deployment_manager tool has been removed from this repository.
+* The obsolete deployment_manager tool has been removed from this repository.
+* The obsolete participant verifiable capabilities in uss_qualifier has been removed from this repository.
