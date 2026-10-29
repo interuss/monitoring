@@ -23,31 +23,23 @@ def create_test(req: CreateTestParameters, resp: ChangeTestResponse) -> list:
             if flight.injection_id == test_flight.injection_id:
                 requested_flight = flight
         for i, telemetry in enumerate(test_flight.telemetry):
-            if (
-                "position" in telemetry
-                and telemetry.position
-                and "lat" in telemetry.position
-                and telemetry.position.lat
-                and "lng" in telemetry.position
-                and telemetry.position.lng
-            ):
+            if telemetry.position and telemetry.position.lat and telemetry.position.lng:
                 style_url = "#modifiedtelemetry"
                 if requested_flight and len(requested_flight.telemetry) > i:
                     rt = requested_flight.telemetry[i]
                     if (
-                        "position" in rt
-                        and rt.position
+                        rt.position
                         and "lat" in rt.position
                         and rt.position.lat == telemetry.position.lat
                         and "lng" in rt.position
                         and rt.position.lng == telemetry.position.lng
                     ):
                         style_url = "#unmodifiedtelemetry"
-                if "timestamp" in telemetry and telemetry.timestamp:
+                if telemetry.timestamp:
                     time_start = telemetry.timestamp.datetime
                     if i < len(test_flight.telemetry) - 1:
                         tt = test_flight.telemetry[i + 1]
-                        if "timestamp" in tt and tt.timestamp:
+                        if tt.timestamp:
                             time_end = tt.timestamp.datetime
                         else:
                             time_end = time_start + timedelta(seconds=1)
@@ -74,11 +66,8 @@ def get_flights_v22a(url: str, resp: GetFlightsResponse) -> list:
     for flight in resp.flights or [] if "flights" in resp else []:
         folder = kml.Folder(kml.name(flight.id))
         if (
-            "current_state" in flight
-            and flight.current_state
-            and "lat" in flight.current_state.position
+            flight.current_state
             and flight.current_state.position.lat
-            and "lng" in flight.current_state.position
             and flight.current_state.position.lng
         ):
             point = make_basic_placemark(
@@ -91,7 +80,7 @@ def get_flights_v22a(url: str, resp: GetFlightsResponse) -> list:
                 flight.current_state.position.lng,
             )
             folder.append(point)
-        if "recent_positions" in flight and flight.recent_positions:
+        if flight.recent_positions:
             tail = make_basic_placemark(
                 name=f"{flight.id} recent positions", style_url="#ridtail"
             )
@@ -100,10 +89,7 @@ def get_flights_v22a(url: str, resp: GetFlightsResponse) -> list:
                 [
                     (rp.position.lng, rp.position.lat, 0)
                     for rp in flight.recent_positions
-                    if "lng" in rp.position
-                    and rp.position.lng
-                    and "lat" in rp.position
-                    and rp.position.lat
+                    if rp.position.lng and rp.position.lat
                 ],
             )
             folder.append(tail)

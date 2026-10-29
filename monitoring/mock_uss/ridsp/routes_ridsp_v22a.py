@@ -73,15 +73,11 @@ def _make_operator_location(
 
 def _make_details(p: injection.RIDFlightDetails) -> RIDFlightDetails:
     """Convert injection RIDFlightDetails to F3411-22a"""
-    serial_number = p.serial_number if "serial_number" in p and p.serial_number else ""
-    registration_number = (
-        p.registration_number
-        if "registration_number" in p and p.registration_number
-        else ""
-    )
+    serial_number = p.serial_number if p.serial_number else ""
+    registration_number = p.registration_number if p.registration_number else ""
     uas_id = (
         p.uas_id
-        if "uas_id" in p and p.uas_id
+        if p.uas_id
         else UASID(
             serial_number=serial_number,
             registration_id=registration_number,
@@ -97,7 +93,7 @@ def _make_details(p: injection.RIDFlightDetails) -> RIDFlightDetails:
     ):
         if field in p:
             kwargs[field] = p[field]
-    if "operator_location" in p and p.operator_location:
+    if p.operator_location:
         kwargs["operator_location"] = _make_operator_location(
             p.operator_location, p.get("operator_altitude")
         )

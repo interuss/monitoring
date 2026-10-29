@@ -388,15 +388,9 @@ class Volume3D(ImplicitDict):
         return footprint1.intersects(footprint2)
 
     def transform(self, transformation: Transformation) -> Volume3D:
-        if (
-            "relative_translation" in transformation
-            and transformation.relative_translation
-        ):
+        if transformation.relative_translation:
             return self.translate_relative(transformation.relative_translation)
-        elif (
-            "absolute_translation" in transformation
-            and transformation.absolute_translation
-        ):
+        elif transformation.absolute_translation:
             return self.translate_absolute(transformation.absolute_translation)
         raise ValueError(
             f"No supported transformation defined (keys: {', '.join(transformation)})"
@@ -411,33 +405,22 @@ class Volume3D(ImplicitDict):
             raise ValueError("Neither outline_circle nor outline_polygon specified")
 
     def translate_relative(self, translation: RelativeTranslation) -> Volume3D:
-        if (
-            "reference_center" in translation
-            and translation.reference_center is not None
-        ):
+        if translation.reference_center is not None:
             src_center = translation.reference_center
         else:
             src_center = self.center_2d()
 
         meters_east = (
-            translation.meters_east
-            if "meters_east" in translation and translation.meters_east is not None
-            else 0.0
+            translation.meters_east if translation.meters_east is not None else 0.0
         )
         meters_north = (
-            translation.meters_north
-            if "meters_north" in translation and translation.meters_north is not None
-            else 0.0
+            translation.meters_north if translation.meters_north is not None else 0.0
         )
         degrees_east = (
-            translation.degrees_east
-            if "degrees_east" in translation and translation.degrees_east is not None
-            else 0.0
+            translation.degrees_east if translation.degrees_east is not None else 0.0
         )
         degrees_north = (
-            translation.degrees_north
-            if "degrees_north" in translation and translation.degrees_north is not None
-            else 0.0
+            translation.degrees_north if translation.degrees_north is not None else 0.0
         )
 
         dst_center = src_center.offset(meters_east, meters_north)
@@ -468,7 +451,7 @@ class Volume3D(ImplicitDict):
             kwargs["outline_polygon"] = Polygon(vertices=vertices)
         result = Volume3D(**kwargs)
 
-        if "meters_up" in translation and translation.meters_up:
+        if translation.meters_up:
             if result.altitude_lower:
                 if result.altitude_lower.units == DistanceUnits.M:
                     result.altitude_lower.value += translation.meters_up
@@ -490,10 +473,7 @@ class Volume3D(ImplicitDict):
             lat=translation.new_latitude, lng=translation.new_longitude
         )
 
-        if (
-            "reference_center" in translation
-            and translation.reference_center is not None
-        ):
+        if translation.reference_center is not None:
             src_center = translation.reference_center
         else:
             src_center = self.center_2d()
@@ -642,12 +622,12 @@ def make_latlng_rect(area) -> s2sphere.LatLngRect:
         p2 = s2sphere.LatLng.from_degrees(lat2, lng2)
         return s2sphere.LatLngRect.from_point_pair(p1, p2)
     elif isinstance(area, Volume3D):
-        if "outline_polygon" in area and area.outline_polygon:
+        if area.outline_polygon:
             lat_min = min(v.lat for v in area.outline_polygon.vertices)
             lat_max = max(v.lat for v in area.outline_polygon.vertices)
             lng_min = min(v.lng for v in area.outline_polygon.vertices)
             lng_max = max(v.lng for v in area.outline_polygon.vertices)
-        elif "outline_circle" in area and area.outline_circle:
+        elif area.outline_circle:
             p0 = s2sphere.LatLng.from_degrees(
                 area.outline_circle.center.lat, area.outline_circle.center.lng
             )
@@ -754,29 +734,24 @@ def bind_transformations(
     """
 
     for xform in transformations:
-        if "relative_translation" in xform and xform.relative_translation:
+        if xform.relative_translation:
             translation = xform.relative_translation
             meters_east = (
-                translation.meters_east
-                if "meters_east" in translation and translation.meters_east is not None
-                else 0.0
+                translation.meters_east if translation.meters_east is not None else 0.0
             )
             meters_north = (
                 translation.meters_north
-                if "meters_north" in translation
-                and translation.meters_north is not None
+                if translation.meters_north is not None
                 else 0.0
             )
             degrees_east = (
                 translation.degrees_east
-                if "degrees_east" in translation
-                and translation.degrees_east is not None
+                if translation.degrees_east is not None
                 else 0.0
             )
             degrees_north = (
                 translation.degrees_north
-                if "degrees_north" in translation
-                and translation.degrees_north is not None
+                if translation.degrees_north is not None
                 else 0.0
             )
 
@@ -787,7 +762,7 @@ def bind_transformations(
             dst_center.lat += degrees_north
             src_center = dst_center
 
-        elif "absolute_translation" in xform and xform.absolute_translation:
+        elif xform.absolute_translation:
             translation = xform.absolute_translation
 
             translation.reference_center = src_center

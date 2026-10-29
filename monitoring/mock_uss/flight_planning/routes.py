@@ -77,7 +77,7 @@ def flight_planning_v1_upsert_flight_plan(
         inject_resp = inject_flight(
             flight_id,
             info,
-            req_body.behavior if "behavior" in req_body and req_body.behavior else None,
+            req_body.behavior if req_body.behavior else None,
             existing_flight,
         )
 
@@ -88,7 +88,7 @@ def flight_planning_v1_upsert_flight_plan(
         planning_result=api.PlanningActivityResult(inject_resp.activity_result),
         flight_plan_status=api.FlightPlanStatus(inject_resp.flight_plan_status),
     )
-    if "as_planned" in inject_resp and inject_resp.as_planned:
+    if inject_resp.as_planned:
         resp.as_planned = inject_resp.as_planned.to_flight_plan()
     for k, v in inject_resp.items():
         if k not in {"planning_result", "flight_plan_status", "as_planned"}:

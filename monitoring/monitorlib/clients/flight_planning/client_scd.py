@@ -65,7 +65,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
 
         req = flight_info.to_scd_inject_flight_request()
 
-        if "astm_f3548_21" in flight_info and flight_info.astm_f3548_21:
+        if flight_info.astm_f3548_21:
             priority = flight_info.astm_f3548_21.priority
         else:
             priority = 0
@@ -78,10 +78,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
         )
 
         kwargs = {"operational_intent": operational_intent}
-        if (
-            "uspace_flight_authorisation" in flight_info
-            and flight_info.uspace_flight_authorisation
-        ):
+        if flight_info.uspace_flight_authorisation:
             kwargs["flight_authorisation"] = ImplicitDict.parse(
                 flight_info.uspace_flight_authorisation, scd_api.FlightAuthorisationData
             )
@@ -139,7 +136,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 scd_api.InjectFlightResponseResult.Failed: old_state,
                 scd_api.InjectFlightResponseResult.NotSupported: old_state,
             }[resp.result],
-            notes=resp.notes if "notes" in resp else None,
+            notes=resp.notes,
         )
 
         if (
@@ -236,7 +233,7 @@ class SCDFlightPlannerClient(FlightPlannerClient):
                 scd_api.DeleteFlightResponseResult.Closed: FlightPlanStatus.Closed,
                 scd_api.DeleteFlightResponseResult.Failed: old_state,
             }[resp.result],
-            notes=resp.notes if "notes" in resp else None,
+            notes=resp.notes,
         )
         if resp.result == scd_api.DeleteFlightResponseResult.Closed:
             self._plan_statuses.pop(flight_id, None)

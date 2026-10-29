@@ -23,7 +23,7 @@ def upsert_flight_plan(req: UpsertFlightPlanRequest, resp: UpsertFlightPlanRespo
             f"Activity {resp.planning_result.value}, flight {resp.flight_plan_status.value}"
         )
     )
-    if "uas_state" in basic_info and basic_info.uas_state:
+    if basic_info.uas_state:
         uas_state = basic_info.uas_state.value
     else:
         uas_state = None

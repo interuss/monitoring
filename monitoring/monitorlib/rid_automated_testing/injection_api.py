@@ -92,9 +92,7 @@ class TestFlight(injection.TestFlight):
 
             # No uas_id and one value present: We build a uas_id that we will
             # fill at next step
-            if ("uas_id" not in detail.details or not detail.details.uas_id) and (
-                serial_number or registration_number
-            ):
+            if (not detail.details.uas_id) and (serial_number or registration_number):
                 detail.details.uas_id = UASID()
 
             if detail.details.uas_id is not None:

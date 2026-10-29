@@ -111,15 +111,10 @@ def historical_volumes_renderer(log_entry_type: type[TracerLogEntry]):
 
 
 def _op_intent_volumes(op_intent: OperationalIntent) -> Volume4DCollection:
-    nominal_volumes = (
-        op_intent.details.volumes
-        if "volumes" in op_intent.details and op_intent.details.volumes
-        else []
-    )
+    nominal_volumes = op_intent.details.volumes if op_intent.details.volumes else []
     off_nominal_volumes = (
         op_intent.details.off_nominal_volumes
-        if "off_nominal_volumes" in op_intent.details
-        and op_intent.details.off_nominal_volumes
+        if op_intent.details.off_nominal_volumes
         else []
     )
     return Volume4DCollection(
@@ -150,7 +145,7 @@ def _historical_volumes_op_intent_notification(
     manager = claims.get("sub", "[Unknown manager]")
     name = f"{manager} {req.operational_intent_id}"
 
-    if "operational_intent" in req and req.operational_intent:
+    if req.operational_intent:
         version = f"v{req.operational_intent.reference.version} ({req.operational_intent.reference.ovn})"
         state = req.operational_intent.reference.state.value
         volumes = _op_intent_volumes(req.operational_intent)
