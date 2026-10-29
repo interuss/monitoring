@@ -37,11 +37,7 @@ def generate_tested_requirements(
     # Determine where the configuration to generate these tested requirements originated
     assert report.configuration.v1 is not None
     artifacts = report.configuration.v1.artifacts
-    if (
-        artifacts
-        and "tested_requirements" in artifacts
-        and artifacts.tested_requirements
-    ):
+    if artifacts and artifacts.tested_requirements:
         i = (
             artifacts.tested_requirements.index(config)
             if config in artifacts.tested_requirements
@@ -66,7 +62,7 @@ def generate_tested_requirements(
     req_collections: dict[
         TestedRequirementsCollectionIdentifier, set[RequirementID]
     ] = {}
-    if "requirement_collections" in config and config.requirement_collections:
+    if config.requirement_collections:
         req_collections = {
             k: resolve_requirements_collection(v)
             for k, v in config.requirement_collections.items()
@@ -74,7 +70,7 @@ def generate_tested_requirements(
 
     participant_req_collections: dict[ParticipantID, set[RequirementID] | None] = {}
     participant_req_set_names: dict[ParticipantID, str] = {}
-    if "participant_requirements" in config and config.participant_requirements:
+    if config.participant_requirements:
         for k, v in config.participant_requirements.items():
             if v and v not in req_collections:
                 raise ValueError(
@@ -104,8 +100,7 @@ def generate_tested_requirements(
     )
     for participant_id, req_set in participant_req_collections.items():
         if (
-            "aggregate_participants" in config
-            and config.aggregate_participants
+            config.aggregate_participants
             and participant_id in config.aggregate_participants
         ):
             matching_participants = config.aggregate_participants[participant_id]
@@ -113,9 +108,7 @@ def generate_tested_requirements(
             matching_participants = [participant_id]
         participant_breakdown = make_breakdown(
             report,
-            list(config.acceptable_findings)
-            if "acceptable_findings" in config and config.acceptable_findings
-            else [],
+            list(config.acceptable_findings) if config.acceptable_findings else [],
             req_set,
             matching_participants,
         )

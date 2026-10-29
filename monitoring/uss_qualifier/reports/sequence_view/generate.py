@@ -53,11 +53,8 @@ UNATTRIBUTED_PARTICIPANT = "unattributed"
 
 
 def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
-    if "test_suite" in report.declaration and report.declaration.test_suite:
-        if (
-            "suite_type" in report.declaration.test_suite
-            and report.declaration.test_suite.suite_type
-        ):
+    if report.declaration.test_suite:
+        if report.declaration.test_suite.suite_type:
             suite: TestSuiteDefinition = ImplicitDict.parse(
                 load_dict_with_references(
                     report.declaration.test_suite.suite_type, package_root
@@ -80,7 +77,7 @@ def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
                 "Cannot process skipped action for test suite that does not define suite_type nor suite_definition"
             )
         name = "All actions in test suite"
-    elif "test_scenario" in report.declaration and report.declaration.test_scenario:
+    elif report.declaration.test_scenario:
         docs = get_documentation_by_name(report.declaration.test_scenario.scenario_type)
         return ActionNode(
             name=docs.name,
@@ -88,9 +85,7 @@ def _skipped_action_of(report: SkippedActionReport) -> ActionNode:
             children=[],
             skipped_action=SkippedAction(reason=report.reason),
         )
-    elif (
-        "action_generator" in report.declaration and report.declaration.action_generator
-    ):
+    elif report.declaration.action_generator:
         generator_type = action_generator_type_from_name(
             report.declaration.action_generator.generator_type
         )
@@ -122,21 +117,21 @@ def compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Acti
 
     Returns: Report information summarized to support a sequence view artifact.
     """
-    if "test_scenario" in report and report.test_scenario:
+    if report.test_scenario:
         return ActionNode(
             name=report.test_scenario.name,
             node_type=ActionNodeType.Scenario,
             children=[],
             scenario=compute_tested_scenario(report.test_scenario, indexer),
         )
-    elif "test_suite" in report and report.test_suite:
+    elif report.test_suite:
         children = [compute_action_node(a, indexer) for a in report.test_suite.actions]
         return ActionNode(
             name=report.test_suite.name,
             node_type=ActionNodeType.Suite,
             children=children,
         )
-    elif "action_generator" in report and report.action_generator:
+    elif report.action_generator:
         generator_type = action_generator_type_from_name(
             report.action_generator.generator_type
         )
@@ -157,7 +152,7 @@ def compute_action_node(report: TestSuiteActionReport, indexer: Indexer) -> Acti
                 compute_action_node(a, indexer) for a in report.action_generator.actions
             ],
         )
-    elif "skipped_action" in report and report.skipped_action:
+    elif report.skipped_action:
         return _skipped_action_of(report.skipped_action)
     else:
         raise report.invalid_type_error
@@ -312,9 +307,7 @@ def make_resources_config(config: TestConfiguration) -> dict:
     baseline = {}
     environment = {}
     non_baseline_inputs = (
-        config.non_baseline_inputs
-        if "non_baseline_inputs" in config and config.non_baseline_inputs
-        else []
+        config.non_baseline_inputs if config.non_baseline_inputs else []
     )
     for resource_id, resource_dec in config.resources.resource_declarations.items():
         value = {"Specification": resource_dec.specification}

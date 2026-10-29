@@ -66,7 +66,7 @@ def generate_artifacts(
         raw_report = artifacts.raw_report
         report_to_write = redacted_report if _should_redact(raw_report) else report
         with open(path, "w") as f:
-            if "indent" in raw_report and raw_report.indent is not None:
+            if raw_report.indent is not None:
                 json.dump(report_to_write, f, indent=raw_report.indent)
             else:
                 json.dump(report_to_write, f)

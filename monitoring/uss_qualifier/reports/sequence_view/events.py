@@ -87,7 +87,7 @@ def _step_events(
             scenario_participants[pid] = p
 
     # Create events for this step's queries
-    if "queries" in step and step.queries:
+    if step.queries:
         for query in step.queries:
             # Create the new event and update event lists
             events.append(Event(query=query))
@@ -96,7 +96,7 @@ def _step_events(
             # Update tested participants
             participant_id = (
                 query.participant_id
-                if "participant_id" in query and query.participant_id
+                if query.participant_id
                 else UNATTRIBUTED_PARTICIPANT
             )
             p = scenario_participants.get(participant_id, TestedParticipant())
@@ -107,10 +107,7 @@ def _step_events(
     for failed_check in step.failed_checks:
         # Find the query events related to this failed check
         query_events = []
-        if (
-            "query_report_timestamps" in failed_check
-            and failed_check.query_report_timestamps
-        ):
+        if failed_check.query_report_timestamps:
             for query_timestamp in failed_check.query_report_timestamps:
                 found = False
                 for e in all_events:
@@ -148,7 +145,7 @@ def _step_events(
     for e in events:
         if latest_step_time is None or e.timestamp > latest_step_time:
             latest_step_time = e.timestamp
-    if "end_time" in step and step.end_time:
+    if step.end_time:
         if latest_step_time is None or step.end_time.datetime > latest_step_time:
             latest_step_time = step.end_time.datetime
 
@@ -220,7 +217,7 @@ def compute_tested_scenario(
         epochs.append(Epoch(case=tested_case))
 
     # Add cleanup
-    if "cleanup" in report and report.cleanup:
+    if report.cleanup:
         # Attach any notes prior to cleanup start time to most recent step
         dangling_notes = _note_events(
             report,
@@ -268,11 +265,9 @@ def compute_tested_scenario(
         epochs=epochs,
         scenario_index=action_indexer.index,
         participants=scenario_participants,
-        execution_error=report.execution_error if "execution_error" in report else None,
+        execution_error=report.execution_error,
         resource_origins=(
-            report.resource_origins
-            if "resource_origins" in report and report.resource_origins is not None
-            else {}
+            report.resource_origins if report.resource_origins is not None else {}
         ),
         resource_participants=report.get("resource_participants") or {},
     )
