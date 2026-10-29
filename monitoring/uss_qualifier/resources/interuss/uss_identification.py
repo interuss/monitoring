@@ -24,7 +24,7 @@ class USSIdentifiers(ImplicitDict):
     """If an access token matches one of these identifiers, assume the participant is responsible for that access token"""
 
     def matches_server_url(self, url: str) -> bool:
-        if "server_url_regexes" in self and self.server_url_regexes:
+        if self.server_url_regexes:
             for url_regex in self.server_url_regexes:
                 if re.fullmatch(url_regex, url):
                     return True
@@ -60,7 +60,7 @@ class USSIdentificationResource(Resource[USSIdentificationSpecification]):
         for participant_id, identifiers in self.identifiers.items():
             attribute_to_participant = False
 
-            if "server_url_regexes" in identifiers and identifiers.server_url_regexes:
+            if identifiers.server_url_regexes:
                 # The participant is responsible for the server end of the query when the query URL matches one of the participant's
                 if identifiers.matches_server_url(query.request.url):
                     attribute_to_participant = True
@@ -74,7 +74,7 @@ class USSIdentificationResource(Resource[USSIdentificationSpecification]):
         if "error" in claims and len(claims) == 1:
             claims = None
 
-        query_type = query.query_type if "query_type" in query else None
+        query_type = query.query_type
         if query_type == QueryType.F3411v22aUSSPostIdentificationServiceArea:
             url = (
                 (query.request.json or {})
@@ -108,22 +108,20 @@ class USSIdentificationResource(Resource[USSIdentificationSpecification]):
         for participant_id, identifiers in self.identifiers.items():
             attribute_to_participant = False
 
-            if "server_url_regexes" in identifiers and identifiers.server_url_regexes:
+            if identifiers.server_url_regexes:
                 # The participant is responsible for the client end of the query when the request body is a payload specifying a callback server operated by the participant
                 if url and identifiers.matches_server_url(url):
                     attribute_to_participant = True
 
-            if "access_tokens" in identifiers and identifiers.access_tokens:
+            if identifiers.access_tokens:
                 for access_token_identifier in identifiers.access_tokens:
                     if (
-                        "issuer" in access_token_identifier
-                        and access_token_identifier.issuer
+                        access_token_identifier.issuer
                         and access_token_identifier.issuer != claims["iss"]
                     ):
                         continue
                     if (
-                        "subject" in access_token_identifier
-                        and access_token_identifier.subject
+                        access_token_identifier.subject
                         and access_token_identifier.subject != claims["sub"]
                     ):
                         continue

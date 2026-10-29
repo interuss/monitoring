@@ -41,10 +41,7 @@ class AuthAdapterResource(Resource[AuthAdapterSpecification]):
 
     def __init__(self, specification: AuthAdapterSpecification, resource_origin: str):
         super().__init__(specification, resource_origin)
-        if (
-            "environment_variable_containing_auth_spec" in specification
-            and specification.environment_variable_containing_auth_spec
-        ):
+        if specification.environment_variable_containing_auth_spec:
             if (
                 specification.environment_variable_containing_auth_spec
                 not in os.environ
@@ -53,13 +50,13 @@ class AuthAdapterResource(Resource[AuthAdapterSpecification]):
                     f"Environment variable {specification.environment_variable_containing_auth_spec} could not be found"
                 )
             spec = os.environ[specification.environment_variable_containing_auth_spec]
-        elif "auth_spec" in specification and specification.auth_spec:
+        elif specification.auth_spec:
             spec = specification.auth_spec
         else:
             raise ValueError("No auth spec was declared")
         self.adapter = make_auth_adapter(spec)
         self.scopes = set(specification.scopes_authorized)
-        if "participant_id" in specification and specification.participant_id:
+        if specification.participant_id:
             self.participant_id = specification.participant_id
 
     def assert_scopes_available(

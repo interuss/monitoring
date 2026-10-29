@@ -56,7 +56,7 @@ class GetAccessTokens(TestScenario):
 
         for expect in self._adapter_expectations.spec.expectations:
             # --- Adapter Type Expectation ---
-            if "adapter_type" in expect and expect.adapter_type:
+            if expect.adapter_type:
                 with self.check(
                     "Auth adapter type", participants=participants
                 ) as check:
@@ -72,7 +72,7 @@ class GetAccessTokens(TestScenario):
                         )
 
             # --- Attribute Values Expectation ---
-            if "attribute_values" in expect and expect.attribute_values:
+            if expect.attribute_values:
                 with self.check(
                     "Auth adapter attribute", participants=participants
                 ) as check:
@@ -135,10 +135,7 @@ class GetAccessTokens(TestScenario):
                 self.begin_test_step("Validate access token")
 
                 # --- Token Header Values Expectation ---
-                if (
-                    "has_header_values" in expect.expectations
-                    and expect.expectations.has_header_values
-                ):
+                if expect.expectations.has_header_values:
                     with self.check(
                         "Token header value", participants=participants
                     ) as check:
@@ -154,10 +151,7 @@ class GetAccessTokens(TestScenario):
                             )
 
                 # --- Cryptographic Signature Validation Expectation ---
-                if (
-                    "validates_against_public_key" in expect.expectations
-                    and expect.expectations.validates_against_public_key
-                ):
+                if expect.expectations.validates_against_public_key:
                     with self.check(
                         "Token signature validates against public key",
                         participants=participants,
@@ -192,10 +186,7 @@ class GetAccessTokens(TestScenario):
                             )
 
                 # --- Token Payload Claim Values Expectation ---
-                if (
-                    "has_claim_values" in expect.expectations
-                    and expect.expectations.has_claim_values
-                ):
+                if expect.expectations.has_claim_values:
                     with self.check(
                         "Token payload claim value", participants=participants
                     ) as check:
@@ -236,7 +227,7 @@ class GetAccessTokens(TestScenario):
 
             actual_val = dictionary[claim_name]
 
-            if "equals_string_value" in pair and pair.equals_string_value is not None:
+            if pair.equals_string_value is not None:
                 if not isinstance(actual_val, str):
                     failures.append(
                         f"Claim '{claim_name}' expected to be of type 'str', but observed type '{type(actual_val).__name__}'."
@@ -246,7 +237,7 @@ class GetAccessTokens(TestScenario):
                         f"Claim '{claim_name}': Expected string value '{pair.equals_string_value}', but observed '{actual_val}'."
                     )
 
-            if "equals_number_value" in pair and pair.equals_number_value is not None:
+            if pair.equals_number_value is not None:
                 if not isinstance(actual_val, (int, float)):
                     failures.append(
                         f"Claim '{claim_name}' expected to be numeric, but observed type '{type(actual_val).__name__}'."
@@ -256,7 +247,7 @@ class GetAccessTokens(TestScenario):
                         f"Claim '{claim_name}': Expected numeric value {pair.equals_number_value}, but observed {actual_val}."
                     )
 
-            if "beyond_request_time_offset" in pair and pair.beyond_request_time_offset:
+            if pair.beyond_request_time_offset:
                 if not isinstance(actual_val, (int, float)):
                     failures.append(
                         f"Claim '{claim_name}' expected to be numeric time, but observed type '{type(actual_val).__name__}'."
@@ -270,7 +261,7 @@ class GetAccessTokens(TestScenario):
                             f"Claim '{claim_name}' expected to be at least {dt_min.total_seconds() / 60:.1f} minutes past request time {request_time.timestamp()}, but was {dt_actual.total_seconds() / 60:.1f} minutes past request time at {actual_val} instead."
                         )
 
-            if "within_request_time_offset" in pair and pair.within_request_time_offset:
+            if pair.within_request_time_offset:
                 if not isinstance(actual_val, (int, float)):
                     failures.append(
                         f"Claim '{claim_name}' expected to be numeric time, but observed type '{type(actual_val).__name__}'."

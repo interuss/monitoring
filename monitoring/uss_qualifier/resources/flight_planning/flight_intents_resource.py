@@ -32,10 +32,8 @@ class FlightIntentsResource(GeospatialResource, Resource[FlightIntentsSpecificat
     def __init__(self, specification: FlightIntentsSpecification, resource_origin: str):
         super().__init__(specification, resource_origin)
         self._spec = specification
-        has_file = "file" in specification and specification.file
-        has_literal = (
-            "intent_collection" in specification and specification.intent_collection
-        )
+        has_file = specification.file
+        has_literal = specification.intent_collection
         if has_file and has_literal:
             raise ValueError(
                 "Only one of `file` or `intent_collection` may be specified in FlightIntentsSpecification"
@@ -55,11 +53,8 @@ class FlightIntentsResource(GeospatialResource, Resource[FlightIntentsSpecificat
                 ),  # NB: We need a copy to avoid sharing '_intent_collection' between instances
                 FlightIntentCollection,
             )
-        if "transformations" in specification and specification.transformations:
-            if (
-                "transformations" in self._intent_collection
-                and self._intent_collection.transformations
-            ):
+        if specification.transformations:
+            if self._intent_collection.transformations:
                 self._intent_collection.transformations.extend(
                     specification.transformations[::]
                 )
@@ -75,9 +70,7 @@ class FlightIntentsResource(GeospatialResource, Resource[FlightIntentsSpecificat
         rect = s2sphere.LatLngRect.empty()
         for template in self.get_flight_intents().values():
             transformations = (
-                template.transformations
-                if "transformations" in template and template.transformations
-                else []
+                template.transformations if template.transformations else []
             )
             for vt in template.basic_information.area:
                 v4d = Volume4D(volume=vt.resolve_3d())

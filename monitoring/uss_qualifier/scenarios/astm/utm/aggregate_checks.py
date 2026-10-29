@@ -245,7 +245,7 @@ def _get_latencies(
     matcher = re.compile(pattern)
     latencies = {}
     for report in context.test_scenario_reports():
-        if "notes" not in report or not report.notes:
+        if not report.notes:
             continue
         for key, value in report.notes.items():
             if not key.startswith(prefix):

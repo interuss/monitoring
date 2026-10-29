@@ -23,7 +23,7 @@ def create_oir_query(
     """
     Issue a request to create an OIR to the DSS instance, wrapped in a check documented in `create_query.md`.
     """
-    sub_id = oir_params.subscription_id if "subscription_id" in oir_params else None
+    sub_id = oir_params.subscription_id
     with scenario.check(
         "Create operational intent reference query succeeds",
         dss.participant_id,
@@ -65,7 +65,7 @@ def update_oir_query(
     """
     Issue a request to mutate an OIR to the DSS instance, wrapped in a check documented in `update_query.md`.
     """
-    sub_id = oir_params.subscription_id if "subscription_id" in oir_params else None
+    sub_id = oir_params.subscription_id
     with scenario.check(
         "Mutate operational intent reference query succeeds",
         dss.participant_id,

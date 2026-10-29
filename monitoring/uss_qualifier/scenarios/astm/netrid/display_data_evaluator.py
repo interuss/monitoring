@@ -172,9 +172,9 @@ def map_observations_to_injected_flights[ObservationT: ObservationType](
             best_p = best_match.injected_flight.flight.telemetry[
                 best_match.telemetry_index
             ].position
-            best_lat = best_p.lat if "lat" in best_p else None
-            best_lng = best_p.lng if "lng" in best_p else None
-            best_alt = best_p.alt if "alt" in best_p else None
+            best_lat = best_p.lat
+            best_lng = best_p.lng
+            best_alt = best_p.alt
             logger.debug(
                 f"For injection ID {best_match.injected_flight.flight.injection_id}, matched observed flight {best_match.observed_flight.id} at ({observed_lat}, {observed_lng})+{observed_alt} to injected flight's telemetry index {best_match.telemetry_index} at ({best_lat}, {best_lng})+{best_alt}"
             )

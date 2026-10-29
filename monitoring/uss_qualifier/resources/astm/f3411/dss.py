@@ -100,8 +100,7 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
                 specification.base_url, auth_adapter.adapter
             ),
             specification.notification_index_implementation
-            if "notification_index_implementation" in specification
-            and specification.notification_index_implementation
+            if specification.notification_index_implementation
             else NotificationIndexImplementation.TimedBased,
         )
 

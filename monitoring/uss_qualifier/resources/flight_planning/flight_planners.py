@@ -39,20 +39,14 @@ class FlightPlannerResource(Resource[FlightPlannerSpecification]):
         auth_adapter: AuthAdapterResource,
     ):
         super().__init__(specification, resource_origin)
-        if (
-            "scd_injection_base_url" in specification.flight_planner
-            and specification.flight_planner.scd_injection_base_url
-        ):
+        if specification.flight_planner.scd_injection_base_url:
             auth_adapter.assert_scopes_available(
                 scopes_required={
                     ScopeSCD.Inject: "inject user flight planning commands to USSs under test",
                 },
                 consumer_name=f"{self.__class__.__name__} using legacy scd injection API",
             )
-        elif (
-            "v1_base_url" in specification.flight_planner
-            and specification.flight_planner.v1_base_url
-        ):
+        elif specification.flight_planner.v1_base_url:
             auth_adapter.assert_scopes_available(
                 scopes_required={
                     ScopeFlightPlanning.DirectAutomatedTest: "act as test director to instruct USSs under test to perform various test preparation activities related to flight planning testing",

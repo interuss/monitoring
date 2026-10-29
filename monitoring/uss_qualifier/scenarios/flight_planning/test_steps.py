@@ -195,7 +195,7 @@ def modify_activated_flight(
         ) as check:
             if resp.activity_result == PlanningActivityResult.Rejected:
                 msg = f"{flight_planner.participant_id} indicated ({resp.activity_result}, {resp.flight_plan_status})"
-                if "notes" in resp and resp.notes:
+                if resp.notes:
                     msg += f' with notes "{resp.notes}"'
                 else:
                     msg += " with no notes"
@@ -326,7 +326,7 @@ def submit_flight(
             return resp, None, None
 
         msg = f"{flight_planner.participant_id} indicated flight planning activity {resp.activity_result} leaving flight plan {resp.flight_plan_status} rather than the expected {' or '.join([f'(Activity {expected_result[0]}, flight plan {expected_result[1]})' for expected_result in expected_results])}"
-        if "notes" in resp and resp.notes:
+        if resp.notes:
             msg += f' with notes "{resp.notes}"'
         else:
             msg += " with no notes"
@@ -356,7 +356,7 @@ def submit_flight(
         }:
             return resp, flight_id, None
 
-        if "as_planned" in resp and resp.as_planned:
+        if resp.as_planned:
             with scenario.check(
                 "Injection fidelity", flight_planner.participant_id
             ) as fidelity_check:
@@ -451,7 +451,7 @@ def delete_flight(
             raise ScenarioDidNotStopError(check)
         scenario.record_queries(resp.queries)
 
-        notes_suffix = f': "{resp.notes}"' if "notes" in resp and resp.notes else ""
+        notes_suffix = f': "{resp.notes}"' if resp.notes else ""
 
         if (
             resp.activity_result == PlanningActivityResult.Completed

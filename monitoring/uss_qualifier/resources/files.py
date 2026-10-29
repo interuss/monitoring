@@ -21,7 +21,7 @@ class ExternalFile(ImplicitDict):
 
     def verify_or_set_hash(self, content: str) -> None:
         hash_sha512 = hashlib.sha512(content.encode("utf-8")).hexdigest()
-        if "hash_sha512" in self and self.hash_sha512:
+        if self.hash_sha512:
             if hash_sha512 != self.hash_sha512:
                 raise ValueError(
                     f"Provided SHA-512 hash for external file at {self.path} is {self.hash_sha512}, but this does not match the hash computed for the content of that file which is {hash_sha512}"

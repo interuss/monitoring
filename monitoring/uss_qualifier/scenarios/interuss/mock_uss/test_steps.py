@@ -73,7 +73,7 @@ def notif_op_intent_id_filter(
     """Returns an `is_applicable` function that detects whether an op intent notification refers to the specified operational intent."""
 
     def is_applicable(interaction: Interaction) -> bool:
-        if "json" in interaction.query.request and interaction.query.request.json:
+        if interaction.query.request.json:
             return (
                 interaction.query.request.json.get("operational_intent_id", None)
                 == op_intent_id
@@ -89,7 +89,7 @@ def notif_sub_id_filter(
     """Returns an `is_applicable` function that detects whether an op intent notification refers to the specified subscription."""
 
     def is_applicable(interaction: Interaction) -> bool:
-        if "json" in interaction.query.request and interaction.query.request.json:
+        if interaction.query.request.json:
             subs = interaction.query.request.json.get("subscriptions")
             return isinstance(subs, list) and any(
                 sub_id == sub.get("subscription_id") for sub in subs
@@ -157,7 +157,7 @@ def status_code_filter(
 
 def query_type_filter(*query_type: QueryType | None) -> Callable[[Interaction], bool]:
     def is_applicable(interaction: Interaction) -> bool:
-        if "query_type" in interaction.query and interaction.query.query_type:
+        if interaction.query.query_type:
             if interaction.query.query_type in query_type:
                 return True
         else:

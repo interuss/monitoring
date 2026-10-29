@@ -197,7 +197,7 @@ class GeospatialFeatureComprehension(TestScenario):
                     )
                     if result.features_selection_outcome != SelectionOutcome.Present:
                         details = f"Expected to find one or more {feature_type} geospatial features, but instead the query indicated {result.features_selection_outcome.value}"
-                        if "message" in result and result.message:
+                        if result.message:
                             details += f" with message '{result.message}'"
                         check.record_failed(
                             summary=f"Expected {feature_type} feature missing",
@@ -207,7 +207,7 @@ class GeospatialFeatureComprehension(TestScenario):
                 elif row.expected_result == ExpectedFeatureCheckResult.Neither:
                     if result.features_selection_outcome != SelectionOutcome.Absent:
                         details = f"Expected to find no blocking or advisory geospatial features, but instead the query indicated {result.features_selection_outcome.value}"
-                        if "message" in result and result.message:
+                        if result.message:
                             details += f" with message '{result.message}'"
                         check.record_failed(
                             summary="Blocking and/or advisory geospatial features unexpectedly found",

@@ -65,7 +65,7 @@ def inject_flights(
                     query_timestamps=[query.request.timestamp],
                 )
 
-            if "json" not in query.response or query.response.json is None:
+            if query.response.json is None:
                 check.record_failed(
                     summary="Response to test flight injection request did not contain a JSON body",
                     details="Expected a JSON body in response to flight injection request",
