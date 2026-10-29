@@ -178,22 +178,22 @@ def resolve_requirements_collection(
     """
     reqs: set[RequirementID] = set()
 
-    if "requirements" in collection and collection.requirements:
+    if collection.requirements:
         for req_id in collection.requirements:
             reqs.add(req_id)
 
-    if "requirement_sets" in collection and collection.requirement_sets:
+    if collection.requirement_sets:
         for req_set_id in collection.requirement_sets:
             req_set = get_requirement_set(req_set_id)
             for req_id in req_set.requirement_ids:
                 reqs.add(req_id)
 
-    if "requirement_collections" in collection and collection.requirement_collections:
+    if collection.requirement_collections:
         for also_include in collection.requirement_collections:
             for req_id in resolve_requirements_collection(also_include):
                 reqs.add(req_id)
 
-    if "exclude" in collection and collection.exclude:
+    if collection.exclude:
         for req_id in resolve_requirements_collection(collection.exclude):
             reqs.remove(req_id)
 

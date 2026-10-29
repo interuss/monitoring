@@ -63,12 +63,12 @@ def main():
     suite_reports = {
         subr.test_suite.name: subr.test_suite
         for subr in r.report.test_suite.actions
-        if "test_suite" in subr and subr.test_suite is not None
+        if subr.test_suite is not None
     }
     scenario_reports = {
         subr.test_scenario.name: subr.test_scenario
         for subr in r.report.test_suite.actions
-        if "test_scenario" in subr and subr.test_scenario is not None
+        if subr.test_scenario is not None
     }
 
     print("Available suite reports: ", suite_reports.keys())

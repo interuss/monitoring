@@ -97,16 +97,16 @@ class TestSuiteAction[T: ActionGenerator]:
             f"Test suite action to run {action.get_action_type_name()} {action.get_child_type()}",
         )
 
-        if "test_scenario" in action and action.test_scenario:
+        if action.test_scenario:
             self.test_scenario = TestScenario.make_test_scenario(
                 declaration=action.test_scenario, resource_pool=resources_for_child
             )
-        elif "test_suite" in action and action.test_suite:
+        elif action.test_suite:
             self.test_suite = TestSuite(
                 declaration=action.test_suite,
                 resources=resources,
             )
-        elif "action_generator" in action and action.action_generator:
+        elif action.action_generator:
             self.action_generator = ActionGenerator.make_from_definition(
                 definition=action.action_generator, resources=resources_for_child
             )
@@ -182,7 +182,7 @@ class TestSuiteAction[T: ActionGenerator]:
         except Exception as e:
             scenario.record_execution_error(e, allow_after_completion=True)
         report = scenario.get_report()
-        if "execution_error" in report and report.execution_error:
+        if report.execution_error:
             lines = report.execution_error.stacktrace.split("\n")
             logger.error(
                 'Execution error in scenario "{}":\n{}',
@@ -235,7 +235,7 @@ class TestSuite:
         resources: dict[ResourceID, ResourceType],
     ):
         # Determine the suite's documentation URL
-        if "suite_type" in declaration and declaration.suite_type:
+        if declaration.suite_type:
             suite_yaml_path = resolve_filename(declaration.suite_type, package_root)
             if suite_yaml_path.lower().startswith(
                 "http://"
@@ -245,7 +245,7 @@ class TestSuite:
                 self.documentation_url = repo_url_of(
                     os.path.splitext(suite_yaml_path)[0] + ".md"
                 )
-        elif "suite_definition" in declaration and declaration.suite_definition:
+        elif declaration.suite_definition:
             # TODO: Accept information about the declaration origin in order to populate the URL in this case
             self.documentation_url = ""
         else:
@@ -255,8 +255,8 @@ class TestSuite:
 
         self.declaration = declaration
         self.definition = TestSuiteDefinition.load_from_declaration(declaration)
-        if "resources" in declaration and declaration.resources:
-            if "suite_type" in declaration and declaration.suite_type:
+        if declaration.resources:
+            if declaration.suite_type:
                 subject = declaration.suite_type
             else:
                 subject = "<custom definition>"
@@ -265,7 +265,7 @@ class TestSuite:
             )
         else:
             self.local_resources = {}
-        if "local_resources" in self.definition and self.definition.local_resources:
+        if self.definition.local_resources:
             local_resources = create_resources(
                 self.definition.local_resources,
                 self.declaration.type_name,
@@ -488,11 +488,7 @@ class ExecutionContext:
             frame = self.top_frame
             if not frame:
                 return
-        if (
-            frame.report is not None
-            and "test_scenario" in frame.report
-            and frame.report.test_scenario is not None
-        ):
+        if frame.report is not None and frame.report.test_scenario is not None:
             yield frame.report.test_scenario
         for child in frame.children:
             yield from self.test_scenario_reports(child)
@@ -500,15 +496,8 @@ class ExecutionContext:
     def stop_fast(
         self, test_case_name: str, test_step_name: str, check_name: str
     ) -> bool:
-        if (
-            self.config is not None
-            and "stop_fast" in self.config
-            and self.config.stop_fast
-        ):
-            if (
-                "do_not_stop_fast_for_acceptable_findings" in self.config
-                and self.config.do_not_stop_fast_for_acceptable_findings
-            ):
+        if self.config is not None and self.config.stop_fast:
+            if self.config.do_not_stop_fast_for_acceptable_findings:
                 # See if there is an exception for the particular check being considered
                 if self.current_frame and self.current_frame.action.test_scenario:
                     current_check = FullyQualifiedCheck(
@@ -525,11 +514,7 @@ class ExecutionContext:
         return False
 
     def should_stop_early_now(self) -> bool:
-        if (
-            not self.config
-            or "stop_after" not in self.config
-            or not self.config.stop_after
-        ):
+        if not self.config or not self.config.stop_after:
             return False
         dt = arrow.utcnow() - self.start_time
         return dt >= self.config.stop_after.timedelta
@@ -595,12 +580,9 @@ class ExecutionContext:
         action = frame.action
         result = False
 
-        if "is_action_generator" in f and f.is_action_generator is not None:
+        if f.is_action_generator is not None:
             if action.action_generator:
-                if (
-                    "types" in f.is_action_generator
-                    and f.is_action_generator.types is not None
-                ):
+                if f.is_action_generator.types is not None:
                     if not any(
                         type(action.action_generator)
                         is action_generator_type_from_name(t)
@@ -636,9 +618,9 @@ class ExecutionContext:
             else:
                 return False
 
-        if "is_test_suite" in f and f.is_test_suite is not None:
+        if f.is_test_suite is not None:
             if action.test_suite:
-                if "types" in f.is_test_suite and f.is_test_suite.types is not None:
+                if f.is_test_suite.types is not None:
                     if (
                         action.test_suite.declaration.suite_type
                         not in f.is_test_suite.types
@@ -648,12 +630,9 @@ class ExecutionContext:
             else:
                 return False
 
-        if "is_test_scenario" in f and f.is_test_scenario is not None:
+        if f.is_test_scenario is not None:
             if action.test_scenario:
-                if (
-                    "types" in f.is_test_scenario
-                    and f.is_test_scenario.types is not None
-                ):
+                if f.is_test_scenario.types is not None:
                     matches_scenario_type = False
                     for scenario_type in f.is_test_scenario.types:
                         if are_scenario_types_equal(
@@ -668,17 +647,17 @@ class ExecutionContext:
             else:
                 return False
 
-        if "regex_matches_name" in f and f.regex_matches_name is not None:
+        if f.regex_matches_name is not None:
             if re.search(f.regex_matches_name, action.get_name()) is None:
                 return False
             result = True
 
-        if "defined_at" in f and f.defined_at is not None:
+        if f.defined_at is not None:
             if frame.address() not in f.defined_at:
                 return False
             result = True
 
-        if "nth_instance" in f and f.nth_instance is not None:
+        if f.nth_instance is not None:
             if self._is_selected_by(frame, f.nth_instance.where_action):
                 n = self._compute_n_of(frame.action, f.nth_instance.where_action)
                 if not any(r.includes(n) for r in f.nth_instance.n):
@@ -687,11 +666,8 @@ class ExecutionContext:
             else:
                 return False
 
-        if "has_ancestor" in f and f.has_ancestor is not None:
-            if (
-                "of_generation" in f.has_ancestor
-                and f.has_ancestor.of_generation is not None
-            ):
+        if f.has_ancestor is not None:
+            if f.has_ancestor.of_generation is not None:
                 of_generation = f.has_ancestor.of_generation - 1
             else:
                 of_generation = None
@@ -701,7 +677,7 @@ class ExecutionContext:
                 return False
             result = True
 
-        if result and "except_when" in f and f.except_when is not None:
+        if result and f.except_when is not None:
             if any(self._is_selected_by(frame, c) for c in f.except_when):
                 return False
 
@@ -721,7 +697,7 @@ class ExecutionContext:
         if not self.current_frame:
             return None
 
-        if "include_action_when" in self.config and self.config.include_action_when:
+        if self.config.include_action_when:
             include = False
             for condition in self.config.include_action_when:
                 if self._is_selected_by(self.current_frame, condition):
@@ -734,7 +710,7 @@ class ExecutionContext:
                     declaration=self.current_frame.action.declaration,
                 )
 
-        if "skip_action_when" in self.config and self.config.skip_action_when:
+        if self.config.skip_action_when:
             for f, condition in enumerate(self.config.skip_action_when):
                 if self._is_selected_by(self.current_frame, condition):
                     return SkippedActionReport(
@@ -743,11 +719,7 @@ class ExecutionContext:
                         declaration=self.current_frame.action.declaration,
                     )
 
-        if (
-            "scenarios_filter" in self.config
-            and self.config.scenarios_filter
-            and self.current_frame.action.test_scenario
-        ):
+        if self.config.scenarios_filter and self.current_frame.action.test_scenario:
             scenario_type = (
                 self.current_frame.action.test_scenario.declaration.scenario_type
             )

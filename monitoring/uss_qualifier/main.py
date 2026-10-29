@@ -127,10 +127,7 @@ def execute_test_run(
 
     logger.info("Instantiating resources")
     stop_when_not_created = (
-        "execution" in config
-        and config.execution
-        and "stop_when_resource_not_created" in config.execution
-        and config.execution.stop_when_resource_not_created
+        config.execution and config.execution.stop_when_resource_not_created
     )
     resources = create_resources(
         config.resources.resource_declarations,
@@ -139,13 +136,11 @@ def execute_test_run(
     )
 
     logger.info("Instantiating top-level test suite action")
-    if "artifacts" in whole_config.v1 and whole_config.v1.artifacts:
+    if whole_config.v1.artifacts:
         acceptable_findings = list(whole_config.v1.artifacts.acceptable_findings)
     else:
         acceptable_findings = []
-    context = ExecutionContext(
-        config.execution if "execution" in config else None, acceptable_findings
-    )
+    context = ExecutionContext(config.execution, acceptable_findings)
     action = TestSuiteAction(config.action, resources)
     logger.info("Running top-level test suite action")
     context.begin_action(action)
@@ -268,7 +263,7 @@ def run_config(
     if config.artifacts:
         generate_artifacts(report, config.artifacts, output_path, disallow_unredacted)
 
-    if "validation" in config and config.validation:
+    if config.validation:
         logger.info(f"Validating test run report for configuration '{config_name}'")
         if not validate_report(report, config.validation):
             logger.error(
