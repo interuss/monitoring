@@ -40,7 +40,7 @@ async def _run_benchmark_async(
 
     scenarios_reports: list[BenchmarkScenarioReport] = []
 
-    action_list = config.actions if "actions" in config and config.actions else []
+    action_list = config.actions if config.actions else []
     action_specs = {action_spec.name: action_spec for action_spec in action_list}
     action_invocations: dict[BenchmarkActionName, int] = {}
 
@@ -49,9 +49,7 @@ async def _run_benchmark_async(
 
     try:
         # Run benchmark setup actions
-        config_setup_actions = (
-            config.setup_actions if "setup_actions" in config else None
-        )
+        config_setup_actions = config.setup_actions
         run_scenario_actions(
             config_setup_actions,
             action_specs,
@@ -70,7 +68,7 @@ async def _run_benchmark_async(
             )
 
             # Run setup actions
-            setup_actions = scenario_spec.setup if "setup" in scenario_spec else None
+            setup_actions = scenario_spec.setup
             run_scenario_actions(
                 setup_actions,
                 action_specs,
@@ -113,9 +111,7 @@ async def _run_benchmark_async(
             scenarios_reports.append(scenario_report)
 
             # Run teardown actions
-            teardown_actions = (
-                scenario_spec.teardown if "teardown" in scenario_spec else None
-            )
+            teardown_actions = scenario_spec.teardown
             run_scenario_actions(
                 teardown_actions,
                 action_specs,
@@ -134,9 +130,7 @@ async def _run_benchmark_async(
     finally:
         try:
             # Run benchmark teardown actions
-            config_teardown_actions = (
-                config.teardown_actions if "teardown_actions" in config else None
-            )
+            config_teardown_actions = config.teardown_actions
             run_scenario_actions(
                 config_teardown_actions,
                 action_specs,

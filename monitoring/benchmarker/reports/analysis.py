@@ -55,10 +55,10 @@ def select_operations(
         if origins is None or operations.origin in origins:
             yield from nest(operations.outcomes)
     elif isinstance(operations, OperationsByOutcome):
-        if "successful" in operations and operations.successful:
+        if operations.successful:
             if outcomes is None or True in outcomes:
                 yield from nest(operations.successful)
-        if "unsuccessful" in operations and operations.unsuccessful:
+        if operations.unsuccessful:
             if outcomes is None or False in outcomes:
                 yield from nest(operations.unsuccessful)
     elif isinstance(operations, BenchmarkOperation):

@@ -31,7 +31,7 @@ def generate_intermediate_artifacts(
     commit_hash: str,
 ) -> None:
     target_dir = output_dir
-    if "subfolder" in gen_spec and gen_spec.subfolder is not None:
+    if gen_spec.subfolder is not None:
         interpreter = Interpreter(user_symbols={"action_invocation": invocation})
         subfolder_val = evaluate_expression(
             gen_spec.subfolder, f"action.{action_name}.subfolder", interpreter
@@ -40,11 +40,11 @@ def generate_intermediate_artifacts(
             target_dir = os.path.join(output_dir, str(subfolder_val))
 
     artifacts_to_generate: list[ArtifactSpecification] = []
-    if "custom_artifacts" in gen_spec and gen_spec.custom_artifacts:
+    if gen_spec.custom_artifacts:
         artifacts_to_generate.extend(gen_spec.custom_artifacts)
 
-    if "defined_artifact_indices" in gen_spec and gen_spec.defined_artifact_indices:
-        if "artifacts" not in config or not config.artifacts:
+    if gen_spec.defined_artifact_indices:
+        if not config.artifacts:
             raise ValueError(
                 f"Action '{action_name}' specifies defined_artifact_indices, but no artifacts are defined in the main configuration"
             )

@@ -49,14 +49,14 @@ def generate_artifacts(
     os.makedirs(output_dir, exist_ok=True)
 
     for spec in artifacts_specs:
-        if "raw_report" in spec and spec.raw_report is not None:
+        if spec.raw_report is not None:
             generate_raw_report(report, spec.raw_report, output_dir)
 
-        if "matplotlib_figure" in spec and spec.matplotlib_figure is not None:
+        if spec.matplotlib_figure is not None:
             generate_matplotlib_figure(report, spec.matplotlib_figure, output_dir)
 
-        if "timeline" in spec and spec.timeline is not None:
+        if spec.timeline is not None:
             generate_timeline(report, spec.timeline, output_dir)
 
-        if "usslogset" in spec and spec.usslogset is not None:
+        if spec.usslogset is not None:
             generate_usslogset(report, spec.usslogset, output_dir)

@@ -83,7 +83,7 @@ def run_config(
 
     run_report = run_benchmark(config, output_dir)
 
-    if "artifacts" in config and config.artifacts:
+    if config.artifacts:
         logger.info("Generating configured artifacts...")
         generate_artifacts(config.artifacts, run_report, output_dir)
         logger.info("Artifact generation complete.")

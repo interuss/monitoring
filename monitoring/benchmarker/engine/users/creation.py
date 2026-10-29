@@ -24,7 +24,7 @@ def create_virtual_user(
     record_operation: Callable[[ExecutedOperation], None],
     random: Random,
 ) -> VirtualUser:
-    if "flight_planner" in user_spec and user_spec.flight_planner is not None:
+    if user_spec.flight_planner is not None:
         return FlightPlannerUser(
             user_id,
             user_spec,
@@ -44,7 +44,7 @@ def enumerate_coordination_groups(
     users: Sequence[BenchmarkUserSpecification],
 ) -> Iterable[CoordinationGroupID]:
     for user in users:
-        if "flight_planner" in user and user.flight_planner:
+        if user.flight_planner:
             yield from FlightPlannerUser.enumerate_coordination_groups(
                 user.flight_planner
             )

@@ -8,8 +8,7 @@ def instantiate_resources(
 ) -> dict[ResourceID, ResourceType]:
     """Instantiate all resources declared in the benchmark configuration."""
     if (
-        "resources" not in config
-        or not config.resources
+        not config.resources
         or "resource_declarations" not in config.resources
         or not config.resources.resource_declarations
     ):

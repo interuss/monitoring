@@ -64,7 +64,7 @@ class FlightPlannerUser(VirtualUser):
         super().__init__(
             user_id, user_spec.name, executor, coordinator, record_operation
         )
-        if "flight_planner" not in user_spec or not user_spec.flight_planner:
+        if not user_spec.flight_planner:
             raise ValueError(
                 f"User specification '{user_spec.name}' has no flight_planner definition"
             )
@@ -73,18 +73,12 @@ class FlightPlannerUser(VirtualUser):
             user_spec.flight_planner.flight_generation, user_id, random
         )
 
-        if (
-            "astm_netrid_behavior" in user_spec.flight_planner
-            and user_spec.flight_planner.astm_netrid_behavior
-        ):
+        if user_spec.flight_planner.astm_netrid_behavior:
             self.net_rid = ASTMNetRIDHandler(
                 user_spec.flight_planner.astm_netrid_behavior, resource_pool, self
             )
 
-        if (
-            "scd_behavior" in user_spec.flight_planner
-            and user_spec.flight_planner.scd_behavior
-        ):
+        if user_spec.flight_planner.scd_behavior:
             self.scd = SCDHandler(
                 user_spec.flight_planner.scd_behavior, resource_pool, self
             )
@@ -215,7 +209,7 @@ class FlightPlannerUser(VirtualUser):
     def enumerate_coordination_groups(
         flight_planner: FlightPlannerSpecification,
     ) -> Iterable[CoordinationGroupID]:
-        if "scd_behavior" in flight_planner and flight_planner.scd_behavior:
+        if flight_planner.scd_behavior:
             yield from SCDHandler.enumerate_coordination_groups(
                 flight_planner.scd_behavior
             )

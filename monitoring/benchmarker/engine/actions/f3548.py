@@ -113,14 +113,11 @@ def create_subscription(
         uss_base_url = make_fake_url()
         t0 = datetime.now(UTC)
         notify_for_op_intents = (
-            sub.notify_for_op_intents
-            if "notify_for_op_intents" in sub and sub.notify_for_op_intents is not None
-            else True
+            sub.notify_for_op_intents if sub.notify_for_op_intents is not None else True
         )
         notify_for_constraints = (
             sub.notify_for_constraints
-            if "notify_for_constraints" in sub
-            and sub.notify_for_constraints is not None
+            if sub.notify_for_constraints is not None
             else False
         )
         create_result = dss_instance.upsert_subscription(
@@ -196,17 +193,11 @@ def run_f3548_action(
     resource_pool: dict[ResourceID, Any],
 ) -> None:
     action_performed = False
-    if (
-        "create_subscription" in f3548_spec
-        and f3548_spec.create_subscription is not None
-    ):
+    if f3548_spec.create_subscription is not None:
         logger.info(f"Action '{action_name}': Creating F3548 subscription...")
         create_subscription(f3548_spec.create_subscription, resource_pool)
         action_performed = True
-    if (
-        "delete_subscription" in f3548_spec
-        and f3548_spec.delete_subscription is not None
-    ):
+    if f3548_spec.delete_subscription is not None:
         logger.info(f"Action '{action_name}': Deleting F3548 subscription...")
         delete_subscription(f3548_spec.delete_subscription, resource_pool)
         action_performed = True
