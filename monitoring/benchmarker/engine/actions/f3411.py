@@ -190,17 +190,11 @@ def run_f3411_action(
     resource_pool: dict[ResourceID, Any],
 ) -> None:
     action_performed = False
-    if (
-        "create_subscription" in f3411_spec
-        and f3411_spec.create_subscription is not None
-    ):
+    if f3411_spec.create_subscription is not None:
         logger.info(f"Action '{action_name}': Creating F3411 subscription...")
         create_subscription(f3411_spec.create_subscription, resource_pool)
         action_performed = True
-    if (
-        "delete_subscription" in f3411_spec
-        and f3411_spec.delete_subscription is not None
-    ):
+    if f3411_spec.delete_subscription is not None:
         logger.info(f"Action '{action_name}': Deleting F3411 subscription...")
         delete_subscription(f3411_spec.delete_subscription, resource_pool)
         action_performed = True

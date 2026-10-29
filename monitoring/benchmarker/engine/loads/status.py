@@ -46,14 +46,14 @@ def format_step_completion_progress(
     operations: list[ExecutedOperation],
 ) -> list[str]:
     parts: list[str] = []
-    if "sampling_duration_at_least" in criteria and criteria.sampling_duration_at_least:
+    if criteria.sampling_duration_at_least:
         req_dur = criteria.sampling_duration_at_least.timedelta.total_seconds()
         cur_dur = (now - stability_time).total_seconds()
         parts.append(
             f"sampling_duration_at_least (threshold: {req_dur:.1f}s, current: {cur_dur:.1f}s)"
         )
 
-    if "completed_at_least" in criteria and criteria.completed_at_least:
+    if criteria.completed_at_least:
         req_count = criteria.completed_at_least.count
         req_ops = set(criteria.completed_at_least.operations)
         completed = sum(
@@ -69,7 +69,7 @@ def format_step_completion_progress(
             f"completed_at_least (threshold: {req_count} of [{ops_str}], current: {completed})"
         )
 
-    if "average_duration_more_than" in criteria and criteria.average_duration_more_than:
+    if criteria.average_duration_more_than:
         req_dur = criteria.average_duration_more_than.duration.timedelta.total_seconds()
         req_ops = set(criteria.average_duration_more_than.operations)
         matching_ops = [
@@ -93,10 +93,7 @@ def format_step_completion_progress(
             f"average_duration_more_than (threshold: {req_dur:.1f}s of [{ops_str}], current: {cur_str})"
         )
 
-    if (
-        "throughput_stability_took_longer_than" in criteria
-        and criteria.throughput_stability_took_longer_than
-    ):
+    if criteria.throughput_stability_took_longer_than:
         req_dur = (
             criteria.throughput_stability_took_longer_than.timedelta.total_seconds()
         )
@@ -105,7 +102,7 @@ def format_step_completion_progress(
             f"throughput_stability_took_longer_than (threshold: {req_dur:.1f}s, current: {cur_dur:.1f}s)"
         )
 
-    if "any_of" in criteria and criteria.any_of is not None:
+    if criteria.any_of is not None:
         child_parts = []
         for child in criteria.any_of:
             sub = format_step_completion_progress(
@@ -128,13 +125,13 @@ def get_operations_of_interest(
     with_defaults: bool = False,
 ) -> set[OperationType]:
     ops: set[OperationType] = set()
-    if "completed_at_least" in criteria and criteria.completed_at_least:
+    if criteria.completed_at_least:
         for o in criteria.completed_at_least.operations:
             ops.add(o)
-    if "average_duration_more_than" in criteria and criteria.average_duration_more_than:
+    if criteria.average_duration_more_than:
         for o in criteria.average_duration_more_than.operations:
             ops.add(o)
-    if "any_of" in criteria and criteria.any_of is not None:
+    if criteria.any_of is not None:
         for child in criteria.any_of:
             ops.update(get_operations_of_interest(child, all_step_ops))
     if not ops and with_defaults:
@@ -154,10 +151,7 @@ def format_waiting_status(
         return f"[Step {step_index} waiting to start]"
 
     if stability_time is None:
-        if (
-            "each_user_completed_at_least" in load.throughput_stability_criteria
-            and load.throughput_stability_criteria.each_user_completed_at_least
-        ):
+        if load.throughput_stability_criteria.each_user_completed_at_least:
             crit = load.throughput_stability_criteria.each_user_completed_at_least
             req_count = crit.count
             req_ops = set(crit.operations)

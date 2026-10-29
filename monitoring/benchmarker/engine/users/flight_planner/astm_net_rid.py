@@ -69,7 +69,7 @@ class ASTMNetRIDHandler:
             )
 
         if len(self.dss_instances) > 1:
-            if "dss_selection_strategy" in behavior and behavior.dss_selection_strategy:
+            if behavior.dss_selection_strategy:
                 self.dss_selection_strategy = behavior.dss_selection_strategy
             else:
                 raise ValueError(
@@ -86,10 +86,7 @@ class ASTMNetRIDHandler:
                 f"DSS selection strategy '{self.dss_selection_strategy}' not implemented"
             )
 
-        if (
-            "isa_per_flight" in behavior.isa_strategy
-            and behavior.isa_strategy.isa_per_flight
-        ):
+        if behavior.isa_strategy.isa_per_flight:
             self.isa_per_flight = ASTMNetRIDISAPerFlightStrategySpecification(
                 **behavior.isa_strategy.isa_per_flight
             )

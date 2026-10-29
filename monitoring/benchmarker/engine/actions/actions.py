@@ -39,13 +39,10 @@ def run_scenario_actions(
         invocation = action_invocations.get(action_name, 0)
         action_performed = False
 
-        if "run_command" in action_spec and action_spec.run_command is not None:
+        if action_spec.run_command is not None:
             run_command(action_spec.run_command)
             action_performed = True
-        if (
-            "generate_artifacts" in action_spec
-            and action_spec.generate_artifacts is not None
-        ):
+        if action_spec.generate_artifacts is not None:
             generate_intermediate_artifacts(
                 action_spec.generate_artifacts,
                 action_name,
@@ -57,14 +54,14 @@ def run_scenario_actions(
                 commit_hash,
             )
             action_performed = True
-        if "f3411" in action_spec and action_spec.f3411 is not None:
+        if action_spec.f3411 is not None:
             if resource_pool is None:
                 raise ValueError(
                     f"Resource pool is required to execute action '{action_name}' with F3411 specification"
                 )
             run_f3411_action(action_name, action_spec.f3411, resource_pool)
             action_performed = True
-        if "f3548" in action_spec and action_spec.f3548 is not None:
+        if action_spec.f3548 is not None:
             if resource_pool is None:
                 raise ValueError(
                     f"Resource pool is required to execute action '{action_name}' with F3548 specification"

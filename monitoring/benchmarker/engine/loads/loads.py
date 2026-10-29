@@ -33,7 +33,7 @@ async def run_scenario_load(
     list[ExecutedOperation], list[BenchmarkScenarioStepReport], CleanupReport | None
 ]:
     """Execute a scenario load."""
-    if "user_ramp" in load_spec and load_spec.user_ramp:
+    if load_spec.user_ramp:
         return await run_user_ramp_load(
             load_spec.user_ramp,
             user_specs_map,
@@ -42,7 +42,7 @@ async def run_scenario_load(
             coordinator,
             scenario_name,
         )
-    elif "user_search" in load_spec and load_spec.user_search:
+    elif load_spec.user_search:
         return await run_user_search_load(
             load_spec.user_search,
             user_specs_map,

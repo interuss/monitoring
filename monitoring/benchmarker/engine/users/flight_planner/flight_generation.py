@@ -30,31 +30,23 @@ class IndependentTimeLocationShape(FlightGenerator):
     def __init__(
         self, spec: FlightGenerationSpecification, user_id: str, random: Random
     ):
-        if (
-            "independent_time_location_shape" not in spec
-            or not spec.independent_time_location_shape
-        ):
+        if not spec.independent_time_location_shape:
             raise ValueError(
                 "`independent_time_location_shape` not specified for IndependentTimeLocationShape FlightGenerator"
             )
 
         self.spec = spec.independent_time_location_shape
-        if "execution" in spec and spec.execution:
+        if spec.execution:
             self.execution = spec.execution
 
-        if (
-            "fixed_location" in self.spec.location and self.spec.location.fixed_location
-        ) or (
-            "random_location" in self.spec.location
-            and self.spec.location.random_location
-        ):
+        if (self.spec.location.fixed_location) or (self.spec.location.random_location):
             pass
         else:
             raise NotImplementedError(
                 f"No supported location component is specified in independent_time_location_shape.location for user `{user_id}`"
             )
 
-        if "fixed_volumes" in self.spec.shape and self.spec.shape.fixed_volumes:
+        if self.spec.shape.fixed_volumes:
             pass
         else:
             raise NotImplementedError(
@@ -65,15 +57,9 @@ class IndependentTimeLocationShape(FlightGenerator):
             # Check unit/reference match between location and fixed_volumes
             fixed_vols = self.spec.shape.fixed_volumes
             origin_vert = fixed_vols.origin_vertical
-            if (
-                "fixed_location" in self.spec.location
-                and self.spec.location.fixed_location
-            ):
+            if self.spec.location.fixed_location:
                 loc_vert = self.spec.location.fixed_location.vertical
-            elif (
-                "random_location" in self.spec.location
-                and self.spec.location.random_location
-            ):
+            elif self.spec.location.random_location:
                 loc_vert = self.spec.location.random_location.vertical
             else:
                 loc_vert = None
@@ -89,16 +75,13 @@ class IndependentTimeLocationShape(FlightGenerator):
 
     def generate_flight(self, previous_flight_end: datetime) -> Flight:
         dt = timedelta(seconds=0)
-        if "fixed_spacing" in self.spec.time and self.spec.time.fixed_spacing:
+        if self.spec.time.fixed_spacing:
             dt += self.spec.time.fixed_spacing.timedelta
-        if (
-            "uniform_random_spacing" in self.spec.time
-            and self.spec.time.uniform_random_spacing
-        ):
+        if self.spec.time.uniform_random_spacing:
             dt += self.spec.time.uniform_random_spacing.timedelta * self.random.random()
         t0 = previous_flight_end + dt
 
-        if "fixed_location" in self.spec.location and self.spec.location.fixed_location:
+        if self.spec.location.fixed_location:
             xy = self.spec.location.fixed_location.horizontal
             z = self.spec.location.fixed_location.vertical
             if z.units != DistanceUnits.M:
@@ -109,10 +92,7 @@ class IndependentTimeLocationShape(FlightGenerator):
                 raise NotImplementedError(
                     "Only W84 is supported for fixed_location altitude"
                 )
-        elif (
-            "random_location" in self.spec.location
-            and self.spec.location.random_location
-        ):
+        elif self.spec.location.random_location:
             box = self.spec.location.random_location.uniform_box
             xy = LatLngPoint(
                 lat=self.random.uniform(box.lat_min, box.lat_max),
@@ -160,18 +140,12 @@ class IndependentTimeLocationShape(FlightGenerator):
         actual_end_time = time_end
         if self.execution:
             time_start = volumes.time_start_not_none.datetime
-            if (
-                "end_flight_after_start" in self.execution
-                and self.execution.end_flight_after_start
-            ):
+            if self.execution.end_flight_after_start:
                 actual_end_time = min(
                     actual_end_time,
                     time_start + self.execution.end_flight_after_start.timedelta,
                 )
-            if (
-                "end_flight_before_end" in self.execution
-                and self.execution.end_flight_before_end
-            ):
+            if self.execution.end_flight_before_end:
                 actual_end_time = min(
                     actual_end_time,
                     time_end - self.execution.end_flight_before_end.timedelta,
@@ -186,10 +160,7 @@ class IndependentTimeLocationShape(FlightGenerator):
 def make_flight_generator(
     flight_generation: FlightGenerationSpecification, user_id: str, random: Random
 ) -> FlightGenerator:
-    if (
-        "independent_time_location_shape" in flight_generation
-        and flight_generation.independent_time_location_shape
-    ):
+    if flight_generation.independent_time_location_shape:
         return IndependentTimeLocationShape(
             flight_generation,
             user_id,

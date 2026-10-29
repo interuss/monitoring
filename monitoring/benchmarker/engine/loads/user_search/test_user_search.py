@@ -442,6 +442,4 @@ def test_run_user_search_load_recovers_from_unstable_step():
 def test_isas_uncontended_config_validates():
     config = load_config("configurations.interuss.netrid.isas_uncontended")
     assert len(config.loads) >= 1
-    assert all(
-        "user_search" in load and load.user_search is not None for load in config.loads
-    )
+    assert all(load.user_search is not None for load in config.loads)

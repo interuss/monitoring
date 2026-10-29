@@ -42,11 +42,7 @@ async def run_user_ramp_load(
 ) -> tuple[list[ExecutedOperation], list[BenchmarkScenarioStepReport], CleanupReport]:
     """Apply a load by driving virtual user workflows and monitoring step criteria."""
     user_types_list = resolve_user_types(ramp, user_specs_map)
-    random = (
-        Random(ramp.random_seed)
-        if "random_seed" in ramp and ramp.random_seed
-        else Random()
-    )
+    random = Random(ramp.random_seed) if ramp.random_seed else Random()
 
     active_users: list[ActiveUser] = []
     load_stop_event = asyncio.Event()

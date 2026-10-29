@@ -18,18 +18,11 @@ def check_stability_criteria(
     phase_start_time: datetime,
     now: datetime,
 ) -> bool:
-    has_any_of = "any_of" in criteria and criteria.any_of
-    has_each_user = (
-        "each_user_completed_at_least" in criteria
-        and criteria.each_user_completed_at_least
-    )
-    has_phase_duration = (
-        "phase_duration_at_least" in criteria and criteria.phase_duration_at_least
-    )
-    has_avg_duration = (
-        "average_duration_more_than" in criteria and criteria.average_duration_more_than
-    )
-    has_failures = "failures_more_than" in criteria and criteria.failures_more_than
+    has_any_of = criteria.any_of
+    has_each_user = criteria.each_user_completed_at_least
+    has_phase_duration = criteria.phase_duration_at_least
+    has_avg_duration = criteria.average_duration_more_than
+    has_failures = criteria.failures_more_than
 
     if (
         not has_any_of
@@ -122,19 +115,12 @@ def check_step_completion_criteria(
     now: datetime,
     operations: list[ExecutedOperation],
 ) -> bool:
-    has_any_of = "any_of" in criteria and criteria.any_of
-    has_duration = (
-        "sampling_duration_at_least" in criteria and criteria.sampling_duration_at_least
-    )
-    has_completed_ops = "completed_at_least" in criteria and criteria.completed_at_least
-    has_min_average = (
-        "average_duration_more_than" in criteria and criteria.average_duration_more_than
-    )
-    has_stability_duration = (
-        "throughput_stability_took_longer_than" in criteria
-        and criteria.throughput_stability_took_longer_than
-    )
-    has_failures = "failures_more_than" in criteria and criteria.failures_more_than
+    has_any_of = criteria.any_of
+    has_duration = criteria.sampling_duration_at_least
+    has_completed_ops = criteria.completed_at_least
+    has_min_average = criteria.average_duration_more_than
+    has_stability_duration = criteria.throughput_stability_took_longer_than
+    has_failures = criteria.failures_more_than
 
     if (
         not has_any_of
@@ -238,13 +224,11 @@ def check_load_completion_criteria(
     steps: list[BenchmarkScenarioStepReport],
     operations: list[ExecutedOperation],
 ) -> bool:
-    has_any_of = "any_of" in criteria and criteria.any_of
-    has_throughput = (
-        "throughput_lower_than_peak" in criteria and criteria.throughput_lower_than_peak
-    )
-    has_failures = "failures_more_than" in criteria and criteria.failures_more_than
-    has_step_count = "completed_steps" in criteria and criteria.completed_steps
-    has_most_recent_step = "most_recent_step" in criteria and criteria.most_recent_step
+    has_any_of = criteria.any_of
+    has_throughput = criteria.throughput_lower_than_peak
+    has_failures = criteria.failures_more_than
+    has_step_count = criteria.completed_steps
+    has_most_recent_step = criteria.most_recent_step
 
     if (
         not has_any_of

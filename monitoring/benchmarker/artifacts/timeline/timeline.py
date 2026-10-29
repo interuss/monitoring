@@ -49,9 +49,9 @@ def _extract_query_summary(query: Query | None) -> dict[str, Any] | None:
     if query is None:
         return None
     summary: dict[str, Any] = {}
-    if "query_type" in query and query.query_type:
+    if query.query_type:
         summary["query_type"] = query.query_type
-    if "participant_id" in query and query.participant_id:
+    if query.participant_id:
         summary["participant_id"] = query.participant_id
     if "request" in query and query.request:
         req = query.request
@@ -112,14 +112,13 @@ def compute_scenario_timeline_data(
     for idx, op_spec in enumerate(spec.operations):
         color = (
             op_spec.color
-            if "color" in op_spec and op_spec.color
+            if op_spec.color
             else DEFAULT_PALETTE[idx % len(DEFAULT_PALETTE)]
         )
         color_map[op_spec.type] = color
         indicator_width_map[op_spec.type] = (
             float(op_spec.success_indicator_width)
-            if "success_indicator_width" in op_spec
-            and op_spec.success_indicator_width is not None
+            if op_spec.success_indicator_width is not None
             else 2.0
         )
 
@@ -132,8 +131,7 @@ def compute_scenario_timeline_data(
         t_end = step.end_time.datetime.timestamp()
         t_stab = (
             step.throughput_stability_time.datetime.timestamp()
-            if "throughput_stability_time" in step
-            and step.throughput_stability_time is not None
+            if step.throughput_stability_time is not None
             else None
         )
 
@@ -164,8 +162,7 @@ def compute_scenario_timeline_data(
                 "termination_symbol": term_symbol,
                 "start_time_iso": str(step.start_time),
                 "stability_time_iso": str(step.throughput_stability_time)
-                if "throughput_stability_time" in step
-                and step.throughput_stability_time is not None
+                if step.throughput_stability_time is not None
                 else None,
                 "end_time_iso": str(step.end_time),
             }
@@ -194,7 +191,7 @@ def compute_scenario_timeline_data(
 
             if "outcomes" in orig_group and orig_group.outcomes:
                 for outcome in orig_group.outcomes:
-                    if "successful" in outcome and outcome.successful:
+                    if outcome.successful:
                         for op in outcome.successful:
                             t0 = op.t0.datetime.timestamp()
                             t1 = op.t1.datetime.timestamp()
@@ -215,14 +212,14 @@ def compute_scenario_timeline_data(
                                     "color": color,
                                     "indicator_width": indicator_width,
                                     "query": _extract_query_summary(op.query)
-                                    if "query" in op and op.query is not None
+                                    if op.query is not None
                                     else None,
                                 }
                             )
                             total_ops_count += 1
                             successful_ops_count += 1
 
-                    if "unsuccessful" in outcome and outcome.unsuccessful:
+                    if outcome.unsuccessful:
                         for op in outcome.unsuccessful:
                             t0 = op.t0.datetime.timestamp()
                             t1 = op.t1.datetime.timestamp()
@@ -243,7 +240,7 @@ def compute_scenario_timeline_data(
                                     "color": color,
                                     "indicator_width": indicator_width,
                                     "query": _extract_query_summary(op.query)
-                                    if "query" in op and op.query is not None
+                                    if op.query is not None
                                     else None,
                                 }
                             )

@@ -58,8 +58,7 @@ def build_measured_steps(
 def _get_adjacency(criteria: SearchCompletionCriteria) -> int:
     adj = (
         criteria.adjacency_user_count
-        if "adjacency_user_count" in criteria
-        and criteria.adjacency_user_count is not None
+        if criteria.adjacency_user_count is not None
         else 1
     )
     if adj < 1:
@@ -68,25 +67,13 @@ def _get_adjacency(criteria: SearchCompletionCriteria) -> int:
 
 
 def _validate_search_criteria(criteria: SearchCompletionCriteria) -> None:
-    if "any_of" in criteria and criteria.any_of:
+    if criteria.any_of:
         raise NotImplementedError("SearchCompletionCriteria.any_of is not implemented")
 
-    has_consec_stable = (
-        "consecutive_stable_user_counts" in criteria
-        and criteria.consecutive_stable_user_counts is not None
-    )
-    has_consec_unstable = (
-        "consecutive_unstable_user_counts" in criteria
-        and criteria.consecutive_unstable_user_counts is not None
-    )
-    has_max_tp_adj = (
-        "max_throughput_adjacent_user_counts" in criteria
-        and criteria.max_throughput_adjacent_user_counts is not None
-    )
-    has_left_spacing = (
-        "maximum_left_side_spacing" in criteria
-        and criteria.maximum_left_side_spacing is not None
-    )
+    has_consec_stable = criteria.consecutive_stable_user_counts is not None
+    has_consec_unstable = criteria.consecutive_unstable_user_counts is not None
+    has_max_tp_adj = criteria.max_throughput_adjacent_user_counts is not None
+    has_left_spacing = criteria.maximum_left_side_spacing is not None
 
     if (
         not has_consec_stable
@@ -399,14 +386,12 @@ def determine_next_user_count(
     # 1. Stability boundary search (consecutive_stable_user_counts & consecutive_unstable_user_counts)
     req_stable = (
         criteria.consecutive_stable_user_counts
-        if "consecutive_stable_user_counts" in criteria
-        and criteria.consecutive_stable_user_counts is not None
+        if criteria.consecutive_stable_user_counts is not None
         else 0
     )
     req_unstable = (
         criteria.consecutive_unstable_user_counts
-        if "consecutive_unstable_user_counts" in criteria
-        and criteria.consecutive_unstable_user_counts is not None
+        if criteria.consecutive_unstable_user_counts is not None
         else 0
     )
     if req_stable > 0 or req_unstable > 0:
@@ -424,8 +409,7 @@ def determine_next_user_count(
     # 2. Maximum throughput search (max_throughput_adjacent_user_counts)
     req_tp_adj = (
         criteria.max_throughput_adjacent_user_counts
-        if "max_throughput_adjacent_user_counts" in criteria
-        and criteria.max_throughput_adjacent_user_counts is not None
+        if criteria.max_throughput_adjacent_user_counts is not None
         else 0
     )
     if req_tp_adj > 0:
@@ -442,8 +426,7 @@ def determine_next_user_count(
     # 3. Left-side spacing gap filling (maximum_left_side_spacing)
     max_spacing_frac = (
         criteria.maximum_left_side_spacing
-        if "maximum_left_side_spacing" in criteria
-        and criteria.maximum_left_side_spacing is not None
+        if criteria.maximum_left_side_spacing is not None
         else None
     )
     if max_spacing_frac is not None:

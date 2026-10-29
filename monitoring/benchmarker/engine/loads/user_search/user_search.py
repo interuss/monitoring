@@ -45,11 +45,7 @@ async def run_user_search_load(
 ) -> tuple[list[ExecutedOperation], list[BenchmarkScenarioStepReport], CleanupReport]:
     """Apply a load by adaptively searching virtual user counts and monitoring step and search criteria."""
     user_types_list = resolve_user_types(search, user_specs_map)
-    random = (
-        Random(search.random_seed)
-        if "random_seed" in search and search.random_seed
-        else Random()
-    )
+    random = Random(search.random_seed) if search.random_seed else Random()
 
     active_users: list[ActiveUser] = []
     load_stop_event = asyncio.Event()

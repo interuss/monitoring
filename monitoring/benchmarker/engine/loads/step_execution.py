@@ -61,7 +61,7 @@ def resolve_user_types(
 ) -> list[BenchmarkUserName]:
     """Validate and return the list of user type names configured on a load."""
     load_type_name = type(load).__name__
-    if "user_types" in load and load.user_types:
+    if load.user_types:
         user_types_list = load.user_types
         for ut in user_types_list:
             if ut not in user_specs_map:
@@ -69,7 +69,7 @@ def resolve_user_types(
                     f"User type '{ut}' for {load_type_name}.user_types not found in configuration.user_types"
                 )
         return user_types_list
-    elif "user_type" in load and load.user_type:
+    elif load.user_type:
         if load.user_type not in user_specs_map:
             raise ValueError(
                 f"User type '{load.user_type}' for {load_type_name}.user_type not found in configuration.user_types"
@@ -222,16 +222,12 @@ async def run_load_step(
     step_end_time = datetime.now(UTC)
     while not load_stop_event.is_set():
         now = datetime.now(UTC)
-        if (
-            "throughput_instability_criteria" in load
-            and load.throughput_instability_criteria
-            and check_stability_criteria(
-                load.throughput_instability_criteria,
-                operations,
-                current_virtual_users,
-                step_start_time,
-                now,
-            )
+        if load.throughput_instability_criteria and check_stability_criteria(
+            load.throughput_instability_criteria,
+            operations,
+            current_virtual_users,
+            step_start_time,
+            now,
         ):
             logger.warning(
                 f"Step {step_index} (load_factor={current_load_factor}) became unstable during throughput stability phase after {(now - step_start_time).total_seconds():.1f}s"
@@ -265,16 +261,12 @@ async def run_load_step(
         # Wait for step to complete
         while not load_stop_event.is_set():
             now = datetime.now(UTC)
-            if (
-                "throughput_instability_criteria" in load
-                and load.throughput_instability_criteria
-                and check_stability_criteria(
-                    load.throughput_instability_criteria,
-                    operations,
-                    current_virtual_users,
-                    stability_time,
-                    now,
-                )
+            if load.throughput_instability_criteria and check_stability_criteria(
+                load.throughput_instability_criteria,
+                operations,
+                current_virtual_users,
+                stability_time,
+                now,
             ):
                 logger.warning(
                     f"Step {step_index} (load_factor={current_load_factor}) became unstable during sampling phase after {(now - stability_time).total_seconds():.1f}s"

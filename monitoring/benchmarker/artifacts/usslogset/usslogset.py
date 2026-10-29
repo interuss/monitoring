@@ -43,16 +43,12 @@ def _make_exchange_record(
 ) -> ExchangeRecord:
     if query.request.outgoing:
         req_headers = (
-            query.request.headers
-            if "headers" in query.request and query.request.headers is not None
-            else None
+            query.request.headers if query.request.headers is not None else None
         )
         headers = _format_headers(req_headers, include_headers, exclude_headers)
     else:
         resp_headers = (
-            query.response.headers
-            if "headers" in query.response and query.response.headers is not None
-            else None
+            query.response.headers if query.response.headers is not None else None
         )
         headers = _format_headers(resp_headers, include_headers, exclude_headers)
 
@@ -69,7 +65,7 @@ def _make_exchange_record(
         response_time=Time(value=StringBasedDateTime(query.response.reported)),
     )
 
-    if "json" in query.request and query.request.json:
+    if query.request.json:
         record.request_body = base64.b64encode(
             json.dumps(query.request.json).encode("utf-8")
         ).decode("utf-8")
@@ -78,7 +74,7 @@ def _make_exchange_record(
             query.request.content.encode("utf-8")
         ).decode("utf-8")
 
-    if "json" in query.response and query.response.json:
+    if query.response.json:
         record.response_body = base64.b64encode(
             json.dumps(query.response.json).encode("utf-8")
         ).decode("utf-8")
@@ -87,10 +83,10 @@ def _make_exchange_record(
             query.response.content.encode("utf-8")
         ).decode("utf-8")
 
-    if "code" in query.response and query.response.code is not None:
+    if query.response.code is not None:
         record.response_code = query.response.code
 
-    if "failure" in query.response and query.response.failure is not None:
+    if query.response.failure is not None:
         record.problem = query.response.failure
 
     return record
@@ -101,12 +97,12 @@ def generate_usslogset(
 ) -> None:
     include_headers = (
         {h.lower() for h in spec.include_headers}
-        if "include_headers" in spec and spec.include_headers is not None
+        if spec.include_headers is not None
         else None
     )
     exclude_headers = (
         {h.lower() for h in spec.exclude_headers}
-        if "exclude_headers" in spec and spec.exclude_headers is not None
+        if spec.exclude_headers is not None
         else None
     )
 
@@ -115,7 +111,7 @@ def generate_usslogset(
         for ops_by_type in scenario.operations:
             if ops_by_type.type.startswith("query.astm.f3548.v21.dss."):
                 for op in select_operations(ops_by_type):
-                    if "query" not in op or op.query is None:
+                    if op.query is None:
                         raise ValueError(
                             f"Operation of type '{ops_by_type.type}' at {op.t0} is missing query details"
                         )
