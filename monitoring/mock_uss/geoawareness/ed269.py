@@ -139,7 +139,7 @@ def evaluate_timing(
         if not in_range:
             continue
 
-        schedule = a.get("schedule", None)
+        schedule = a.schedule
         if schedule is None:
             logger.debug("     * Date in range without schedule => True")
             return True
@@ -186,10 +186,8 @@ def evaluate_non_spacetime(feature: UASZoneVersion, ed269: ED269Filters | None) 
     if ed269 is None:
         return True
 
-    uspace_class_filter = ed269.get("uSpaceClass", None)
-    uspace_class: list[str] | None = _adjust_uspace_class(
-        feature.get("uSpaceClass", None)
-    )
+    uspace_class_filter = ed269.uSpaceClass
+    uspace_class: list[str] | None = _adjust_uspace_class(feature.uSpaceClass)
 
     if uspace_class_filter is not None:
         if uspace_class is None:
@@ -197,7 +195,7 @@ def evaluate_non_spacetime(feature: UASZoneVersion, ed269: ED269Filters | None) 
         if uspace_class is not None and uspace_class_filter not in uspace_class:
             return False
 
-    acceptable_restrictions_filter = ed269.get("acceptableRestrictions", None)
+    acceptable_restrictions_filter = ed269.acceptableRestrictions
     restriction = feature.get("restriction", None)
     if (
         acceptable_restrictions_filter is not None
@@ -211,21 +209,19 @@ def evaluate_non_spacetime(feature: UASZoneVersion, ed269: ED269Filters | None) 
 
 def evaluate_feature(feature: UASZoneVersion, filter_set: GeozonesFilterSet) -> bool:
     # Evaluate position
-    position_match = evaluate_position(feature, filter_set.get("position", None))
+    position_match = evaluate_position(feature, filter_set.position)
     if not position_match:
         logger.debug(f"    {feature.identifier}: Position not matched - Absent")
         return False
 
     # Evaluate timing
-    timing_match = evaluate_timing(
-        feature, filter_set.get("after", None), filter_set.get("before", None)
-    )
+    timing_match = evaluate_timing(feature, filter_set.after, filter_set.before)
     if not timing_match:
         logger.debug(f"    {feature.identifier}: Timing not matched - Absent")
         return False
 
     # Evaluate non-spacetime fields
-    non_spacetime_match = evaluate_non_spacetime(feature, filter_set.get("ed269", None))
+    non_spacetime_match = evaluate_non_spacetime(feature, filter_set.ed269)
     if not non_spacetime_match:
         logger.debug(f"    {feature.identifier}: ED269 not matched - Absent")
         return False

@@ -535,15 +535,9 @@ class GenericTestScenario(ABC):
                 return
         self._step_report.queries.append(query)
         participant = (
-            "UNKNOWN"
-            if not query.has_field_with_value("participant_id")
-            else query.participant_id
+            "UNKNOWN" if query.participant_id is None else query.participant_id
         )
-        query_type = (
-            "UNKNOWN"
-            if not query.has_field_with_value("query_type")
-            else query.query_type
-        )
+        query_type = "UNKNOWN" if query.query_type is None else query.query_type
         # Log a warning if we are missing query metadata, unless the query type is one for which
         # we expect to occasionally not know the participant ID
         if (

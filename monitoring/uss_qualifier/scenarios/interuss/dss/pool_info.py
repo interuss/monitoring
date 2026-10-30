@@ -79,11 +79,7 @@ class PoolInfo(GenericTestScenario):
                 try:
                     pool_resp, query = dss_client.get_pool()
                     self.record_query(query)
-                    dar_id = (
-                        pool_resp.dar_id
-                        if pool_resp.has_field_with_value("dar_id")
-                        else None
-                    )
+                    dar_id = pool_resp.dar_id
                     dar_ids[dss_instance.participant_id] = dar_id
                     self.record_note(
                         f"{dss_instance.participant_id} DAR ID", dar_id or "None"

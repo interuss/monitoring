@@ -87,8 +87,8 @@ class TestFlight(injection.TestFlight):
 
         for detail in self.details_responses:
             # Values outside uas_id
-            serial_number = detail.details.get("serial_number")
-            registration_number = detail.details.get("registration_number")
+            serial_number = detail.details.serial_number
+            registration_number = detail.details.registration_number
 
             # No uas_id and one value present: We build a uas_id that we will
             # fill at next step
@@ -159,7 +159,7 @@ class TestFlight(injection.TestFlight):
         return details.id if details else None
 
     def get_aircraft_type(self, rid_version: RIDVersion) -> UAType:
-        if not self.has_field_with_value("aircraft_type") or not self.aircraft_type:
+        if self.aircraft_type is None or not self.aircraft_type:
             return UAType.NotDeclared
 
         # there exists a small difference in the enums between both versions of RID, this ensures we always return the expected one

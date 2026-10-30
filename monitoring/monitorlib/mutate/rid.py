@@ -406,14 +406,10 @@ class ChangedISA(RIDQuery):
                 for sub in self._v19_response.subscribers or []
             ]
         elif self.rid_version == RIDVersion.f3411_22a:
-            return (
-                [
-                    SubscriberToNotify(v22a_value=sub)
-                    for sub in self._v22a_response.subscribers or []
-                ]
-                if "subscribers" in self._v22a_response
-                else []
-            )
+            return [
+                SubscriberToNotify(v22a_value=sub)
+                for sub in self._v22a_response.subscribers or []
+            ]
         else:
             raise NotImplementedError(
                 f"Cannot retrieve subscribers to notify using RID version {self.rid_version}"
