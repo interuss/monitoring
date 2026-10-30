@@ -161,12 +161,12 @@ class TestStepReport(ImplicitDict):
     @property
     def latest_timestamp(self) -> datetime | None:
         timestamp = _TimestampAccumulator(max)
-        if "end_time" in self and self.end_time:
+        if self.end_time:
             timestamp.accumulate(self.end_time.datetime)
-        if "queries" in self and self.queries:
+        if self.queries:
             for query in self.queries:
                 timestamp.accumulate(query.response.reported.datetime)
-        if "delays" in self and self.delays:
+        if self.delays:
             for delay in self.delays:
                 timestamp.accumulate(
                     delay.start_time.datetime + delay.duration.timedelta
@@ -220,7 +220,7 @@ class TestCaseReport(ImplicitDict):
     @property
     def latest_timestamp(self) -> datetime | None:
         timestamp = _TimestampAccumulator(max)
-        if "end_time" in self and self.end_time:
+        if self.end_time:
             timestamp.accumulate(self.end_time.datetime)
         if "steps" in self and self.steps:
             for step in self.steps:
@@ -296,9 +296,9 @@ class TestScenarioReport(ImplicitDict):
     def has_critical_problem(self) -> bool:
         if any(c.has_critical_problem() for c in self.cases):
             return True
-        if "cleanup" in self and self.cleanup and self.cleanup.has_critical_problem():
+        if self.cleanup and self.cleanup.has_critical_problem():
             return True
-        if "execution_error" in self and self.execution_error:
+        if self.execution_error:
             return True
         return False
 
@@ -308,7 +308,7 @@ class TestScenarioReport(ImplicitDict):
         for i, case in enumerate(self.cases):
             for path, pc in case.query_passed_checks(participant_id):
                 yield f"cases[{i}].{path}", pc
-        if "cleanup" in self and self.cleanup:
+        if self.cleanup:
             for path, pc in self.cleanup.query_passed_checks(participant_id):
                 yield f"cleanup.{path}", pc
 
@@ -318,7 +318,7 @@ class TestScenarioReport(ImplicitDict):
         for i, case in enumerate(self.cases):
             for path, fc in case.query_failed_checks(participant_id):
                 yield f"cases[{i}].{path}", fc
-        if "cleanup" in self and self.cleanup:
+        if self.cleanup:
             for path, fc in self.cleanup.query_failed_checks(participant_id):
                 yield f"cleanup.{path}", fc
 
@@ -326,15 +326,10 @@ class TestScenarioReport(ImplicitDict):
         queries = list()
         for case in self.cases:
             for step in case.steps:
-                if "queries" in step and step.queries:
+                if step.queries:
                     queries.extend(step.queries)
 
-        if (
-            "cleanup" in self
-            and self.cleanup
-            and "queries" in self.cleanup
-            and self.cleanup.queries
-        ):
+        if self.cleanup and self.cleanup.queries:
             queries.extend(self.cleanup.queries)
 
         return queries
@@ -343,19 +338,19 @@ class TestScenarioReport(ImplicitDict):
         ids = set()
         for case in self.cases:
             ids.update(case.participant_ids())
-        if "cleanup" in self and self.cleanup:
+        if self.cleanup:
             ids.update(self.cleanup.participant_ids())
         return ids
 
     @property
     def latest_timestamp(self) -> datetime | None:
         timestamp = _TimestampAccumulator(max)
-        if "end_time" in self and self.end_time:
+        if self.end_time:
             timestamp.accumulate(self.end_time.datetime)
-        if "notes" in self and self.notes:
+        if self.notes:
             for note in self.notes.values():
                 timestamp.accumulate(note.timestamp.datetime)
-        if "delays" in self and self.delays:
+        if self.delays:
             for delay in self.delays:
                 timestamp.accumulate(
                     delay.start_time.datetime + delay.duration.timedelta
@@ -363,9 +358,9 @@ class TestScenarioReport(ImplicitDict):
         if "cases" in self and self.cases:
             for case in self.cases:
                 timestamp.accumulate(case.latest_timestamp)
-        if "cleanup" in self and self.cleanup:
+        if self.cleanup:
             timestamp.accumulate(self.cleanup.latest_timestamp)
-        if "execution_error" in self and self.execution_error:
+        if self.execution_error:
             timestamp.accumulate(self.execution_error.timestamp.datetime)
         return timestamp.result
 
@@ -422,7 +417,7 @@ class ActionGeneratorReport(ImplicitDict):
     @property
     def latest_timestamp(self) -> datetime | None:
         timestamp = _TimestampAccumulator(max)
-        if "end_time" in self and self.end_time:
+        if self.end_time:
             timestamp.accumulate(self.end_time.datetime)
         for action in self.actions:
             timestamp.accumulate(action.latest_timestamp)
@@ -455,19 +450,19 @@ class TestSuiteActionReport(ImplicitDict):
         action_generator_func: Callable[[ActionGeneratorReport], Any] | None = None,
         skipped_action_func: Callable[[SkippedActionReport], Any] | None = None,
     ) -> Any:
-        if "test_suite" in self and self.test_suite:
+        if self.test_suite:
             return test_suite_func(self.test_suite)
-        elif "test_scenario" in self and self.test_scenario:
+        elif self.test_scenario:
             if test_scenario_func is not None:
                 return test_scenario_func(self.test_scenario)
             else:
                 return test_suite_func(self.test_scenario)
-        elif "action_generator" in self and self.action_generator:
+        elif self.action_generator:
             if action_generator_func is not None:
                 return action_generator_func(self.action_generator)
             else:
                 return test_suite_func(self.action_generator)
-        elif "skipped_action" in self and self.skipped_action:
+        elif self.skipped_action:
             if skipped_action_func is not None:
                 return skipped_action_func(self.skipped_action)
             else:
@@ -481,13 +476,13 @@ class TestSuiteActionReport(ImplicitDict):
     def query_passed_checks(
         self, participant_id: str | None = None
     ) -> Iterator[tuple[JSONAddress, PassedCheck]]:
-        if "test_suite" in self and self.test_suite:
+        if self.test_suite:
             report = self.test_suite
             prefix = "test_suite"
-        elif "test_scenario" in self and self.test_scenario:
+        elif self.test_scenario:
             report = self.test_scenario
             prefix = "test_scenario"
-        elif "action_generator" in self and self.action_generator:
+        elif self.action_generator:
             report = self.action_generator
             prefix = "action_generator"
         else:
@@ -499,13 +494,13 @@ class TestSuiteActionReport(ImplicitDict):
     def query_failed_checks(
         self, participant_id: str | None = None
     ) -> Iterator[tuple[JSONAddress, FailedCheck]]:
-        if "test_suite" in self and self.test_suite:
+        if self.test_suite:
             report = self.test_suite
             prefix = "test_suite"
-        elif "test_scenario" in self and self.test_scenario:
+        elif self.test_scenario:
             report = self.test_scenario
             prefix = "test_scenario"
-        elif "action_generator" in self and self.action_generator:
+        elif self.action_generator:
             report = self.action_generator
             prefix = "action_generator"
         else:
@@ -535,13 +530,13 @@ class TestSuiteActionReport(ImplicitDict):
         return self._conditional(lambda report: report.latest_time)
 
     def get_action_type_name(self):
-        if "test_suite" in self and self.test_suite:
+        if self.test_suite:
             return "test_suite"
-        elif "test_scenario" in self and self.test_scenario:
+        elif self.test_scenario:
             return "test_scenario"
-        elif "action_generator" in self and self.action_generator:
+        elif self.action_generator:
             return "action_generator"
-        elif "skipped_action" in self and self.skipped_action:
+        elif self.skipped_action:
             return "skipped_action"
         else:
             return "unknown"

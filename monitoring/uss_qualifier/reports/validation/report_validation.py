@@ -44,15 +44,15 @@ class TestReportElement:
 
 
 def _compare_number(value: float, comparison: NumericComparison) -> bool:
-    if "equal_to" in comparison and comparison.equal_to is not None:
+    if comparison.equal_to is not None:
         return value == comparison.equal_to
-    elif "at_least" in comparison and comparison.at_least is not None:
+    elif comparison.at_least is not None:
         return value >= comparison.at_least
-    elif "more_than" in comparison and comparison.more_than is not None:
+    elif comparison.more_than is not None:
         return value > comparison.more_than
-    elif "no_more_than" in comparison and comparison.no_more_than is not None:
+    elif comparison.no_more_than is not None:
         return value <= comparison.no_more_than
-    elif "less_than" in comparison and comparison.less_than is not None:
+    elif comparison.less_than is not None:
         return value < comparison.less_than
     else:
         raise ValueError(
@@ -61,15 +61,15 @@ def _compare_number(value: float, comparison: NumericComparison) -> bool:
 
 
 def _compare_severity(severity: Severity, comparison: SeverityComparison) -> bool:
-    if "equal_to" in comparison and comparison.equal_to:
+    if comparison.equal_to:
         return severity == comparison.equal_to
-    elif "at_least" in comparison and comparison.at_least:
+    elif comparison.at_least:
         return severity >= comparison.at_least
-    elif "higher_than" in comparison and comparison.higher_than:
+    elif comparison.higher_than:
         return severity > comparison.higher_than
-    elif "no_higher_than" in comparison and comparison.no_higher_than:
+    elif comparison.no_higher_than:
         return severity <= comparison.no_higher_than
-    elif "lower_than" in comparison and comparison.lower_than:
+    elif comparison.lower_than:
         return severity < comparison.lower_than
     else:
         raise ValueError(
@@ -83,18 +83,15 @@ def _compare_severity(severity: Severity, comparison: SeverityComparison) -> boo
 def _is_applicable(
     element: TestReportElement, applicability: ValidationCriterionApplicability
 ) -> bool:
-    if "test_scenarios" in applicability and applicability.test_scenarios is not None:
+    if applicability.test_scenarios is not None:
         if not isinstance(element.element, TestScenarioReport):
             return False
         return True
 
-    elif "failed_checks" in applicability and applicability.failed_checks is not None:
+    elif applicability.failed_checks is not None:
         if not isinstance(element.element, FailedCheck):
             return False
-        if (
-            "has_severity" in applicability.failed_checks
-            and applicability.failed_checks.has_severity is not None
-        ):
+        if applicability.failed_checks.has_severity is not None:
             if not _compare_severity(
                 element.element.severity, applicability.failed_checks.has_severity
             ):
@@ -104,26 +101,21 @@ def _is_applicable(
                 return False
         return True
 
-    elif (
-        "skipped_actions" in applicability and applicability.skipped_actions is not None
-    ):
+    elif applicability.skipped_actions is not None:
         if not isinstance(element.element, SkippedActionReport):
             return False
         return True
 
-    elif "address_is" in applicability and applicability.address_is is not None:
+    elif applicability.address_is is not None:
         return applicability.address_is == element.location
 
-    elif (
-        "does_not_satisfy" in applicability
-        and applicability.does_not_satisfy is not None
-    ):
+    elif applicability.does_not_satisfy is not None:
         return not _is_applicable(element, applicability.does_not_satisfy)
 
-    elif "satisfies_all" in applicability and applicability.satisfies_all is not None:
+    elif applicability.satisfies_all is not None:
         return all(_is_applicable(element, a) for a in applicability.satisfies_all)
 
-    elif "satisfies_any" in applicability and applicability.satisfies_any is not None:
+    elif applicability.satisfies_any is not None:
         return any(_is_applicable(element, a) for a in applicability.satisfies_any)
 
     else:
@@ -213,28 +205,28 @@ def _get_applicable_elements_from_action(
     location: JSONAddress,
     acceptable_findings: list[FullyQualifiedCheck],
 ) -> Iterator[TestReportElement]:
-    if "test_scenario" in report and report.test_scenario:
+    if report.test_scenario:
         return _get_applicable_elements_from_test_scenario(
             applicability,
             report.test_scenario,
             JSONAddress(location + ".test_scenario"),
             acceptable_findings,
         )
-    elif "test_suite" in report and report.test_suite:
+    elif report.test_suite:
         return _get_applicable_elements_from_test_suite(
             applicability,
             report.test_suite,
             JSONAddress(location + ".test_suite"),
             acceptable_findings,
         )
-    elif "action_generator" in report and report.action_generator:
+    elif report.action_generator:
         return _get_applicable_elements_from_action_generator(
             applicability,
             report.action_generator,
             JSONAddress(location + ".action_generator"),
             acceptable_findings,
         )
-    elif "skipped_action" in report and report.skipped_action:
+    elif report.skipped_action:
         return _get_applicable_elements_from_skipped_action(
             applicability,
             report.skipped_action,
@@ -250,7 +242,7 @@ def _get_applicable_elements_from_action(
 def _evaluate_element_condition(
     condition: EachElementCondition, element: TestReportElement
 ) -> bool:
-    if "has_severity" in condition and condition.has_severity is not None:
+    if condition.has_severity is not None:
         if isinstance(element.element, FailedCheck):
             return _compare_severity(element.element.severity, condition.has_severity)
         else:
@@ -259,14 +251,9 @@ def _evaluate_element_condition(
             )
             return False
 
-    elif (
-        "has_execution_error" in condition and condition.has_execution_error is not None
-    ):
+    elif condition.has_execution_error is not None:
         if isinstance(element.element, TestScenarioReport):
-            has_error = (
-                "execution_error" in element.element
-                and element.element.execution_error is not None
-            )
+            has_error = element.element.execution_error is not None
             return condition.has_execution_error == has_error
         else:
             return not condition.has_execution_error
@@ -280,7 +267,7 @@ def _evaluate_element_condition(
 def _evaluate_elements_condition(
     condition: ElementGroupCondition, elements: list[TestReportElement]
 ) -> bool:
-    if "count" in condition and condition.count is not None:
+    if condition.count is not None:
         return _compare_number(len(elements), condition.count)
 
     else:
@@ -292,22 +279,22 @@ def _evaluate_elements_condition(
 def _evaluate_condition(
     condition: PassCondition, elements: list[TestReportElement]
 ) -> bool:
-    if "each_element" in condition and condition.each_element is not None:
+    if condition.each_element is not None:
         for element in elements:
             if not _evaluate_element_condition(condition.each_element, element):
                 return False
         return True
 
-    elif "elements" in condition and condition.elements is not None:
+    elif condition.elements is not None:
         return _evaluate_elements_condition(condition.elements, elements)
 
-    elif "does_not_pass" in condition and condition.does_not_pass is not None:
+    elif condition.does_not_pass is not None:
         return not _evaluate_condition(condition.does_not_pass, elements)
 
-    elif "all_of" in condition and condition.all_of is not None:
+    elif condition.all_of is not None:
         return all(_evaluate_condition(c, elements) for c in condition.all_of)
 
-    elif "any_of" in condition and condition.any_of is not None:
+    elif condition.any_of is not None:
         return any(_evaluate_condition(c, elements) for c in condition.any_of)
 
     else:

@@ -231,13 +231,13 @@ class _DelaysSummary:
 def _summarize(
     report: TestSuiteActionReport,
 ) -> tuple[_ScenarioSummaryCollection, _QuerySummaryCollection, _DelaysSummary]:
-    if "test_scenario" in report and report.test_scenario:
+    if report.test_scenario:
         scenario = report.test_scenario
         if "start_time" not in scenario or not scenario.start_time:
             raise _GenerationError(
                 f"test scenario {scenario.scenario_type} is missing start_time"
             )
-        if "end_time" in scenario and scenario.end_time:
+        if scenario.end_time:
             duration = scenario.end_time.datetime - scenario.start_time.datetime
         elif scenario.latest_timestamp:
             duration = scenario.latest_timestamp - scenario.start_time.datetime
@@ -247,12 +247,12 @@ def _summarize(
             )
         query_time = timedelta(seconds=0)
         delay_time = timedelta(seconds=0)
-        if "delays" in scenario and scenario.delays:
+        if scenario.delays:
             for delay in scenario.delays:
                 delay_time += delay.duration.timedelta
         query_summaries = _QuerySummaryCollection()
         delays_summary = _DelaysSummary(times_per_reason={})
-        if "delays" in scenario and scenario.delays:
+        if scenario.delays:
             for delay in scenario.delays:
                 reason = (scenario.scenario_type, delay.reason)
                 if reason not in delays_summary.times_per_reason:
@@ -262,7 +262,7 @@ def _summarize(
             for case in scenario.cases:
                 if "steps" in case and case.steps:
                     for step in case.steps:
-                        if "queries" in step and step.queries:
+                        if step.queries:
                             for query in step.queries:
                                 dt = (
                                     query.response.reported.datetime
@@ -287,7 +287,7 @@ def _summarize(
                                 query_summaries[query_type].times_per_server[
                                     server
                                 ].append(dt)
-                        if "delays" in step and step.delays:
+                        if step.delays:
                             for delay in step.delays:
                                 delay_time += delay.duration.timedelta
                                 reason = (scenario.scenario_type, delay.reason)
@@ -308,11 +308,11 @@ def _summarize(
         )
         return scenario_summaries, query_summaries, delays_summary
 
-    elif "test_suite" in report and report.test_suite:
+    elif report.test_suite:
         actions = report.test_suite.actions
-    elif "action_generator" in report and report.action_generator:
+    elif report.action_generator:
         actions = report.action_generator.actions
-    elif "skipped_action" in report and report.skipped_action:
+    elif report.skipped_action:
         return (
             _ScenarioSummaryCollection(),
             _QuerySummaryCollection(),

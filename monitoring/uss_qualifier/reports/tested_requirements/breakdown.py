@@ -141,7 +141,7 @@ def _populate_breakdown_with_action_report(
     participant_ids: Iterable[ParticipantID],
     req_set: set[RequirementID] | None,
 ) -> None:
-    if "test_scenario" in action and action.test_scenario:
+    if action.test_scenario:
         return _populate_breakdown_with_scenario_report(
             breakdown,
             action.test_scenario,
@@ -149,17 +149,17 @@ def _populate_breakdown_with_action_report(
             participant_ids,
             req_set,
         )
-    elif "test_suite" in action and action.test_suite:
+    elif action.test_suite:
         for subaction in action.test_suite.actions:
             _populate_breakdown_with_action_report(
                 breakdown, subaction, acceptable_findings, participant_ids, req_set
             )
-    elif "action_generator" in action and action.action_generator:
+    elif action.action_generator:
         for subaction in action.action_generator.actions:
             _populate_breakdown_with_action_report(
                 breakdown, subaction, acceptable_findings, participant_ids, req_set
             )
-    elif "skipped_action" in action and action.skipped_action:
+    elif action.skipped_action:
         if (
             req_set is not None
             and REQ_RUN_TO_COMPLETION in req_set
@@ -176,7 +176,7 @@ def _populate_breakdown_with_timeout_skip(
     breakdown: TestedBreakdown, skipped_action: SkippedActionReport
 ) -> None:
     declaration = skipped_action.declaration
-    if "test_scenario" in declaration and declaration.test_scenario:
+    if declaration.test_scenario:
         doc = get_documentation(
             get_scenario_type_by_name(declaration.test_scenario.scenario_type)
         )
@@ -186,12 +186,12 @@ def _populate_breakdown_with_timeout_skip(
             documentation_url=doc.url,
             cases=[],
         )
-    elif "test_suite" in declaration and declaration.test_suite:
+    elif declaration.test_suite:
         type_name = declaration.test_suite.type_name
         default_scenario = TestedScenario(
             name=f"(Test suite) {type_name}", type=type_name, url="", cases=[]
         )
-    elif "action_generator" in declaration and declaration.action_generator:
+    elif declaration.action_generator:
         type_name = declaration.action_generator.generator_type
         default_scenario = TestedScenario(
             name=f"(Action generator) {type_name}", type=type_name, url="", cases=[]
@@ -244,7 +244,7 @@ def _populate_breakdown_with_scenario_report(
     for case in scenario_report.cases:
         for step in case.steps:
             steps.append((case, step))
-    if "cleanup" in scenario_report and scenario_report.cleanup:
+    if scenario_report.cleanup:
         steps.append((None, scenario_report.cleanup))
 
     for case, step in steps:
@@ -422,12 +422,12 @@ def _populate_breakdown_with_action_declaration(
     acceptable_findings: list[FullyQualifiedCheck],
     req_set: set[RequirementID] | None,
 ) -> None:
-    if "test_scenario" in action and action.test_scenario:
+    if action.test_scenario:
         _populate_breakdown_with_scenario(
             breakdown, action.test_scenario.scenario_type, acceptable_findings, req_set
         )
-    elif "test_suite" in action and action.test_suite:
-        if "suite_type" in action.test_suite and action.test_suite.suite_type:
+    elif action.test_suite:
+        if action.test_suite.suite_type:
             suite_def: TestSuiteDefinition = ImplicitDict.parse(
                 load_dict_with_references(action.test_suite.suite_type, package_root),
                 TestSuiteDefinition,
@@ -436,17 +436,14 @@ def _populate_breakdown_with_action_declaration(
                 _populate_breakdown_with_action_declaration(
                     breakdown, a, acceptable_findings, req_set
                 )
-        elif (
-            "suite_definition" in action.test_suite
-            and action.test_suite.suite_definition
-        ):
+        elif action.test_suite.suite_definition:
             for a in action.test_suite.suite_definition.actions:
                 _populate_breakdown_with_action_declaration(
                     breakdown, a, acceptable_findings, req_set
                 )
         else:
             raise ValueError("Test suite action missing suite type or definition")
-    elif "action_generator" in action and action.action_generator:
+    elif action.action_generator:
         potential_actions = list_potential_actions_for_action_generator_definition(
             action.action_generator
         )

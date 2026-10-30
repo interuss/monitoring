@@ -101,11 +101,7 @@ def make_scenario_kml(scenario: TestedScenario) -> str:
             step_folder = kml.Folder(kml.name(step.name))
             case_folder.append(step_folder)
             for event in step.events:
-                if (
-                    not event.query
-                    or "query_type" not in event.query
-                    or not event.query.query_type
-                ):
+                if not event.query or not event.query.query_type:
                     continue  # Only visualize queries of known types
                 if event.query.query_type not in _query_kml_renderers:
                     continue  # Only visualize queries with renderers
