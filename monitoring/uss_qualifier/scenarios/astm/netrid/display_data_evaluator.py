@@ -545,10 +545,10 @@ class RIDObservationEvaluator:
 
                 self._test_scenario.record_query(query)
 
-                if query.status_code != 200:
+                if details_obs is None:
                     check.record_failed(
                         summary=f"Observation of details failed for {mapping.observed_flight.id}",
-                        details=f"When queried for details of observation (ID {mapping.observed_flight.id}), {observer.participant_id} returned code {query.status_code}",
+                        details=f"When queried for details of observation (ID {mapping.observed_flight.id}), {observer.participant_id} did not return a valid details response (code {query.status_code})",
                         query_timestamps=[query.request.timestamp],
                     )
                 else:
