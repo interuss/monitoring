@@ -281,7 +281,7 @@ class DownUSS(TestScenario):
             ) as check:
                 if resp.activity_result == PlanningActivityResult.Rejected:
                     msg = f"{self.tested_uss.participant_id} indicated {resp.activity_result}"
-                    if "notes" in resp and resp.notes:
+                    if resp.notes:
                         msg += f' with notes "{resp.notes}"'
                     else:
                         msg += " with no notes"

@@ -239,11 +239,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
                 # Do not attempt to notify ourselves
                 continue
 
-            pid = (
-                notification.query.participant_id
-                if "participant_id" in notification.query
-                else None
-            )
+            pid = notification.query.participant_id
             with self.check("Notified subscriber", [pid] if pid else []) as check:
                 if not notification.success:
                     check.record_failed(
@@ -449,11 +445,7 @@ class ISASubscriptionInteractions(GenericTestScenario):
         for subscriber_url, notification in deleted_isa.notifications.items():
             # For checking the notifications, we ignore the request we made for the subscription that we created.
             if self._isa.base_url not in subscriber_url:
-                pid = (
-                    notification.query.participant_id
-                    if "participant_id" in notification.query
-                    else None
-                )
+                pid = notification.query.participant_id
                 with self.check("Notified subscriber", [pid] if pid else []) as check:
                     if not notification.success:
                         check.record_failed(

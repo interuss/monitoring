@@ -726,11 +726,7 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
         super().__init__(specification, resource_origin)
         self._specification = specification
         self._auth_adapter = auth_adapter
-        timeout_seconds = (
-            specification.timeout_seconds
-            if "timeout_seconds" in specification
-            else None
-        )
+        timeout_seconds = specification.timeout_seconds
         self._client = utm_client_session_factory.get_session(
             self._specification.base_url, auth_adapter.adapter, timeout_seconds
         )
@@ -802,8 +798,7 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
             self._specification.participant_id,
             (
                 self._specification.user_participant_ids
-                if "user_participant_ids" in self._specification
-                and self._specification.user_participant_ids
+                if self._specification.user_participant_ids
                 else []
             ),
             self._specification.base_url,

@@ -44,7 +44,7 @@ class PlanningAreaSpecification(ImplicitDict):
     used."""
 
     def get_base_url(self, frames_above: int = 1):
-        if "base_url" in self and self.base_url is not None:
+        if self.base_url is not None:
             return self.base_url
         return make_fake_url(frames_above=frames_above + 1)
 

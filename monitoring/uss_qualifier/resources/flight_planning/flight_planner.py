@@ -31,14 +31,14 @@ class FlightPlannerConfiguration(ImplicitDict):
             raise ValueError(
                 "One of `scd_injection_base_url` or `v1_base_url` must be specified"
             )
-        if "scd_injection_base_url" in self and self.scd_injection_base_url:
+        if self.scd_injection_base_url:
             try:
                 urlparse(self.scd_injection_base_url)
             except ValueError:
                 raise ValueError(
                     "FlightPlannerConfiguration.scd_injection_base_url must be a URL"
                 )
-        if "v1_base_url" in self and self.v1_base_url:
+        if self.v1_base_url:
             try:
                 urlparse(self.v1_base_url)
             except ValueError:
@@ -47,12 +47,12 @@ class FlightPlannerConfiguration(ImplicitDict):
     def to_client(
         self, auth_adapter: infrastructure.AuthAdapter
     ) -> FlightPlannerClient:
-        if "scd_injection_base_url" in self and self.scd_injection_base_url:
+        if self.scd_injection_base_url:
             session = infrastructure.utm_client_session_factory.get_session(
                 self.scd_injection_base_url, auth_adapter, self.timeout_seconds
             )
             return SCDFlightPlannerClient(session, self.participant_id)
-        elif "v1_base_url" in self and self.v1_base_url:
+        elif self.v1_base_url:
             session = infrastructure.utm_client_session_factory.get_session(
                 self.v1_base_url, auth_adapter, self.timeout_seconds
             )

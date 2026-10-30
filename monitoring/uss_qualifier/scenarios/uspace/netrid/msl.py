@@ -59,7 +59,7 @@ class MSLAltitude(TestScenario):
                 or query.query_type != QueryType.InterUSSRIDObservationV1GetDisplayData
             ):
                 continue
-            if "json" not in query.response or not query.response.json:
+            if not query.response.json:
                 # Invalid observation; this should already have been recorded as a failure
                 continue
             try:
@@ -69,11 +69,11 @@ class MSLAltitude(TestScenario):
             except ValueError:
                 # Invalid observation; this should already have been recorded as a failure
                 continue
-            if "flights" not in resp or not resp.flights:
+            if not resp.flights:
                 continue
 
             self.record_query(query)
-            participant_id = query.participant_id if "participant_id" in query else None
+            participant_id = query.participant_id
             q = query.request.timestamp
             for flight in resp.flights:
                 with self.check(

@@ -464,7 +464,7 @@ def generate_aircraft_states(
         flat_states = []
         for f_idx, flight in enumerate(flights):
             for s_idx, state in enumerate(flight.states):
-                if "position" in state and state.position:
+                if state.position:
                     pt = LatLngPoint(lat=state.position.lat, lng=state.position.lng)
                     flat_states.append((f_idx, s_idx, pt, state))
 

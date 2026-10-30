@@ -132,7 +132,7 @@ class PendingCheck:
         queries: Query | Iterable[Query] | None = None,
     ) -> None:
         self._outcome_recorded = True
-        if "severity" in self._documentation and self._documentation.severity:
+        if self._documentation.severity:
             severity = self._documentation.severity
         else:
             raise ValueError(
@@ -169,13 +169,13 @@ class PendingCheck:
                     StringBasedDateTime(t) for t in query_timestamps
                 )
             if isinstance(queries, Query):
-                if "initiated_at" in queries.request and queries.request.initiated_at:
+                if queries.request.initiated_at:
                     query_report_timestamps.append(
                         StringBasedDateTime(queries.request.initiated_at)
                     )
             elif queries:
                 for query in queries:
-                    if "initiated_at" in query.request and query.request.initiated_at:
+                    if query.request.initiated_at:
                         query_report_timestamps.append(
                             StringBasedDateTime(query.request.initiated_at)
                         )
@@ -435,7 +435,7 @@ class GenericTestScenario(ABC):
             self._make_scenario_report()
             assert self._scenario_report is not None
 
-        if "notes" not in self._scenario_report or self._scenario_report.notes is None:
+        if self._scenario_report.notes is None:
             self._scenario_report.notes = {}
 
         if key in self._scenario_report.notes:
@@ -519,12 +519,12 @@ class GenericTestScenario(ABC):
         self._expect_phase({ScenarioPhase.RunningTestStep, ScenarioPhase.CleaningUp})
 
         # If the query has a previous one, record it first
-        if "_previous_query" in query and query._previous_query:
+        if query._previous_query:
             self.record_query(query._previous_query)
 
         assert self._step_report is not None
 
-        if "queries" not in self._step_report or self._step_report.queries is None:
+        if self._step_report.queries is None:
             self._step_report.queries = []
 
         for existing_query in self._step_report.queries:
@@ -652,7 +652,7 @@ class GenericTestScenario(ABC):
 
     def begin_cleanup(self) -> None:
         self._expect_phase(ScenarioPhase.ReadyForCleanup)
-        if "cleanup" not in self.documentation or self.documentation.cleanup is None:
+        if self.documentation.cleanup is None:
             raise RuntimeError(
                 f"Test scenario `{self.me()}` attempted to begin_cleanup, but no cleanup step is documented"
             )
@@ -671,7 +671,7 @@ class GenericTestScenario(ABC):
 
     def skip_cleanup(self) -> None:
         self._expect_phase(ScenarioPhase.ReadyForCleanup)
-        if "cleanup" in self.documentation and self.documentation.cleanup is not None:
+        if self.documentation.cleanup is not None:
             raise RuntimeError(
                 f"Test scenario `{self.me()}` skipped cleanup even though a cleanup step is documented"
             )
@@ -715,10 +715,7 @@ class GenericTestScenario(ABC):
                 self._expect_phase(ScenarioPhase.Complete)
             except RuntimeError as e:
                 self.record_execution_error(e)
-        if (
-            "end_time" not in self._scenario_report
-            or self._scenario_report.end_time is None
-        ):
+        if self._scenario_report.end_time is None:
             self._scenario_report.end_time = StringBasedDateTime(
                 arrow.utcnow().datetime
             )
@@ -749,14 +746,11 @@ class GenericTestScenario(ABC):
             reason=reason,
         )
         if self._phase == ScenarioPhase.RunningTestStep and self._step_report:
-            if "delays" not in self._step_report or not self._step_report.delays:
+            if not self._step_report.delays:
                 self._step_report.delays = []
             self._step_report.delays.append(delay)
         elif self._scenario_report:
-            if (
-                "delays" not in self._scenario_report
-                or not self._scenario_report.delays
-            ):
+            if not self._scenario_report.delays:
                 self._scenario_report.delays = []
             self._scenario_report.delays.append(delay)
         else:

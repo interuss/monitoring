@@ -53,11 +53,11 @@ def flight_info_templates_center(
             and template.basic_information.area
         ):
             for v4d_template in template.basic_information.area:
-                if "outline_polygon" in v4d_template and v4d_template.outline_polygon:
+                if v4d_template.outline_polygon:
                     for vertex in v4d_template.outline_polygon.vertices:
                         lats.append(vertex.lat)
                         lngs.append(vertex.lng)
-                elif "outline_circle" in v4d_template and v4d_template.outline_circle:
+                elif v4d_template.outline_circle:
                     lats.append(v4d_template.outline_circle.center.lat)
                     lngs.append(v4d_template.outline_circle.center.lng)
 
@@ -121,7 +121,7 @@ class FlightIntentCollection(ImplicitDict):
                     + ", ".join(i_id for i_id in unprocessed_intent_ids)
                 )
 
-        if "transformations" in self and self.transformations:
+        if self.transformations:
             for v in processed_intents.values():
                 xforms = (
                     v.transformations.copy()

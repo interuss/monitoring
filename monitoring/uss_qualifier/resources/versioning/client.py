@@ -52,7 +52,7 @@ class VersionProvidersResource(Resource[VersionProvidersSpecification]):
         )
         self.version_providers = []
         for instance in specification.instances:
-            if "interuss" in instance and instance.interuss:
+            if instance.interuss:
                 session = utm_client_session_factory.get_session(
                     prefix_url=instance.interuss.base_url,
                     auth_adapter=auth_adapter.adapter,

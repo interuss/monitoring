@@ -26,15 +26,15 @@ def find_heavy_traffic_concurrent_scenarios(
 ) -> list[TestScenarioReport]:
     """Recursively search for HeavyTrafficConcurrent scenarios in the action report."""
     scenarios = []
-    if "test_scenario" in action_report and action_report.test_scenario:
+    if action_report.test_scenario:
         if action_report.test_scenario.scenario_type.endswith(
             ".HeavyTrafficConcurrent"
         ):
             scenarios.append(action_report.test_scenario)
-    elif "test_suite" in action_report and action_report.test_suite:
+    elif action_report.test_suite:
         for action in action_report.test_suite.actions:
             scenarios.extend(find_heavy_traffic_concurrent_scenarios(action))
-    elif "action_generator" in action_report and action_report.action_generator:
+    elif action_report.action_generator:
         for action in action_report.action_generator.actions:
             scenarios.extend(find_heavy_traffic_concurrent_scenarios(action))
     return scenarios
@@ -45,20 +45,14 @@ def get_dss_participant_id(scenario: TestScenarioReport) -> str:
     # Attempt to extract participant ID from recorded queries
     for case in scenario.cases:
         for step in case.steps:
-            queries = (
-                step.queries if ("queries" in step and step.queries is not None) else []
-            )
+            queries = step.queries if (step.queries is not None) else []
 
             for q in queries:
                 if q.participant_id:
                     return q.participant_id
 
     # Fallback to resource_origins if queries not available
-    if (
-        "resource_origins" in scenario
-        and scenario.resource_origins
-        and "dss" in scenario.resource_origins
-    ):
+    if scenario.resource_origins and "dss" in scenario.resource_origins:
         return f"dss ({scenario.resource_origins['dss']})"
 
     return "unknown"
@@ -86,11 +80,7 @@ def extract_metrics(scenario: TestScenarioReport) -> dict:
         for step in case.steps:
             if step.name in step_mapping:
                 op = step_mapping[step.name]
-                queries = (
-                    step.queries
-                    if ("queries" in step and step.queries is not None)
-                    else []
-                )
+                queries = step.queries if (step.queries is not None) else []
                 if not queries:
                     continue
 

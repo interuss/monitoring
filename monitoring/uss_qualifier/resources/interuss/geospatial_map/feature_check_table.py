@@ -46,7 +46,7 @@ def generate_feature_check_table(
     spec: FeatureCheckTableGenerationSpecification,
 ) -> FeatureCheckTable:
     # Load dict resources
-    if "dict_resources" in spec and spec.dict_resources:
+    if spec.dict_resources:
         resources = {
             k: json.dumps(load_dict(v)) for k, v in spec.dict_resources.items()
         }
@@ -89,11 +89,9 @@ class FeatureCheckTableResource(Resource[FeatureCheckTableSpecification]):
         self, specification: FeatureCheckTableSpecification, resource_origin: str
     ):
         super().__init__(specification, resource_origin)
-        if "table" in specification and specification.table:
+        if specification.table:
             self.table = specification.table
-        elif (
-            "generate_at_runtime" in specification and specification.generate_at_runtime
-        ):
+        elif specification.generate_at_runtime:
             self.table = generate_feature_check_table(specification.generate_at_runtime)
         else:
             raise ValueError("No means to define FeatureCheckTable was specified")

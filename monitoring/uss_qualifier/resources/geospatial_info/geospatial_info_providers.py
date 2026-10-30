@@ -27,7 +27,7 @@ class GeospatialInfoProviderConfiguration(ImplicitDict):
 
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
-        if "geospatial_map_v1_base_url" in self and self.geospatial_map_v1_base_url:
+        if self.geospatial_map_v1_base_url:
             try:
                 urlparse(self.geospatial_map_v1_base_url)
             except ValueError:
@@ -36,7 +36,7 @@ class GeospatialInfoProviderConfiguration(ImplicitDict):
                 )
 
     def to_client(self, auth_adapter: AuthAdapter) -> GeospatialInfoClient:
-        if "geospatial_map_v1_base_url" in self and self.geospatial_map_v1_base_url:
+        if self.geospatial_map_v1_base_url:
             session = utm_client_session_factory.get_session(
                 self.geospatial_map_v1_base_url, auth_adapter, self.timeout_seconds
             )
@@ -64,10 +64,7 @@ class GeospatialInfoProviderResource(Resource[GeospatialInfoProviderSpecificatio
         auth_adapter: AuthAdapterResource,
     ):
         super().__init__(specification, resource_origin)
-        if (
-            "geospatial_map_v1_base_url" in specification.geospatial_info_provider
-            and specification.geospatial_info_provider.geospatial_map_v1_base_url
-        ):
+        if specification.geospatial_info_provider.geospatial_map_v1_base_url:
             auth_adapter.assert_scopes_available(
                 scopes_required={
                     ScopeGeospatialMap.Query: "query geospatial map features from USSs under test",

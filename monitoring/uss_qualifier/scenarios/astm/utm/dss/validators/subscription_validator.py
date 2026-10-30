@@ -128,7 +128,7 @@ class SubscriptionValidator:
         with self._scenario.check(
             "Returned subscription has a start time", self._pid
         ) as check:
-            if "time_start" not in dss_sub or dss_sub.time_start is None:
+            if dss_sub.time_start is None:
                 self._fail_sub_check(
                     check,
                     summary="Returned subscription has no start time",
@@ -139,7 +139,7 @@ class SubscriptionValidator:
         with self._scenario.check(
             "Returned subscription has an end time", self._pid
         ) as check:
-            if "time_end" not in dss_sub or dss_sub.time_end is None:
+            if dss_sub.time_end is None:
                 self._fail_sub_check(
                     check,
                     summary="Returned subscription has no end time",

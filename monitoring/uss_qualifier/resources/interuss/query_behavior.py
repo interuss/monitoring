@@ -36,10 +36,7 @@ class QueryBehaviorResource(Resource[QueryBehaviorSpecification]):
     ):
         super().__init__(specification, resource_origin)
 
-        if (
-            "connect_timeout_seconds" in specification
-            and specification.connect_timeout_seconds is not None
-        ):
+        if specification.connect_timeout_seconds is not None:
             if specification.connect_timeout_seconds < 0:
                 raise ValueError("A negative connection timeout does not make sense")
             if specification.connect_timeout_seconds == 0:
@@ -50,10 +47,7 @@ class QueryBehaviorResource(Resource[QueryBehaviorSpecification]):
                 f"QueryBehaviorResource: Fetch query connect timeout set to {settings.connect_timeout_seconds} seconds"
             )
 
-        if (
-            "read_timeout_seconds" in specification
-            and specification.read_timeout_seconds is not None
-        ):
+        if specification.read_timeout_seconds is not None:
             if specification.read_timeout_seconds < 0:
                 raise ValueError("A negative read timeout does not make sense")
             if specification.read_timeout_seconds == 0:
@@ -64,7 +58,7 @@ class QueryBehaviorResource(Resource[QueryBehaviorSpecification]):
                 f"QueryBehaviorResource: Fetch query read timeout set to {settings.read_timeout_seconds} seconds"
             )
 
-        if "attempts" in specification and specification.attempts is not None:
+        if specification.attempts is not None:
             if specification.attempts < 1:
                 raise ValueError(
                     "It only makes sense to make at least one query attempt"
@@ -74,16 +68,13 @@ class QueryBehaviorResource(Resource[QueryBehaviorSpecification]):
                 f"QueryBehaviorResource: Fetch query number of attempts set to {settings.attempts}"
             )
 
-        if (
-            "add_request_id" in specification
-            and specification.add_request_id is not None
-        ):
+        if specification.add_request_id is not None:
             settings.add_request_id = specification.add_request_id
             logger.info(
                 f"QueryBehaviorResource: Fetch query set to {'' if settings.add_request_id else 'not '} add `request_id`"
             )
 
-        if "fake_netlocs" in specification and specification.fake_netlocs is not None:
+        if specification.fake_netlocs is not None:
             settings.fake_netlocs = tuple(specification.fake_netlocs)
             logger.info(
                 f"QueryBehaviorResource: Fake network locations set to {settings.fake_netlocs}"

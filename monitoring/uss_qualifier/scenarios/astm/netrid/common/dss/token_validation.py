@@ -408,11 +408,7 @@ class TokenValidation(GenericTestScenario):
 
     def _verify_notifications(self, notifications: dict[str, ISAChangeNotification]):
         for subscriber_url, notification in notifications.items():
-            pid = (
-                notification.query.participant_id
-                if "participant_id" in notification.query
-                else None
-            )
+            pid = notification.query.participant_id
             with self.check("Notified subscriber", [pid] if pid else []) as check:
                 if not notification.success:
                     check.record_failed(

@@ -45,11 +45,7 @@ class StoreFlightData(TestScenario):
         self.begin_test_case("Store flight data")
         self.begin_test_step("Store flight data")
 
-        if (
-            "flight_record_collection_path"
-            in self._storage_config.storage_configuration
-            and self._storage_config.storage_configuration.flight_record_collection_path
-        ):
+        if self._storage_config.storage_configuration.flight_record_collection_path:
             dirname = os.path.dirname(
                 self._storage_config.storage_configuration.flight_record_collection_path
             )
@@ -60,10 +56,7 @@ class StoreFlightData(TestScenario):
             ) as f:
                 json.dump(self._flights_data.flight_collection, f, indent=2)
 
-        if (
-            "geojson_tracks_path" in self._storage_config.storage_configuration
-            and self._storage_config.storage_configuration.geojson_tracks_path
-        ):
+        if self._storage_config.storage_configuration.geojson_tracks_path:
             flight_point_current_index = {}
             num_flights = len(self._flights_data.flight_collection.flights)
             for i in range(num_flights):

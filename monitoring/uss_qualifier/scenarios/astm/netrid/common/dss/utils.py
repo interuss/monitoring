@@ -66,11 +66,7 @@ def delete_isa_if_exists(
             # This is useful to ignore notifications we send to ourselves
             # and that are likely failures as we don't have the machinery to accept them.
             if ignore_base_url is None or ignore_base_url not in subscriber_url:
-                pid = (
-                    notification.query.participant_id
-                    if "participant_id" in notification.query
-                    else None
-                )
+                pid = notification.query.participant_id
                 with scenario.check(
                     "Notified subscriber", [pid] if pid else []
                 ) as check:
