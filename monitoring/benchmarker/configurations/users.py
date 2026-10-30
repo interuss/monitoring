@@ -63,7 +63,7 @@ class IndependentComponentsFlightGenerationSpecification(ImplicitDict):
 
     shape: FlightShapeGenerationSpecification
     """Means to generate flight shapes.
-    
+
     Note that these volumes represent planned volumes and the flight may be ended before the end of the volumes."""
 
 
@@ -106,7 +106,7 @@ class ASTMNetRIDBehaviorSpecification(ImplicitDict):
 
     dss_pool: list[ResourceID]
     """Means to interact with the ASTM DSS.
-    
+
     Benchmark configuration must contain a `resources.astm.f3411.DSSInstanceResource` resource with each of these names."""
 
     dss_selection_strategy: Optional[ASTMDSSSelectionStrategy]
@@ -127,8 +127,81 @@ class FlightPlannerSpecification(ImplicitDict):
     """How flight planner provides strategic conflict detection service for their flights."""
 
 
+class NetRIDObserverBehaviorSpecification(ImplicitDict):
+    """How each virtual observer served by a NetRID display provider behaves."""
+
+    area: LatLngBoundingBox
+    """The center of each observation is drawn uniformly at random within this area."""
+
+    view_lat_size: float
+    """Height, in degrees of latitude, of the rectangle observed (centered on the observation center)."""
+
+    view_lng_size: float
+    """Width, in degrees of longitude, of the rectangle observed (centered on the observation center)."""
+
+    min_observation_duration: StringBasedTimeDelta
+    """Duration of each observation is drawn uniformly at random between this value and max_observation_duration."""
+
+    max_observation_duration: StringBasedTimeDelta
+    """Duration of each observation is drawn uniformly at random between min_observation_duration and this value."""
+
+    query_interval: StringBasedTimeDelta
+    """While observing, the observer queries its display provider for flights in its observed rectangle this often."""
+
+    mean_time_between_observations: StringBasedTimeDelta
+    """Time between the end of an observation and the start of the observer's next observation is exponentially distributed with this mean."""
+
+
+class NetRIDDisplayProviderSubscriptionStrategySpecification(ImplicitDict):
+    """How a NetRID display provider establishes subscriptions to serve its observers."""
+
+    s2_level: int
+    """The display provider maintains one subscription per S2 cell at this level, for each cell covering an area queried by an observer."""
+
+    min_alt: Altitude
+    """Altitude below which subscriptions do not apply."""
+
+    max_alt: Altitude
+    """Altitude above which subscriptions do not apply."""
+
+    initial_duration: StringBasedTimeDelta
+    """When an observer query covers a cell without an unexpired subscription, a subscription is created for that cell with this duration."""
+
+    extension_window: StringBasedTimeDelta
+    """When an observer query covers a cell whose subscription expires in less than this amount of time, the subscription is extended."""
+
+    extension_duration: StringBasedTimeDelta
+    """Amount of time by which the end of a subscription is pushed back when it is extended."""
+
+    delete_after_unused: Optional[StringBasedTimeDelta]
+    """If specified, a subscription is deleted when no observer query has covered its cell for this amount of time.  Otherwise, subscriptions are left to expire."""
+
+
+class NetRIDDisplayProviderSpecification(ImplicitDict):
+    """User acting as a NetRID display provider serving virtual observers."""
+
+    dss_pool: list[ResourceID]
+    """Means to interact with the ASTM DSS.
+
+    Benchmark configuration must contain a `resources.astm.f3411.DSSInstanceResource` resource with each of these names."""
+
+    dss_selection_strategy: Optional[ASTMDSSSelectionStrategy]
+
+    observers: int
+    """Number of virtual observers served by this display provider."""
+
+    observer_behavior: NetRIDObserverBehaviorSpecification
+    """How each of the virtual observers behaves."""
+
+    subscription_strategy: NetRIDDisplayProviderSubscriptionStrategySpecification
+    """How the display provider establishes subscriptions to serve its observers."""
+
+
 class BenchmarkUserSpecification(ImplicitDict):
     name: BenchmarkUserName
 
     flight_planner: Optional[FlightPlannerSpecification]
     """User is a USS client that plans flights coordinated with UTM technologies."""
+
+    netrid_dp: Optional[NetRIDDisplayProviderSpecification]
+    """User is a NetRID display provider serving virtual observers."""
