@@ -50,7 +50,7 @@ def log_file(code: str, content: Interaction) -> None:
 class InteractionLoggingHook(QueryHook):
     def on_query(self, query: Query) -> None:
         # TODO: Make this configurable instead of hardcoding exactly these query types
-        if "query_type" in query and query.query_type in {
+        if query.query_type in {
             QueryType.F3548v21USSGetOperationalIntentDetails,
             QueryType.F3548v21USSNotifyOperationalIntentDetailsChanged,
             QueryType.F3411v19USSGetFlightDetails,

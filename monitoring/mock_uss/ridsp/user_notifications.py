@@ -87,7 +87,7 @@ def check_and_generate_missing_fields_notifications(
                         )
                     )
 
-            if telemetry.get("position", None):
+            if telemetry.position:
                 for mandatory_field in MANDATORY_POSITION_FIELDS:
                     if telemetry["position"].get(mandatory_field, None) is None:
                         missing_fields_notifications.append(

@@ -85,7 +85,7 @@ def _make_flight_observation(
         speed_accuracy=flight.speed_accuracy,
         vertical_speed=flight.vertical_speed,
     )
-    h = p.get("height")
+    h = p.height
     if h:
         h.distance = limit_resolution(h.distance, MinHeightResolution)
     return observation_api.Flight(

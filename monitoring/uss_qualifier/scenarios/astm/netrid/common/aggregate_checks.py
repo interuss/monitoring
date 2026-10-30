@@ -61,14 +61,15 @@ class AggregateChecks(GenericTestScenario):
 
         for query in self._queries:
             for base_url, participant in self._participants_by_base_url.items():
-                if query.request.url.startswith(
-                    base_url
-                ) and not query.has_field_with_value("participant_id"):
+                if (
+                    query.request.url.startswith(base_url)
+                    and query.participant_id is None
+                ):
                     query.participant_id = participant
                     break
 
             # Only consider queries with the participant/server explicitly identified
-            if query.has_field_with_value("participant_id"):
+            if query.participant_id is not None:
                 participant_queries = self._queries_by_participant.get(
                     query.participant_id, []
                 )
@@ -134,7 +135,7 @@ class AggregateChecks(GenericTestScenario):
         unattr_queries = [
             f"{query.request.method} {query.request.url}"
             for query in self._queries
-            if query.get("participant_id") is None
+            if query.participant_id is None
         ]
         query_list = "\n".join("  * " + q for q in unattr_queries)
         msg = f"Found unattributed queries:\n{query_list}"
@@ -178,7 +179,7 @@ class AggregateChecks(GenericTestScenario):
             for query in all_queries:
                 if (
                     query.status_code == 200
-                    and query.has_field_with_value("query_type")
+                    and query.query_type is not None
                     and query.query_type == QueryType.InterUSSRIDObservationV1GetDetails
                 ):
                     relevant_queries.append(query)
@@ -219,7 +220,7 @@ class AggregateChecks(GenericTestScenario):
             # identify successful flights queries
             relevant_queries: list[fetch.Query] = list()
             for query in all_queries:
-                if query.has_field_with_value("query_type") and (
+                if query.query_type is not None and (
                     # TODO find a cleaner way than checking for version here
                     query.query_type == QueryType.F3411v19USSSearchFlights
                     or query.query_type == QueryType.F3411v22aUSSSearchFlights

@@ -187,7 +187,7 @@ class Position(ImplicitDict):
             lng=p.lng,
             alt=p.alt,
             time=t.datetime,
-            height=p.get("height"),
+            height=p.height,
             accuracy_v=p.accuracy_v,
             accuracy_h=p.accuracy_h,
         )
@@ -268,18 +268,16 @@ class Flight(ImplicitDict):
     @property
     def operational_status(self) -> str | None:
         if self.rid_version == RIDVersion.f3411_19:
-            if not self.v19_value.has_field_with_value(
-                "current_state"
-            ) or not self.v19_value.current_state.has_field_with_value(
-                "operational_status"
+            if (
+                self.v19_value.current_state is None
+                or self.v19_value.current_state.operational_status is None
             ):
                 return None
             return self.v19_value.current_state.operational_status
         elif self.rid_version == RIDVersion.f3411_22a:
-            if not self.v22a_value.has_field_with_value(
-                "current_state"
-            ) or not self.v22a_value.current_state.has_field_with_value(
-                "operational_status"
+            if (
+                self.v22a_value.current_state is None
+                or self.v22a_value.current_state.operational_status is None
             ):
                 return None
             return self.v22a_value.current_state.operational_status
@@ -291,15 +289,17 @@ class Flight(ImplicitDict):
     @property
     def track(self) -> float | None:
         if self.rid_version == RIDVersion.f3411_19:
-            if not self.v19_value.has_field_with_value(
-                "current_state"
-            ) or not self.v19_value.current_state.has_field_with_value("track"):
+            if (
+                self.v19_value.current_state is None
+                or not self.v19_value.current_state.has_field_with_value("track")
+            ):
                 return None
             return self.v19_value.current_state.track
         elif self.rid_version == RIDVersion.f3411_22a:
-            if not self.v22a_value.has_field_with_value(
-                "current_state"
-            ) or not self.v22a_value.current_state.has_field_with_value("track"):
+            if (
+                self.v22a_value.current_state is None
+                or self.v22a_value.current_state.track is None
+            ):
                 return None
             return self.v22a_value.current_state.track
         else:
@@ -310,15 +310,17 @@ class Flight(ImplicitDict):
     @property
     def speed(self) -> float | None:
         if self.rid_version == RIDVersion.f3411_19:
-            if not self.v19_value.has_field_with_value(
-                "current_state"
-            ) or not self.v19_value.current_state.has_field_with_value("speed"):
+            if (
+                self.v19_value.current_state is None
+                or not self.v19_value.current_state.has_field_with_value("speed")
+            ):
                 return None
             return self.v19_value.current_state.speed
         elif self.rid_version == RIDVersion.f3411_22a:
-            if not self.v22a_value.has_field_with_value(
-                "current_state"
-            ) or not self.v22a_value.current_state.has_field_with_value("speed"):
+            if (
+                self.v22a_value.current_state is None
+                or self.v22a_value.current_state.speed is None
+            ):
                 return None
             return self.v22a_value.current_state.speed
         else:
@@ -329,11 +331,11 @@ class Flight(ImplicitDict):
     @property
     def timestamp(self) -> StringBasedDateTime | None:
         if self.rid_version == RIDVersion.f3411_19:
-            if not self.v19_value.has_field_with_value("current_state"):
+            if self.v19_value.current_state is None:
                 return None
             return self.v19_value.current_state.timestamp
         elif self.rid_version == RIDVersion.f3411_22a:
-            if not self.v22a_value.has_field_with_value("current_state"):
+            if self.v22a_value.current_state is None:
                 return None
             return self.v22a_value.current_state.timestamp.value
         else:
@@ -344,11 +346,11 @@ class Flight(ImplicitDict):
     @property
     def timestamp_accuracy(self) -> float | None:
         if self.rid_version == RIDVersion.f3411_19:
-            if not self.v19_value.has_field_with_value("current_state"):
+            if self.v19_value.current_state is None:
                 return None
             return self.v19_value.current_state.timestamp_accuracy
         elif self.rid_version == RIDVersion.f3411_22a:
-            if not self.v22a_value.has_field_with_value("current_state"):
+            if self.v22a_value.current_state is None:
                 return None
             return self.v22a_value.current_state.timestamp_accuracy
         else:
@@ -361,11 +363,11 @@ class Flight(ImplicitDict):
         self,
     ) -> v19.api.SpeedAccuracy | v22a.api.SpeedAccuracy | None:
         if self.rid_version == RIDVersion.f3411_19:
-            if not self.v19_value.has_field_with_value("current_state"):
+            if self.v19_value.current_state is None:
                 return None
             return self.v19_value.current_state.speed_accuracy
         elif self.rid_version == RIDVersion.f3411_22a:
-            if not self.v22a_value.has_field_with_value("current_state"):
+            if self.v22a_value.current_state is None:
                 return None
             return self.v22a_value.current_state.speed_accuracy
         else:
@@ -376,11 +378,11 @@ class Flight(ImplicitDict):
     @property
     def vertical_speed(self) -> float | None:
         if self.rid_version == RIDVersion.f3411_19:
-            if not self.v19_value.has_field_with_value("current_state"):
+            if self.v19_value.current_state is None:
                 return None
             return self.v19_value.current_state.vertical_speed
         elif self.rid_version == RIDVersion.f3411_22a:
-            if not self.v22a_value.has_field_with_value("current_state"):
+            if self.v22a_value.current_state is None:
                 return None
             return self.v22a_value.current_state.vertical_speed
         else:
@@ -410,15 +412,16 @@ class Flight(ImplicitDict):
         self,
     ) -> v19.api.RIDHeight | v22a.api.RIDHeight | None:
         if self.rid_version == RIDVersion.f3411_19:
-            if not self.v19_value.has_field_with_value(
-                "current_state"
-            ) or not self.v19_value.current_state.has_field_with_value("height"):
+            if (
+                self.v19_value.current_state is None
+                or self.v19_value.current_state.height is None
+            ):
                 return None
             return self.v19_value.current_state.height
         elif self.rid_version == RIDVersion.f3411_22a:
             if (
                 not self.most_recent_position
-                or not self.most_recent_position.has_field_with_value("height")
+                or self.most_recent_position.height is None
             ):
                 return None
             return self.most_recent_position.height
@@ -562,7 +565,7 @@ class FlightDetails(ImplicitDict):
         if self.rid_version == RIDVersion.f3411_19:
             return None
         elif self.rid_version == RIDVersion.f3411_22a:
-            if self.v22a_value.has_field_with_value("eu_classification"):
+            if self.v22a_value.eu_classification is not None:
                 return self.v22a_value.eu_classification
             else:
                 return None
@@ -576,14 +579,14 @@ class FlightDetails(ImplicitDict):
         self,
     ) -> geo.LatLngPoint | None:
         if self.rid_version == RIDVersion.f3411_19:
-            if not self.v19_value.has_field_with_value("operator_location"):
+            if self.v19_value.operator_location is None:
                 return None
             return geo.LatLngPoint(
                 lat=self.v19_value.operator_location.lat,
                 lng=self.v19_value.operator_location.lng,
             )
         elif self.rid_version == RIDVersion.f3411_22a:
-            if not self.v22a_value.has_field_with_value("operator_location"):
+            if self.v22a_value.operator_location is None:
                 return None
             pos = self.v22a_value.operator_location.position
             return geo.LatLngPoint(lat=pos.lat, lng=pos.lng)
@@ -599,9 +602,10 @@ class FlightDetails(ImplicitDict):
         if self.rid_version == RIDVersion.f3411_19:
             return None
         elif self.rid_version == RIDVersion.f3411_22a:
-            if not self.v22a_value.has_field_with_value(
-                "operator_location"
-            ) or not self.v22a_value.operator_location.has_field_with_value("altitude"):
+            if (
+                self.v22a_value.operator_location is None
+                or self.v22a_value.operator_location.altitude is None
+            ):
                 return None
             alt = self.v22a_value.operator_location.altitude
             return geo.Altitude(
@@ -619,10 +623,9 @@ class FlightDetails(ImplicitDict):
         if self.rid_version == RIDVersion.f3411_19:
             return None
         elif self.rid_version == RIDVersion.f3411_22a:
-            if not self.v22a_value.has_field_with_value(
-                "operator_location"
-            ) or not self.v22a_value.operator_location.has_field_with_value(
-                "altitude_type"
+            if (
+                self.v22a_value.operator_location is None
+                or self.v22a_value.operator_location.altitude_type is None
             ):
                 return None
             return self.v22a_value.operator_location.altitude_type
@@ -638,9 +641,10 @@ class FlightDetails(ImplicitDict):
         if self.rid_version == RIDVersion.f3411_19:
             return self.v19_value.serial_number
         elif self.rid_version == RIDVersion.f3411_22a:
-            if self.v22a_value.has_field_with_value(
-                "uas_id"
-            ) and self.v22a_value.uas_id.has_field_with_value("serial_number"):
+            if (
+                self.v22a_value.uas_id is not None
+                and self.v22a_value.uas_id.serial_number is not None
+            ):
                 return self.v22a_value.uas_id.serial_number
             else:
                 return None
@@ -656,9 +660,10 @@ class FlightDetails(ImplicitDict):
         if self.rid_version == RIDVersion.f3411_19:
             return self.v19_value.registration_number
         elif self.rid_version == RIDVersion.f3411_22a:
-            if self.v22a_value.has_field_with_value(
-                "uas_id"
-            ) and self.v22a_value.uas_id.has_field_with_value("registration_id"):
+            if (
+                self.v22a_value.uas_id is not None
+                and self.v22a_value.uas_id.registration_id is not None
+            ):
                 return self.v22a_value.uas_id.registration_id
             else:
                 return None

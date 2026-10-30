@@ -68,7 +68,7 @@ def create_geozone_source(
         ), 400
 
     return flask.jsonify(
-        GeozoneSourceResponse(result=source.state, message=source.get("message", None))
+        GeozoneSourceResponse(result=source.state, message=source.message)
     ), 200
 
 

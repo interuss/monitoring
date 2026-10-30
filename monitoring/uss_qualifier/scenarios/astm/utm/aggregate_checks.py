@@ -37,9 +37,7 @@ class AggregateChecks(TestScenario):
             for flight_planner in self.flight_planners.flight_planners
         }
         for query in self._queries:
-            if not query.has_field_with_value(
-                "participant_id"
-            ) or not query.has_field_with_value("query_type"):
+            if query.participant_id is None or query.query_type is None:
                 continue
 
             if query.participant_id in self._attributed_queries:
