@@ -959,6 +959,9 @@ class RIDObservationEvaluator:
                         query_timestamps=[details_query.query.request.timestamp],
                     )
 
+            if not details_query.success:
+                continue
+
             # Get details that are expected to be valid for the present telemetry:
             telemetry_inj = mapping.injected_flight.flight.telemetry[
                 mapping.telemetry_index
