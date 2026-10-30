@@ -130,7 +130,7 @@ def scdsc_notify_operational_intent_details_changed():
             400,
         )
 
-    if "operational_intent" in op_intent_data and op_intent_data.operational_intent:
+    if op_intent_data.operational_intent:
         # An op intent is being created or modified; check if it conflicts with any flights we're managing
         with db.transact() as tx:
             if conflicts_with_flightrecords(
@@ -168,7 +168,7 @@ def scdsc_make_uss_report():
         )
 
     # Construct the ErrorReport object, primarily from the request
-    if "report_id" not in report or not report.report_id:
+    if not report.report_id:
         report.report_id = str(uuid.uuid4())
 
     # Log the error report

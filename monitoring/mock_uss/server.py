@@ -237,8 +237,7 @@ class MockUSS(flask.Flask):
                         periodic_task = tx.value.periodic_tasks[task_to_execute]
                         periodic_task.executing = False
                         if (
-                            "period" in periodic_task
-                            and periodic_task.period
+                            periodic_task.period
                             and periodic_task.period.timedelta.total_seconds() == 0
                         ):
                             periodic_task.last_execution_time = StringBasedDateTime(

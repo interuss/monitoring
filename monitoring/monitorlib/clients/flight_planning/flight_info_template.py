@@ -56,7 +56,7 @@ class FlightInfoTemplate(ImplicitDict):
     def resolve(self, context: TestTimeContext) -> FlightInfo:
         kwargs = {k: v for k, v in self.items() if k not in {"transformations"}}
         basic_info = self.basic_information.resolve(context)
-        if "transformations" in self and self.transformations:
+        if self.transformations:
             for xform in self.transformations:
                 basic_info.area = [v.transform(xform) for v in basic_info.area]
         kwargs["basic_information"] = basic_info
@@ -68,14 +68,11 @@ class FlightInfoTemplate(ImplicitDict):
         """Render a legacy SCD injection API request object from this object."""
 
         info = self.resolve(context)
-        if "astm_f3548_21" not in info or not info.astm_f3548_21:
+        if not info.astm_f3548_21:
             raise ValueError(
                 "Legacy SCD injection API requires astm_f3548_21 operational intent priority to be specified in FlightInfo"
             )
-        if (
-            "uspace_flight_authorisation" not in info
-            or not info.uspace_flight_authorisation
-        ):
+        if not info.uspace_flight_authorisation:
             raise ValueError(
                 "Legacy SCD injection API requires uspace_flight_authorisation to be specified in FlightInfo"
             )

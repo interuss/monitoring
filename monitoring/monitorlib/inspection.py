@@ -241,7 +241,7 @@ def evaluate_attributes(
 
         actual_val = _get_attr_value(obj, attr_name)
 
-        if "equals_string_value" in pair and pair.equals_string_value is not None:
+        if pair.equals_string_value is not None:
             if not isinstance(actual_val, str):
                 failures.append(
                     f"Attribute '{attr_name}' expected to be of type 'str', but observed type '{type(actual_val).__name__}'."
@@ -251,7 +251,7 @@ def evaluate_attributes(
                     f"Attribute '{attr_name}': Expected string value '{pair.equals_string_value}', but observed '{actual_val}'."
                 )
 
-        if "equals_number_value" in pair and pair.equals_number_value is not None:
+        if pair.equals_number_value is not None:
             if not isinstance(actual_val, (int, float)):
                 failures.append(
                     f"Attribute '{attr_name}' expected to be numeric, but observed type '{type(actual_val).__name__}'."

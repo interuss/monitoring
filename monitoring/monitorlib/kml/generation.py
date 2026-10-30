@@ -86,9 +86,9 @@ def make_placemark_from_volume(
     style_url: str | None = None,
     description: str | None = None,
 ):
-    if "outline_polygon" in v4.volume and v4.volume.outline_polygon:
+    if v4.volume.outline_polygon:
         vertices = v4.volume.outline_polygon.vertices
-    elif "outline_circle" in v4.volume and v4.volume.outline_circle:
+    elif v4.volume.outline_circle:
         center = v4.volume.outline_circle.center
         r = _distance_value_of(v4.volume.outline_circle.radius)
         N_VERTICES = 32
@@ -110,10 +110,8 @@ def make_placemark_from_volume(
         name=name,
         style_url=style_url,
         description=description,
-        time_start=v4.time_start.datetime
-        if "time_start" in v4 and v4.time_start
-        else None,
-        time_end=v4.time_end.datetime if "time_end" in v4 and v4.time_end else None,
+        time_start=v4.time_start.datetime if v4.time_start else None,
+        time_end=v4.time_end.datetime if v4.time_end else None,
     )
 
     # Create top and bottom of the volume

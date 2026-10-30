@@ -369,25 +369,25 @@ class FlightInfo(ImplicitDict):
                 plan.basic_information
             )
         )
-        if "uas" in plan and plan.uas:
+        if plan.uas:
             result.uas = ImplicitDict.parse(plan.uas, UASInformation)
-        if "operator" in plan and plan.operator:
+        if plan.operator:
             result.operator = ImplicitDict.parse(plan.operator, OperatorInformation)
-        if "telemetry" in plan and plan.telemetry:
+        if plan.telemetry:
             result.telemetry = ImplicitDict.parse(plan.telemetry, FlightTelemetry)
-        if "astm_f3548_21" in plan and plan.astm_f3548_21:
+        if plan.astm_f3548_21:
             result.astm_f3548_21 = ImplicitDict.parse(
                 plan.astm_f3548_21, ASTMF354821OpIntentInformation
             )
-        if "uspace_flight_authorisation" in plan and plan.uspace_flight_authorisation:
+        if plan.uspace_flight_authorisation:
             result.uspace_flight_authorisation = ImplicitDict.parse(
                 plan.uspace_flight_authorisation, FlightAuthorisationData
             )
-        if "rpas_operating_rules_2_6" in plan and plan.rpas_operating_rules_2_6:
+        if plan.rpas_operating_rules_2_6:
             result.rpas_operating_rules_2_6 = ImplicitDict.parse(
                 plan.rpas_operating_rules_2_6, RPAS26FlightDetails
             )
-        if "additional_information" in plan and plan.additional_information:
+        if plan.additional_information:
             result.additional_information = plan.additional_information
         return result
 
@@ -395,29 +395,29 @@ class FlightInfo(ImplicitDict):
         result = fp_api.FlightPlan(
             basic_information=self.basic_information.to_flight_planning_api()
         )
-        if "uas" in self and self.uas:
+        if self.uas:
             result.uas = ImplicitDict.parse(self.uas, fp_api.UASInformation)
-        if "operator" in self and self.operator:
+        if self.operator:
             result.operator = ImplicitDict.parse(
                 self.operator, fp_api.OperatorInformation
             )
-        if "telemetry" in self and self.telemetry:
+        if self.telemetry:
             result.telemetry = ImplicitDict.parse(
                 self.telemetry, fp_api.FlightTelemetry
             )
-        if "astm_f3548_21" in self and self.astm_f3548_21:
+        if self.astm_f3548_21:
             result.astm_f3548_21 = ImplicitDict.parse(
                 self.astm_f3548_21, fp_api.ASTMF354821OpIntentInformation
             )
-        if "uspace_flight_authorisation" in self and self.uspace_flight_authorisation:
+        if self.uspace_flight_authorisation:
             result.uspace_flight_authorisation = ImplicitDict.parse(
                 self.uspace_flight_authorisation, fp_api.FlightAuthorisationData
             )
-        if "rpas_operating_rules_2_6" in self and self.rpas_operating_rules_2_6:
+        if self.rpas_operating_rules_2_6:
             result.rpas_operating_rules_2_6 = ImplicitDict.parse(
                 self.rpas_operating_rules_2_6, fp_api.RPAS26FlightDetails
             )
-        if "additional_information" in self and self.additional_information:
+        if self.additional_information:
             result.additional_information = fp_api.FlightPlanAdditionalInformation()
             for k, v in self.additional_information.items():
                 result.additional_information[k] = v
@@ -509,7 +509,7 @@ class FlightInfo(ImplicitDict):
                 v.to_interuss_scd_api() for v in self.basic_information.area
             ]
 
-        if "astm_f3548_21" in self and self.astm_f3548_21:
+        if self.astm_f3548_21:
             priority = self.astm_f3548_21.priority
         else:
             priority = 0
@@ -522,7 +522,7 @@ class FlightInfo(ImplicitDict):
         )
 
         kwargs = {"operational_intent": operational_intent}
-        if "uspace_flight_authorisation" in self and self.uspace_flight_authorisation:
+        if self.uspace_flight_authorisation:
             kwargs["flight_authorisation"] = ImplicitDict.parse(
                 self.uspace_flight_authorisation, scd_api.FlightAuthorisationData
             )

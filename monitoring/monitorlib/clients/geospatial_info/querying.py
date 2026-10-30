@@ -43,13 +43,13 @@ class GeospatialFeatureFilter(ImplicitDict):
 
     def to_geospatial_map(self) -> geospatial_map_api.GeospatialFeatureFilterSet:
         result = geospatial_map_api.GeospatialFeatureFilterSet()
-        if "volumes4d" in self and self.volumes4d:
+        if self.volumes4d:
             result.volumes4d = [v.to_geospatial_map_api() for v in self.volumes4d]
-        if "restriction_source" in self and self.restriction_source:
+        if self.restriction_source:
             result.restriction_source = self.restriction_source
-        if "operation_rule_set" in self and self.operation_rule_set:
+        if self.operation_rule_set:
             result.operation_rule_set = self.operation_rule_set
-        if "resulting_operational_impact" in self and self.resulting_operational_impact:
+        if self.resulting_operational_impact:
             result.resulting_operational_impact = (
                 geospatial_map_api.GeospatialFeatureFilterSetResultingOperationalImpact(
                     self.resulting_operational_impact

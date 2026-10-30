@@ -28,7 +28,7 @@ NO_OVN_PHRASES = {"", "Available from USS"}
 
 def priority_of(details: OperationalIntentDetails) -> int:
     priority = 0
-    if "priority" in details and details.priority:
+    if details.priority:
         priority = details.priority
     return priority
 
@@ -51,11 +51,7 @@ def _str_headers(
 def make_request_exchange_record(
     request: RequestDescription, include_headers: set[str] | None = None
 ) -> ExchangeRecord:
-    req_headers = (
-        request.headers
-        if "headers" in request and request.headers is not None
-        else None
-    )
+    req_headers = request.headers if request.headers is not None else None
     er = ExchangeRecord(
         url=request.url,
         method=request.method,
@@ -81,16 +77,14 @@ def make_exchange_record(
 ) -> ExchangeRecord:
     er = make_request_exchange_record(query.request, include_headers=include_headers)
     resp_headers = (
-        query.response.headers
-        if "headers" in query.response and query.response.headers is not None
-        else None
+        query.response.headers if query.response.headers is not None else None
     )
     er.headers = (er.headers or []) + _str_headers(resp_headers, include_headers)
     er.response_time = Time(value=StringBasedDateTime(query.response.reported))
     er.response_code = query.status_code
     if msg_problem is not None:
         er.problem = msg_problem
-    elif "failure" in query.response and query.response.failure is not None:
+    elif query.response.failure is not None:
         er.problem = query.response.failure
 
     if query.response.content is not None:

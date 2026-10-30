@@ -84,7 +84,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
             queries=[query],
             activity_result=resp.planning_result,
             flight_plan_status=resp.flight_plan_status,
-            notes=resp.notes if "notes" in resp else None,
+            notes=resp.notes,
             includes_advisories=(
                 resp.includes_advisories
                 if "includes_advisories" in resp
@@ -92,7 +92,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
             ),
         )
 
-        if "as_planned" in resp and resp.as_planned:
+        if resp.as_planned:
             response.as_planned = FlightInfo.from_flight_plan(resp.as_planned)
 
         return response
@@ -161,7 +161,7 @@ class V1FlightPlannerClient(FlightPlannerClient):
             queries=[query],
             activity_result=resp.planning_result,
             flight_plan_status=resp.flight_plan_status,
-            notes=resp.notes if "notes" in resp else None,
+            notes=resp.notes,
             includes_advisories=(
                 resp.includes_advisories
                 if "includes_advisories" in resp

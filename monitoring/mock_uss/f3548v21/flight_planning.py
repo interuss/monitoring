@@ -371,7 +371,7 @@ def op_intent_from_flightinfo(
         uss_base_url=f"{webapp.config[KEY_BASE_URL]}/mock/scd",
         subscription_id="UNKNOWN",
     )
-    if "astm_f3548_21" in flight_info and flight_info.astm_f3548_21:
+    if flight_info.astm_f3548_21:
         priority = flight_info.astm_f3548_21.priority
     else:
         # TODO: Ensure this function is only called when sufficient information is available, or raise ValueError

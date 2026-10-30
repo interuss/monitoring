@@ -251,7 +251,7 @@ class TestTime(ImplicitDict):
 
         t_result = Time(result)
 
-        if "name" in self and self.name:
+        if self.name:
             context[self.name] = t_result
 
         return t_result

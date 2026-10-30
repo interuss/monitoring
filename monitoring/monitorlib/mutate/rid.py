@@ -695,21 +695,9 @@ class UpdatedISA(RIDQuery):
     @property
     def isa(self) -> ISA | None:
         if self.rid_version == RIDVersion.f3411_19:
-            return ISA(
-                v19_value=(
-                    self._v19_request.service_area
-                    if "service_area" in self._v19_request
-                    else None
-                )
-            )
+            return ISA(v19_value=(self._v19_request.service_area))
         elif self.rid_version == RIDVersion.f3411_22a:
-            return ISA(
-                v22a_value=(
-                    self._v22a_request.service_area
-                    if "service_area" in self._v22a_request
-                    else None
-                )
-            )
+            return ISA(v22a_value=(self._v22a_request.service_area))
         else:
             raise NotImplementedError(
                 f"Cannot retrieve ISA using RID version {self.rid_version}"

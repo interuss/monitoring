@@ -174,8 +174,8 @@ class Position(ImplicitDict):
             alt=p.alt,
             time=t.datetime,
             height=h,
-            accuracy_v=p.accuracy_v if "accuracy_v" in p else None,
-            accuracy_h=p.accuracy_h if "accuracy_h" in p else None,
+            accuracy_v=p.accuracy_v,
+            accuracy_h=p.accuracy_h,
         )
 
     @staticmethod
@@ -188,8 +188,8 @@ class Position(ImplicitDict):
             alt=p.alt,
             time=t.datetime,
             height=p.get("height"),
-            accuracy_v=p.accuracy_v if "accuracy_v" in p else None,
-            accuracy_h=p.accuracy_h if "accuracy_h" in p else None,
+            accuracy_v=p.accuracy_v,
+            accuracy_h=p.accuracy_h,
         )
 
 
@@ -229,7 +229,7 @@ class Flight(ImplicitDict):
     def most_recent_position(
         self,
     ) -> Position | None:
-        if "current_state" in self.raw and self.raw.current_state:
+        if self.raw.current_state:
             if self.rid_version == RIDVersion.f3411_19:
                 return Position.from_v19_rid_aircraft_position(
                     self.v19_value.current_state.position,

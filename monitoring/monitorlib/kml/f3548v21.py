@@ -56,7 +56,7 @@ def op_intent_refs_query(
 ):
     """Render the area of interest and response from an operational intent references query into a KML Placemark."""
 
-    if "area_of_interest" not in req or not req.area_of_interest:
+    if not req.area_of_interest:
         raise ValueError("req.area_of_interest is not defined")
 
     v4 = Volume4D.from_f3548v21(req.area_of_interest)

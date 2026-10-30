@@ -23,7 +23,7 @@ def adjust_flight_info(info: FlightInfo) -> FlightInfo:
 
     for v4d in result.basic_information.area:
         # Fill in empty start times with now
-        if "time_start" not in v4d or not v4d.time_start:
+        if not v4d.time_start:
             v4d.time_start = Time(now)
 
         # Truncate volume start times to current
@@ -32,13 +32,7 @@ def adjust_flight_info(info: FlightInfo) -> FlightInfo:
 
     # Validate volume times
     for i, v4d in enumerate(result.basic_information.area):
-        if (
-            "time_start" in v4d
-            and v4d.time_start
-            and "time_end" in v4d
-            and v4d.time_end
-            and v4d.time_start >= v4d.time_end
-        ):
+        if v4d.time_start and v4d.time_end and v4d.time_start >= v4d.time_end:
             raise ValueError(
                 f"Volume {i} start time {v4d.time_start} (originally {info.basic_information.area[i].time_start}) is at or after end time {v4d.time_end}"
             )

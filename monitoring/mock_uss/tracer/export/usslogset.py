@@ -67,10 +67,7 @@ def extract_exchange_records(
                 log_entry.existing_subscription, include_headers=include_headers
             )
         ]
-        if (
-            "deleted_subscription" in log_entry
-            and log_entry.deleted_subscription is not None
-        ):
+        if log_entry.deleted_subscription is not None:
             records.append(
                 make_exchange_record(
                     log_entry.deleted_subscription, include_headers=include_headers

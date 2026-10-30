@@ -239,9 +239,9 @@ class Volume4D(ImplicitDict):
         if not isinstance(vol, f3548v21.Volume4D) and isinstance(vol, dict):
             vol = ImplicitDict.parse(vol, f3548v21.Volume4D)
         kwargs = {"volume": Volume3D.from_f3548v21(vol.volume)}
-        if "time_start" in vol and vol.time_start:
+        if vol.time_start:
             kwargs["time_start"] = Time(vol.time_start.value)
-        if "time_end" in vol and vol.time_end:
+        if vol.time_end:
             kwargs["time_end"] = Time(vol.time_end.value)
         return Volume4D(**kwargs)
 
@@ -252,9 +252,9 @@ class Volume4D(ImplicitDict):
 
     def to_f3548v21(self) -> f3548v21.Volume4D:
         kwargs = {"volume": self.volume.to_f3548v21()}
-        if "time_start" in self and self.time_start:
+        if self.time_start:
             kwargs["time_start"] = self.time_start.to_f3548v21()
-        if "time_end" in self and self.time_end:
+        if self.time_end:
             kwargs["time_end"] = self.time_end.to_f3548v21()
         return f3548v21.Volume4D(**kwargs)
 
@@ -264,11 +264,11 @@ class Volume4D(ImplicitDict):
 
     @staticmethod
     def from_flight_planning_api(vol: fp_api.Volume4D):
-        if "time_start" in vol and vol.time_start:
+        if vol.time_start:
             t_start = Time(vol.time_start.value)
         else:
             t_start = None
-        if "time_end" in vol and vol.time_end:
+        if vol.time_end:
             t_end = Time(vol.time_end.value)
         else:
             t_end = None
@@ -346,7 +346,7 @@ class Volume4DCollection(list[Volume4D]):
     def time_start(self) -> Time | None:
         return (
             Time(min(v.time_start.datetime for v in self))
-            if all("time_start" in v and v.time_start for v in self)
+            if all(v.time_start for v in self)
             else None
         )
 
@@ -361,7 +361,7 @@ class Volume4DCollection(list[Volume4D]):
     def time_end(self) -> Time | None:
         return (
             Time(max(v.time_end.datetime for v in self))
-            if all("time_end" in v and v.time_end for v in self)
+            if all(v.time_end for v in self)
             else None
         )
 
@@ -420,13 +420,13 @@ class Volume4DCollection(list[Volume4D]):
         lng_min = math.inf
         lng_max = -math.inf
         for vol4 in self:
-            if "outline_polygon" in vol4.volume and vol4.volume.outline_polygon:
+            if vol4.volume.outline_polygon:
                 for v in vol4.volume.outline_polygon.vertices:
                     lat_min = min(lat_min, v.lat)
                     lat_max = max(lat_max, v.lat)
                     lng_min = min(lng_min, v.lng)
                     lng_max = max(lng_max, v.lng)
-            if "outline_circle" in vol4.volume and vol4.volume.outline_circle:
+            if vol4.volume.outline_circle:
                 circle = vol4.volume.outline_circle
                 if circle.radius.units != "M":
                     raise NotImplementedError(
@@ -549,7 +549,7 @@ def end_time_of(
 ) -> Time | None:
     """Retrieve the end time of a volume or list of volumes."""
     if isinstance(volume_or_volumes, f3548v21.Volume4D):
-        if "time_end" in volume_or_volumes and volume_or_volumes.time_end:
+        if volume_or_volumes.time_end:
             return Time(volume_or_volumes.time_end.value)
         else:
             return None

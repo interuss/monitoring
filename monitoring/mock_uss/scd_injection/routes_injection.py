@@ -144,7 +144,7 @@ def scdsc_inject_flight(flight_id: str) -> tuple[str | flask.Response, int]:
     finally:
         release_flight_lock(mock_uss_flight_id, log)
     api_response = resp.to_inject_flight_response()
-    if "as_planned" in resp and resp.as_planned:
+    if resp.as_planned:
         # Append as_planned as an additional field formatted according to flight_planning API to ease continuing support
         # of legacy scd injection API
         api_response["as_planned"] = resp.as_planned.to_flight_plan()
@@ -289,14 +289,14 @@ def scdsc_delete_flight(flight_id: str) -> tuple[str | flask.Response, int]:
                 f"delete_flight indicated {del_resp.activity_result}, but flight_plan_status was '{del_resp.flight_plan_status}' rather than Closed"
             )
         result = DeleteFlightResponseResult.Closed
-        if "notes" in del_resp and del_resp.notes:
+        if del_resp.notes:
             notes = del_resp.notes
         else:
             notes = None
     else:
         result = DeleteFlightResponseResult.Failed
         notes = f"delete_flight indicated `activity_result`={del_resp.activity_result}, `flight_plan_status`={del_resp.flight_plan_status}"
-        if "notes" in del_resp and del_resp.notes:
+        if del_resp.notes:
             notes += ": " + del_resp.notes
     resp = DeleteFlightResponse(result=result)
     if notes is not None:
@@ -468,7 +468,7 @@ def clear_area(extent: Volume4D) -> ClearAreaResponse:
                     op_intents_removed.append(flight.op_intent.reference.id)
             else:
                 notes = f"Deleting known flight {flight_id} {del_resp.activity_result} with `flight_plan_status`={del_resp.flight_plan_status}"
-                if "notes" in del_resp and del_resp.notes:
+                if del_resp.notes:
                     notes += ": " + del_resp.notes
                 flight_deletion_errors[FlightID(flight_id)] = {"notes": notes}
 
