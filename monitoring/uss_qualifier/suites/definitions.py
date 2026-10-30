@@ -32,25 +32,18 @@ class TestSuiteDeclaration(ImplicitDict):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if (
-            "suite_type" in self
-            and self.suite_type
-            and "suite_definition" in self
-            and self.suite_definition
-        ):
+        if self.suite_type and self.suite_definition:
             raise ValueError(
                 f"May not specify both suite_type ({self.suite_type}) and suite_definition (name='{self.suite_definition.name}') in the same TestSuiteDeclaration"
             )
-        if ("suite_type" not in self or not self.suite_type) and (
-            "suite_definition" not in self or not self.suite_definition
-        ):
+        if (not self.suite_type) and (not self.suite_definition):
             raise ValueError(
                 "Must specify either suite_type or suite_definition in TestSuiteDeclaration"
             )
 
     @property
     def type_name(self) -> str:
-        if "suite_type" in self and self.suite_type:
+        if self.suite_type:
             return self.suite_type
         else:
             return "<in-configuration definition>"
@@ -78,31 +71,31 @@ class TestSuiteActionDeclaration(ImplicitDict):
         )
 
     def get_resource_links(self) -> dict[ResourceID, ResourceID]:
-        if "test_scenario" in self and self.test_scenario:
+        if self.test_scenario:
             return self.test_scenario.resources or {}
-        elif "test_suite" in self and self.test_suite:
+        elif self.test_suite:
             return self.test_suite.resources or {}
-        elif "action_generator" in self and self.action_generator:
+        elif self.action_generator:
             return self.action_generator.resources
         else:
             raise self.invalid_type_error
 
     def get_child_type(self) -> str:
-        if "test_scenario" in self and self.test_scenario:
+        if self.test_scenario:
             return self.test_scenario.scenario_type
-        elif "test_suite" in self and self.test_suite:
+        elif self.test_suite:
             return self.test_suite.type_name
-        elif "action_generator" in self and self.action_generator:
+        elif self.action_generator:
             return self.action_generator.generator_type
         else:
             raise self.invalid_type_error
 
     def get_action_type_name(self) -> str:
-        if "test_scenario" in self and self.test_scenario:
+        if self.test_scenario:
             return "TestScenario"
-        elif "test_suite" in self and self.test_suite:
+        elif self.test_suite:
             return "TestSuite"
-        elif "action_generator" in self and self.action_generator:
+        elif self.action_generator:
             return "ActionGenerator"
         else:
             return "UnknownType"
@@ -184,12 +177,12 @@ class TestSuiteDefinition(ImplicitDict):
     def load_from_declaration(
         declaration: TestSuiteDeclaration,
     ) -> TestSuiteDefinition:
-        if "suite_type" in declaration and declaration.suite_type:
+        if declaration.suite_type:
             return ImplicitDict.parse(
                 load_dict_with_references(declaration.suite_type, package_root),
                 TestSuiteDefinition,
             )
-        elif "suite_definition" in declaration and declaration.suite_definition:
+        elif declaration.suite_definition:
             return declaration.suite_definition
         else:
             raise ValueError(

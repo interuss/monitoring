@@ -114,10 +114,7 @@ class FlightPlannerCombinations(
                 for k, v in flight_planners_combination.items():
                     modified_resources[k] = v
 
-                if (
-                    "per_index_resources" in specification
-                    and specification.per_index_resources
-                ):
+                if specification.per_index_resources:
                     combination_index = len(self._actions)
                     for per_index_resource in specification.per_index_resources:
                         resource_provider = resources[

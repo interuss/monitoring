@@ -35,11 +35,11 @@ class InstanceIndexRange(ImplicitDict):
     """If specified, no indices higher than this value will be included in the range."""
 
     def includes(self, i: int) -> bool:
-        if "i" in self and self.i is not None and i != self.i:
+        if self.i is not None and i != self.i:
             return False
-        if "lo" in self and self.lo is not None and i < self.lo:
+        if self.lo is not None and i < self.lo:
             return False
-        if "hi" in self and self.hi is not None and i > self.hi:
+        if self.hi is not None and i > self.hi:
             return False
         return True
 
@@ -307,13 +307,10 @@ class ArtifactsConfiguration(ImplicitDict):
     @property
     def acceptable_findings(self) -> Iterable[FullyQualifiedCheck]:
         """Iterates through checks where findings are acceptable in at least one tested_requirements artifact."""
-        if "tested_requirements" not in self or not self.tested_requirements:
+        if not self.tested_requirements:
             return
         for tested_requirements in self.tested_requirements:
-            if (
-                "acceptable_findings" in tested_requirements
-                and tested_requirements.acceptable_findings
-            ):
+            if tested_requirements.acceptable_findings:
                 yield from tested_requirements.acceptable_findings
 
 

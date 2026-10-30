@@ -35,7 +35,7 @@ def list_potential_actions_for_action_generator_definition(
 def list_potential_actions_for_action_declaration(
     declaration: TestSuiteActionDeclaration,
 ) -> list[PotentialGeneratedAction]:
-    if "test_scenario" in declaration and declaration.test_scenario:
+    if declaration.test_scenario:
         return [
             PotentialGeneratedAction(
                 test_scenario=PotentialTestScenarioAction(
@@ -43,8 +43,8 @@ def list_potential_actions_for_action_declaration(
                 )
             )
         ]
-    elif "test_suite" in declaration and declaration.test_suite:
-        if "suite_type" in declaration.test_suite and declaration.test_suite.suite_type:
+    elif declaration.test_suite:
+        if declaration.test_suite.suite_type:
             return [
                 PotentialGeneratedAction(
                     test_suite=PotentialTestSuiteAction(
@@ -52,10 +52,7 @@ def list_potential_actions_for_action_declaration(
                     )
                 )
             ]
-        elif (
-            "suite_definition" in declaration.test_suite
-            and declaration.test_suite.suite_definition
-        ):
+        elif declaration.test_suite.suite_definition:
             return [
                 PotentialGeneratedAction(
                     test_suite=PotentialTestSuiteAction(
@@ -63,7 +60,7 @@ def list_potential_actions_for_action_declaration(
                     )
                 )
             ]
-    elif "action_generator" in declaration and declaration.action_generator:
+    elif declaration.action_generator:
         return [
             PotentialGeneratedAction(
                 action_generator=PotentialActionGeneratorAction(

@@ -311,15 +311,12 @@ def _render_action(
     action: TestSuiteActionDeclaration | PotentialGeneratedAction,
     context: TestSuiteRenderContext,
 ) -> list[str]:
-    if "test_scenario" in action and action.test_scenario:
+    if action.test_scenario:
         return _render_scenario(action.test_scenario.scenario_type, context)
-    elif "test_suite" in action and action.test_suite:
-        if "suite_type" in action.test_suite and action.test_suite.suite_type:
+    elif action.test_suite:
+        if action.test_suite.suite_type:
             return _render_suite_by_type(action.test_suite.suite_type, context)
-        elif (
-            "suite_definition" in action.test_suite
-            and action.test_suite.suite_definition
-        ):
+        elif action.test_suite.suite_definition:
             return _render_suite_by_definition(
                 action.test_suite.suite_definition, context
             )
@@ -327,7 +324,7 @@ def _render_action(
             raise ValueError(
                 f"Test suite action {context.list_index} missing suite type or definition"
             )
-    elif "action_generator" in action and action.action_generator:
+    elif action.action_generator:
         return _render_action_generator(action.action_generator, context)
     else:
         raise action.invalid_type_error
@@ -367,19 +364,16 @@ def _collect_requirements_from_suite_def(
 def _collect_requirements_from_action(
     action: TestSuiteActionDeclaration | PotentialGeneratedAction,
 ) -> dict[RequirementID, RequirementInSuite]:
-    if "test_scenario" in action and action.test_scenario:
+    if action.test_scenario:
         return _collect_requirements_from_scenario(action.test_scenario.scenario_type)
-    elif "test_suite" in action and action.test_suite:
-        if "suite_type" in action.test_suite and action.test_suite.suite_type:
+    elif action.test_suite:
+        if action.test_suite.suite_type:
             suite_def = ImplicitDict.parse(
                 load_dict_with_references(action.test_suite.suite_type, package_root),
                 TestSuiteDefinition,
             )
             return _collect_requirements_from_suite_def(suite_def)
-        elif (
-            "suite_definition" in action.test_suite
-            and action.test_suite.suite_definition
-        ):
+        elif action.test_suite.suite_definition:
             return _collect_requirements_from_suite_def(
                 action.test_suite.suite_definition
             )
@@ -387,7 +381,7 @@ def _collect_requirements_from_action(
             raise ValueError(
                 "Neither suite_type nor suite_definition specified in test_suite action"
             )
-    elif "action_generator" in action and action.action_generator:
+    elif action.action_generator:
         return _collect_requirements_from_action_generator(action.action_generator)
     else:
         raise action.invalid_type_error
@@ -409,7 +403,7 @@ def _collect_requirements_from_scenario(
             for check in step.checks:
                 for req_id in check.applicable_requirements:
                     add_req(req_id, check)
-    if "cleanup" in docs and docs.cleanup:
+    if docs.cleanup:
         for check in docs.cleanup.checks:
             for req_id in check.applicable_requirements:
                 add_req(req_id, check)
