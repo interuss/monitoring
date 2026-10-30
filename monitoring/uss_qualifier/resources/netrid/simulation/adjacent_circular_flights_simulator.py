@@ -10,6 +10,9 @@ from shapely.geometry import Point, Polygon
 from shapely.geometry.base import BaseGeometry
 from uas_standards.interuss.automated_testing.rid.v1 import injection
 
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    UAClassificationEUCategory,
+)
 from monitoring.monitorlib.geo import LatLngPoint
 from monitoring.uss_qualifier.resources.netrid.flight_data import (
     AdjacentCircularFlightsSimulatorConfiguration,
@@ -298,11 +301,15 @@ class AdjacentCircularFlightsSimulator:
         my_flight_details_generator = (
             operator_flight_details.OperatorFlightDataGenerator(self.random)
         )
+        serial_number = my_flight_details_generator.generate_serial_number()
 
         # TODO: Put operator_location in center of circle rather than stacking operators of all flights on top of each other
         return injection.RIDFlightDetails(
             id=id,
-            serial_number=my_flight_details_generator.generate_serial_number(),
+            serial_number=serial_number,
+            uas_id=injection.UASID(
+                serial_number=serial_number,
+            ),
             operation_description=my_flight_details_generator.generate_operation_description(),
             operator_location=my_flight_details_generator.generate_operator_location(
                 centroid=self.bbox_center[0]
@@ -311,6 +318,12 @@ class AdjacentCircularFlightsSimulator:
                 self.en4709_02conf
             ),
             registration_number=my_flight_details_generator.generate_registration_number(),
+            eu_classification=injection.UAClassificationEU(
+                {
+                    "category": UAClassificationEUCategory.Open,
+                    "class": injection.UAClassificationEUClass.Class0,
+                }
+            ),
         )
 
     def generate_rid_state(self, duration):
