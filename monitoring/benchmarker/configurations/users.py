@@ -139,24 +139,30 @@ class NetRIDObserverBehaviorSpecification(ImplicitDict):
     view_lng_size: float
     """Width, in degrees of longitude, of the rectangle observed (centered on the observation center)."""
 
-    min_observation_duration: StringBasedTimeDelta
-    """Duration of each observation is drawn uniformly at random between this value and max_observation_duration."""
+    min_observation_period_duration: StringBasedTimeDelta
+    """Duration of each observation period is drawn uniformly at random between this value and max_observation_period_duration."""
 
-    max_observation_duration: StringBasedTimeDelta
-    """Duration of each observation is drawn uniformly at random between min_observation_duration and this value."""
+    max_observation_period_duration: StringBasedTimeDelta
+    """Duration of each observation period is drawn uniformly at random between min_observation_period_duration and this value."""
 
     query_interval: StringBasedTimeDelta
     """While observing, the observer queries its display provider for flights in its observed rectangle this often."""
 
-    mean_time_between_observations: StringBasedTimeDelta
-    """Time between the end of an observation and the start of the observer's next observation is exponentially distributed with this mean."""
+    mean_time_between_observation_periods: StringBasedTimeDelta
+    """Time between the end of an observation period and the start of the observer's next observation period is exponentially distributed with this mean."""
 
 
 class NetRIDDisplayProviderSubscriptionStrategySpecification(ImplicitDict):
     """How a NetRID display provider establishes subscriptions to serve its observers."""
+    
+    s2_grid: Optional[S2GriddedSubscriptionStrategySpecification]
 
+
+class S2GriddedSubscriptionStrategySpecification(ImplicitDict):
+    """The Display Provider maintains one subscription per S2 cell at a specified level for each cell covering an area that was queried by an observer."""
+    
     s2_level: int
-    """The display provider maintains one subscription per S2 cell at this level, for each cell covering an area queried by an observer."""
+    """The S2 level at which subscriptions are established and maintained."""
 
     min_alt: Altitude
     """Altitude below which subscriptions do not apply."""
@@ -176,9 +182,15 @@ class NetRIDDisplayProviderSubscriptionStrategySpecification(ImplicitDict):
     delete_after_unused: Optional[StringBasedTimeDelta]
     """If specified, a subscription is deleted when no observer query has covered its cell for this amount of time.  Otherwise, subscriptions are left to expire."""
 
+class NetRIDObserversSpecification(ImplicitDict):
+    behavior: NetRIDObserverBehaviorSpecification
+    """How each of the virtual observers behaves."""
+
+    count: int
+    """Number of virtual observers with this behavior."""
 
 class NetRIDDisplayProviderSpecification(ImplicitDict):
-    """User acting as a NetRID display provider serving virtual observers."""
+    """Specification for a virtual NetRID Display Provider serving virtual observers."""
 
     dss_pool: list[ResourceID]
     """Means to interact with the ASTM DSS.
@@ -187,11 +199,8 @@ class NetRIDDisplayProviderSpecification(ImplicitDict):
 
     dss_selection_strategy: Optional[ASTMDSSSelectionStrategy]
 
-    observers: int
-    """Number of virtual observers served by this display provider."""
-
-    observer_behavior: NetRIDObserverBehaviorSpecification
-    """How each of the virtual observers behaves."""
+    observers: list[NetRIDObserversSpecification]
+    """List of virtual observers."""
 
     subscription_strategy: NetRIDDisplayProviderSubscriptionStrategySpecification
     """How the display provider establishes subscriptions to serve its observers."""
