@@ -42,14 +42,10 @@ def _make_exchange_record(
     exclude_headers: set[str] | None,
 ) -> ExchangeRecord:
     if query.request.outgoing:
-        req_headers = (
-            query.request.headers if query.request.headers is not None else None
-        )
+        req_headers = query.request.headers
         headers = _format_headers(req_headers, include_headers, exclude_headers)
     else:
-        resp_headers = (
-            query.response.headers if query.response.headers is not None else None
-        )
+        resp_headers = query.response.headers
         headers = _format_headers(resp_headers, include_headers, exclude_headers)
 
     record = ExchangeRecord(

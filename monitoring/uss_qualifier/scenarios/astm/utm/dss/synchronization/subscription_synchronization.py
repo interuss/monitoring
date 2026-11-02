@@ -428,9 +428,7 @@ class SubscriptionSynchronization(TestScenario):
             involved_participants,
         ) as check:
             start_time = (
-                sub.time_start.value.datetime
-                if sub.has_field_with_value("time_start")
-                else None
+                sub.time_start.value.datetime if sub.time_start is not None else None
             )
             if start_time != expected_sub_params.start_time:
                 check.record_failed(
@@ -443,11 +441,7 @@ class SubscriptionSynchronization(TestScenario):
             "Propagated subscription contains the correct end time",
             involved_participants,
         ) as check:
-            end_time = (
-                sub.time_end.value.datetime
-                if sub.has_field_with_value("time_end")
-                else None
-            )
+            end_time = sub.time_end.value.datetime if sub.time_end is not None else None
             if end_time != expected_sub_params.end_time:
                 check.record_failed(
                     "Propagated subscription has an incorrect end time",
@@ -471,16 +465,8 @@ class SubscriptionSynchronization(TestScenario):
             "Propagated subscription contains the correct notification flags",
             involved_participants,
         ) as check:
-            notify_for_op_intents = (
-                sub.notify_for_operational_intents
-                if sub.has_field_with_value("notify_for_operational_intents")
-                else None
-            )
-            notify_for_constraints = (
-                sub.notify_for_constraints
-                if sub.has_field_with_value("notify_for_constraints")
-                else None
-            )
+            notify_for_op_intents = sub.notify_for_operational_intents
+            notify_for_constraints = sub.notify_for_constraints
             if notify_for_op_intents != expected_sub_params.notify_for_op_intents:
                 check.record_failed(
                     "Propagated subscription has unexpected notify_for_op_intents flag",
@@ -498,11 +484,7 @@ class SubscriptionSynchronization(TestScenario):
             "Propagated subscription contains the correct implicit flag",
             involved_participants,
         ) as check:
-            is_implicit = (
-                sub.implicit_subscription
-                if sub.has_field_with_value("implicit_subscription")
-                else None
-            )
+            is_implicit = sub.implicit_subscription
             # We created the subscription directly: it should not have the implicit flag
             if is_implicit:
                 check.record_failed(

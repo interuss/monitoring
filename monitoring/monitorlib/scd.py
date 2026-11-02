@@ -51,7 +51,7 @@ def _str_headers(
 def make_request_exchange_record(
     request: RequestDescription, include_headers: set[str] | None = None
 ) -> ExchangeRecord:
-    req_headers = request.headers if request.headers is not None else None
+    req_headers = request.headers
     er = ExchangeRecord(
         url=request.url,
         method=request.method,
@@ -76,9 +76,7 @@ def make_exchange_record(
     include_headers: set[str] | None = None,
 ) -> ExchangeRecord:
     er = make_request_exchange_record(query.request, include_headers=include_headers)
-    resp_headers = (
-        query.response.headers if query.response.headers is not None else None
-    )
+    resp_headers = query.response.headers
     er.headers = (er.headers or []) + _str_headers(resp_headers, include_headers)
     er.response_time = Time(value=StringBasedDateTime(query.response.reported))
     er.response_code = query.status_code

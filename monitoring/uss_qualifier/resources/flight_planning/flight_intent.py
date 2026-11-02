@@ -92,12 +92,12 @@ class FlightIntentCollection(ImplicitDict):
                 processed_intent: FlightInfoTemplate
 
                 # copy intent and resolve delta
-                if unprocessed_intent.has_field_with_value("full"):
+                if unprocessed_intent.full is not None:
                     processed_intent = ImplicitDict.parse(
                         json.loads(json.dumps(unprocessed_intent.full)),
                         FlightInfoTemplate,
                     )
-                elif unprocessed_intent.has_field_with_value("delta"):
+                elif unprocessed_intent.delta is not None:
                     if unprocessed_intent.delta.source not in processed_intents:
                         # delta source has not been processed yet
                         continue
@@ -124,9 +124,7 @@ class FlightIntentCollection(ImplicitDict):
         if self.transformations:
             for v in processed_intents.values():
                 xforms = (
-                    v.transformations.copy()
-                    if v.has_field_with_value("transformations")
-                    else []
+                    v.transformations.copy() if v.transformations is not None else []
                 )
                 xforms.extend(self.transformations)
                 v.transformations = xforms

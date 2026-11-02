@@ -30,7 +30,7 @@ def look_at_scenario(ts: TestScenarioReport):
             print("   step: ", step.name)
             (
                 print("   has #queries: ", len(step.queries or []))
-                if step.get("queries") is not None
+                if step.queries is not None
                 else print("   has #queries: 0")
             )
             for q in step.get("queries", []):

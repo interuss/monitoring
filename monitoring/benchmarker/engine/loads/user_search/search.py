@@ -424,11 +424,7 @@ def determine_next_user_count(
             return next_u
 
     # 3. Left-side spacing gap filling (maximum_left_side_spacing)
-    max_spacing_frac = (
-        criteria.maximum_left_side_spacing
-        if criteria.maximum_left_side_spacing is not None
-        else None
-    )
+    max_spacing_frac = criteria.maximum_left_side_spacing
     if max_spacing_frac is not None:
         next_u = _next_user_for_left_side_spacing(
             sorted_users,

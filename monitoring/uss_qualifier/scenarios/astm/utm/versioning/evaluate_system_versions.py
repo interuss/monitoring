@@ -171,8 +171,7 @@ class EvaluateSystemVersions(TestScenario):
         self.begin_test_step("Evaluate system version consistency")
         for q in context.sibling_queries():
             if (
-                "query_type" not in q
-                or q.query_type != QueryType.InterUSSVersioningGetVersion
+                q.query_type != QueryType.InterUSSVersioningGetVersion
                 or "participant_id" not in q
             ):
                 continue

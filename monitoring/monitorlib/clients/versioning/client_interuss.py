@@ -44,7 +44,7 @@ class InterUSSVersioningClient(VersioningClient):
                 f"Response to get version could not be parsed: {str(e)}", query
             )
 
-        if not resp.has_field_with_value("system_identity"):
+        if resp.system_identity is None:
             raise VersionQueryError(
                 "Response to get version didn't return a system identity"
             )

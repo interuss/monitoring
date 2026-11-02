@@ -749,7 +749,7 @@ class DSSInstanceResource(Resource[DSSInstanceSpecification]):
     def supports_ovn_request(self) -> bool:
         return (
             self._specification.supports_ovn_request
-            if self._specification.has_field_with_value("supports_ovn_request")
+            if self._specification.supports_ovn_request is not None
             and self._specification.supports_ovn_request is not None
             else False
         )

@@ -98,7 +98,7 @@ def inject_flights(
             timestamps = [
                 t.timestamp.datetime
                 for t in flight.telemetry
-                if t.has_field_with_value("timestamp")
+                if t.timestamp is not None
             ]
             if timestamps:
                 earliest_time = min(timestamps)

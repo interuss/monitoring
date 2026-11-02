@@ -269,7 +269,7 @@ def compute_tested_scenario(
         resource_origins=(
             report.resource_origins if report.resource_origins is not None else {}
         ),
-        resource_participants=report.get("resource_participants") or {},
+        resource_participants=report.resource_participants or {},
     )
     action_indexer.index += 1
     return scenario

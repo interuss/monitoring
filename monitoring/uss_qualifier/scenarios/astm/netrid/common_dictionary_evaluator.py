@@ -267,7 +267,7 @@ class RIDCommonDictionaryEvaluator:
         operator_altitude_value_obs = operator_altitude_obs.get("altitude")
         operator_altitude_inj = injected_details.get("operator_altitude", {})
         self._evaluate_operator_location(
-            injected_details.get("operator_location", None),
+            injected_details.operator_location,
             operator_altitude_inj.get("altitude", None),
             operator_altitude_inj.get("altitude_type", None),
             operator_obs.get("location", None),
@@ -1283,9 +1283,10 @@ class RIDCommonDictionaryEvaluator:
             if sp_observed.raw.has_field_with_value("eu_classification"):
                 observed_ua_classification = "eu_classification"
         elif dp_observed is not None:
-            if dp_observed.has_field_with_value(
-                "uas"
-            ) and dp_observed.uas.has_field_with_value("eu_classification"):
+            if (
+                dp_observed.uas is not None
+                and dp_observed.uas.eu_classification is not None
+            ):
                 observed_ua_classification = "eu_classification"
         else:
             raise NoObservedFlight("No observed flight provided.")
@@ -1322,7 +1323,7 @@ class RIDCommonDictionaryEvaluator:
             if self._rid_version == RIDVersion.f3411_19:
                 return f"Unsupported version {self._rid_version}"
 
-            if not injected.has_field_with_value("eu_classification"):
+            if injected.eu_classification is None:
                 return "Injected UA classification type is not 'European Union' type"
 
             return None
@@ -1374,7 +1375,7 @@ class RIDCommonDictionaryEvaluator:
             if self._rid_version == RIDVersion.f3411_19:
                 return f"Unsupported version {self._rid_version}"
 
-            if not injected.has_field_with_value("eu_classification"):
+            if injected.eu_classification is None:
                 return "Injected UA classification type is not 'European Union' type"
 
             return None

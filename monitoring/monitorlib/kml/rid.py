@@ -63,7 +63,7 @@ def create_test(req: CreateTestParameters, resp: ChangeTestResponse) -> list:
 def get_flights_v22a(url: str, resp: GetFlightsResponse) -> list:
     result = []
     # TODO: render request bounding box from query parameter in url
-    for flight in resp.flights or [] if "flights" in resp else []:
+    for flight in resp.flights or []:
         folder = kml.Folder(kml.name(flight.id))
         if (
             flight.current_state

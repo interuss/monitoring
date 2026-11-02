@@ -54,10 +54,7 @@ class MSLAltitude(TestScenario):
 
     def _evaluate_msl_altitude(self, queries: list[Query]):
         for query in queries:
-            if (
-                "query_type" not in query
-                or query.query_type != QueryType.InterUSSRIDObservationV1GetDisplayData
-            ):
+            if query.query_type != QueryType.InterUSSRIDObservationV1GetDisplayData:
                 continue
             if not query.response.json:
                 # Invalid observation; this should already have been recorded as a failure
@@ -94,8 +91,7 @@ class MSLAltitude(TestScenario):
                     "MSL altitude is reported using an acceptable datum", participant_id
                 ) as check:
                     if (
-                        "reference_datum" not in flight.most_recent_position.msl_alt
-                        or flight.most_recent_position.msl_alt.reference_datum
+                        flight.most_recent_position.msl_alt.reference_datum
                         not in ACCEPTABLE_DATUMS
                     ):
                         check.record_failed(

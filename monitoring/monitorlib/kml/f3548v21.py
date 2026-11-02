@@ -25,28 +25,26 @@ def full_op_intent(op_intent: OperationalIntent):
     """Render operational intent information into Placemarks in a KML folder."""
     ref = op_intent.reference
     details = op_intent.details
-    name = f"{ref.manager}'s P{priority_of(details)} {ref.state.value} {ref.id}[{ref.version}] @ {ref.get('ovn')}"
+    name = f"{ref.manager}'s P{priority_of(details)} {ref.state.value} {ref.id}[{ref.version}] @ {ref.ovn}"
     folder = kml.Folder(kml.name(name))
-    if "volumes" in details:
-        for i, v4_f3548 in enumerate(details.volumes or []):
-            v4 = Volume4D.from_f3548v21(v4_f3548)
-            folder.append(
-                make_placemark_from_volume(
-                    v4,
-                    name=f"Nominal volume {i}",
-                    style_url=f"#F3548v21{ref.state.value}",
-                )
+    for i, v4_f3548 in enumerate(details.volumes or []):
+        v4 = Volume4D.from_f3548v21(v4_f3548)
+        folder.append(
+            make_placemark_from_volume(
+                v4,
+                name=f"Nominal volume {i}",
+                style_url=f"#F3548v21{ref.state.value}",
             )
-    if "off_nominal_volumes" in details:
-        for i, v4_f3548 in enumerate(details.off_nominal_volumes or []):
-            v4 = Volume4D.from_f3548v21(v4_f3548)
-            folder.append(
-                make_placemark_from_volume(
-                    v4,
-                    name=f"Off-nominal volume {i}",
-                    style_url=f"#F3548v21{ref.state.value}",
-                )
+        )
+    for i, v4_f3548 in enumerate(details.off_nominal_volumes or []):
+        v4 = Volume4D.from_f3548v21(v4_f3548)
+        folder.append(
+            make_placemark_from_volume(
+                v4,
+                name=f"Off-nominal volume {i}",
+                style_url=f"#F3548v21{ref.state.value}",
             )
+        )
     return folder
 
 

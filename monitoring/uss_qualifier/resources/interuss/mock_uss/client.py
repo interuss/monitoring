@@ -135,7 +135,7 @@ class MockUSSClient:
                 f"Request to mock uss {url} returned a {query.status_code} ", [query]
             )
         try:
-            response = ImplicitDict.parse(query.response.get("json"), ListLogsResponse)
+            response = ImplicitDict.parse(query.response.json, ListLogsResponse)
         except KeyError:
             raise QueryError(
                 msg="RecordedInteractionsResponse from mock_uss response did not contain JSON body",
