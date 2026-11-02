@@ -179,7 +179,6 @@ class AggregateChecks(GenericTestScenario):
             for query in all_queries:
                 if (
                     query.status_code == 200
-                    and query.query_type is not None
                     and query.query_type == QueryType.InterUSSRIDObservationV1GetDetails
                 ):
                     relevant_queries.append(query)
@@ -220,7 +219,7 @@ class AggregateChecks(GenericTestScenario):
             # identify successful flights queries
             relevant_queries: list[fetch.Query] = list()
             for query in all_queries:
-                if query.query_type is not None and (
+                if (
                     # TODO find a cleaner way than checking for version here
                     query.query_type == QueryType.F3411v19USSSearchFlights
                     or query.query_type == QueryType.F3411v22aUSSSearchFlights
