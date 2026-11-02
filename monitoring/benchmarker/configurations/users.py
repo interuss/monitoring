@@ -154,13 +154,13 @@ class NetRIDObserverBehaviorSpecification(ImplicitDict):
 
 class NetRIDDisplayProviderSubscriptionStrategySpecification(ImplicitDict):
     """How a NetRID display provider establishes subscriptions to serve its observers."""
-    
+
     s2_grid: Optional[S2GriddedSubscriptionStrategySpecification]
 
 
 class S2GriddedSubscriptionStrategySpecification(ImplicitDict):
     """The Display Provider maintains one subscription per S2 cell at a specified level for each cell covering an area that was queried by an observer."""
-    
+
     s2_level: int
     """The S2 level at which subscriptions are established and maintained."""
 
@@ -182,12 +182,14 @@ class S2GriddedSubscriptionStrategySpecification(ImplicitDict):
     delete_after_unused: Optional[StringBasedTimeDelta]
     """If specified, a subscription is deleted when no observer query has covered its cell for this amount of time.  Otherwise, subscriptions are left to expire."""
 
+
 class NetRIDObserversSpecification(ImplicitDict):
     behavior: NetRIDObserverBehaviorSpecification
     """How each of the virtual observers behaves."""
 
     count: int
     """Number of virtual observers with this behavior."""
+
 
 class NetRIDDisplayProviderSpecification(ImplicitDict):
     """Specification for a virtual NetRID Display Provider serving virtual observers."""
