@@ -723,6 +723,12 @@
     <td><a href="../../../scenarios/astm/utm/dss/op_intent_ref_state_transitions.md">ASTM F3548-21 UTM DSS Operational Intent Reference State Transitions</a></td>
   </tr>
   <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../../requirements/interuss/dss/hosting.md">interuss<br>.dss<br>.hosting</a></td>
+    <td><a href="../../../requirements/interuss/dss/hosting.md">ExposeAux</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/interuss/dss/aux_interface.md">InterUSS DSS aux interface</a></td>
+  </tr>
+  <tr>
     <td rowspan="2" style="vertical-align:top;"><a href="../../../requirements/interuss/f3411/dss_endpoints.md">interuss<br>.f3411<br>.dss_endpoints</a></td>
     <td><a href="../../../requirements/interuss/f3411/dss_endpoints.md">GetISA</a></td>
     <td>Implemented</td>

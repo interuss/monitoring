@@ -12,6 +12,34 @@ class InterUSSDSSClient:
         self._session = session
         self._participant_id = participant_id
 
+    def get_version(self) -> tuple[api.VersionResponse, Query]:
+        op = api.OPERATIONS[api.OperationID.GetVersion]
+        kwargs = {
+            "client": self._session,
+            "verb": op.verb,
+            "url": op.path,
+            "query_type": QueryType.InterUSSDSSGetVersion,
+        }
+        if self._participant_id:
+            kwargs["participant_id"] = self._participant_id
+        query = query_and_describe(**kwargs)
+        if query.status_code != 200:
+            raise QueryError(
+                f"Attempt to get version returned status {query.status_code} rather than 200 as expected",
+                query,
+            )
+        if query.response.json is None:
+            raise QueryError("Attempt to get version returned no JSON body", query)
+        try:
+            resp: api.VersionResponse = ImplicitDict.parse(
+                query.response.json, api.VersionResponse
+            )
+        except ValueError as e:
+            raise QueryError(
+                f"Response to get version could not be parsed: {str(e)}", query
+            )
+        return resp, query
+
     def get_pool(self) -> tuple[api.PoolResponse, Query]:
         op = api.OPERATIONS[api.OperationID.GetPool]
         kwargs = {
