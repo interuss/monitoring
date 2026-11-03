@@ -142,15 +142,6 @@ def test_op_400_version1(ids, scd_api, scd_session):
 
 @for_api_versions(scd.API_0_3_17)
 @default_scope(SCOPE_SC)
-def test_op_bad_state_version0(ids, scd_api, scd_session):
-    with open("./scd/resources/op_bad_state_version0.json") as f:
-        req = json.load(f)
-    resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
-    assert resp.status_code == 400, resp.content
-
-
-@for_api_versions(scd.API_0_3_17)
-@default_scope(SCOPE_SC)
 def test_op_bad_lat_lon_range(ids, scd_api, scd_session):
     with open("./scd/resources/op_bad_lat_lon_range.json") as f:
         req = json.load(f)

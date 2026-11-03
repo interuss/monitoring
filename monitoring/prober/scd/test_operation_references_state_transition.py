@@ -67,23 +67,5 @@ def test_op_accepted_bad1(ids, scd_api, scd_session):
 
 
 @for_api_versions(scd.API_0_3_17)
-@default_scope(SCOPE_SC)
-def test_op_bad_state_transition(ids, scd_api, scd_session):
-    resp = scd_session.get(f"/operational_intent_references/{ids(OP_TYPE)}")
-    assert resp.status_code == 200, resp.content
-    ovn = resp.json().get("operational_intent_reference", {}).get("ovn", None)
-    # Delete operation
-    resp = scd_session.delete(f"/operational_intent_references/{ids(OP_TYPE)}/{ovn}")
-    assert resp.status_code == 200, resp.content
-
-    # Create operation with Closed state
-    with open("./scd/resources/op_request_1.json") as f:
-        req = json.load(f)
-        req["state"] = "Ended"
-    resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
-    assert resp.status_code == 400, resp.content
-
-
-@for_api_versions(scd.API_0_3_17)
 def test_final_cleanup(ids, scd_api, scd_session):
     test_ensure_clean_workspace(ids, scd_api, scd_session)

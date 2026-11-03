@@ -1,3 +1,5 @@
+from typing import cast
+
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -292,6 +294,34 @@ class OpIntentReferenceStateTransitions(TestScenario):
                         details=f"DSS responded with {e.cause_status_code} to attempt to create OI {self._oid} while 400 or 403 was expected; {e}",
                         query_timestamps=e.query_timestamps,
                     )
+
+        for state, check_name in [
+            ("Activated", "Direct Activated state creation is forbidden"),
+            ("Ended", "Direct Ended state creation is forbidden"),
+        ]:
+            with self.check(check_name, self._pid) as check:
+                try:
+                    (self._current_ref, subscribers, q) = self._dss.put_op_intent(
+                        oi_id=self._oid,
+                        extents=flight_3.basic_information.area.to_f3548v21(),
+                        key=[],
+                        state=cast(OperationalIntentState, state),
+                        base_url=DUMMY_USS_BASE_URL,
+                    )
+                    self.record_query(q)
+                    check.record_failed(
+                        f"Could create operational intent in the {state} state",
+                        details=f"DSS responded with {q.response.status_code} to attempt to create OI {self._oid} in the {state} state",
+                        query_timestamps=[q.request.timestamp],
+                    )
+                except QueryError as e:
+                    self.record_queries(e.queries)
+                    if e.cause_status_code != 400:
+                        check.record_failed(
+                            "Forbidden operational intent reference creation failed with the wrong error code",
+                            details=f"DSS responded with {e.cause_status_code} to attempt to create OI {self._oid} in the {state} state while 400 was expected; {e}",
+                            query_timestamps=e.query_timestamps,
+                        )
 
     def _steps_check_unauthorized_state_transitions(self):
         """This checks for UNAUTHORIZED state transitions, that is, transitions that require the correct scope,
