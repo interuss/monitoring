@@ -1,0 +1,53 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/NetRIDObserverBehaviorSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "How each virtual observer served by a NetRID display provider behaves.\n\nmonitoring.benchmarker.configurations.users.NetRIDObserverBehaviorSpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "area": {
+      "$ref": "../../../monitorlib/geo/LatLngBoundingBox.json",
+      "description": "The center of each observation is drawn uniformly at random within this area."
+    },
+    "max_observation_period_duration": {
+      "description": "Duration of each observation period is drawn uniformly at random between min_observation_period_duration and this value.",
+      "format": "duration",
+      "type": "string"
+    },
+    "mean_time_between_observation_periods": {
+      "description": "Time between the end of an observation period and the start of the observer's next observation period is exponentially distributed with this mean.",
+      "format": "duration",
+      "type": "string"
+    },
+    "min_observation_period_duration": {
+      "description": "Duration of each observation period is drawn uniformly at random between this value and max_observation_period_duration.",
+      "format": "duration",
+      "type": "string"
+    },
+    "query_interval": {
+      "description": "While observing, the observer queries its display provider for flights in its observed rectangle this often.",
+      "format": "duration",
+      "type": "string"
+    },
+    "view_lat_size": {
+      "description": "Height, in degrees of latitude, of the rectangle observed (centered on the observation center).",
+      "type": "number"
+    },
+    "view_lng_size": {
+      "description": "Width, in degrees of longitude, of the rectangle observed (centered on the observation center).",
+      "type": "number"
+    }
+  },
+  "required": [
+    "area",
+    "max_observation_period_duration",
+    "mean_time_between_observation_periods",
+    "min_observation_period_duration",
+    "query_interval",
+    "view_lat_size",
+    "view_lng_size"
+  ],
+  "type": "object"
+}

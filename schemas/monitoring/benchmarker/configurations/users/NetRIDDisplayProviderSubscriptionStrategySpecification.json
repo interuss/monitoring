@@ -1,0 +1,22 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/NetRIDDisplayProviderSubscriptionStrategySpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "How a NetRID display provider establishes subscriptions to serve its observers.\n\nmonitoring.benchmarker.configurations.users.NetRIDDisplayProviderSubscriptionStrategySpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "s2_grid": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "S2GriddedSubscriptionStrategySpecification.json"
+        }
+      ]
+    }
+  },
+  "type": "object"
+}

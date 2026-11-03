@@ -1,0 +1,55 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/S2GriddedSubscriptionStrategySpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "The Display Provider maintains one subscription per S2 cell at a specified level for each cell covering an area that was queried by an observer.\n\nmonitoring.benchmarker.configurations.users.S2GriddedSubscriptionStrategySpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "delete_after_unused": {
+      "description": "If specified, a subscription is deleted when no observer query has covered its cell for this amount of time.  Otherwise, subscriptions are left to expire.",
+      "format": "duration",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "extension_duration": {
+      "description": "Amount of time by which the end of a subscription is pushed back when it is extended.",
+      "format": "duration",
+      "type": "string"
+    },
+    "extension_window": {
+      "description": "When an observer query covers a cell whose subscription expires in less than this amount of time, the subscription is extended.",
+      "format": "duration",
+      "type": "string"
+    },
+    "initial_duration": {
+      "description": "When an observer query covers a cell without an unexpired subscription, a subscription is created for that cell with this duration.",
+      "format": "duration",
+      "type": "string"
+    },
+    "max_alt": {
+      "$ref": "../../../monitorlib/geo/Altitude.json",
+      "description": "Altitude above which subscriptions do not apply."
+    },
+    "min_alt": {
+      "$ref": "../../../monitorlib/geo/Altitude.json",
+      "description": "Altitude below which subscriptions do not apply."
+    },
+    "s2_level": {
+      "description": "The S2 level at which subscriptions are established and maintained.",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "extension_duration",
+    "extension_window",
+    "initial_duration",
+    "max_alt",
+    "min_alt",
+    "s2_level"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,45 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/benchmarker/configurations/users/NetRIDDisplayProviderSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Specification for a virtual NetRID Display Provider serving virtual observers.\n\nmonitoring.benchmarker.configurations.users.NetRIDDisplayProviderSpecification, as defined in monitoring/benchmarker/configurations/users.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "dss_pool": {
+      "description": "Means to interact with the ASTM DSS.\n\nBenchmark configuration must contain a `resources.astm.f3411.DSSInstanceResource` resource with each of these names.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "dss_selection_strategy": {
+      "enum": [
+        "First",
+        "Random"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observers": {
+      "description": "List of virtual observers.",
+      "items": {
+        "$ref": "NetRIDObserversSpecification.json"
+      },
+      "type": "array"
+    },
+    "subscription_strategy": {
+      "$ref": "NetRIDDisplayProviderSubscriptionStrategySpecification.json",
+      "description": "How the display provider establishes subscriptions to serve its observers."
+    }
+  },
+  "required": [
+    "dss_pool",
+    "observers",
+    "subscription_strategy"
+  ],
+  "type": "object"
+}
