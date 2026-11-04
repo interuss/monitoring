@@ -4,7 +4,7 @@ import time as pytime
 import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Coroutine, Iterable, Iterator
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Any, TypeVar
@@ -274,6 +274,9 @@ class GenericTestScenario(ABC):
     on_failed_check: Callable[[FailedCheck], None] | None = None
     time_context: TestTimeContext
 
+    scenario_stack: ExitStack | None = None
+    """ExitStack opened at the start of scenario execution and closed upon completion."""
+
     cache: dict[str, Any]
     """Cached data scoped to the lifetime of the scenario."""
 
@@ -391,6 +394,16 @@ class GenericTestScenario(ABC):
 
     def me(self) -> str:
         return inspection.fullname(self.__class__)
+
+    def current_state_name(self) -> str:
+        result = self.me()
+        if self.context and self.context.current_frame:
+            result += f" ({self.context.current_frame.index})"
+        if self._current_case:
+            result += f" case '{self._current_case.name}'"
+        if self._current_step:
+            result += f" step '{self._current_step.name}'"
+        return result
 
     def current_step_name(self) -> str | None:
         if self._current_step:
