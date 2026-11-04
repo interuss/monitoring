@@ -1,3 +1,5 @@
+from typing import cast
+
 from uas_standards.astm.f3548.v21.api import UssAvailabilityState
 from uas_standards.astm.f3548.v21.constants import Scope
 
@@ -57,6 +59,10 @@ class UssAvailabilityMutation(TestScenario):
         self._step_attempt_update_incorrect_version()
         self.end_test_case()
 
+        self.begin_test_case("Update requires valid availability")
+        self._step_attempt_update_invalid_availability()
+        self.end_test_case()
+
     def _step_declare_uss_available(self):
         self.begin_test_step("Declare USS as available at DSS")
         _, version = get_uss_availability(
@@ -65,7 +71,7 @@ class UssAvailabilityMutation(TestScenario):
             self._uss_id,
             Scope.AvailabilityArbitration,
         )
-        set_uss_availability(
+        self._version = set_uss_availability(
             self, self._dss, self._uss_id, UssAvailabilityState.Normal, version
         )
         self.end_test_step()
@@ -127,6 +133,34 @@ class UssAvailabilityMutation(TestScenario):
                     check.record_failed(
                         summary="Set USS availability with incorrect version failed for unexpected reason",
                         details=f"Was expecting an HTTP 409 response because of an incorrect version, but got {qe.cause_status_code}: {qe.msg}",
+                        query_timestamps=qe.query_timestamps,
+                    )
+        self.end_test_step()
+
+    def _step_attempt_update_invalid_availability(self):
+        self.begin_test_step("Attempt update with invalid availability")
+        with self.check(
+            "Request to update USS availability status with invalid availability fails",
+            self._pid,
+        ) as check:
+            try:
+                _, q = self._dss.set_uss_availability(
+                    self._uss_id,
+                    cast(UssAvailabilityState, "pUrPlE"),
+                    self._version,
+                )
+                self.record_query(q)
+                check.record_failed(
+                    summary="Set USS availability with invalid availability was not expected to succeed",
+                    details=f"Was expecting an HTTP 400 response because of an invalid availability, but got {q.status_code}",
+                    query_timestamps=[q.request.timestamp],
+                )
+            except QueryError as qe:
+                self.record_queries(qe.queries)
+                if qe.cause_status_code != 400:
+                    check.record_failed(
+                        summary="Set USS availability with invalid availability failed for unexpected reason",
+                        details=f"Was expecting an HTTP 400 response because of an invalid availability, but got {qe.cause_status_code}: {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
         self.end_test_step()
