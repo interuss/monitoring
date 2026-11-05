@@ -112,4 +112,37 @@ in violation of **[astm.f3548.v21.OPIN0035](../../../../requirements/astm/f3548/
 If an operational intent reference can be deleted by a client which did not create it, the DSS implementation is
 in violation of **[astm.f3548.v21.OPIN0035](../../../../requirements/astm/f3548/v21.md)**.
 
+## OVN visibility test case
+
+This test case ensures that the DSS only provides the OVN of an operational intent reference to the USS managing it.
+
+### Retrieve operational intent references by ID test step
+
+#### 🛑 Owning credentials obtain OVN when retrieving by ID check
+
+If the DSS does not provide the OVN of an operational intent reference retrieved by ID by the USS managing it,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ Non-owning credentials do not obtain OVN when retrieving by ID check
+
+If the DSS provides the OVN of an operational intent reference retrieved by ID by a USS not managing it,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ Non-owning credentials obtain the same operational intent reference content check
+
+Apart from its OVN, an operational intent reference retrieved by ID by a USS not managing it must have the same content as when retrieved by the USS managing it.
+If it does not, the DSS is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+
+### Search operational intent references test step
+
+#### 🛑 Owning credentials obtain OVN when searching check
+
+If the DSS does not provide the OVN of an operational intent reference returned by a search performed by the USS managing it,
+it is in violation of **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ Non-owning credentials do not obtain OVN when searching check
+
+If the DSS provides the OVN of an operational intent reference returned by a search performed by a USS not managing it,
+it is in violation of **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
+
 ## [Cleanup](clean_workspace_op_intents_during_cleanup.md)

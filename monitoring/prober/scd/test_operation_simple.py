@@ -181,58 +181,6 @@ def test_get_op_by_search_missing_params(scd_api, scd_session):
 
 @default_scope(SCOPE_SC)
 @depends_on(test_create_op)
-def test_get_op_by_id_other_uss(ids, scd_session2):
-    resp = scd_session2.get(
-        f"/operational_intent_references/{ids(OP_TYPE)}", scope=SCOPE_SC
-    )
-    assert resp.status_code == 200, resp.content
-
-    data = resp.json()
-    op = data["operational_intent_reference"]
-    assert op["id"] == ids(OP_TYPE)
-    assert op["uss_base_url"] == BASE_URL
-    assert op["uss_availability"] == "Unknown"
-    assert op["version"] == 1
-    assert "state" in op
-    assert op["state"] == "Accepted", "The response has a state = '{}'".format(
-        op["state"]
-    )
-    assert op.get("ovn", "") in scd.NO_OVN_PHRASES, op
-
-
-@default_scope(SCOPE_SC)
-@depends_on(test_create_op)
-def test_get_op_by_query_other_uss(ids, scd_session2):
-    resp = scd_session2.post(
-        "/operational_intent_references/query",
-        json={
-            "area_of_interest": Volume4D.from_values(
-                None, None, 0, 5000, Circle.from_meters(-56, 178, 300)
-            ).to_f3548v21()
-        },
-    )
-    assert resp.status_code == 200, resp.content
-    matching_ops = [
-        x
-        for x in resp.json().get("operational_intent_references", [])
-        if x["id"] == ids(OP_TYPE)
-    ]
-    assert len(matching_ops) == 1, resp.json()
-    op = matching_ops[0]
-
-    assert op["id"] == ids(OP_TYPE)
-    assert op["uss_base_url"] == BASE_URL
-    assert op["uss_availability"] == "Unknown"
-    assert op["version"] == 1
-    assert "state" in op
-    assert op["state"] == "Accepted", "The response has a state = '{}'".format(
-        op["state"]
-    )
-    assert op.get("ovn", "") in scd.NO_OVN_PHRASES, op
-
-
-@default_scope(SCOPE_SC)
-@depends_on(test_create_op)
 def test_mutate_op(ids, scd_api, scd_session, scd_session_cp, scd_session_cm):
     # GET current op
     resp = scd_session.get(f"/operational_intent_references/{ids(OP_TYPE)}")

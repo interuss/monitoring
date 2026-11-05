@@ -1,6 +1,7 @@
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3548.v21.constants import Scope
 
+from monitoring.monitorlib import scd
 from monitoring.monitorlib.clients.flight_planning.flight_info import (
     AirspaceUsageState,
     UasState,
@@ -132,6 +133,15 @@ class OpIntentReferenceAccessControl(TestScenario):
 
             self._check_mutation_on_non_owned_intent_fails()
 
+            self.end_test_step()
+            self.end_test_case()
+
+            self.begin_test_case("OVN visibility")
+            self.begin_test_step("Retrieve operational intent references by ID")
+            self._check_ovn_visibility_by_id()
+            self.end_test_step()
+            self.begin_test_step("Search operational intent references")
+            self._check_ovn_visibility_by_search()
             self.end_test_step()
             self.end_test_case()
         else:
@@ -540,6 +550,126 @@ class OpIntentReferenceAccessControl(TestScenario):
                     details=f"Operational intent {self._oid_1} was modified by second credentials",
                     query_timestamps=[q.request.timestamp, qcheck.request.timestamp],
                 )
+
+    def _check_ovn_visibility_by_id(self):
+        retrieved = {}
+        for dss, oid, owned, check_name in [
+            (
+                self._dss,
+                self._oid_1,
+                True,
+                "Owning credentials obtain OVN when retrieving by ID",
+            ),
+            (
+                self._dss_separate_creds,
+                self._oid_1,
+                False,
+                "Non-owning credentials do not obtain OVN when retrieving by ID",
+            ),
+        ]:
+            with self.check(check_name, self._pid) as check:
+                try:
+                    oir, q = dss.get_op_intent_reference(oid)
+                    self.record_query(q)
+                except QueryError as e:
+                    self.record_queries(e.queries)
+                    check.record_failed(
+                        "Could not retrieve operational intent reference",
+                        details=f"DSS responded with {e.cause_status_code} to attempt to retrieve OI {oid}; {e}",
+                        query_timestamps=e.query_timestamps,
+                    )
+                    continue
+                retrieved[owned] = (oir, q)
+                if ((oir.ovn or "") not in scd.NO_OVN_PHRASES) != owned:
+                    check.record_failed(
+                        f"OVN was {'not ' if owned else ''}provided",
+                        details=f"OVN of OI {oid} retrieved by {'owning' if owned else 'non-owning'} credentials was `{oir.ovn}`",
+                        query_timestamps=[q.request.timestamp],
+                    )
+
+        if True in retrieved and False in retrieved:
+            (owner_oir, owner_q), (other_oir, other_q) = (
+                retrieved[True],
+                retrieved[False],
+            )
+            with self.check(
+                "Non-owning credentials obtain the same operational intent reference content",
+                self._pid,
+            ) as check:
+                differences = [
+                    field
+                    for field in (
+                        "id",
+                        "manager",
+                        "uss_availability",
+                        "version",
+                        "state",
+                        "uss_base_url",
+                        "subscription_id",
+                    )
+                    if owner_oir.get(field) != other_oir.get(field)
+                ]
+                if (
+                    owner_oir.time_start.value.datetime
+                    != other_oir.time_start.value.datetime
+                ):
+                    differences.append("time_start")
+                if (
+                    owner_oir.time_end.value.datetime
+                    != other_oir.time_end.value.datetime
+                ):
+                    differences.append("time_end")
+                if differences:
+                    check.record_failed(
+                        "Operational intent reference content differs between owning and non-owning credentials",
+                        details=f"Fields {differences} of OI {self._oid_1} differ when retrieved by non-owning credentials",
+                        query_timestamps=[
+                            owner_q.request.timestamp,
+                            other_q.request.timestamp,
+                        ],
+                    )
+
+    def _check_ovn_visibility_by_search(self):
+        extent = self._get_extents().to_f3548v21()
+        for dss, oid, owned, check_name in [
+            (
+                self._dss_separate_creds,
+                self._oid_2,
+                True,
+                "Owning credentials obtain OVN when searching",
+            ),
+            (
+                self._dss_separate_creds,
+                self._oid_1,
+                False,
+                "Non-owning credentials do not obtain OVN when searching",
+            ),
+        ]:
+            with self.check(check_name, self._pid) as check:
+                try:
+                    oirs, q = dss.find_op_intent(extent)
+                    self.record_query(q)
+                except QueryError as e:
+                    self.record_queries(e.queries)
+                    check.record_failed(
+                        "Could not search operational intent references",
+                        details=f"DSS responded with {e.cause_status_code} to attempt to search OIs; {e}",
+                        query_timestamps=e.query_timestamps,
+                    )
+                    continue
+                found = [oir for oir in oirs if oir.id == oid]
+                if not found:
+                    check.record_failed(
+                        "Operational intent reference not found",
+                        details=f"OI {oid} was not returned by the search",
+                        query_timestamps=[q.request.timestamp],
+                    )
+                elif ((found[0].ovn or "") not in scd.NO_OVN_PHRASES) != owned:
+                    check.record_failed(
+                        f"OVN was {'not ' if owned else ''}provided",
+                        details=f"OVN of OI {oid} searched by {'owning' if owned else 'non-owning'} credentials was `{found[0].ovn}`",
+                        query_timestamps=[q.request.timestamp],
+                    )
 
     def cleanup(self):
         self.begin_cleanup()
