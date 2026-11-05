@@ -1,3 +1,5 @@
+from typing import cast
+
 from uas_standards.astm.f3548.v21 import api as f3548v21
 from uas_standards.astm.f3548.v21.api import OperationalIntentState
 from uas_standards.astm.f3548.v21.constants import Scope
@@ -290,6 +292,30 @@ class OpIntentReferenceStateTransitions(TestScenario):
                     check.record_failed(
                         "Forbidden operational intent reference creation failed with the wrong error code",
                         details=f"DSS responded with {e.cause_status_code} to attempt to create OI {self._oid} while 400 or 403 was expected; {e}",
+                        query_timestamps=e.query_timestamps,
+                    )
+
+        with self.check("Direct Ended state creation is forbidden", self._pid) as check:
+            try:
+                (self._current_ref, subscribers, q) = self._dss.put_op_intent(
+                    oi_id=self._oid,
+                    extents=flight_3.basic_information.area.to_f3548v21(),
+                    key=[],
+                    state=cast(OperationalIntentState, "Ended"),
+                    base_url=DUMMY_USS_BASE_URL,
+                )
+                self.record_query(q)
+                check.record_failed(
+                    "Could create operational intent in the 'Ended' state",
+                    details=f"DSS responded with {q.response.status_code} to attempt to create OI {self._oid} in the 'Ended' state",
+                    query_timestamps=[q.request.timestamp],
+                )
+            except QueryError as e:
+                self.record_queries(e.queries)
+                if e.cause_status_code != 400:
+                    check.record_failed(
+                        "Forbidden operational intent reference creation failed with the wrong error code",
+                        details=f"DSS responded with {e.cause_status_code} to attempt to create OI {self._oid} in the 'Ended' state while 400 was expected; {e}",
                         query_timestamps=e.query_timestamps,
                     )
 

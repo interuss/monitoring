@@ -55,6 +55,11 @@ it is in violation of **[astm.f3548.v21.SCD0100](../../../../requirements/astm/f
 If the DSS allows a client with the `utm.strategic_coordination` scope to create an operational intent reference in the `Contingent` state,
 it is in violation of **[astm.f3548.v21.SCD0100](../../../../requirements/astm/f3548/v21.md)** and **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
+#### 🛑 Direct Ended state creation is forbidden check
+
+`Ended` is not a valid state for an operational intent reference in the DSS API; an operational intent transitioned to Ended must remove its reference from the DSS.  If the DSS does not reject with a 400 the creation of an operational intent reference in the `Ended` state,
+it is in violation of **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+
 ## Attempt unauthorized state transitions test case
 
 This test case attempts to transition an existing operational intent reference to a state that would require the `utm.conformance_monitoring_sa` scope while only using
