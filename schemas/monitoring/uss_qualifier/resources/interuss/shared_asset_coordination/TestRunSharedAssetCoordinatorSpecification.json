@@ -1,0 +1,24 @@
+{
+  "$id": "https://github.com/interuss/monitoring/blob/main/schemas/monitoring/uss_qualifier/resources/interuss/shared_asset_coordination/TestRunSharedAssetCoordinatorSpecification.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "monitoring.uss_qualifier.resources.interuss.shared_asset_coordination.TestRunSharedAssetCoordinatorSpecification, as defined in monitoring/uss_qualifier/resources/interuss/shared_asset_coordination.py",
+  "properties": {
+    "$ref": {
+      "description": "Path to content that replaces the $ref",
+      "type": "string"
+    },
+    "max_wait_time_seconds": {
+      "description": "Maximum acquisition wait; zero permits only an immediate attempt.",
+      "type": "number"
+    },
+    "retry_interval_seconds": {
+      "description": "Delay between acquisition attempts; must be positive and finite.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "max_wait_time_seconds",
+    "retry_interval_seconds"
+  ],
+  "type": "object"
+}

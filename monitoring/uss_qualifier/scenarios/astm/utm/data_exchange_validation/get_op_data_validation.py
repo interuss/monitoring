@@ -31,6 +31,12 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
     MockUSSResource,
 )
+from monitoring.uss_qualifier.resources.interuss.shared_asset_coordination import (
+    SharedAssetAcquisitionError,
+    SharedAssetCoordinatorResource,
+    SharedAssetIdentifier,
+    SharedAssetType,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.data_exchange_validation.test_steps.expected_interactions_test_steps import (
     expect_mock_uss_receives_op_intent_notification,
     expect_no_interuss_post_interactions,
@@ -68,6 +74,7 @@ class GetOpResponseDataValidationByUSS(TestScenario):
     mock_uss: MockUSSClient
     mock_uss_client: FlightPlannerClient
     dss: DSSInstance
+    _shared_asset_coordinator: SharedAssetCoordinatorResource | None
 
     def __init__(
         self,
@@ -75,9 +82,11 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         mock_uss: MockUSSResource,
         dss: DSSInstanceResource,
         flight_intents: FlightIntentsResource | None = None,
+        shared_asset_coordinator: SharedAssetCoordinatorResource | None = None,
     ):
         super().__init__()
         self.flight_planning_state = FlightPlanningState()
+        self._shared_asset_coordinator = shared_asset_coordinator
         self.tested_uss_client = tested_uss.client
         self.mock_uss = mock_uss.mock_uss
         self.mock_uss_client = mock_uss.mock_uss.flight_planner
@@ -136,6 +145,10 @@ class GetOpResponseDataValidationByUSS(TestScenario):
             f"{self.tested_uss_client.participant_id}",
         )
 
+        self.begin_test_case("Setup")
+        self._acquire_mock_uss_notifications()
+        self.end_test_case()
+
         self.begin_test_case("Successfully plan flight near an existing flight")
         self._plan_successfully_test_case()
         self.end_test_case()
@@ -145,6 +158,26 @@ class GetOpResponseDataValidationByUSS(TestScenario):
         self.end_test_case()
 
         self.end_test_scenario()
+
+    def _acquire_mock_uss_notifications(self) -> None:
+        if self._shared_asset_coordinator is None:
+            return
+
+        self.begin_test_step("Acquire exclusive mock_uss notification access")
+        with self.check("mock_uss notification access acquired", []) as check:
+            try:
+                self._shared_asset_coordinator.acquire(
+                    SharedAssetIdentifier(
+                        asset_type=SharedAssetType.MockUSSNotifications
+                    ),
+                    self,
+                )
+            except SharedAssetAcquisitionError as e:
+                check.record_failed(
+                    summary="Unable to acquire exclusive mock_uss notification access",
+                    details=str(e),
+                )
+        self.end_test_step()
 
     def _plan_successfully_test_case(self):
         flight_2 = self.flight_2.resolve(self.time_context.evaluate_now())

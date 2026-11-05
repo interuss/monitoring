@@ -34,6 +34,12 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
+from monitoring.uss_qualifier.resources.interuss.shared_asset_coordination import (
+    SharedAssetAcquisitionError,
+    SharedAssetCoordinatorResource,
+    SharedAssetIdentifier,
+    SharedAssetType,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.clear_area_validation import (
     validate_clear_area,
 )
@@ -65,18 +71,21 @@ class DownUSS(TestScenario):
     dss_resource: DSSInstanceResource
     dss: DSSInstance
     flight_intents_templates: dict[FlightIntentID, FlightInfoTemplate]
+    _shared_asset_coordinator: SharedAssetCoordinatorResource | None
 
     def __init__(
         self,
         flight_intents: FlightIntentsResource,
         tested_uss: FlightPlannerResource,
         dss: DSSInstanceResource,
+        shared_asset_coordinator: SharedAssetCoordinatorResource | None = None,
     ):
         super().__init__()
         self.flight_planning_state = FlightPlanningState()
         self.dss_resource = dss
         self.tested_uss = tested_uss.client
         self.dss = dss.get_instance(self._dss_req_scopes)
+        self._shared_asset_coordinator = shared_asset_coordinator
 
         self.flight_intents_templates = flight_intents.get_flight_intents()
         try:
@@ -141,6 +150,8 @@ class DownUSS(TestScenario):
         self.end_test_scenario()
 
     def _setup(self):
+        self._acquire_dss_availability()
+
         estimated_max_extents = estimate_scenario_execution_max_extents(
             self.time_context, self.flight_intents_templates
         )
@@ -183,6 +194,25 @@ class DownUSS(TestScenario):
             ignore_self=False,
         )
         self.end_test_step()
+
+    def _acquire_dss_availability(self) -> None:
+        if self._shared_asset_coordinator is None:
+            return
+
+        self.begin_test_step("Acquire exclusive DSS availability access")
+        with self.check("DSS availability access acquired", []) as check:
+            try:
+                self._shared_asset_coordinator.acquire(
+                    SharedAssetIdentifier(asset_type=SharedAssetType.DSSAvailability),
+                    self,
+                )
+            except SharedAssetAcquisitionError as e:
+                check.record_failed(
+                    summary="Unable to acquire exclusive DSS availability access",
+                    details=str(e),
+                )
+        self.end_test_step()
+        return
 
     def _put_conflicting_op_intent_step(
         self,

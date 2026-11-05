@@ -5,6 +5,7 @@ import os
 import re
 from collections.abc import Iterator
 from concurrent.futures import Future, ThreadPoolExecutor
+from contextlib import ExitStack
 from copy import copy
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -165,18 +166,21 @@ class TestSuiteAction[T: ActionGenerator]:
         )
 
         try:
-            # Full asyncio: await run/cleanup and aclose on the executing task's
-            # loop rather than entering this synchronous Runner bridge.
-            with scenario.async_runtime():
-                try:
-                    scenario.run(context)
-                except ScenarioCannotContinueError, TestRunCannotContinueError:
-                    pass
-                scenario.go_to_cleanup()
-                try:
-                    scenario.cleanup()
-                except ScenarioCannotContinueError, TestRunCannotContinueError:
-                    scenario.ensure_cleanup_ended()
+            with ExitStack() as scenario_stack:
+                scenario.scenario_stack = scenario_stack
+                # Full asyncio: await run/cleanup and aclose on the executing task's
+                # loop rather than entering this synchronous Runner bridge.
+                with scenario.async_runtime():
+                    try:
+                        scenario.run(context)
+                    except ScenarioCannotContinueError, TestRunCannotContinueError:
+                        pass
+                    scenario.go_to_cleanup()
+                    try:
+                        scenario.cleanup()
+                    except ScenarioCannotContinueError, TestRunCannotContinueError:
+                        scenario.ensure_cleanup_ended()
+                scenario.scenario_stack = None
         except KeyboardInterrupt:
             raise
         except Exception as e:

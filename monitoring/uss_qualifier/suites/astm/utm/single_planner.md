@@ -11,6 +11,7 @@
 - `dss`: `resources.astm.f3548.v21.DSSInstanceResource`
 - `mock_uss`: `resources.interuss.mock_uss.client.MockUSSResource` (optional)
 - `utm_auth`: `resources.communications.AuthAdapterResource` (optional)
+- `shared_asset_coordinator`: `resources.interuss.shared_asset_coordination.SharedAssetCoordinatorResource` (optional)
 
 ## [Actions](../../README.md#actions)
 
@@ -135,6 +136,12 @@
     <td><a href="../../../requirements/astm/f3548/v21.md">USS0105,4</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/uss_authentication/scd_authentication_validation.md">ASTM SCD USS: Interfaces authentication</a></td>
+  </tr>
+  <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../../requirements/interuss/automated_testing/coordination.md">interuss<br>.automated_testing<br>.coordination</a></td>
+    <td><a href="../../../requirements/interuss/automated_testing/coordination.md">AccessSharedAssets</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../../scenarios/astm/utm/off_nominal_planning/down_uss.md">Off-Nominal planning: down USS</a><br><a href="../../../scenarios/astm/utm/off_nominal_planning/down_uss_equal_priority_not_permitted.md">Off-Nominal planning: down USS with equal priority conflicts not permitted</a></td>
   </tr>
   <tr>
     <td rowspan="3" style="vertical-align:top;"><a href="../../../requirements/interuss/automated_testing/flight_planning.md">interuss<br>.automated_testing<br>.flight_planning</a></td>
