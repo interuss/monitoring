@@ -34,7 +34,7 @@ from monitoring.uss_qualifier.resources.flight_planning.flight_intent_validation
 from monitoring.uss_qualifier.resources.flight_planning.flight_planners import (
     FlightPlannerResource,
 )
-from monitoring.uss_qualifier.resources.interuss.shared_resource_coordination import (
+from monitoring.uss_qualifier.resources.interuss.shared_asset_coordination import (
     SharedAssetAcquisitionError,
     SharedAssetCoordinatorResource,
     SharedAssetIdentifier,

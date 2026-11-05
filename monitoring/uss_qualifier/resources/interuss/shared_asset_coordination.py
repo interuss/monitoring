@@ -109,9 +109,9 @@ class SharedAssetCoordinatorResource(Resource, ABC):
     ) -> SharedAssetLease:
         """Acquire ownership of the asset and register its automatic release on the scenario's ExitStack.
 
-        To avoid deadlocks, acquire multiple resources in a consistent order across callers.
+        To avoid deadlocks, acquire multiple assets in a consistent order across callers.
 
-        Raises: SharedResourceAcquisitionError
+        Raises: SharedAssetAcquisitionError
         """
         raise NotImplementedError()
 

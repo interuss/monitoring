@@ -11,7 +11,7 @@
 - `dss`: `resources.astm.f3548.v21.DSSInstanceResource`
 - `mock_uss`: `resources.interuss.mock_uss.client.MockUSSResource` (optional)
 - `utm_auth`: `resources.communications.AuthAdapterResource` (optional)
-- `shared_asset_coordinator`: `resources.interuss.shared_resource_coordination.SharedAssetCoordinatorResource` (optional)
+- `shared_asset_coordinator`: `resources.interuss.shared_asset_coordination.SharedAssetCoordinatorResource` (optional)
 
 ## [Actions](../../README.md#actions)
 

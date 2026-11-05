@@ -31,7 +31,7 @@ from monitoring.uss_qualifier.resources.interuss.mock_uss.client import (
     MockUSSClient,
     MockUSSResource,
 )
-from monitoring.uss_qualifier.resources.interuss.shared_resource_coordination import (
+from monitoring.uss_qualifier.resources.interuss.shared_asset_coordination import (
     SharedAssetAcquisitionError,
     SharedAssetCoordinatorResource,
     SharedAssetIdentifier,
