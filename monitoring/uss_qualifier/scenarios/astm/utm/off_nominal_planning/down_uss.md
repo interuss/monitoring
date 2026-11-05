@@ -35,7 +35,17 @@ DSSInstanceResource that provides access to a DSS instance where:
 - the USS qualifier acting as a virtual USS can create operational intent references, and
 - the USS qualifier can act as an availability arbitrator.
 
+### shared_asset_coordinator
+Optional SharedAssetCoordinatorResource that coordinates exclusive access to USS availability states in the DSS pool.  When not provided, no shared-asset coordination is performed.
+
 ## Setup test case
+### Acquire exclusive DSS availability access test step
+This step is performed only when a shared asset coordinator is provided.
+Acquire exclusive access to USS availability states in the DSS pool.
+
+#### 🛑 DSS availability access acquired check
+If the shared access coordinator does not grant exclusive access to USS availability states in the DSS pool, the coordinator and/or test design will have failed to meet **[interuss.automated_testing.coordination.AccessSharedAssets](../../../../requirements/interuss/automated_testing/coordination.md)**.
+
 ### Resolve USS ID of virtual USS test step
 Make a dummy request to the DSS in order to resolve the USS ID of the virtual USS.
 

@@ -38,7 +38,18 @@ DSSInstanceResource that provides access to a DSS instance where:
 - the USS qualifier acting as a virtual USS can create operational intents, and
 - the USS qualifier can act as an availability arbitrator.
 
+### shared_asset_coordinator
+Optional SharedAssetCoordinatorResource that coordinates exclusive access to USS availability states in the DSS pool.  When not provided, no shared-asset coordination is performed.
+
 ## Setup test case
+
+### Acquire exclusive DSS availability access test step
+This step is performed only when a shared asset coordinator is provided.
+Acquire exclusive access to USS availability states in the DSS pool.
+
+#### 🛑 DSS availability access acquired check
+If the shared access coordinator does not grant exclusive access to USS availability states in the DSS pool, the coordinator and/or test design will have failed to meet **[interuss.automated_testing.coordination.AccessSharedAssets](../../../../requirements/interuss/automated_testing/coordination.md)**.
+
 ### Resolve USS ID of virtual USS test step
 Make a dummy request to the DSS in order to resolve the USS ID of the virtual USS.
 
@@ -99,7 +110,6 @@ to reject or accept Flight 2. If the USS indicates that the injection attempt fa
 
 ### [Restore virtual USS availability at DSS test step](../set_uss_available.md)
 
-
 ## Plan Flight 2 in conflict with nonconforming operational intent managed by down USS test case
 This test case aims at testing requirement **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)** when the pre-existing conflicting flight is in the Nonconforming state.  This test case will only be executed if uss_qualifier can perform Conformance Monitoring for Situational Awareness operations in the provided DSS instance.
 
@@ -136,7 +146,6 @@ to reject or accept Flight 2. If the USS indicates that the injection attempt fa
 
 ### [Restore virtual USS availability at DSS test step](../set_uss_available.md)
 
-
 ## Plan Flight 2 in conflict with contingent operational intent managed by down USS test case
 This test case aims at testing requirement **[astm.f3548.v21.SCD0010](../../../../requirements/astm/f3548/v21.md)** when the pre-existing conflicting flight is in the Contingent state.  This test case will only be executed if uss_qualifier can perform Conformance Monitoring for Situational Awareness operations in the provided DSS instance.
 
@@ -170,7 +179,6 @@ to reject or accept Flight 2. If the USS indicates that the injection attempt fa
 **[interuss.automated_testing.flight_planning.ExpectedBehavior](../../../../requirements/interuss/automated_testing/flight_planning.md)**.
 
 #### [Validate Flight 2 not shared](../validate_not_shared_operational_intent.md)
-
 
 ## Cleanup
 ### [Restore virtual USS availability test step](../set_uss_available_during_cleanup.md)

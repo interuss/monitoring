@@ -31,6 +31,7 @@ v1:
           second_utm_auth: second_utm_auth
           planning_area_provider: planning_area_provider
           problematically_big_area: problematically_big_area
+          shared_asset_coordinator: shared_asset_coordinator
 
     # When a test run is executed, a "baseline signature" is computed uniquely identifying the "baseline" of the test,
     # usually excluding exactly what systems are participating in the test (the "environment").  This is a list of
@@ -168,6 +169,12 @@ v1:
         # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         # ========== Environment ==========
         # =================================
+
+        shared_asset_coordinator:
+          resource_type: resources.interuss.shared_resource_coordination.TestRunSharedAssetCoordinatorResource
+          specification:
+            retry_interval_seconds: 3
+            max_wait_time_seconds: 60
 
         # Means by which uss_qualifier can discover which subscription ('sub' claim of its tokes) it is described by
         utm_client_identity:

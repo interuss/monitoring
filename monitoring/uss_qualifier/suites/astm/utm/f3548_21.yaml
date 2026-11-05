@@ -8,6 +8,7 @@ resources:
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   interuss_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
+  shared_asset_coordinator: resources.interuss.shared_resource_coordination.SharedAssetCoordinatorResource?
 
   conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
   priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
@@ -198,6 +199,7 @@ actions:
     resources:
       single_planner_environments: single_planner_environments
       dss: dss
+      shared_asset_coordinator: shared_asset_coordinator?
       mock_uss: mock_uss?
       utm_auth: utm_auth?
     specification:
@@ -211,6 +213,7 @@ actions:
             non_conflicting_flights: non_conflicting_flights
             conflicting_flights: conflicting_flights
             dss: dss
+            shared_asset_coordinator: shared_asset_coordinator?
             mock_uss: mock_uss?
             utm_auth: utm_auth?
 - test_scenario:
