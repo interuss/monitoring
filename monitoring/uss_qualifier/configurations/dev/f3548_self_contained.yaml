@@ -341,15 +341,6 @@ v1:
                 potentially_generates_any_of:
                   - test_suite:
                       suite_type: suites.astm.utm.dss_probing
-        # The single-planner generator isn't ready to run its actions in parallel yet
-        - max_parallelism: 1
-          conditions:
-            - is_action_generator:
-                types:
-                  - action_generators.resource_environments.ResourceEnvironmentsActionGenerator
-                potentially_generates_any_of:
-                  - test_suite:
-                      suite_type: suites.astm.utm.single_planner
         # ...but other ResourceEnvironmentsActionGenerators can have their actions run in parallel
         - max_parallelism: 2
           conditions:
