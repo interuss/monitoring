@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scenarios executed — Timeline</title>
+<style>
+    :root {
+      --primary: #1976d2;
+      --primary-hover: #1565c0;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.5rem 1.25rem;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .title-nav {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover {
+      background-color: #f1f5f9;
+      border-color: var(--border);
+    }
+
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-group {
+      display: inline-flex;
+      border-radius: 0.375rem;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .btn-sm {
+      padding: 0.25rem 0.6rem;
+      font-size: 0.8125rem;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      border-right: 1px solid var(--border);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      white-space: nowrap;
+    }
+
+    .btn-sm:last-child {
+      border-right: none;
+    }
+
+    .btn-sm:hover {
+      background-color: #f1f5f9;
+    }
+
+    .legend-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background-color: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .legend-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+
+    .legend-color-dot {
+      width: 0.75rem;
+      height: 0.75rem;
+      border-radius: 0.15rem;
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background-color: #f1f5f9;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    #timeline-container {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      background-color: #ffffff;
+      overflow: hidden;
+    }
+
+    #timeline-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: default;
+    }
+
+    #tooltip {
+      position: absolute;
+      display: none;
+      background: rgba(15, 23, 42, 0.94);
+      color: #ffffff;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      line-height: 1.45;
+      pointer-events: none;
+      z-index: 1000;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+      max-width: 420px;
+    }
+
+    #tooltip strong {
+      color: #93c5fd;
+    }
+
+    .help-hint {
+      position: absolute;
+      bottom: 0.5rem;
+      left: 0.75rem;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      border-radius: 0.25rem;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+  </style></head>
+<body>
+  <header>
+    <div class="header-content">
+      <div class="title-nav">
+        <a href="index.html" class="nav-link">&larr; Overview</a>
+        <h1>Scenarios executed — Timeline</h1>
+      </div>
+      <div class="controls-bar">
+        <div class="legend-bar">
+            <span class="legend-chip">
+              <span class="legend-color-dot" style="background-color: #32aced;"></span>
+              Suite
+            </span>
+            <span class="legend-chip">
+              <span class="legend-color-dot" style="background-color: #c7c46b;"></span>
+              ActionGenerator
+            </span>
+            <span class="legend-chip">
+              <span class="legend-color-dot" style="background-color: #70c76b;"></span>
+              Scenario
+            </span>
+          <span class="legend-chip">Red outline: execution error</span>
+          <span class="legend-chip"><span class="legend-color-dot" style="background-color: #d1fae5;"></span>Participant: no failed checks</span>
+          <span class="legend-chip"><span class="legend-color-dot" style="background-color: #fee2e2;"></span>Participant: failed checks</span>
+        </div>
+<div class="btn-group">
+          <button id="btn-zoom-in" class="btn-sm" title="Zoom In (or Shift + Wheel Up)">Zoom In (+)</button>
+          <button id="btn-zoom-out" class="btn-sm" title="Zoom Out (or Shift + Wheel Down)">Zoom Out (-)</button>
+          <button id="btn-reset-view" class="btn-sm" title="Reset to Full Scenario View">Reset View</button>
+        </div>
+        <span class="badge">Duration: 1m23s</span>
+        <span class="badge">69 Scenarios</span>
+      </div>
+    </div>
+  </header>
+<div id="timeline-container">
+    <canvas id="timeline-canvas"></canvas>
+    <div id="tooltip"></div>
+    <div class="help-hint">
+      <strong>Controls:</strong> Left-drag or Mouse wheel to scroll &bull; Shift + Left-drag or Shift + Wheel to zoom time &bull;
+      Hover actions for details; click scenarios to open their events
+    </div>
+  </div>  <script id="timeline-data" type="application/json">{"action_types": [{"color": "#32aced", "name": "Suite"}, {"color": "#c7c46b", "name": "ActionGenerator"}, {"color": "#70c76b", "name": "Scenario"}], "actions": [{"class_name": "suites.astm.utm.f3548_21", "color": "#32aced", "column": 0, "depth": 0, "duration": 82.68470692634583, "end_inferred": false, "execution_error": null, "failed_checks": 4, "href": null, "name": "ASTM F3548-21", "parent_index": null, "participant_checks": [], "participants": ["mock_uss", "unattributed", "uss1_core", "uss1_dss", "uss2_core", "uss2_dss"], "passed_checks": 6321, "query_count": 2165, "t0": 1793908327.694894, "t1": 1793908410.379601, "type": "Suite"}, {"class_name": "scenarios.versioning.GetSystemVersions", "color": "#70c76b", "column": 1, "depth": 1, "duration": 0.03406381607055664, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s1.html", "name": "Get system versions", "parent_index": 0, "participant_checks": [{"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["uss1_core", "uss2_core"], "passed_checks": 2, "query_count": 2, "scenario_index": 1, "t0": 1793908327.696191, "t1": 1793908327.730255, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.pool_info.PoolInfo", "color": "#70c76b", "column": 1, "depth": 1, "duration": 0.021471023559570312, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s2.html", "name": "DSS pool information", "parent_index": 0, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 5, "query_count": 4, "scenario_index": 2, "t0": 1793908327.731263, "t1": 1793908327.752734, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.PrepareFlightPlanners", "color": "#70c76b", "column": 1, "depth": 1, "duration": 1.139068841934204, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s3.html", "name": "ASTM F3548 flight planners preparation", "parent_index": 0, "participant_checks": [{"has_failed_checks": false, "id": "mock_uss"}, {"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["mock_uss", "unattributed", "uss1_core", "uss1_dss", "uss2_core"], "passed_checks": 134, "query_count": 67, "scenario_index": 3, "t0": 1793908327.753374, "t1": 1793908328.892443, "type": "Scenario"}, {"class_name": "action_generators.resource_environments.ResourceEnvironmentsActionGenerator", "color": "#c7c46b", "column": 1, "depth": 1, "duration": 27.470211029052734, "end_inferred": false, "execution_error": null, "failed_checks": 4, "href": null, "name": "For each resource environment supplying dss, planning_area, id_generator, and flight_intents", "parent_index": 0, "participant_checks": [], "participants": ["mock_uss", "unattributed", "uss1_dss", "uss2_dss"], "passed_checks": 3977, "query_count": 1271, "t0": 1793908328.892838, "t1": 1793908356.363049, "type": "ActionGenerator"}, {"class_name": "suites.astm.utm.dss_probing", "color": "#32aced", "column": 2, "depth": 2, "duration": 13.471610069274902, "end_inferred": false, "execution_error": null, "failed_checks": 2, "href": null, "name": "DSS testing for ASTM F3548-21", "parent_index": 4, "participant_checks": [], "participants": ["mock_uss", "uss1_dss", "uss2_dss"], "passed_checks": 1988, "query_count": 635, "t0": 1793908328.894012, "t1": 1793908342.365622, "type": "Suite"}, {"class_name": "scenarios.astm.utm.dss.OIRExplicitSubHandling", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.2715010643005371, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s4.html", "name": "ASTM SCD DSS: Operational Intent Explicit Subscription handling", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_dss"], "passed_checks": 45, "query_count": 38, "scenario_index": 4, "t0": 1793908328.894749, "t1": 1793908329.16625, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.OIRImplicitSubHandling", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.9309329986572266, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s5.html", "name": "ASTM SCD DSS: Implicit Subscription handling", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_dss"], "passed_checks": 121, "query_count": 91, "scenario_index": 5, "t0": 1793908329.167029, "t1": 1793908330.097962, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.OIRSimple", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.512598991394043, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s6.html", "name": "ASTM SCD DSS: Operational Intent Reference Simple", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_dss"], "passed_checks": 148, "query_count": 21, "scenario_index": 6, "t0": 1793908330.098865, "t1": 1793908330.611464, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.OIRValidation", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.03621506690979004, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s7.html", "name": "ASTM SCD DSS: Operational Intent Reference Validation", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_dss"], "passed_checks": 9, "query_count": 9, "scenario_index": 7, "t0": 1793908330.612033, "t1": 1793908330.648248, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.CRSimple", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.09009003639221191, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s8.html", "name": "ASTM SCD DSS: Constraint Reference Simple", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_dss"], "passed_checks": 14, "query_count": 14, "scenario_index": 8, "t0": 1793908330.648884, "t1": 1793908330.738974, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.synchronization.CRSynchronization", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.2438669204711914, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s9.html", "name": "ASTM SCD DSS: Constraint Reference Synchronization", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 227, "query_count": 19, "scenario_index": 9, "t0": 1793908330.739891, "t1": 1793908330.983758, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.synchronization.USSAvailabilitySynchronization", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.06080794334411621, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s10.html", "name": "ASTM SCD DSS: USS Availability Synchronization", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 37, "query_count": 16, "scenario_index": 10, "t0": 1793908330.984544, "t1": 1793908331.045352, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.OpIntentReferenceStateTransitions", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.1025381088256836, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s11.html", "name": "ASTM F3548-21 UTM DSS Operational Intent Reference State Transitions", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "mock_uss"}, {"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["mock_uss", "uss1_dss"], "passed_checks": 18, "query_count": 17, "scenario_index": 11, "t0": 1793908331.046036, "t1": 1793908331.148574, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.SubscriptionInteractionsDeletion", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.3441441059112549, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s12.html", "name": "ASTM SCD DSS: Subscription and entity deletion interaction", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 73, "query_count": 49, "scenario_index": 12, "t0": 1793908331.14934, "t1": 1793908331.493484, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.SubscriptionInteractions", "color": "#70c76b", "column": 3, "depth": 3, "duration": 7.587705850601196, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s13.html", "name": "ASTM SCD DSS: Subscription and entity interaction", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 102, "query_count": 63, "scenario_index": 13, "t0": 1793908331.49423, "t1": 1793908339.081936, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.OIRKeyValidation", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.33600807189941406, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s14.html", "name": "ASTM SCD DSS: Operational Intent Reference Key Validation", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_dss"], "passed_checks": 41, "query_count": 25, "scenario_index": 14, "t0": 1793908339.082695, "t1": 1793908339.418703, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.synchronization.OIRSynchronization", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.19238781929016113, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s15.html", "name": "ASTM SCD DSS: Operational Intent Reference Synchronization", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 126, "query_count": 21, "scenario_index": 15, "t0": 1793908339.420679, "t1": 1793908339.613067, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.authentication.AuthenticationValidation", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.9709489345550537, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s16.html", "name": "ASTM SCD DSS: Interfaces authentication", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_dss"], "passed_checks": 182, "query_count": 128, "scenario_index": 16, "t0": 1793908339.614043, "t1": 1793908340.584992, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.SubscriptionSimple", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.5479679107666016, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s17.html", "name": "ASTM SCD DSS: Subscription Simple", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_dss"], "passed_checks": 399, "query_count": 44, "scenario_index": 17, "t0": 1793908340.585938, "t1": 1793908341.133906, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.SubscriptionValidation", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.03473377227783203, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s18.html", "name": "ASTM SCD DSS: Subscription Validation", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_dss"], "passed_checks": 7, "query_count": 7, "scenario_index": 18, "t0": 1793908341.134596, "t1": 1793908341.16933, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.OpIntentReferenceAccessControl", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.15109801292419434, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s19.html", "name": "ASTM F3548-21 UTM DSS Operational Intent Reference Access Control", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "mock_uss"}, {"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["mock_uss", "uss1_dss"], "passed_checks": 23, "query_count": 19, "scenario_index": 19, "t0": 1793908341.169928, "t1": 1793908341.321026, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.DSSInteroperability", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.018631935119628906, "end_inferred": false, "execution_error": null, "failed_checks": 2, "href": "s20.html", "name": "ASTM F3548-21 UTM DSS interoperability", "parent_index": 5, "participant_checks": [{"has_failed_checks": true, "id": "uss1_dss"}, {"has_failed_checks": true, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 2, "query_count": 2, "scenario_index": 20, "t0": 1793908341.321973, "t1": 1793908341.340605, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.synchronization.SubscriptionSynchronization", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.783595085144043, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s21.html", "name": "ASTM SCD DSS: Subscription Synchronization", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 395, "query_count": 36, "scenario_index": 21, "t0": 1793908341.342268, "t1": 1793908342.125863, "type": "Scenario"}, {"class_name": "scenarios.interuss.ovn_request.DSSOVNRequest", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.09960818290710449, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s22.html", "name": "OVN Request Optional Extension to ASTM F3548-21", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_dss"], "passed_checks": 12, "query_count": 10, "scenario_index": 22, "t0": 1793908342.129058, "t1": 1793908342.228666, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.Report", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.11018705368041992, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s23.html", "name": "ASTM SCD DSS: Report", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_dss"], "passed_checks": 2, "query_count": 1, "scenario_index": 23, "t0": 1793908342.230236, "t1": 1793908342.340423, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.UssAvailabilityMutation", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.022244930267333984, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s24.html", "name": "ASTM Availability DSS: USS Availability Mutation", "parent_index": 5, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_dss"], "passed_checks": 5, "query_count": 5, "scenario_index": 24, "t0": 1793908342.342577, "t1": 1793908342.364822, "type": "Scenario"}, {"class_name": "suites.astm.utm.dss_probing", "color": "#32aced", "column": 2, "depth": 2, "duration": 13.99428915977478, "end_inferred": false, "execution_error": null, "failed_checks": 2, "href": null, "name": "DSS testing for ASTM F3548-21", "parent_index": 4, "participant_checks": [], "participants": ["unattributed", "uss1_dss", "uss2_dss"], "passed_checks": 1989, "query_count": 636, "t0": 1793908342.367585, "t1": 1793908356.361874, "type": "Suite"}, {"class_name": "scenarios.astm.utm.dss.OIRExplicitSubHandling", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.4959990978240967, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s25.html", "name": "ASTM SCD DSS: Operational Intent Explicit Subscription handling", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 45, "query_count": 38, "scenario_index": 25, "t0": 1793908342.368419, "t1": 1793908342.864418, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.OIRImplicitSubHandling", "color": "#70c76b", "column": 3, "depth": 3, "duration": 1.1459250450134277, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s26.html", "name": "ASTM SCD DSS: Implicit Subscription handling", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 121, "query_count": 91, "scenario_index": 26, "t0": 1793908342.866041, "t1": 1793908344.011966, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.OIRSimple", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.3978550434112549, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s27.html", "name": "ASTM SCD DSS: Operational Intent Reference Simple", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 148, "query_count": 21, "scenario_index": 27, "t0": 1793908344.012801, "t1": 1793908344.410656, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.OIRValidation", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.03369903564453125, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s28.html", "name": "ASTM SCD DSS: Operational Intent Reference Validation", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 9, "query_count": 9, "scenario_index": 28, "t0": 1793908344.411347, "t1": 1793908344.445046, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.CRSimple", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.0836179256439209, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s29.html", "name": "ASTM SCD DSS: Constraint Reference Simple", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 14, "query_count": 14, "scenario_index": 29, "t0": 1793908344.445671, "t1": 1793908344.529289, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.synchronization.CRSynchronization", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.23744606971740723, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s30.html", "name": "ASTM SCD DSS: Constraint Reference Synchronization", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 227, "query_count": 19, "scenario_index": 30, "t0": 1793908344.529922, "t1": 1793908344.767368, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.synchronization.USSAvailabilitySynchronization", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.06826901435852051, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s31.html", "name": "ASTM SCD DSS: USS Availability Synchronization", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["unattributed", "uss1_dss", "uss2_dss"], "passed_checks": 38, "query_count": 17, "scenario_index": 31, "t0": 1793908344.768061, "t1": 1793908344.83633, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.OpIntentReferenceStateTransitions", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.14371705055236816, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s32.html", "name": "ASTM F3548-21 UTM DSS Operational Intent Reference State Transitions", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 18, "query_count": 17, "scenario_index": 32, "t0": 1793908344.837003, "t1": 1793908344.98072, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.SubscriptionInteractionsDeletion", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.40116310119628906, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s33.html", "name": "ASTM SCD DSS: Subscription and entity deletion interaction", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 73, "query_count": 49, "scenario_index": 33, "t0": 1793908344.98166, "t1": 1793908345.382823, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.SubscriptionInteractions", "color": "#70c76b", "column": 3, "depth": 3, "duration": 7.5823071002960205, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s34.html", "name": "ASTM SCD DSS: Subscription and entity interaction", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 102, "query_count": 63, "scenario_index": 34, "t0": 1793908345.383473, "t1": 1793908352.96578, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.OIRKeyValidation", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.4350919723510742, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s35.html", "name": "ASTM SCD DSS: Operational Intent Reference Key Validation", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 41, "query_count": 25, "scenario_index": 35, "t0": 1793908352.966487, "t1": 1793908353.401579, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.synchronization.OIRSynchronization", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.2034130096435547, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s36.html", "name": "ASTM SCD DSS: Operational Intent Reference Synchronization", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 126, "query_count": 21, "scenario_index": 36, "t0": 1793908353.403929, "t1": 1793908353.607342, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.authentication.AuthenticationValidation", "color": "#70c76b", "column": 3, "depth": 3, "duration": 1.1024718284606934, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s37.html", "name": "ASTM SCD DSS: Interfaces authentication", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 182, "query_count": 128, "scenario_index": 37, "t0": 1793908353.608421, "t1": 1793908354.710893, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.SubscriptionSimple", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.632504940032959, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s38.html", "name": "ASTM SCD DSS: Subscription Simple", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 399, "query_count": 44, "scenario_index": 38, "t0": 1793908354.711822, "t1": 1793908355.344327, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.SubscriptionValidation", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.04195809364318848, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s39.html", "name": "ASTM SCD DSS: Subscription Validation", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 7, "query_count": 7, "scenario_index": 39, "t0": 1793908355.345016, "t1": 1793908355.386974, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.OpIntentReferenceAccessControl", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.18955707550048828, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s40.html", "name": "ASTM F3548-21 UTM DSS Operational Intent Reference Access Control", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 23, "query_count": 19, "scenario_index": 40, "t0": 1793908355.387871, "t1": 1793908355.577428, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.DSSInteroperability", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.02021312713623047, "end_inferred": false, "execution_error": null, "failed_checks": 2, "href": "s41.html", "name": "ASTM F3548-21 UTM DSS interoperability", "parent_index": 27, "participant_checks": [{"has_failed_checks": true, "id": "uss1_dss"}, {"has_failed_checks": true, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 2, "query_count": 2, "scenario_index": 41, "t0": 1793908355.578461, "t1": 1793908355.598674, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.synchronization.SubscriptionSynchronization", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.560615062713623, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s42.html", "name": "ASTM SCD DSS: Subscription Synchronization", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss1_dss", "uss2_dss"], "passed_checks": 395, "query_count": 36, "scenario_index": 42, "t0": 1793908355.600252, "t1": 1793908356.160867, "type": "Scenario"}, {"class_name": "scenarios.interuss.ovn_request.DSSOVNRequest", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.08937597274780273, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s43.html", "name": "OVN Request Optional Extension to ASTM F3548-21", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 12, "query_count": 10, "scenario_index": 43, "t0": 1793908356.1616, "t1": 1793908356.250976, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.Report", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.09124279022216797, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s44.html", "name": "ASTM SCD DSS: Report", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 2, "query_count": 1, "scenario_index": 44, "t0": 1793908356.25165, "t1": 1793908356.342893, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.dss.UssAvailabilityMutation", "color": "#70c76b", "column": 3, "depth": 3, "duration": 0.01772594451904297, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s45.html", "name": "ASTM Availability DSS: USS Availability Mutation", "parent_index": 27, "participant_checks": [{"has_failed_checks": false, "id": "uss2_dss"}], "participants": ["uss2_dss"], "passed_checks": 5, "query_count": 5, "scenario_index": 45, "t0": 1793908356.343538, "t1": 1793908356.361264, "type": "Scenario"}, {"class_name": "action_generators.resource_environments.ResourceEnvironmentsActionGenerator", "color": "#c7c46b", "column": 1, "depth": 1, "duration": 7.431512832641602, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": null, "name": "For each resource environment supplying uss1, uss2, and flight_intents", "parent_index": 0, "participant_checks": [], "participants": ["unattributed", "uss1_core", "uss1_dss", "uss2_core"], "passed_checks": 704, "query_count": 232, "t0": 1793908356.364658, "t1": 1793908363.796171, "type": "ActionGenerator"}, {"class_name": "scenarios.astm.utm.ConflictHigherPriority", "color": "#70c76b", "column": 2, "depth": 2, "duration": 3.2296221256256104, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s46.html", "name": "Nominal planning: conflict with higher priority", "parent_index": 49, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["unattributed", "uss1_core", "uss1_dss"], "passed_checks": 175, "query_count": 57, "scenario_index": 46, "t0": 1793908356.365752, "t1": 1793908359.595374, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.ConflictHigherPriority", "color": "#70c76b", "column": 3, "depth": 2, "duration": 3.508795976638794, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s47.html", "name": "Nominal planning: conflict with higher priority", "parent_index": 49, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["unattributed", "uss1_core", "uss1_dss", "uss2_core"], "passed_checks": 177, "query_count": 59, "scenario_index": 47, "t0": 1793908356.426306, "t1": 1793908359.935102, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.ConflictHigherPriority", "color": "#70c76b", "column": 2, "depth": 2, "duration": 4.069390058517456, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s48.html", "name": "Nominal planning: conflict with higher priority", "parent_index": 49, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["unattributed", "uss1_core", "uss1_dss", "uss2_core"], "passed_checks": 177, "query_count": 59, "scenario_index": 48, "t0": 1793908359.596147, "t1": 1793908363.665537, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.ConflictHigherPriority", "color": "#70c76b", "column": 3, "depth": 2, "duration": 3.859520196914673, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s49.html", "name": "Nominal planning: conflict with higher priority", "parent_index": 49, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["unattributed", "uss1_dss", "uss2_core"], "passed_checks": 175, "query_count": 57, "scenario_index": 49, "t0": 1793908359.935984, "t1": 1793908363.795504, "type": "Scenario"}, {"class_name": "action_generators.resource_environments.ResourceEnvironmentsActionGenerator", "color": "#c7c46b", "column": 1, "depth": 1, "duration": 10.039961099624634, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": null, "name": "For each resource environment supplying uss1, uss2, and flight_intents", "parent_index": 0, "participant_checks": [], "participants": ["unattributed", "uss1_core", "uss1_dss", "uss2_core"], "passed_checks": 836, "query_count": 280, "t0": 1793908363.79667, "t1": 1793908373.836631, "type": "ActionGenerator"}, {"class_name": "scenarios.astm.utm.ConflictEqualPriorityNotPermitted", "color": "#70c76b", "column": 3, "depth": 2, "duration": 4.779165029525757, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s50.html", "name": "Nominal planning: not permitted conflict with equal priority", "parent_index": 54, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["unattributed", "uss1_core", "uss1_dss"], "passed_checks": 209, "query_count": 70, "scenario_index": 50, "t0": 1793908363.798441, "t1": 1793908368.577606, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.ConflictEqualPriorityNotPermitted", "color": "#70c76b", "column": 2, "depth": 2, "duration": 4.671589136123657, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s51.html", "name": "Nominal planning: not permitted conflict with equal priority", "parent_index": 54, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["unattributed", "uss1_core", "uss1_dss", "uss2_core"], "passed_checks": 209, "query_count": 70, "scenario_index": 51, "t0": 1793908363.798178, "t1": 1793908368.469767, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.ConflictEqualPriorityNotPermitted", "color": "#70c76b", "column": 2, "depth": 2, "duration": 5.192811012268066, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s52.html", "name": "Nominal planning: not permitted conflict with equal priority", "parent_index": 54, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["unattributed", "uss1_core", "uss1_dss", "uss2_core"], "passed_checks": 209, "query_count": 70, "scenario_index": 52, "t0": 1793908368.470661, "t1": 1793908373.663472, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.ConflictEqualPriorityNotPermitted", "color": "#70c76b", "column": 3, "depth": 2, "duration": 5.257220983505249, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s53.html", "name": "Nominal planning: not permitted conflict with equal priority", "parent_index": 54, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["unattributed", "uss1_dss", "uss2_core"], "passed_checks": 209, "query_count": 70, "scenario_index": 53, "t0": 1793908368.578756, "t1": 1793908373.835977, "type": "Scenario"}, {"class_name": "action_generators.resource_environments.ResourceEnvironmentsActionGenerator", "color": "#c7c46b", "column": 1, "depth": 1, "duration": 33.763152837753296, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": null, "name": "For each resource environment supplying tested_uss, invalid_flight_intents, conflicting_flights, and non_conflicting_flights", "parent_index": 0, "participant_checks": [], "participants": ["mock_uss", "unattributed", "uss1_core", "uss1_dss", "uss2_core"], "passed_checks": 510, "query_count": 236, "t0": 1793908373.837413, "t1": 1793908407.600566, "type": "ActionGenerator"}, {"class_name": "suites.astm.utm.single_planner", "color": "#32aced", "column": 2, "depth": 2, "duration": 18.431278944015503, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": null, "name": "Single flight planner testing for ASTM F3548-21", "parent_index": 59, "participant_checks": [], "participants": ["mock_uss", "unattributed", "uss1_core", "uss1_dss"], "passed_checks": 255, "query_count": 118, "t0": 1793908373.838356, "t1": 1793908392.269635, "type": "Suite"}, {"class_name": "scenarios.astm.utm.FlightIntentValidation", "color": "#70c76b", "column": 4, "depth": 3, "duration": 0.9954061508178711, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s54.html", "name": "Validation of operational intents", "parent_index": 60, "participant_checks": [{"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_core", "uss1_dss"], "passed_checks": 38, "query_count": 18, "scenario_index": 54, "t0": 1793908373.840036, "t1": 1793908374.835442, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.data_exchange_validation.GetOpResponseDataValidationByUSS", "color": "#70c76b", "column": 4, "depth": 3, "duration": 14.941715002059937, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s55.html", "name": "Data Validation of GET operational intents by USS", "parent_index": 60, "participant_checks": [{"has_failed_checks": false, "id": "mock_uss"}, {"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["mock_uss", "unattributed", "uss1_core", "uss1_dss"], "passed_checks": 58, "query_count": 26, "scenario_index": 55, "t0": 1793908374.836152, "t1": 1793908389.777867, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.subscription_notifications.ReceiveNotificationsForAwareness", "color": "#70c76b", "column": 4, "depth": 3, "duration": 1.1686651706695557, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s56.html", "name": "Awareness of relevant operational intents", "parent_index": 60, "participant_checks": [{"has_failed_checks": false, "id": "mock_uss"}, {"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["mock_uss", "uss1_core", "uss1_dss"], "passed_checks": 71, "query_count": 22, "scenario_index": 56, "t0": 1793908389.778601, "t1": 1793908390.947266, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.uss_authentication.scd_authentication_validation.SCDAuthenticationValidation", "color": "#70c76b", "column": 4, "depth": 3, "duration": 0.48984289169311523, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s57.html", "name": "ASTM SCD USS: Interfaces authentication", "parent_index": 60, "participant_checks": [{"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["uss1_core", "uss1_dss"], "passed_checks": 37, "query_count": 17, "scenario_index": 57, "t0": 1793908390.947926, "t1": 1793908391.437769, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.DownUSS", "color": "#70c76b", "column": 4, "depth": 3, "duration": 0.5130610466003418, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s58.html", "name": "Off-Nominal planning: down USS", "parent_index": 60, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["unattributed", "uss1_core", "uss1_dss"], "passed_checks": 30, "query_count": 17, "scenario_index": 58, "t0": 1793908391.438441, "t1": 1793908391.951502, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.DownUSSEqualPriorityNotPermitted", "color": "#70c76b", "column": 4, "depth": 3, "duration": 0.31685614585876465, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s59.html", "name": "Off-Nominal planning: down USS with equal priority conflicts not permitted", "parent_index": 60, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}], "participants": ["unattributed", "uss1_core", "uss1_dss"], "passed_checks": 21, "query_count": 18, "scenario_index": 59, "t0": 1793908391.952252, "t1": 1793908392.269108, "type": "Scenario"}, {"class_name": "suites.astm.utm.single_planner", "color": "#32aced", "column": 3, "depth": 2, "duration": 33.761049032211304, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": null, "name": "Single flight planner testing for ASTM F3548-21", "parent_index": 59, "participant_checks": [], "participants": ["mock_uss", "unattributed", "uss1_dss", "uss2_core"], "passed_checks": 255, "query_count": 118, "t0": 1793908373.838784, "t1": 1793908407.599833, "type": "Suite"}, {"class_name": "scenarios.astm.utm.FlightIntentValidation", "color": "#70c76b", "column": 5, "depth": 3, "duration": 1.022256851196289, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s60.html", "name": "Validation of operational intents", "parent_index": 67, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["uss1_dss", "uss2_core"], "passed_checks": 38, "query_count": 18, "scenario_index": 60, "t0": 1793908373.84222, "t1": 1793908374.864477, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.data_exchange_validation.GetOpResponseDataValidationByUSS", "color": "#70c76b", "column": 5, "depth": 3, "duration": 30.068969011306763, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s61.html", "name": "Data Validation of GET operational intents by USS", "parent_index": 67, "participant_checks": [{"has_failed_checks": false, "id": "mock_uss"}, {"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["mock_uss", "unattributed", "uss1_dss", "uss2_core"], "passed_checks": 58, "query_count": 26, "scenario_index": 61, "t0": 1793908374.865412, "t1": 1793908404.934381, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.subscription_notifications.ReceiveNotificationsForAwareness", "color": "#70c76b", "column": 4, "depth": 3, "duration": 1.3552939891815186, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s62.html", "name": "Awareness of relevant operational intents", "parent_index": 67, "participant_checks": [{"has_failed_checks": false, "id": "mock_uss"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["mock_uss", "uss1_dss", "uss2_core"], "passed_checks": 71, "query_count": 22, "scenario_index": 62, "t0": 1793908404.935139, "t1": 1793908406.290433, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.uss_authentication.scd_authentication_validation.SCDAuthenticationValidation", "color": "#70c76b", "column": 4, "depth": 3, "duration": 0.48534083366394043, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s63.html", "name": "ASTM SCD USS: Interfaces authentication", "parent_index": 67, "participant_checks": [{"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["uss1_dss", "uss2_core"], "passed_checks": 37, "query_count": 17, "scenario_index": 63, "t0": 1793908406.291372, "t1": 1793908406.776713, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.DownUSS", "color": "#70c76b", "column": 4, "depth": 3, "duration": 0.5135829448699951, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s64.html", "name": "Off-Nominal planning: down USS", "parent_index": 67, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["unattributed", "uss1_dss", "uss2_core"], "passed_checks": 30, "query_count": 17, "scenario_index": 64, "t0": 1793908406.777651, "t1": 1793908407.291234, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.DownUSSEqualPriorityNotPermitted", "color": "#70c76b", "column": 4, "depth": 3, "duration": 0.30730605125427246, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s65.html", "name": "Off-Nominal planning: down USS with equal priority conflicts not permitted", "parent_index": 67, "participant_checks": [{"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["unattributed", "uss1_dss", "uss2_core"], "passed_checks": 21, "query_count": 18, "scenario_index": 65, "t0": 1793908407.291938, "t1": 1793908407.599244, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.PrepareFlightPlanners", "color": "#70c76b", "column": 1, "depth": 1, "duration": 2.6820809841156006, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s66.html", "name": "ASTM F3548 flight planners preparation", "parent_index": 0, "participant_checks": [{"has_failed_checks": false, "id": "mock_uss"}, {"has_failed_checks": false, "id": "unattributed"}, {"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss1_dss"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["mock_uss", "unattributed", "uss1_core", "uss1_dss", "uss2_core"], "passed_checks": 134, "query_count": 67, "scenario_index": 66, "t0": 1793908407.601477, "t1": 1793908410.283558, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.make_uss_report.MakeUssReport", "color": "#70c76b", "column": 1, "depth": 1, "duration": 0.03638100624084473, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s67.html", "name": "ASTM F3548 makeUssReport", "parent_index": 0, "participant_checks": [{"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["uss1_core", "uss2_core"], "passed_checks": 2, "query_count": 2, "scenario_index": 67, "t0": 1793908410.284319, "t1": 1793908410.3207, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.versioning.evaluate_system_versions.EvaluateSystemVersions", "color": "#70c76b", "column": 1, "depth": 1, "duration": 0.04253196716308594, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s68.html", "name": "ASTM F3548-21 evaluate system versions", "parent_index": 0, "participant_checks": [{"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["uss1_core", "uss2_core"], "passed_checks": 9, "query_count": 4, "scenario_index": 68, "t0": 1793908410.321396, "t1": 1793908410.363928, "type": "Scenario"}, {"class_name": "scenarios.astm.utm.AggregateChecks", "color": "#70c76b", "column": 1, "depth": 1, "duration": 0.005198955535888672, "end_inferred": false, "execution_error": null, "failed_checks": 0, "href": "s69.html", "name": "ASTM F3548 UTM aggregate checks", "parent_index": 0, "participant_checks": [{"has_failed_checks": false, "id": "uss1_core"}, {"has_failed_checks": false, "id": "uss2_core"}], "participants": ["uss1_core", "uss2_core"], "passed_checks": 8, "query_count": 0, "scenario_index": 69, "t0": 1793908410.373789, "t1": 1793908410.378988, "type": "Scenario"}], "columns": 6, "duration_shorthand": "1m23s", "scenario_count": 69, "scenario_end": 1793908410.379601, "scenario_start": 1793908327.694894}</script>
+  <script>
+    (function() {
+      const data = JSON.parse(document.getElementById('timeline-data').textContent);
+      const W_TIME = 105;
+      const container = document.getElementById('timeline-container');
+      const canvas = document.getElementById('timeline-canvas');
+      const ctx = canvas.getContext('2d');
+      const tooltip = document.getElementById('tooltip');
+
+      const scenarioStart = data.scenario_start;
+      const scenarioEnd = data.scenario_end;
+      const fullDuration = scenarioEnd - scenarioStart;
+      const minDuration = Math.min(0.05, fullDuration); // 50ms min zoom window
+
+      // Visible time window [viewT0, viewT1]
+      let viewT0 = scenarioStart;
+      let viewT1 = scenarioEnd;
+
+      // Layout constants
+      const H_HEADER = 36;
+      const W_SCROLLBAR = 24;
+      const H_HSCROLLBAR = 0;
+
+      let width = 0;
+      let height = 0;
+      let dpr = window.devicePixelRatio || 1;
+
+      let hoveredItem = null;
+      let drawPending = false;
+
+      // Multiple input events can arrive before the browser paints a frame.
+      function requestDraw() {
+        if (drawPending) return;
+        drawPending = true;
+        requestAnimationFrame(() => {
+          drawPending = false;
+          draw();
+        });
+      }
+
+      function setHoveredItem(item) {
+        // Hit tests return new wrappers; compare the underlying report objects.
+        const changed = item?.type !== hoveredItem?.type ||
+          item?.op !== hoveredItem?.op ||
+          item?.action !== hoveredItem?.action ||
+          (item?.type === 'time' && item.y !== hoveredItem?.y);
+        hoveredItem = item;
+        if (changed) requestDraw();
+      }
+
+      // Drag & Interaction state
+      let isDraggingMain = false;
+      let isDraggingScrollbar = false;
+      let dragAnchorY = 0;
+      let dragAnchorTime = 0;
+      let dragStartT0 = 0;
+      let dragStartT1 = 0;
+      let dragWithShift = false;
+
+      function clampView() {
+        let span = viewT1 - viewT0;
+        if (span >= fullDuration) {
+          viewT0 = scenarioStart;
+          viewT1 = scenarioEnd;
+          return;
+        }
+        if (span < minDuration) {
+          const center = (viewT0 + viewT1) / 2;
+          span = Math.min(minDuration, fullDuration);
+          viewT0 = center - span / 2;
+          viewT1 = center + span / 2;
+        }
+        if (viewT0 < scenarioStart) {
+          viewT0 = scenarioStart;
+          viewT1 = viewT0 + span;
+        }
+        if (viewT1 > scenarioEnd) {
+          viewT1 = scenarioEnd;
+          viewT0 = viewT1 - span;
+        }
+        if (viewT0 < scenarioStart) {
+          viewT0 = scenarioStart;
+        }
+      }
+
+      function resizeCanvas() {
+        const rect = container.getBoundingClientRect();
+        width = rect.width;
+        height = rect.height;
+        dpr = window.devicePixelRatio || 1;
+
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        ctx.resetTransform();
+        ctx.scale(dpr, dpr);
+
+        requestDraw();
+      }
+
+      window.addEventListener('resize', resizeCanvas);
+
+      function timelineHeight() {
+        return Math.max(10, height - H_HEADER - H_HSCROLLBAR);
+      }
+
+      function timeToY(t) {
+        const timelineH = timelineHeight();
+        return H_HEADER + ((t - viewT0) / (viewT1 - viewT0)) * timelineH;
+      }
+
+      function yToTime(y) {
+        const timelineH = timelineHeight();
+        return viewT0 + ((y - H_HEADER) / timelineH) * (viewT1 - viewT0);
+      }
+
+      function timeToScrollbarY(t) {
+        const timelineH = timelineHeight();
+        return H_HEADER + ((t - scenarioStart) / fullDuration) * timelineH;
+      }
+
+      function scrollbarYToTime(y) {
+        const timelineH = timelineHeight();
+        return scenarioStart + ((y - H_HEADER) / timelineH) * fullDuration;
+      }
+
+      function formatIsoTime(t) {
+        const d = new Date(t * 1000);
+        return d.toISOString().substr(11, 8); // HH:MM:SS
+      }
+
+      function formatIsoTimeMs(t) {
+        const d = new Date(t * 1000);
+        return d.toISOString().substr(11, 12); // HH:MM:SS.mmm
+      }
+
+      function formatDuration(sec) {
+        if (sec >= 1) {
+          return sec.toFixed(3) + 's';
+        } else {
+          return (sec * 1000).toFixed(1) + 'ms';
+        }
+      }
+
+
+      function drawTimeScale(timeX, timeWidth) {
+        const span = viewT1 - viewT0;
+        let tickInterval = 60; // 1 min default
+        if (span > 1800) tickInterval = 300; // 5 min
+        else if (span > 600) tickInterval = 120; // 2 min
+        else if (span > 120) tickInterval = 60; // 1 min
+        else if (span > 30) tickInterval = 10; // 10s
+        else if (span > 10) tickInterval = 5; // 5s
+        else if (span > 2) tickInterval = 1; // 1s
+        else if (span > 0.5) tickInterval = 0.1;
+        else tickInterval = 0.01;
+
+        const firstTick = Math.ceil(viewT0 / tickInterval) * tickInterval;
+        ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+
+        for (let t = firstTick; t <= viewT1; t += tickInterval) {
+          const y = timeToY(t);
+          if (y >= H_HEADER && y <= H_HEADER + timelineHeight()) {
+            // Horizontal guideline
+            ctx.strokeStyle = 'rgba(226, 232, 240, 0.8)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(timeX, y);
+            ctx.lineTo(width - W_SCROLLBAR, y);
+            ctx.stroke();
+
+            // Tick in time column
+            ctx.strokeStyle = '#94a3b8';
+            ctx.beginPath();
+            ctx.moveTo((timeX + timeWidth) - 5, y);
+            ctx.lineTo((timeX + timeWidth), y);
+            ctx.stroke();
+
+            // Time label
+            const label = tickInterval < 1 ? formatIsoTimeMs(t) : formatIsoTime(t);
+            ctx.fillText(label, (timeX + timeWidth) - 7, y);
+          }
+        }
+
+      }
+
+      function drawScrollbar(markers = []) {
+        const sbX = width - W_SCROLLBAR;
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(sbX, H_HEADER, W_SCROLLBAR, timelineHeight());
+
+        // Scrollbar thumb
+        const thumbY0 = timeToScrollbarY(viewT0);
+        const thumbY1 = timeToScrollbarY(viewT1);
+        const thumbH = Math.max(8, thumbY1 - thumbY0);
+
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.35)';
+        ctx.fillRect(sbX + 2, thumbY0, W_SCROLLBAR - 4, thumbH);
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(sbX + 2, thumbY0, W_SCROLLBAR - 4, thumbH);
+
+        markers.forEach((t) => {
+          const sy = timeToScrollbarY(t);
+          ctx.strokeStyle = '#d97706';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(sbX, sy);
+          ctx.lineTo(sbX + 4, sy);
+          ctx.stroke();
+        });
+      }
+
+      function positionTooltip(e) {
+        const rect = container.getBoundingClientRect();
+        let posX = e.clientX - rect.left + 15;
+        let posY = e.clientY - rect.top + 15;
+
+        if (posX + tooltip.offsetWidth > width) {
+          posX = e.clientX - rect.left - tooltip.offsetWidth - 15;
+        }
+        if (posY + tooltip.offsetHeight > height) {
+          posY = e.clientY - rect.top - tooltip.offsetHeight - 15;
+        }
+
+        tooltip.style.left = Math.max(5, posX) + 'px';
+        tooltip.style.top = Math.max(5, posY) + 'px';
+      }
+      let clickAnchor = null;
+      let dragged = false;
+
+      // Mouse Events
+      canvas.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return; // Left click only
+
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        clickAnchor = {x, y};
+        dragged = false;
+        tooltip.style.display = 'none';
+        if (x >= width - W_SCROLLBAR) {
+          // Click on scrollbar
+          isDraggingScrollbar = true;
+          const targetTime = scrollbarYToTime(y);
+          const currentSpan = viewT1 - viewT0;
+          viewT0 = targetTime - currentSpan / 2;
+          viewT1 = targetTime + currentSpan / 2;
+          clampView();
+          requestDraw();
+        } else {
+          // Click on main timeline
+          isDraggingMain = true;
+          dragAnchorY = y;
+          dragAnchorTime = yToTime(y);
+          dragStartT0 = viewT0;
+          dragStartT1 = viewT1;
+          dragWithShift = e.shiftKey;
+          canvas.style.cursor = 'grabbing';
+        }
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        if (clickAnchor && Math.hypot(x - clickAnchor.x, y - clickAnchor.y) > 4) dragged = true;
+        if (isDraggingScrollbar) {
+          const targetTime = scrollbarYToTime(y);
+          const currentSpan = viewT1 - viewT0;
+          viewT0 = targetTime - currentSpan / 2;
+          viewT1 = targetTime + currentSpan / 2;
+          clampView();
+          requestDraw();
+          return;
+        }
+
+
+        if (isDraggingMain) {
+          if (!dragged) return;
+          const timelineH = timelineHeight();
+          if (e.shiftKey || dragWithShift) {
+            // Shift + Drag: Zoom centered at dragAnchorTime
+            // Dragging down (dy > 0) zooms in (smaller span); dragging up (dy < 0) zooms out (larger span)
+            const dy = y - dragAnchorY;
+            const zoomFactor = Math.exp(-dy * 0.005);
+            const span = (dragStartT1 - dragStartT0) * zoomFactor;
+            const ratio = (dragAnchorTime - dragStartT0) / (dragStartT1 - dragStartT0);
+            viewT0 = dragAnchorTime - span * ratio;
+            viewT1 = dragAnchorTime + span * (1 - ratio);
+          } else {
+            // Left Drag: Pan view (keeping clicked time directly under cursor)
+            const dt = ((y - dragAnchorY) / timelineH) * (dragStartT1 - dragStartT0);
+            viewT0 = dragStartT0 - dt;
+            viewT1 = dragStartT1 - dt;
+          }
+          clampView();
+          requestDraw();
+          return;
+        }
+
+        if (x < 0 || x > width || y < H_HEADER || y > height) {
+          setHoveredItem(null);
+          tooltip.style.display = 'none';
+          canvas.style.cursor = 'grab';
+          return;
+        }
+        const item = hitTest(x, y);
+        canvas.style.cursor = x >= width - W_SCROLLBAR || (item && (item.href || item.type === 'op' || item.type === 'event'))
+          ? 'pointer' : item && item.type === 'time' ? 'crosshair' : 'grab';
+        setHoveredItem(item);
+        updateTooltip(e, item);
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        setHoveredItem(null);
+        tooltip.style.display = 'none';
+      });
+
+      window.addEventListener('mouseup', (e) => {
+        if (isDraggingMain && !dragged && !dragWithShift && !e.shiftKey && clickAnchor) {
+          const rect = canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          if (Math.hypot(x - clickAnchor.x, y - clickAnchor.y) <= 4) {
+            const item = hitTest(x, y);
+            if (item && item.href) window.location.href = item.href;
+          }
+        }
+        clickAnchor = null;
+        isDraggingMain = false;
+        isDraggingScrollbar = false;
+        canvas.style.cursor = 'grab';
+      });
+
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+
+        const rect = canvas.getBoundingClientRect();
+        const y = e.clientY - rect.top;
+        const cursorTime = yToTime(y);
+
+
+        // Normalize delta across platforms where shiftKey may convert deltaY to deltaX
+        const delta = e.deltaY !== 0 ? e.deltaY : e.deltaX;
+        if (delta === 0) return;
+
+        if (e.shiftKey) {
+          // Shift + Wheel: Zoom centered at cursor
+          // delta < 0 (scrolling up / forward): zoom IN (factor < 1, span decreases)
+          // delta > 0 (scrolling down / backward): zoom OUT (factor > 1, span increases)
+          const zoomFactor = Math.max(0.5, Math.min(2.0, Math.exp((delta / 100) * 0.2)));
+          const currentSpan = viewT1 - viewT0;
+          const newSpan = currentSpan * zoomFactor;
+
+          const ratio = (cursorTime - viewT0) / currentSpan;
+          viewT0 = cursorTime - newSpan * ratio;
+          viewT1 = cursorTime + newSpan * (1 - ratio);
+        } else {
+          // Normal Wheel: Scroll view up / down
+          const currentSpan = viewT1 - viewT0;
+          const dt = (delta / 100) * currentSpan * 0.15;
+          viewT0 += dt;
+          viewT1 += dt;
+        }
+
+        tooltip.style.display = 'none';
+        hoveredItem = null;
+        clampView();
+        requestDraw();
+      }, { passive: false });
+
+      // Button controls
+      document.getElementById('btn-zoom-in').addEventListener('click', () => {
+        const center = (viewT0 + viewT1) / 2;
+        const newSpan = (viewT1 - viewT0) * 0.7;
+        viewT0 = center - newSpan / 2;
+        viewT1 = center + newSpan / 2;
+        clampView();
+        requestDraw();
+      });
+
+      document.getElementById('btn-zoom-out').addEventListener('click', () => {
+        const center = (viewT0 + viewT1) / 2;
+        const newSpan = (viewT1 - viewT0) * 1.4;
+        viewT0 = center - newSpan / 2;
+        viewT1 = center + newSpan / 2;
+        clampView();
+        requestDraw();
+      });
+
+      document.getElementById('btn-reset-view').addEventListener('click', () => {
+        viewT0 = scenarioStart;
+        viewT1 = scenarioEnd;
+        clampView();
+        requestDraw();
+      });
+      function actionLabel(action) {
+        return (action.scenario_index ? `s${action.scenario_index}: ` : '') + action.name;
+      }
+
+      // Estimate content once for the whole run so zooming does not shift columns.
+      const columnWeights = new Array(data.columns).fill(100);
+      const actionCounts = new Array(data.columns).fill(0);
+      ctx.save();
+      data.actions.forEach(action => {
+        actionCounts[action.column]++;
+        ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+        const labelWidth = ctx.measureText(actionLabel(action)).width + 12;
+        ctx.font = '600 12px -apple-system, BlinkMacSystemFont, sans-serif';
+        const badgeWidth = action.participant_checks.reduce(
+          (sum, p) => sum + ctx.measureText(p.id).width + 20, 12
+        );
+        columnWeights[action.column] = Math.max(columnWeights[action.column], labelWidth, badgeWidth);
+      });
+      ctx.restore();
+      const columnOffsets = [];
+      let totalWeight = 0;
+      columnWeights.forEach((weight, index) => {
+        // Cap very long text and give busy columns a modest bonus.
+        const countBonus = 1 + Math.min(0.5, Math.log2(Math.max(1, actionCounts[index])) * 0.1);
+        columnWeights[index] = Math.min(480, weight) * countBonus;
+        columnOffsets.push(totalWeight);
+        totalWeight += columnWeights[index];
+      });
+
+      function columnBounds(index) {
+        const available = Math.max(1, width - W_TIME - W_SCROLLBAR);
+        const minimum = Math.min(80, available / data.columns);
+        const extra = available - minimum * data.columns;
+        return {
+          x: W_TIME + index * minimum + extra * columnOffsets[index] / totalWeight,
+          w: minimum + extra * columnWeights[index] / totalWeight
+        };
+      }
+
+      function actionBounds(action) {
+        const y = Math.max(H_HEADER, timeToY(action.t0));
+        const column = columnBounds(action.column);
+        return {
+          x: column.x,
+          y,
+          w: column.w,
+          h: Math.min(height - y, Math.max(3, timeToY(action.t1) - y))
+        };
+      }
+
+      function drawParticipantBadges(action, bounds) {
+        ctx.font = '600 12px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.textBaseline = 'middle';
+        const left = bounds.x + 6;
+        const right = bounds.x + bounds.w - 6;
+        let x = left;
+        let y = bounds.y + 23;
+        for (const participant of action.participant_checks) {
+          const badgeWidth = Math.min(right - left, ctx.measureText(participant.id).width + 16);
+          if (x > left && x + badgeWidth > right) {
+            x = left;
+            y += 26;
+          }
+          if (y + 22 > bounds.y + bounds.h) break;
+          ctx.fillStyle = participant.has_failed_checks ? '#fee2e2' : '#d1fae5';
+          ctx.beginPath();
+          ctx.roundRect(x, y, badgeWidth, 22, 4);
+          ctx.fill();
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(x + 4, y, Math.max(0, badgeWidth - 8), 22);
+          ctx.clip();
+          ctx.fillStyle = participant.has_failed_checks ? '#991b1b' : '#065f46';
+          ctx.fillText(participant.id, x + 8, y + 11);
+          ctx.restore();
+          x += badgeWidth + 4;
+        }
+      }
+
+      function draw() {
+        if (width <= 0 || height <= H_HEADER) return;
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(0, 0, W_TIME, height);
+        drawTimeScale(0, W_TIME);
+
+        // Clip blocks and labels to the timeline below the fixed column headers.
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(W_TIME, H_HEADER, Math.max(1, width - W_TIME - W_SCROLLBAR), height - H_HEADER);
+        ctx.clip();
+        data.actions.forEach(action => {
+          if (action.t1 < viewT0 || action.t0 > viewT1) return;
+          const b = actionBounds(action);
+          ctx.fillStyle = action.color;
+          ctx.fillRect(b.x, b.y, b.w, b.h);
+          ctx.strokeStyle = action.execution_error ? '#ef4444' : '#ffffff';
+          ctx.lineWidth = action.execution_error ? 3 : 1;
+          ctx.strokeRect(b.x, b.y, b.w, b.h);
+          if (hoveredItem && hoveredItem.action === action) {
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(b.x + 1, b.y + 1, b.w - 2, b.h - 2);
+          }
+          if (b.h >= 16 && b.w >= 20) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(b.x + 4, b.y, Math.max(0, b.w - 8), b.h);
+            ctx.clip();
+            ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = '#0f172a';
+            ctx.fillText(actionLabel(action), b.x + 6, b.y + 3);
+            if (action.type === 'Scenario') drawParticipantBadges(action, b);
+            ctx.restore();
+          }
+        });
+        ctx.restore();
+
+        if (hoveredItem && hoveredItem.type === 'time') {
+          ctx.save();
+          ctx.strokeStyle = '#2563eb';
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(0, hoveredItem.y);
+          ctx.lineTo(width - W_SCROLLBAR, hoveredItem.y);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, width, H_HEADER);
+        ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#475569';
+        ctx.fillText('Time (UTC)', W_TIME / 2, H_HEADER / 2);
+        for (let index = 0; index < data.columns; index++) {
+          const column = columnBounds(index);
+          const x = column.x;
+          ctx.strokeStyle = '#cbd5e1';
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+          ctx.stroke();
+        }
+        drawScrollbar(data.actions.filter(a => a.type === 'Scenario').map(a => a.t0));
+      }
+
+      function hitTest(x, y) {
+        if (y < H_HEADER || y > height || x < 0 || x >= width - W_SCROLLBAR) return null;
+        if (x >= W_TIME) {
+          const columnIndex = columnWeights.findIndex((_, index) => {
+            const column = columnBounds(index);
+            return x < column.x + column.w;
+          });
+          for (const action of data.actions) {
+            if (action.column !== columnIndex || action.t1 < viewT0 || action.t0 > viewT1) continue;
+            const b = actionBounds(action);
+            if (x >= b.x && x < b.x + b.w && y >= b.y && y <= b.y + b.h) {
+              return {type: 'action', action, href: action.href};
+            }
+          }
+        }
+        return {type: 'time', time: yToTime(y), y};
+      }
+
+      function updateTooltip(e, item) {
+        tooltip.replaceChildren();
+        if (!item) {
+          tooltip.style.display = 'none';
+          return;
+        }
+        function line(label, value) {
+          const row = document.createElement('div');
+          const title = document.createElement('strong');
+          title.textContent = label + ': ';
+          row.append(title, document.createTextNode(String(value)));
+          tooltip.append(row);
+        }
+        if (item.type === 'action') {
+          const a = item.action;
+          line(a.type, (a.scenario_index ? `s${a.scenario_index}: ` : '') + a.name);
+          line('Class', a.class_name);
+          line('Start', new Date(a.t0 * 1000).toISOString());
+          line(a.end_inferred ? 'Last recorded time (unfinished)' : 'End', new Date(a.t1 * 1000).toISOString());
+          line('Duration', formatDuration(a.duration));
+          if (a.participants.length) line('Participants', a.participants.join(', '));
+          line('Passed checks', a.passed_checks);
+          line('Failed checks', a.failed_checks);
+          if (a.type === 'Scenario') line('Queries', a.query_count);
+          if (a.execution_error) line('Execution error', a.execution_error);
+          if (a.href) line('Click', 'Open scenario events');
+        } else {
+          line('Time (UTC)', new Date(item.time * 1000).toISOString());
+          data.actions.filter(a => a.t0 <= item.time && item.time <= a.t1)
+            .forEach(a => line(a.type, a.name));
+        }
+        tooltip.style.display = 'block';
+        positionTooltip(e);
+      }
+
+      resizeCanvas();
+    })();
+  </script>
+</body>
+</html>
