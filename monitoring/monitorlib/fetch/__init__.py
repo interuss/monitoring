@@ -363,6 +363,7 @@ class QueryType(StrEnum):
     InterUSSVersioningGetVersion = "interuss.automated_testing.versioning.GetVersion"
 
     # InterUSS DSS aux interface
+    InterUSSDSSGetVersion = "interuss.dss.aux.GetVersion"
     InterUSSDSSGetPool = "interuss.dss.aux.GetPool"
     InterUSSDSSGetDSSInstances = "interuss.dss.aux.GetDSSInstances"
     InterUSSDSSGetAcceptedCAs = "interuss.dss.aux.GetAcceptedCAs"

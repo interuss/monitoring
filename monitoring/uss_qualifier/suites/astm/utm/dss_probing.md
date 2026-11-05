@@ -37,6 +37,7 @@
 19. Scenario: [OVN Request Optional Extension to ASTM F3548-21](../../../scenarios/interuss/ovn_request/dss_ovn_request.md) ([`scenarios.interuss.ovn_request.DSSOVNRequest`](../../../scenarios/interuss/ovn_request/dss_ovn_request.py))
 20. Scenario: [ASTM SCD DSS: Report](../../../scenarios/astm/utm/dss/report.md) ([`scenarios.astm.utm.dss.Report`](../../../scenarios/astm/utm/dss/report.py))
 21. Scenario: [ASTM Availability DSS: USS Availability Mutation](../../../scenarios/astm/utm/dss/uss_availability_mutation.md) ([`scenarios.astm.utm.dss.UssAvailabilityMutation`](../../../scenarios/astm/utm/dss/uss_availability_mutation.py))
+22. Scenario: [InterUSS DSS aux interface](../../../scenarios/interuss/dss/aux_interface.md) ([`scenarios.interuss.dss.aux_interface.AuxInterface`](../../../scenarios/interuss/dss/aux_interface.py))
 
 ## [Checked requirements](../../README.md#checked-requirements)
 
@@ -317,6 +318,12 @@
     <td><a href="../../../requirements/astm/f3548/v21.md">SCD0100</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/dss/op_intent_ref_state_transitions.md">ASTM F3548-21 UTM DSS Operational Intent Reference State Transitions</a></td>
+  </tr>
+  <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../../requirements/interuss/dss/hosting.md">interuss<br>.dss<br>.hosting</a></td>
+    <td><a href="../../../requirements/interuss/dss/hosting.md">ExposeAux</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/interuss/dss/aux_interface.md">InterUSS DSS aux interface</a></td>
   </tr>
   <tr>
     <td rowspan="1" style="vertical-align:top;"><a href="../../../requirements/interuss/f3548/ovn_request.md">interuss<br>.f3548<br>.ovn_request</a></td>
