@@ -4,13 +4,14 @@ from datetime import datetime, timedelta
 from enum import StrEnum
 
 import arrow
+from astral import Observer
+from astral.sun import elevation
 from implicitdict import (
     ImplicitDict,
     Optional,
     StringBasedDateTime,
     StringBasedTimeDelta,
 )
-from pvlib.solarposition import get_solarposition
 from uas_standards.astm.f3548.v21 import api as f3548v21
 
 from monitoring.monitorlib.geo import LatLngPoint
@@ -279,4 +280,4 @@ def _sun_elevation(t: datetime, lat_deg: float, lng_deg: float) -> float:
 
     Returns: Degrees above the horizon of the center of the sun.
     """
-    return get_solarposition(t, lat_deg, lng_deg).elevation.values[0]  # pyright:ignore[reportAttributeAccessIssue]
+    return elevation(Observer(lat_deg, lng_deg), t, with_refraction=False)
