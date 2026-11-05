@@ -11,6 +11,7 @@ from .op_intent_ref_simple import OIRSimple as OIRSimple
 from .op_intent_ref_state_transitions import (
     OpIntentReferenceStateTransitions as OpIntentReferenceStateTransitions,
 )
+from .op_intent_ref_validation import OIRValidation as OIRValidation
 from .report import Report as Report
 from .subscription_interactions import (
     SubscriptionInteractions as SubscriptionInteractions,
