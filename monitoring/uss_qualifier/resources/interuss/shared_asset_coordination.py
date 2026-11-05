@@ -200,8 +200,7 @@ class TestRunSharedAssetCoordinatorResource(
                 min(self._retry_interval_seconds, remaining),
                 f"Required shared resource {asset_id} is being used by {current_owner.current_state_name()}; waiting for its release (requested by {scenario.current_state_name()})",
             )
-            if monotonic() < deadline:
-                current_owner = self._try_acquire(asset_id, lease)
+            current_owner = self._try_acquire(asset_id, lease)
 
         try:
             scenario.scenario_stack.callback(lease.release)
