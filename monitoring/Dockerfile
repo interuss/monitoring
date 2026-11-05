@@ -48,9 +48,8 @@ RUN apt-get update --fix-missing && apt-get install -y make openssl curl && apt-
 # Required to build in an ARM environment
 #   gevent: libffi-dev libssl-dev python3-dev build-essential
 #   lxml: libxml2-dev libxslt-dev
-#   h5py: pkg-config libhdf5-dev
 RUN if [ "$(uname -m)" = "aarch64" ]; then \
-    apt-get install -y libffi-dev libssl-dev python3-dev build-essential libxml2-dev libxslt-dev pkg-config libhdf5-dev \
+    apt-get install -y libffi-dev libssl-dev python3-dev build-essential libxml2-dev libxslt-dev \
 ; fi
 
 RUN mkdir -p /app/
