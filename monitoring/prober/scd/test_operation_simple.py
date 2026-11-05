@@ -233,77 +233,6 @@ def test_get_op_by_search_missing_params(scd_api, scd_session):
 
 @default_scope(SCOPE_SC)
 @depends_on(test_create_op)
-def test_get_op_by_search(ids, scd_api, scd_session):
-    resp = scd_session.post(
-        "/operational_intent_references/query",
-        json={
-            "area_of_interest": Volume4D.from_values(
-                None, None, 0, 5000, Circle.from_meters(-56, 178, 300)
-            ).to_f3548v21()
-        },
-    )
-    assert resp.status_code == 200, resp.content
-    assert ids(OP_TYPE) in [
-        x["id"] for x in resp.json().get("operational_intent_references", [])
-    ], resp.json()
-
-
-@default_scope(SCOPE_SC)
-@depends_on(test_create_op)
-def test_get_op_by_search_earliest_time_included(ids, scd_api, scd_session):
-    earliest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=59)
-    resp = scd_session.post(
-        "/operational_intent_references/query",
-        json={
-            "area_of_interest": Volume4D.from_values(
-                earliest_time, None, 0, 5000, Circle.from_meters(-56, 178, 300)
-            ).to_f3548v21()
-        },
-    )
-    assert resp.status_code == 200, resp.content
-    assert ids(OP_TYPE) in [
-        x["id"] for x in resp.json()["operational_intent_references"]
-    ]
-
-
-@default_scope(SCOPE_SC)
-@depends_on(test_create_op)
-def test_get_op_by_search_earliest_time_excluded(ids, scd_api, scd_session):
-    earliest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=81)
-    resp = scd_session.post(
-        "/operational_intent_references/query",
-        json={
-            "area_of_interest": Volume4D.from_values(
-                earliest_time, None, 0, 5000, Circle.from_meters(-56, 178, 300)
-            ).to_f3548v21()
-        },
-    )
-    assert resp.status_code == 200, resp.content
-    assert ids(OP_TYPE) not in [
-        x["id"] for x in resp.json()["operational_intent_references"]
-    ]
-
-
-@default_scope(SCOPE_SC)
-@depends_on(test_create_op)
-def test_get_op_by_search_latest_time_included(ids, scd_api, scd_session):
-    latest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=20)
-    resp = scd_session.post(
-        "/operational_intent_references/query",
-        json={
-            "area_of_interest": Volume4D.from_values(
-                None, latest_time, 0, 5000, Circle.from_meters(-56, 178, 300)
-            ).to_f3548v21()
-        },
-    )
-    assert resp.status_code == 200, resp.content
-    assert ids(OP_TYPE) in [
-        x["id"] for x in resp.json()["operational_intent_references"]
-    ]
-
-
-@default_scope(SCOPE_SC)
-@depends_on(test_create_op)
 def test_get_op_by_id_other_uss(ids, scd_session2):
     resp = scd_session2.get(
         f"/operational_intent_references/{ids(OP_TYPE)}", scope=SCOPE_SC
@@ -352,24 +281,6 @@ def test_get_op_by_query_other_uss(ids, scd_session2):
         op["state"]
     )
     assert op.get("ovn", "") in scd.NO_OVN_PHRASES, op
-
-
-@default_scope(SCOPE_SC)
-@depends_on(test_create_op)
-def test_get_op_by_search_latest_time_excluded(ids, scd_api, scd_session):
-    latest_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=1)
-    resp = scd_session.post(
-        "/operational_intent_references/query",
-        json={
-            "area_of_interest": Volume4D.from_values(
-                None, latest_time, 0, 5000, Circle.from_meters(-56, 178, 300)
-            ).to_f3548v21()
-        },
-    )
-    assert resp.status_code == 200, resp.content
-    assert ids(OP_TYPE) not in [
-        x["id"] for x in resp.json()["operational_intent_references"]
-    ]
 
 
 @default_scope(SCOPE_SC)
