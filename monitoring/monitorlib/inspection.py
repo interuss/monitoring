@@ -11,18 +11,21 @@ from monitoring.monitorlib.typing import ResolvedType, TypeExpression, TypeName
 _modules_imported = set()
 
 
-def import_submodules(module) -> None:
+def import_submodules(module, skip_tests: bool = True) -> None:
     """Ensure that all descendant modules of a module are loaded.
 
     Calling this method ensures that any descendant module can be found by name.
 
     :param module: Parent module from which to start explicitly importing modules.
+    :param skip_tests: If True (the default), do not import modules whose name ends with `_test`.
     """
     if module in _modules_imported:
         return
     for loader, module_name, is_pkg in pkgutil.walk_packages(
         module.__path__, module.__name__ + "."
     ):
+        if skip_tests and module_name.endswith("_test"):
+            continue
         importlib.import_module(module_name)
     _modules_imported.add(module)
 
@@ -193,7 +196,7 @@ def calling_function_name(levels: int = 0) -> str:
 class AttributeValuePair(ImplicitDict):
     name: str
     """The attribute that is expected to have a particular value.
-    
+
     Nested attributes are accepted (e.g., `"foo.bar"`)."""
 
     equals_string_value: Optional[str]
