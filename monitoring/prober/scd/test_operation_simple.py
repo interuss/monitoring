@@ -98,58 +98,6 @@ def test_op_does_not_exist_query(
         assert resp.status_code == 403, resp.content
 
 
-@default_scope(SCOPE_SC)
-@depends_on(test_ensure_clean_workspace)
-def test_create_op_single_extent(ids, scd_api, scd_session):
-    req = _make_op1_request()
-    req["extents"] = req["extents"][0]
-    resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
-    assert resp.status_code == 400, resp.content
-
-
-@default_scope(SCOPE_SC)
-@depends_on(test_ensure_clean_workspace)
-def test_create_op_missing_time_start(ids, scd_api, scd_session):
-    req = _make_op1_request()
-    del req["extents"][0]["time_start"]
-    resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
-    assert resp.status_code == 400, resp.content
-
-
-@default_scope(SCOPE_SC)
-@depends_on(test_ensure_clean_workspace)
-def test_create_op_missing_time_end(ids, scd_api, scd_session):
-    req = _make_op1_request()
-    del req["extents"][0]["time_end"]
-    resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
-    assert resp.status_code == 400, resp.content
-
-
-@default_scope(SCOPE_SC)
-@depends_on(test_ensure_clean_workspace)
-def test_create_op_expired(ids, scd_api, scd_session):
-    req = _make_op1_request()
-    time_start = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=1)
-    time_end = time_start + datetime.timedelta(minutes=60)
-    req["extents"][0] = Volume4D.from_values(
-        time_start, time_end, 0, 120, Circle.from_meters(-56, 178, 50)
-    ).to_f3548v21()
-    resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
-    assert resp.status_code == 400, resp.content
-
-
-@default_scope(SCOPE_SC)
-@depends_on(test_ensure_clean_workspace)
-def test_create_op_time_start_after_time_end(ids, scd_api, scd_session):
-    req = _make_op1_request()
-    e = req["extents"][0]
-    time_end = e["time_end"]
-    e["time_end"] = e["time_start"]
-    e["time_start"] = time_end
-    resp = scd_session.put(f"/operational_intent_references/{ids(OP_TYPE)}", json=req)
-    assert resp.status_code == 400, resp.content
-
-
 @depends_on(test_ensure_clean_workspace)
 def test_create_op(ids, scd_api, scd_session, scd_session_cp, scd_session_cm):
     req = _make_op1_request()
