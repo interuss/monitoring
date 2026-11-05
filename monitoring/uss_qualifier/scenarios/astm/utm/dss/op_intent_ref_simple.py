@@ -106,6 +106,14 @@ class OIRSimple(TestScenario):
         self._step_delete_oir()
         self.end_test_case()
 
+        self.begin_test_case("Search OIR by time bounds")
+        oir_start = datetime.now().astimezone() + timedelta(minutes=20)
+        oir_end = oir_start + timedelta(minutes=60)
+        self._step_create_oir(oir_start, oir_end)
+        self._step_search_oir_by_time_bounds(oir_start, oir_end)
+        self._step_delete_oir()
+        self.end_test_case()
+
         self.end_test_scenario()
 
     def _step_attempt_delete_missing_ovn(self):
@@ -261,9 +269,13 @@ class OIRSimple(TestScenario):
 
         self.end_test_step()
 
-    def _step_create_oir(self):
+    def _step_create_oir(
+        self, time_start: datetime | None = None, time_end: datetime | None = None
+    ):
         self.begin_test_step("Create OIR")
-        self._current_oir_params = self._default_oir_params(subscription_id=None)
+        self._current_oir_params = self._default_oir_params(
+            subscription_id=None, time_start=time_start, time_end=time_end
+        )
         self._current_oir, _, q = oir_fragments.create_oir_query(
             scenario=self,
             dss=self._dss,
@@ -274,6 +286,60 @@ class OIRSimple(TestScenario):
             "Create operational intent reference response content is correct", self._pid
         ) as check:
             self._oir_validator(check).validate_created_oir(self._oir_id, q)
+        self.end_test_step()
+
+    def _step_search_oir_by_time_bounds(self, oir_start: datetime, oir_end: datetime):
+        self.begin_test_step("Search OIR by time bounds")
+
+        for check_name, time_start, time_end, expected in [
+            (
+                "OIR is found when searching from before its end",
+                oir_end - timedelta(minutes=1),
+                None,
+                True,
+            ),
+            (
+                "OIR is not found when searching from after its end",
+                oir_end + timedelta(minutes=1),
+                None,
+                False,
+            ),
+            (
+                "OIR is found when searching up to after its start",
+                None,
+                oir_start + timedelta(minutes=1),
+                True,
+            ),
+            (
+                "OIR is not found when searching up to before its start",
+                None,
+                oir_start - timedelta(minutes=10),
+                False,
+            ),
+        ]:
+            with self.check(check_name, self._pid) as check:
+                try:
+                    oirs, q = self._dss.find_op_intent(
+                        self._planning_area.resolved_volume4d_with_times(
+                            time_start, time_end
+                        ).to_f3548v21()
+                    )
+                    self.record_query(q)
+                except QueryError as qe:
+                    self.record_queries(qe.queries)
+                    check.record_failed(
+                        summary="Failed to search for operational intent references",
+                        details=f"Search failed with error code {qe.cause_status_code}: {qe.msg}",
+                        query_timestamps=qe.query_timestamps,
+                    )
+                    continue
+                if (self._oir_id in [oir.id for oir in oirs]) != expected:
+                    check.record_failed(
+                        summary=f"OIR {self._oir_id} was {'not ' if expected else ''}found by the search",
+                        details=f"OIR spans from {oir_start} to {oir_end}, search spanned from {time_start} to {time_end}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+
         self.end_test_step()
 
     def _delete_oir(self, oir_id: EntityID, ovn: str):
@@ -335,14 +401,17 @@ class OIRSimple(TestScenario):
         )
 
     def _default_oir_params(
-        self, subscription_id: SubscriptionID | None
+        self,
+        subscription_id: SubscriptionID | None,
+        time_start: datetime | None = None,
+        time_end: datetime | None = None,
     ) -> PutOperationalIntentReferenceParameters:
         return self._planning_area.get_new_operational_intent_ref_params(
             key=[],
             state=OperationalIntentState.Accepted,
             uss_base_url=self._planning_area.specification.get_base_url(),
-            time_start=datetime.now() - timedelta(seconds=10),
-            time_end=datetime.now() + timedelta(minutes=20),
+            time_start=time_start or datetime.now() - timedelta(seconds=10),
+            time_end=time_end or datetime.now() + timedelta(minutes=20),
             subscription_id=subscription_id,
         )
 

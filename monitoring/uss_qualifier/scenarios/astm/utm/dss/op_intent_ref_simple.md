@@ -104,6 +104,40 @@ Confirm that an OIR can be mutated when the correct OVN is provided.
 
 ### [Cleanup OIR test step](./fragments/oir/crud/delete_known.md)
 
+## Search OIR by time bounds test case
+
+Ensures that a DSS properly takes into account the time bounds of a search for OIRs.
+
+### [Create OIR test step](./fragments/oir/crud/create_successfully.md)
+
+Create an OIR starting and ending in the future.
+
+### Search OIR by time bounds test step
+
+This step searches for the OIR created in the previous step in the planning area, using a single time bound.
+
+#### ⚠️ OIR is found when searching from before its end check
+
+If the DSS does not return the OIR when searching from a time before the OIR ends,
+it is in violation of **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ OIR is not found when searching from after its end check
+
+If the DSS returns the OIR when searching from a time after the OIR ends,
+it is in violation of **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ OIR is found when searching up to after its start check
+
+If the DSS does not return the OIR when searching up to a time after the OIR starts,
+it is in violation of **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ OIR is not found when searching up to before its start check
+
+If the DSS returns the OIR when searching up to a time before the OIR starts,
+it is in violation of **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
+
+### [Cleanup OIR test step](./fragments/oir/crud/delete_known.md)
+
 ## Cleanup
 
 ### [Cleanup OIRs test step](./clean_workspace_op_intents_during_cleanup.md)
