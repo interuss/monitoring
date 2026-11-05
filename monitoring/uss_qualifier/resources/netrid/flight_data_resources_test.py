@@ -3,7 +3,11 @@ import random
 import pytest
 from pyproj import Geod
 from uas_standards.en4709_02 import OperatorRegistrationNumber
+from uas_standards.interuss.automated_testing.rid.v1 import injection
 
+from monitoring.monitorlib.clients.flight_planning.flight_info import (
+    UAClassificationEUCategory,
+)
 from monitoring.uss_qualifier.resources.files import ExternalFile
 from monitoring.uss_qualifier.resources.netrid.simulation.adjacent_circular_flights_simulator import (
     generate_aircraft_states,
@@ -99,7 +103,7 @@ def test_invalid_kmls():
             FlightDataResource(specs, "test")
 
 
-def test_adjacent_circular_flights_simuation_source():
+def test_adjacent_circular_flights_simulation_source():
     specs = FlightDataSpecification(
         adjacent_circular_flights_simulation_source=AdjacentCircularFlightsSimulatorConfiguration()
     )
@@ -114,6 +118,22 @@ def test_adjacent_circular_flights_simuation_source():
         30,
         30,
     ]
+    for flight in resource.flight_collection.flights:
+        assert flight.flight_details.serial_number is not None
+        assert flight.flight_details.uas_id is not None
+        assert (
+            flight.flight_details.uas_id.serial_number
+            == flight.flight_details.serial_number
+        )
+        assert flight.flight_details.eu_classification is not None
+        assert (
+            flight.flight_details.eu_classification["category"]
+            == UAClassificationEUCategory.Open
+        )
+        assert (
+            flight.flight_details.eu_classification["class"]
+            == injection.UAClassificationEUClass.Class0
+        )
 
 
 def test_adjacent_circular_flights_simulation_source_configuration():
