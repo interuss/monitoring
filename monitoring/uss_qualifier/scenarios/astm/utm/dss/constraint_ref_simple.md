@@ -76,4 +76,32 @@ This step verifies that an existing CR cannot be mutated with an incorrect OVN.
 If the DSS under test allows the qualifier to mutate an existing CR with a request that provided an incorrect OVN,
 it is in violation of **[astm.f3548.v21.DSS0005,3](../../../../requirements/astm/f3548/v21.md)**
 
+## Search CR by time bounds test case
+
+Ensures that a DSS properly takes into account the time bounds of a search for CRs.
+
+### Search CR by time bounds test step
+
+This step searches for the CR created during setup in the planning area, using a single time bound.
+
+#### ⚠️ CR is found when searching from before its end check
+
+If the DSS does not return the CR when searching from a time before the CR ends,
+it is in violation of **[astm.f3548.v21.DSS0005,4](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ CR is not found when searching from after its end check
+
+If the DSS returns the CR when searching from a time after the CR ends,
+it is in violation of **[astm.f3548.v21.DSS0005,4](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ CR is found when searching up to after its start check
+
+If the DSS does not return the CR when searching up to a time after the CR starts,
+it is in violation of **[astm.f3548.v21.DSS0005,4](../../../../requirements/astm/f3548/v21.md)**.
+
+#### ⚠️ CR is not found when searching up to before its start check
+
+If the DSS returns the CR when searching up to a time before the CR starts,
+it is in violation of **[astm.f3548.v21.DSS0005,4](../../../../requirements/astm/f3548/v21.md)**.
+
 ## [Cleanup](./clean_workspace_constraints_during_cleanup.md)
