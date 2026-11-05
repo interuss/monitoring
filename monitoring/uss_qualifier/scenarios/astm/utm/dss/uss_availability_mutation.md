@@ -42,3 +42,16 @@ This step verifies that an existing OIR cannot be mutated with an incorrect vers
 
 If the DSS under test allows the qualifier to update the USS availability status with a request that provided an incorrect version,
 it is in violation of **[astm.f3548.v21.DSS0100,1](../../../../requirements/astm/f3548/v21.md)**
+
+## Update requires valid availability test case
+
+Test DSS behavior when update requests are not providing a valid availability.
+
+### Attempt update with invalid availability test step
+
+This step verifies that the USS availability status cannot be set to a value that is not a valid availability state, while providing the correct version.
+
+#### 🛑 Request to update USS availability status with invalid availability fails check
+
+If the DSS under test does not reject with a 400 the update of the USS availability status with an invalid availability,
+it is in violation of the OpenAPI specification referenced by **[astm.f3548.v21.DSS0100,1](../../../../requirements/astm/f3548/v21.md)**
