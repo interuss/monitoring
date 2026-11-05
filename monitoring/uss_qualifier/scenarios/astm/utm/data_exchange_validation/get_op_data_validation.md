@@ -26,6 +26,20 @@ FlightPlannerResource that will be used for the USS being tested for its data va
 ### dss
 DSSInstanceResource that provides access to a DSS instance where flight creation/sharing can be verified.
 
+### shared_asset_coordinator
+Optional SharedAssetCoordinatorResource that coordinates exclusive use of mock_uss notifications and observed interactions.
+When provided, ownership is acquired before flight planning and held through cleanup, then automatically released by the scenario's ExitStack.
+When not provided, no shared-asset coordination is performed.
+
+## Setup test case
+
+### Acquire exclusive mock_uss notification access test step
+This step is performed only when a shared asset coordinator is provided.
+Acquire exclusive use of mock_uss notifications and observed interactions.
+
+#### 🛑 mock_uss notification access acquired check
+If the shared asset coordinator does not grant exclusive access to mock_uss notifications, the coordinator and/or test design will have failed to meet **[interuss.automated_testing.coordination.AccessSharedAssets](../../../../requirements/interuss/automated_testing/coordination.md)**.
+
 ## Successfully plan flight near an existing flight test case
 
 ### mock_uss plans flight 2 test step

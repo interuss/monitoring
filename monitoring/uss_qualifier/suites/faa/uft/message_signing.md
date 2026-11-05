@@ -465,7 +465,7 @@
     <td rowspan="1" style="vertical-align:top;"><a href="../../../requirements/interuss/automated_testing/coordination.md">interuss<br>.automated_testing<br>.coordination</a></td>
     <td><a href="../../../requirements/interuss/automated_testing/coordination.md">AccessSharedAssets</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/off_nominal_planning/down_uss.md">Off-Nominal planning: down USS</a><br><a href="../../../scenarios/astm/utm/off_nominal_planning/down_uss_equal_priority_not_permitted.md">Off-Nominal planning: down USS with equal priority conflicts not permitted</a></td>
+    <td><a href="../../../scenarios/astm/utm/data_exchange_validation/get_op_data_validation.md">Data Validation of GET operational intents by USS</a><br><a href="../../../scenarios/astm/utm/off_nominal_planning/down_uss.md">Off-Nominal planning: down USS</a><br><a href="../../../scenarios/astm/utm/off_nominal_planning/down_uss_equal_priority_not_permitted.md">Off-Nominal planning: down USS with equal priority conflicts not permitted</a></td>
   </tr>
   <tr>
     <td rowspan="6" style="vertical-align:top;"><a href="../../../requirements/interuss/automated_testing/flight_planning.md">interuss<br>.automated_testing<br>.flight_planning</a></td>
