@@ -82,6 +82,10 @@ class CRSimple(TestScenario):
         self._step_attempt_mutation_incorrect_ovn()
         self.end_test_case()
 
+        self.begin_test_case("Search CR by time bounds")
+        self._step_search_cr_by_time_bounds()
+        self.end_test_case()
+
         self.end_test_scenario()
 
     def _step_create_cr(self):
@@ -238,6 +242,62 @@ class CRSimple(TestScenario):
                         details=f"Was expecting an HTTP 409 response because of an incorrect OVN, but got {qe.cause_status_code}: {qe.msg}",
                         query_timestamps=qe.query_timestamps,
                     )
+        self.end_test_step()
+
+    def _step_search_cr_by_time_bounds(self):
+        self.begin_test_step("Search CR by time bounds")
+
+        cr_start = self._cr_start_time
+        cr_end = self._cr_start_time + self.CR_DURATION
+        for check_name, time_start, time_end, expected in [
+            (
+                "CR is found when searching from before its end",
+                cr_end - timedelta(minutes=1),
+                None,
+                True,
+            ),
+            (
+                "CR is not found when searching from after its end",
+                cr_end + timedelta(minutes=1),
+                None,
+                False,
+            ),
+            (
+                "CR is found when searching up to after its start",
+                None,
+                cr_start + timedelta(minutes=1),
+                True,
+            ),
+            (
+                "CR is not found when searching up to before its start",
+                None,
+                cr_start - timedelta(minutes=10),
+                False,
+            ),
+        ]:
+            with self.check(check_name, self._pid) as check:
+                try:
+                    crs, q = self._dss.find_constraint_ref(
+                        self._planning_area.resolved_volume4d_with_times(
+                            time_start, time_end
+                        ).to_f3548v21()
+                    )
+                    self.record_query(q)
+                except QueryError as qe:
+                    self.record_queries(qe.queries)
+                    check.record_failed(
+                        summary="Failed to search for constraint references",
+                        details=f"Search failed with error code {qe.cause_status_code}: {qe.msg}",
+                        query_timestamps=qe.query_timestamps,
+                    )
+                    continue
+                if (self._cr_id in [cr.id for cr in crs]) != expected:
+                    check.record_failed(
+                        summary=f"CR {self._cr_id} was {'not ' if expected else ''}found by the search",
+                        details=f"CR spans from {cr_start} to {cr_end}, search spanned from {time_start} to {time_end}",
+                        query_timestamps=[q.request.timestamp],
+                    )
+
         self.end_test_step()
 
     def _setup_case(self):
