@@ -394,6 +394,8 @@ def determine_next_user_count(
         if "user_expansion_ratio" in search and search.user_expansion_ratio
         else 2.0
     )
+    max_users = search.max_users if "max_users" in search and search.max_users else None
+    capped = False
 
     # 1. Stability boundary search (consecutive_stable_user_counts & consecutive_unstable_user_counts)
     req_stable = (
@@ -417,7 +419,9 @@ def determine_next_user_count(
             search.skip_unsatisfiable_criteria,
         )
         if next_u is not None:
-            return next_u
+            if max_users is None or next_u <= max_users:
+                return next_u
+            capped = True
 
     # 2. Maximum throughput search (max_throughput_adjacent_user_counts)
     req_tp_adj = (
@@ -434,7 +438,9 @@ def determine_next_user_count(
             expansion_ratio,
         )
         if next_u is not None:
-            return next_u
+            if max_users is None or next_u <= max_users:
+                return next_u
+            capped = True
 
     # 3. Left-side spacing gap filling (maximum_left_side_spacing)
     max_spacing_frac = criteria.maximum_left_side_spacing
@@ -445,7 +451,12 @@ def determine_next_user_count(
             max_spacing_frac,
         )
         if next_u is not None:
-            return next_u
+            if max_users is None or next_u <= max_users:
+                return next_u
+            capped = True
+
+    if capped and max_users not in measured:
+        return max_users
 
     return None
 
