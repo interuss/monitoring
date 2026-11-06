@@ -9,7 +9,7 @@ jobs:
     name: Build monitoring images
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: Job information
       run: |
@@ -56,7 +56,7 @@ jobs:
     # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#permissions
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: Job information
       run: |
@@ -83,7 +83,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Job information
         run: |
@@ -108,7 +108,7 @@ jobs:
     name: benchmarker minimal configuration
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     env:
       PYTHONPATH: .
@@ -438,7 +438,7 @@ jobs:
       - uss_qualifier-uspace-test
       - prober-test
     if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
     concurrency:
