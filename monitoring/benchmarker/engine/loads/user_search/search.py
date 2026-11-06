@@ -1,6 +1,8 @@
 import math
 from dataclasses import dataclass
 
+from loguru import logger
+
 from monitoring.benchmarker.configurations.loads import (
     SearchCompletionCriteria,
     StepCompletionCriteria,
@@ -182,6 +184,7 @@ def _next_user_for_stability_boundary(
     req_unstable: int,
     adj: int,
     expansion_ratio: float,
+    skip_unsatisfiable: bool,
 ) -> int | None:
     """Determine the next user count to satisfy consecutive_stable_user_counts and consecutive_unstable_user_counts.
 
@@ -238,8 +241,12 @@ def _next_user_for_stability_boundary(
             if candidate > u_blocker and len(run) + max_additional_steps >= req_stable:
                 return candidate
 
-        raise RuntimeError(
-            f"Unable to find {req_stable} consecutive stable user counts before instability"
+        if not skip_unsatisfiable:
+            raise RuntimeError(
+                f"Unable to find {req_stable} consecutive stable user counts before instability"
+            )
+        logger.warning(
+            f"Unable to find {req_stable} consecutive stable user counts before instability; skipping this criterion"
         )
 
     # Next satisfy consecutive_unstable_user_counts if needed
@@ -372,9 +379,14 @@ def determine_next_user_count(
     if not any(step.is_stable for step in measured.values()):
         min_users = sorted_users[0]
         if min_users <= 1:
-            raise RuntimeError(
-                "No stable step found and minimum tested user count is already <= 1"
+            if not search.skip_unsatisfiable_criteria:
+                raise RuntimeError(
+                    "No stable step found and minimum tested user count is already <= 1"
+                )
+            logger.warning(
+                "No stable step found and minimum tested user count is already <= 1; ending search"
             )
+            return None
         return max(1, min_users // 2)
 
     expansion_ratio = (
@@ -402,6 +414,7 @@ def determine_next_user_count(
             req_unstable,
             adj,
             expansion_ratio,
+            search.skip_unsatisfiable_criteria,
         )
         if next_u is not None:
             return next_u

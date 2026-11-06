@@ -238,6 +238,9 @@ class UserSearchLoad(UserBasedLoad):
     search_completion_criteria: SearchCompletionCriteria
     """The search is considered complete if these criteria are met."""
 
+    skip_unsatisfiable_criteria: bool = False
+    """If true, a search completion criterion that cannot be satisfied is skipped with a warning instead of raising an error, and a search that cannot find any stable step ends."""
+
     random_seed: Optional[int]
     """Seed to use to randomly generate seeds for each user."""
 
