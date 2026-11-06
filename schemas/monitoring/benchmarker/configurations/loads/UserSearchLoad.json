@@ -11,6 +11,13 @@
       "description": "Number of users to start with.",
       "type": "integer"
     },
+    "max_users": {
+      "description": "If specified, never use more than this many users.  Search criteria requiring more users are skipped once this many users have been measured.",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
     "random_seed": {
       "description": "Seed to use to randomly generate seeds for each user.",
       "type": [
@@ -21,6 +28,10 @@
     "search_completion_criteria": {
       "$ref": "SearchCompletionCriteria.json",
       "description": "The search is considered complete if these criteria are met."
+    },
+    "skip_unsatisfiable_criteria": {
+      "description": "If true, a search completion criterion that cannot be satisfied is skipped with a warning instead of raising an error, and a search that cannot find any stable step ends.",
+      "type": "boolean"
     },
     "step_completion_criteria": {
       "$ref": "StepCompletionCriteria.json"

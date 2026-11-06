@@ -235,8 +235,14 @@ class UserSearchLoad(UserBasedLoad):
     user_expansion_ratio: float = 2
     """When more users are needed than have been used in any previous step, expand the largest previous number of users by this fraction (or 1 user, whichever is larger)."""
 
+    max_users: Optional[int]
+    """If specified, never use more than this many users.  Search criteria requiring more users are skipped once this many users have been measured."""
+
     search_completion_criteria: SearchCompletionCriteria
     """The search is considered complete if these criteria are met."""
+
+    skip_unsatisfiable_criteria: bool = False
+    """If true, a search completion criterion that cannot be satisfied is skipped with a warning instead of raising an error, and a search that cannot find any stable step ends."""
 
     random_seed: Optional[int]
     """Seed to use to randomly generate seeds for each user."""
