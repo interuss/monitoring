@@ -324,7 +324,7 @@
     <td rowspan="1" style="vertical-align:top;"><a href="../../../requirements/interuss/automated_testing/coordination.md">interuss<br>.automated_testing<br>.coordination</a></td>
     <td><a href="../../../requirements/interuss/automated_testing/coordination.md">AccessSharedAssets</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/uss_availability_mutation.md">ASTM Availability DSS: USS Availability Mutation</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
   </tr>
   <tr>
     <td rowspan="1" style="vertical-align:top;"><a href="../../../requirements/interuss/f3548/ovn_request.md">interuss<br>.f3548<br>.ovn_request</a></td>
