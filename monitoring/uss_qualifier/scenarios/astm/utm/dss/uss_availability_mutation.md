@@ -14,6 +14,23 @@ Verifies the behavior of a DSS for simple interactions pertaining to USS availab
 
 [`ClientIdentityResource`](../../../../resources/communications/client_identity.py) the client identity with the `utm.availability_arbitration` scope that will be used to report the availability status.
 
+### shared_asset_coordinator
+
+Optional SharedAssetCoordinatorResource that coordinates exclusive access to USS availability states in the DSS pool.
+When provided, ownership is acquired before any availability requests and automatically released by the scenario's ExitStack upon scenario completion.
+When not provided, no shared-asset coordination is performed.
+
+## Setup test case
+
+### Acquire exclusive DSS availability access test step
+
+This step is performed only when a shared asset coordinator is provided.
+Acquire exclusive access to USS availability states in the DSS pool.
+
+#### 🛑 DSS availability access acquired check
+
+If the shared asset coordinator does not grant exclusive access to USS availability states in the DSS pool, the coordinator and/or test design will have failed to meet **[interuss.automated_testing.coordination.AccessSharedAssets](../../../../requirements/interuss/automated_testing/coordination.md)**.
+
 ## Update USS availability state test case
 
 ### Declare USS as available at DSS test step

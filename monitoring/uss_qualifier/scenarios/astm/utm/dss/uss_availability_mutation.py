@@ -9,6 +9,12 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
     DSSInstanceResource,
 )
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
+from monitoring.uss_qualifier.resources.interuss.shared_asset_coordination import (
+    SharedAssetAcquisitionError,
+    SharedAssetCoordinatorResource,
+    SharedAssetIdentifier,
+    SharedAssetType,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.test_step_fragments import (
     get_uss_availability,
     set_uss_availability,
@@ -26,18 +32,22 @@ class UssAvailabilityMutation(TestScenario):
     _pid: list[str]
 
     _uss_id: str
+    _shared_asset_coordinator: SharedAssetCoordinatorResource | None
 
     def __init__(
         self,
         dss: DSSInstanceResource,
         client_identity: ClientIdentityResource,
+        shared_asset_coordinator: SharedAssetCoordinatorResource | None = None,
     ):
         """
         Args:
             dss: dss to test
             client_identity: tells us the identity we should expect as an entity's manager
+            shared_asset_coordinator: coordinates exclusive access to DSS availability
         """
         super().__init__()
+        self._shared_asset_coordinator = shared_asset_coordinator
         scopes: dict[str, str] = {
             Scope.AvailabilityArbitration: "read and set availability for a USS"
         }
@@ -49,6 +59,10 @@ class UssAvailabilityMutation(TestScenario):
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
+
+        self.begin_test_case("Setup")
+        self._acquire_dss_availability()
+        self.end_test_case()
 
         self.begin_test_case("Update USS availability state")
         self._step_declare_uss_available()
@@ -62,6 +76,24 @@ class UssAvailabilityMutation(TestScenario):
         self.begin_test_case("Update requires valid availability")
         self._step_attempt_update_invalid_availability()
         self.end_test_case()
+
+    def _acquire_dss_availability(self) -> None:
+        if self._shared_asset_coordinator is None:
+            return
+
+        self.begin_test_step("Acquire exclusive DSS availability access")
+        with self.check("DSS availability access acquired", []) as check:
+            try:
+                self._shared_asset_coordinator.acquire(
+                    SharedAssetIdentifier(asset_type=SharedAssetType.DSSAvailability),
+                    self,
+                )
+            except SharedAssetAcquisitionError as e:
+                check.record_failed(
+                    summary="Unable to acquire exclusive DSS availability access",
+                    details=str(e),
+                )
+        self.end_test_step()
 
     def _step_declare_uss_available(self):
         self.begin_test_step("Declare USS as available at DSS")

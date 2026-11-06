@@ -20,10 +20,25 @@ are properly propagated to every other DSS instance participating in the deploym
 [`ClientIdentityResource`](../../../../../resources/communications/client_identity.py) to be used for this scenario: it contains the identifier of the USS
 for which availabilities will be updated.
 
+### shared_asset_coordinator
+
+Optional SharedAssetCoordinatorResource that coordinates exclusive access to USS availability states in the DSS pool.
+When provided, ownership is acquired before any availability requests and held through cleanup, then automatically released by the scenario's ExitStack.
+When not provided, no shared-asset coordination is performed.
+
 ## Setup test case
 
 For the setup of this test case, the scenario ensures that the availability for the USS specified in the `client_identity` resource
 is `Unknown`, which is the default expected state when nothing else is known.
+
+### Acquire exclusive DSS availability access test step
+
+This step is performed only when a shared asset coordinator is provided.
+Acquire exclusive access to USS availability states in the DSS pool.
+
+#### 🛑 DSS availability access acquired check
+
+If the shared asset coordinator does not grant exclusive access to USS availability states in the DSS pool, the coordinator and/or test design will have failed to meet **[interuss.automated_testing.coordination.AccessSharedAssets](../../../../../requirements/interuss/automated_testing/coordination.md)**.
 
 ### Ensure test USS has Unknown availability test step
 
@@ -101,6 +116,9 @@ it is in violation of the OpenAPI spec referenced by **[astm.f3548.v21.DSS0100,1
 #### [Consistent availability](../fragments/availability/sync.md)
 
 ## Cleanup
+
+Restore the test USS availability to `Unknown` while exclusive access is still held.
+If a shared asset coordinator was provided but access was not acquired, skip availability requests.
 
 ### ⚠️ USS Availability can be requested check
 
