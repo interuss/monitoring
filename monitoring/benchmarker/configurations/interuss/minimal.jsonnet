@@ -16,12 +16,12 @@ local subscription = {
   max_alt: { value: 1000, units: 'M', reference: 'W84' },
 };
 local short_flights = {
-  user_types: ['Shared subscription planner', 'Implicit subscription planner'],
+  user_types: ['Shared subscription planner', 'Implicit subscription planner', 'Display provider'],
   random_seed: 1234,
   throughput_stability_criteria: {
     each_user_completed_at_least: {
       count: 1,
-      operations: ['workflow.flight_planner.flight'],
+      operations: ['workflow.flight_planner.flight', 'query.astm.f3411.v22a.dss.createSubscription'],
     },
   },
   throughput_instability_criteria: {
@@ -219,6 +219,39 @@ local short_flights = {
         },
       },
     } for strategy in ['Shared', 'Implicit']
+  ] + [
+    {
+      name: 'Display provider',
+      netrid_dp: {
+        dss_pool: ['netrid_dss'],
+        dss_selection_strategy: 'Random',
+        observers: [
+          {
+            count: 3,
+            behavior: {
+              area: { lat_min: 33.995, lng_min: -118.005, lat_max: 34.005, lng_max: -117.995 },
+              view_lat_size: 0.01,
+              view_lng_size: 0.01,
+              min_observation_period_duration: '3s',
+              max_observation_period_duration: '8s',
+              query_interval: '1s',
+              mean_time_between_observation_periods: '2s',
+            },
+          },
+        ],
+        subscription_strategy: {
+          s2_grid: {
+            s2_level: 12,
+            min_alt: { value: 0, units: 'M', reference: 'W84' },
+            max_alt: { value: 1000, units: 'M', reference: 'W84' },
+            initial_duration: '10s',
+            extension_window: '5s',
+            extension_duration: '10s',
+            delete_after_unused: '5s',
+          },
+        },
+      },
+    },
   ],
 
   loads: [
@@ -266,6 +299,9 @@ local short_flights = {
           { type: 'workflow.flight_planner.active_flight', color: '#116699' },
           { type: 'query.astm.f3411.v22a.dss.createIdentificationServiceArea', color: '#aa77cc' },
           { type: 'query.astm.f3411.v22a.dss.deleteIdentificationServiceArea', color: '#ddbbff' },
+          { type: 'query.astm.f3411.v22a.dss.createSubscription', color: '#e07b39' },
+          { type: 'query.astm.f3411.v22a.dss.updateSubscription', color: '#f2b880' },
+          { type: 'query.astm.f3411.v22a.dss.deleteSubscription', color: '#8c4a1f' },
         ],
       },
     },

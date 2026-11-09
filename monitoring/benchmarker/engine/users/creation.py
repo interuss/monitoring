@@ -12,6 +12,7 @@ from monitoring.benchmarker.engine.users.flight_planner.flight_planner import (
     FlightPlannerUser,
 )
 from monitoring.benchmarker.engine.users.framework import VirtualUser
+from monitoring.benchmarker.engine.users.netrid_dp import NetRIDDisplayProviderUser
 from monitoring.uss_qualifier.resources.definitions import ResourceID
 
 
@@ -34,6 +35,16 @@ def create_virtual_user(
             record_operation,
             random,
         )
+    elif user_spec.netrid_dp is not None:
+        return NetRIDDisplayProviderUser(
+            user_id,
+            user_spec,
+            resource_pool,
+            executor,
+            coordinator,
+            record_operation,
+            random,
+        )
     else:
         raise NotImplementedError(
             f"User type '{user_spec.name}' does not specify any implemented behavior"
@@ -48,5 +59,7 @@ def enumerate_coordination_groups(
             yield from FlightPlannerUser.enumerate_coordination_groups(
                 user.flight_planner
             )
+        elif user.netrid_dp:
+            pass
         else:
             raise NotImplementedError()
