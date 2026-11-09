@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -12,6 +13,7 @@ from uas_standards.astm.f3548.v21.api import (
 from uas_standards.astm.f3548.v21.constants import Scope
 
 from monitoring.monitorlib.fetch import QueryType, query_and_describe
+from monitoring.monitorlib.geo import Circle, Polygon
 from monitoring.monitorlib.ids import register_resource_type
 from monitoring.uss_qualifier.resources import PlanningAreaResource
 from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
@@ -20,6 +22,7 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
 )
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
+from monitoring.uss_qualifier.resources.volume import VolumeResource
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.scenario import TestScenario
 from monitoring.uss_qualifier.suites.suite import ExecutionContext
@@ -37,6 +40,7 @@ class OIRValidation(TestScenario):
         id_generator: IDGeneratorResource,
         client_identity: ClientIdentityResource,
         planning_area: PlanningAreaResource,
+        problematically_big_area: VolumeResource,
     ):
         super().__init__()
         self._dss = dss.get_instance(
@@ -48,6 +52,7 @@ class OIRValidation(TestScenario):
         self._oir_id = id_generator.id_factory.make_id(self.OIR_TYPE)
         self._expected_manager = client_identity.subject()
         self._planning_area = planning_area
+        self._problematically_big_area = problematically_big_area
 
     def run(self, context: ExecutionContext):
         self.begin_test_scenario(context)
@@ -59,6 +64,9 @@ class OIRValidation(TestScenario):
         self.end_test_case()
 
         self.begin_test_case("Creation validation")
+        self.begin_test_step("Attempt creation with invalid parameters")
+        self._attempt_creation_with_invalid_parameters()
+        self.end_test_step()
         self.begin_test_step("Attempt creation with invalid extents")
         self._attempt_creation_with_invalid_extents()
         self.end_test_step()
@@ -80,12 +88,18 @@ class OIRValidation(TestScenario):
         )
         return json.loads(json.dumps(params))
 
-    def _attempt_invalid_creation(self, check_name: str, params: dict[str, Any]):
+    def _attempt_invalid_creation(
+        self,
+        check_name: str,
+        params: dict[str, Any],
+        oir_id: str | None = None,
+        expected_codes: tuple[int, ...] = (400,),
+    ):
         op = OPERATIONS[OperationID.CreateOperationalIntentReference]
         q = query_and_describe(
             self._dss.client,
             op.verb,
-            op.path.format(entityid=self._oir_id),
+            op.path.format(entityid=oir_id or self._oir_id),
             QueryType.F3548v21DSSCreateOperationalIntentReference,
             self._dss.participant_id,
             scope=Scope.StrategicCoordination,
@@ -93,9 +107,9 @@ class OIRValidation(TestScenario):
         )
         self.record_query(q)
         with self.check(check_name, self._pid) as check:
-            if q.status_code != 400:
+            if q.status_code not in expected_codes:
                 check.record_failed(
-                    summary=f"Expected 400, got {q.status_code}",
+                    summary=f"Expected {' or '.join(str(c) for c in expected_codes)}, got {q.status_code}",
                     query_timestamps=[q.request.timestamp],
                 )
         if q.status_code == 201:
@@ -104,6 +118,11 @@ class OIRValidation(TestScenario):
             ).operational_intent_reference
             if oir.ovn:
                 test_step_fragments.remove_op_intent(self, self._dss, oir.id, oir.ovn)
+
+    def _attempt_creation_with_invalid_parameters(self):
+        self._attempt_invalid_creation(
+            "Invalid ID is rejected", self._valid_params(), oir_id="not_uuid_format"
+        )
 
     def _attempt_creation_with_invalid_extents(self):
         params = self._valid_params()
@@ -137,6 +156,48 @@ class OIRValidation(TestScenario):
         )
         self._attempt_invalid_creation(
             "Extents starting after they end are rejected", params
+        )
+
+        params = self._valid_params()
+        params["extents"][0]["time_end"]["format"] = "RFC3330"
+        self._attempt_invalid_creation(
+            "Extents with invalid time format are rejected", params
+        )
+
+        planning_area_polygon = Polygon.from_latlng_coords(
+            self._planning_area.resolved_volume4d_with_times(
+                None, None
+            ).volume.s2_vertices()
+        )
+
+        params = self._valid_params()
+        polygon = deepcopy(planning_area_polygon)
+        polygon.vertices[0].lat = 110
+        params["extents"][0]["volume"].pop("outline_circle", None)
+        params["extents"][0]["volume"]["outline_polygon"] = polygon
+        self._attempt_invalid_creation(
+            "Extents with invalid coordinates are rejected", params
+        )
+
+        params = self._valid_params()
+        params["extents"][0]["volume"].pop("outline_circle", None)
+        params["extents"][0]["volume"]["outline_polygon"] = Polygon(
+            vertices=self._problematically_big_area.specification.vertices()
+        )
+        self._attempt_invalid_creation(
+            "Extents with a too large area are rejected",
+            params,
+            expected_codes=(400, 413),
+        )
+
+        params = self._valid_params()
+        vertex = planning_area_polygon.vertices[0]
+        params["extents"][0]["volume"]["outline_polygon"] = planning_area_polygon
+        params["extents"][0]["volume"]["outline_circle"] = Circle.from_meters(
+            vertex.lat, vertex.lng, 300
+        )
+        self._attempt_invalid_creation(
+            "Extents with both circle and polygon outlines are rejected", params
         )
 
     def _clean_all_oirs(self):
