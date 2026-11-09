@@ -12,7 +12,7 @@ from monitoring.benchmarker.artifacts.generation import (
     default_output_path,
     generate_artifacts,
 )
-from monitoring.benchmarker.engine.engine import run_benchmark
+from monitoring.benchmarker.engine.engine import BenchmarkAborted, run_benchmark
 from monitoring.benchmarker.validation import load_config
 
 
@@ -81,7 +81,15 @@ def run_config(
         logger.info("Exiting because --exit-before-execution specified.")
         return os.EX_OK
 
-    run_report = run_benchmark(config, output_dir)
+    exit_code = os.EX_OK
+    try:
+        run_report = run_benchmark(config, output_dir)
+    except BenchmarkAborted as e:
+        logger.exception(
+            "Benchmark aborted; generating artifacts from completed scenarios"
+        )
+        run_report = e.report
+        exit_code = os.EX_SOFTWARE
 
     if config.artifacts:
         logger.info("Generating configured artifacts...")
@@ -90,7 +98,7 @@ def run_config(
     else:
         logger.warning("No artifacts specified in configuration.")
 
-    return os.EX_OK
+    return exit_code
 
 
 def main() -> int:

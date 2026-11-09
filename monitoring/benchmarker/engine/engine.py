@@ -21,6 +21,19 @@ from monitoring.benchmarker.reports.report import (
 from monitoring.monitorlib.versioning import get_code_version, get_commit_hash
 
 
+class BenchmarkAborted(Exception):
+    """Benchmark execution failed before completing all scenarios."""
+
+    report: BenchmarkRunReport
+    """Report containing the scenarios completed before the failure."""
+
+    def __init__(self, report: BenchmarkRunReport):
+        super().__init__(
+            f"Benchmark aborted after {len(report.report.scenarios)} completed scenario(s)"
+        )
+        self.report = report
+
+
 async def _run_benchmark_async(
     config: BenchmarkConfiguration,
     codebase_version: str,
@@ -127,6 +140,15 @@ async def _run_benchmark_async(
             logger.info(
                 f"========== Completed Scenario '{scenario_spec.name}' =========="
             )
+    except Exception as e:
+        raise BenchmarkAborted(
+            BenchmarkRunReport(
+                codebase_version=codebase_version,
+                commit_hash=commit_hash,
+                configuration=config,
+                report=BenchmarkReport(scenarios=scenarios_reports),
+            )
+        ) from e
     finally:
         try:
             # Run benchmark teardown actions
