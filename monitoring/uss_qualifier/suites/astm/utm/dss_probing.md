@@ -38,6 +38,7 @@
 20. Scenario: [OVN Request Optional Extension to ASTM F3548-21](../../../scenarios/interuss/ovn_request/dss_ovn_request.md) ([`scenarios.interuss.ovn_request.DSSOVNRequest`](../../../scenarios/interuss/ovn_request/dss_ovn_request.py))
 21. Scenario: [ASTM SCD DSS: Report](../../../scenarios/astm/utm/dss/report.md) ([`scenarios.astm.utm.dss.Report`](../../../scenarios/astm/utm/dss/report.py))
 22. Scenario: [ASTM Availability DSS: USS Availability Mutation](../../../scenarios/astm/utm/dss/uss_availability_mutation.md) ([`scenarios.astm.utm.dss.UssAvailabilityMutation`](../../../scenarios/astm/utm/dss/uss_availability_mutation.py))
+23. Scenario: [DSS pool information](../../../scenarios/astm/utm/dss/pool_info.md) ([`scenarios.astm.utm.dss.pool_info.PoolInfo`](../../../scenarios/astm/utm/dss/pool_info.py))
 
 ## [Checked requirements](../../README.md#checked-requirements)
 
@@ -81,8 +82,8 @@
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0020</a></td>
-    <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/synchronization/constraint_ref_synchronization.md">ASTM SCD DSS: Constraint Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions_deletion.md">ASTM SCD DSS: Subscription and entity deletion interaction</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions.md">ASTM SCD DSS: Subscription and entity interaction</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
+    <td>Implemented + TODO</td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/constraint_ref_synchronization.md">ASTM SCD DSS: Constraint Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/op_intent_ref_synchronization.md">ASTM SCD DSS: Operational Intent Reference Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/subscription_synchronization.md">ASTM SCD DSS: Subscription Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions_deletion.md">ASTM SCD DSS: Subscription and entity deletion interaction</a><br><a href="../../../scenarios/astm/utm/dss/subscription_interactions.md">ASTM SCD DSS: Subscription and entity interaction</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a><br><a href="../../../scenarios/astm/utm/dss/pool_info.md">DSS pool information</a></td>
   </tr>
   <tr>
     <td><a href="../../../requirements/astm/f3548/v21.md">DSS0100,1</a></td>
@@ -318,6 +319,12 @@
     <td><a href="../../../requirements/astm/f3548/v21.md">SCD0100</a></td>
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/dss/op_intent_ref_state_transitions.md">ASTM F3548-21 UTM DSS Operational Intent Reference State Transitions</a></td>
+  </tr>
+  <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../../requirements/interuss/dss/hosting.md">interuss<br>.dss<br>.hosting</a></td>
+    <td><a href="../../../requirements/interuss/dss/hosting.md">ExposeAux</a></td>
+    <td>Implemented + TODO</td>
+    <td><a href="../../../scenarios/astm/utm/dss/pool_info.md">DSS pool information</a></td>
   </tr>
   <tr>
     <td rowspan="1" style="vertical-align:top;"><a href="../../../requirements/interuss/f3548/ovn_request.md">interuss<br>.f3548<br>.ovn_request</a></td>
