@@ -32,6 +32,7 @@ function(env_code, next_env_auth_spec, active_participants, participants_to_clea
           'interuss.flight_planning.plan',
           // InterUSS versioning automated testing API
           'interuss.versioning.read_system_versions',
+          'interuss.pool_status.read',
           // ASTM F3548-21 USS emulation roles
           'utm.strategic_coordination',
           'utm.availability_arbitration',

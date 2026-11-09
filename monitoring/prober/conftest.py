@@ -23,7 +23,6 @@ OPT_SCD_AUTH2 = "scd_auth2"
 BASE_URL_RID = ""
 BASE_URL_RID_V2 = "/rid/v2"
 BASE_URL_SCD = "/dss/v1"
-BASE_URL_AUX = "/aux/v1"
 
 
 def str2bool(v) -> bool:
@@ -177,11 +176,6 @@ def session_ridv1_async(pytestconfig):
     session = make_session_async(pytestconfig, BASE_URL_RID, OPT_RID_AUTH)
     yield session
     session.close()
-
-
-@pytest.fixture(scope="session")
-def aux_session(pytestconfig) -> UTMClientSession:
-    return make_session(pytestconfig, BASE_URL_AUX, OPT_RID_AUTH)
 
 
 @pytest.fixture(scope="session")
