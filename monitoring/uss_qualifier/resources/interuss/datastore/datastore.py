@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+import datetime
 import socket
 import ssl
+import tempfile
 from abc import ABC, abstractmethod
 
 import psycopg
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.x509.oid import NameOID
 from implicitdict import ImplicitDict
 
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
@@ -23,6 +29,9 @@ class DatastoreDBNodeSpecification(ImplicitDict):
 
     is_yugabyte: bool = False
     """True if DatastoreDB node is a YugabyteDB node."""
+
+    is_raft: bool = False
+    """True if DatastoreDB node is a Raft node of the DSS. In this case, the port should be the one used in the node's Raft peer URL."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
@@ -45,6 +54,12 @@ class DatastoreDBNodeResource(Resource[DatastoreDBNodeSpecification]):
     def get_client(self) -> DatastoreDBNode:
         if self._specification.is_yugabyte:
             return YugabyteDBNode(
+                self._specification.participant_id,
+                self._specification.host,
+                self._specification.port,
+            )
+        if self._specification.is_raft:
+            return RaftNode(
                 self._specification.participant_id,
                 self._specification.host,
                 self._specification.port,
@@ -314,3 +329,68 @@ class YugabyteDBNode(DatastoreDBNode):
                 return self.is_protocol_failure(data), None
         except Exception as e:
             return False, e
+
+
+def self_signed_certificate() -> tuple[bytes, bytes]:
+    """Generates a new self-signed certificate and its private key in PEM format."""
+    key = ec.generate_private_key(ec.SECP256R1())
+    name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "uss_qualifier")])
+    now = datetime.datetime.now(datetime.UTC)
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(name)
+        .issuer_name(name)
+        .public_key(key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(now)
+        .not_valid_after(now + datetime.timedelta(days=1))
+        .sign(key, hashes.SHA256())
+    )
+    return cert.public_bytes(serialization.Encoding.PEM), key.private_bytes(
+        serialization.Encoding.PEM,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    )
+
+
+class RaftNode(DatastoreDBNode):
+    legacy_tls_version_rejected = YugabyteDBNode.legacy_tls_version_rejected
+
+    def _request_rejected(
+        self, ctx: ssl.SSLContext | None = None
+    ) -> tuple[bool, Exception | None]:
+        sock = self.build_socket()
+        try:
+            if ctx:
+                try:
+                    sock = ctx.wrap_socket(sock)
+                except ssl.SSLError as e:
+                    return False, e
+            sock.sendall(b"GET /raft/probing HTTP/1.1\r\nHost: raft\r\n\r\n")
+            data = sock.recv(16)
+        except OSError as e:
+            return True, e
+        finally:
+            sock.close()
+        if data:
+            return False, Exception(f"Received response: {data!r}")
+        return True, None
+
+    def no_tls_rejected(self) -> tuple[bool, Exception | None]:
+        return self._request_rejected()
+
+    def unauthenticated_rejected(self) -> tuple[bool, Exception | None]:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        # Attempt the request without a client certificate first
+        rejected, e = self._request_rejected(ctx)
+        if not rejected:
+            return rejected, e
+        # Generate a self-signed certificate and use it for the client certificate
+        cert, key = self_signed_certificate()
+        with tempfile.NamedTemporaryFile() as f:
+            f.write(cert + key)
+            f.flush()
+            ctx.load_cert_chain(f.name)
+        return self._request_rejected(ctx)
