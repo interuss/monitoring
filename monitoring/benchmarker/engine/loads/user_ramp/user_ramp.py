@@ -39,6 +39,7 @@ async def run_user_ramp_load(
     executor: ThreadPoolExecutor,
     coordinator: Coordinator,
     scenario_name: BenchmarkScenarioName,
+    record_query_details: bool,
 ) -> tuple[list[ExecutedOperation], list[BenchmarkScenarioStepReport], CleanupReport]:
     """Apply a load by driving virtual user workflows and monitoring step criteria."""
     user_types_list = resolve_user_types(ramp, user_specs_map)
@@ -56,7 +57,7 @@ async def run_user_ramp_load(
     def wrapped_record_op(op: ExecutedOperation) -> None:
         if not op.successful:
             progress.update_status_time()
-        record_operation(op, operations)
+        record_operation(op, operations, record_query_details)
 
     logger.info(f"Starting user_ramp load with initial_users={current_load_factor}")
     progress.update_status_time()
