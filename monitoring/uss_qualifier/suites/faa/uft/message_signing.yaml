@@ -6,6 +6,7 @@ resources:
   dss: resources.astm.f3548.v21.DSSInstanceResource
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
+  shared_asset_coordinator: resources.interuss.shared_asset_coordination.SharedAssetCoordinatorResource?
 
   conflicting_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]
   priority_preemption_flights_provider: resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]?
@@ -37,6 +38,7 @@ actions:
       dss: dss
       dss_instances: dss_instances
       dss_datastore_cluster: dss_datastore_cluster?
+      shared_asset_coordinator: shared_asset_coordinator?
       id_generator: id_generator
       utm_client_identity: utm_client_identity
       second_utm_auth: second_utm_auth
