@@ -3,6 +3,7 @@ v1:
   test_run:
     resources:
       resource_declarations:
+        shared_asset_coordinator: {$ref: 'library/resources.yaml#/shared_asset_coordinator'}
         locality_che: {$ref: 'library/resources.yaml#/locality_che'}
         che_conflicting_flights: {$ref: 'library/resources.yaml#/che_conflicting_flights'}
         che_conflicting_flights_provider: {$ref: 'library/resources.yaml#/che_conflicting_flights_provider'}
@@ -55,6 +56,7 @@ v1:
       action_generator:
         generator_type: action_generators.interuss.mock_uss.WithLocality
         resources:
+          shared_asset_coordinator: shared_asset_coordinator
           mock_uss_instances: mock_uss_instances_scdsc
           locality: locality_che
 
@@ -95,6 +97,7 @@ v1:
             test_suite:
               suite_type: suites.uspace.required_services
               resources:
+                shared_asset_coordinator: shared_asset_coordinator
                 test_env_version_providers: test_env_version_providers?
                 prod_env_version_providers: prod_env_version_providers?
 
