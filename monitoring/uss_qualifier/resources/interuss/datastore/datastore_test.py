@@ -5,7 +5,12 @@ from testcontainers.core.container import DockerContainer
 from testcontainers.core.wait_strategies import LogMessageWaitStrategy
 
 from . import CockroachDBNode, YugabyteDBNode
-from .datastore import RaftNode, self_signed_certificate
+from .datastore import (
+    DatastoreDBNodeResource,
+    DatastoreDBNodeSpecification,
+    RaftNode,
+    self_signed_certificate,
+)
 
 COCKROACHDB_IMAGE = "cockroachdb/cockroach:v24.1.3"
 INSECURE_COCKROACHDB_IMAGE = "interuss/insecurecockroach:latest"
@@ -379,3 +384,11 @@ def test_datastoredbmode_reject_legacy_no_tls_raft(no_tls_raft):
     assert not legacy_rejected, (
         "Raft node, with TLS disabled, shall not reject connections with legacy TLS version"
     )
+
+
+def test_datastoredbmode_yugabyte_and_raft_rejected():
+    specification = DatastoreDBNodeSpecification(
+        participant_id="test", host="127.0.0.1", port=1, is_yugabyte=True, is_raft=True
+    )
+    with pytest.raises(ValueError):
+        DatastoreDBNodeResource(specification, "test")
