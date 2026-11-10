@@ -12,7 +12,7 @@ The downside of `make presubmit` is that it takes a long time, and a lot of that
 
 ### Python package
 
-The [package workflow](package.yml) builds the source distribution and then a wheel from it, installs the wheel in a fresh environment, and runs [packaging smoke checks](../../test/packaging_test.py) with Python's isolated mode so the source checkout cannot hide missing package data.  These checks exercise geoid lookup, KML generation, report templates, and qualifier definitions, and check that deployment files and local configurations are not included.
+The [package workflow](package.yml) builds the source distribution and then a wheel from it, installs the wheel in a fresh environment, and runs [packaging smoke checks](../../test/packaging_test.py) with Python's isolated mode so the source checkout cannot hide missing package data.  These checks exercise geoid lookup, KML generation, report templates, interface schemas, and qualifier definitions, and check that deployment files and local configurations are not included.
 
 To run it locally from the repository root:
 
