@@ -8,6 +8,12 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
     DSSInstancesResource,
 )
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
+from monitoring.uss_qualifier.resources.interuss.shared_asset_coordination import (
+    SharedAssetAcquisitionError,
+    SharedAssetCoordinatorResource,
+    SharedAssetIdentifier,
+    SharedAssetType,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.test_step_fragments import (
     get_uss_availability,
     set_uss_availability,
@@ -36,19 +42,25 @@ class USSAvailabilitySynchronization(TestScenario):
 
     _current_version: str = ""
 
+    _shared_asset_coordinator: SharedAssetCoordinatorResource | None
+    _dss_availability_acquired: bool = False
+
     def __init__(
         self,
         dss: DSSInstanceResource,
         other_instances: DSSInstancesResource,
         client_identity: ClientIdentityResource,
+        shared_asset_coordinator: SharedAssetCoordinatorResource | None = None,
     ):
         """
         Args:
             dss: dss to test
             other_instances: dss instances to be checked for proper synchronization
             client_identity: tells us the identity we should expect as an entity's manager
+            shared_asset_coordinator: coordinates exclusive access to DSS availability
         """
         super().__init__()
+        self._shared_asset_coordinator = shared_asset_coordinator
         scopes_primary = {
             Scope.AvailabilityArbitration: "Set and read USS availability states"
         }
@@ -70,6 +82,7 @@ class USSAvailabilitySynchronization(TestScenario):
         self.begin_test_scenario(context)
 
         self.begin_test_case("Setup")
+        self._acquire_dss_availability()
         self.begin_test_step("Ensure test USS has Unknown availability")
         self._ensure_test_uss_availability_unknown()
         self.end_test_step()
@@ -116,6 +129,25 @@ class USSAvailabilitySynchronization(TestScenario):
         self.end_test_case()
 
         self.end_test_scenario()
+
+    def _acquire_dss_availability(self) -> None:
+        if self._shared_asset_coordinator is None:
+            return
+
+        self.begin_test_step("Acquire exclusive DSS availability access")
+        with self.check("DSS availability access acquired", []) as check:
+            try:
+                self._shared_asset_coordinator.acquire(
+                    SharedAssetIdentifier(asset_type=SharedAssetType.DSSAvailability),
+                    self,
+                )
+                self._dss_availability_acquired = True
+            except SharedAssetAcquisitionError as e:
+                check.record_failed(
+                    summary="Unable to acquire exclusive DSS availability access",
+                    details=str(e),
+                )
+        self.end_test_step()
 
     def _step_unknown_uss_reported_as_unknown(self):
         unknown_uss_id = "ThisIdShouldNotExistOnTheDSS"
@@ -265,5 +297,6 @@ class USSAvailabilitySynchronization(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        self._ensure_test_uss_availability_unknown(check_consistency=False)
+        if self._shared_asset_coordinator is None or self._dss_availability_acquired:
+            self._ensure_test_uss_availability_unknown(check_consistency=False)
         self.end_cleanup()

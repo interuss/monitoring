@@ -5,6 +5,7 @@ resources:
   second_utm_auth: resources.communications.AuthAdapterResource?
   all_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
+  shared_asset_coordinator: resources.interuss.shared_asset_coordination.SharedAssetCoordinatorResource?
   flight_intents: resources.flight_planning.FlightIntentsResource
   id_generator: resources.interuss.IDGeneratorResource
   planning_area: resources.PlanningAreaResource
@@ -59,6 +60,7 @@ actions:
         dss: dss
         other_instances: all_dss_instances
         client_identity: utm_client_identity
+        shared_asset_coordinator: shared_asset_coordinator?
   - test_scenario:
       scenario_type: scenarios.astm.utm.dss.OpIntentReferenceStateTransitions
       resources:
@@ -156,3 +158,4 @@ actions:
       resources:
         dss: dss
         client_identity: utm_client_identity
+        shared_asset_coordinator: shared_asset_coordinator?

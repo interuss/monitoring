@@ -279,4 +279,10 @@ Defined in [parent suite](prod_probe.md) [`suites.astm.utm.prod_probe`](./prod_p
     <td>Implemented</td>
     <td><a href="../../../scenarios/astm/utm/dss/dss_interoperability.md">ASTM F3548-21 UTM DSS interoperability</a></td>
   </tr>
+  <tr>
+    <td rowspan="1" style="vertical-align:top;"><a href="../../../requirements/interuss/automated_testing/coordination.md">interuss<br>.automated_testing<br>.coordination</a></td>
+    <td><a href="../../../requirements/interuss/automated_testing/coordination.md">AccessSharedAssets</a></td>
+    <td>Implemented</td>
+    <td><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
+  </tr>
 </table>
