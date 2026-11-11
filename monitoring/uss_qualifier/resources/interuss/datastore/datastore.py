@@ -373,7 +373,7 @@ class RaftNode(DatastoreDBNode):
                     return False, e
             sock.sendall(b"GET /raft/probing HTTP/1.1\r\nHost: raft\r\n\r\n")
             data = sock.recv(16)
-        except OSError as e:
+        except (ConnectionError, ssl.SSLError) as e:
             return True, e
         finally:
             sock.close()

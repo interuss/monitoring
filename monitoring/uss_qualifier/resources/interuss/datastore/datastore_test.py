@@ -16,8 +16,8 @@ COCKROACHDB_IMAGE = "cockroachdb/cockroach:v24.1.3"
 INSECURE_COCKROACHDB_IMAGE = "interuss/insecurecockroach:latest"
 YUGABYTE_IMAGE = "interuss/yugabyte:2025.1.2.1-interuss"
 INSECURE_YUGABYTE_IMAGE = "yugabytedb/yugabyte:2.25.2.0-b359"
-DSS_IMAGE = os.environ.get("DSS_IMAGE", "interuss/dss:latest")
-RAFT_COMMAND = "core-service -store_type raft -raft_node_id 1 -raft_datadir /tmp/raft -public_key_files /test-certs/auth2.pem -accepted_jwt_audiences localhost -public_endpoint http://localhost -locality test"
+DSS_IMAGE = os.environ.get("DSS_IMAGE", "interuss/dss:v0.24.0-rc4")
+RAFT_COMMAND = "core-service -store_type raft -raft_datadir /tmp/raft -public_key_files /test-certs/auth2.pem -accepted_jwt_audiences localhost -public_endpoint http://localhost -locality test"
 
 
 @pytest.fixture(scope="module")
@@ -296,7 +296,7 @@ def good_raft(request):
         DockerContainer(
             image=DSS_IMAGE,
             ports=[9500],
-            command=f"sh -c 'printenv CERT > /tmp/node.crt && printenv KEY > /tmp/node.key && {RAFT_COMMAND} -raft_peers 1=https://localhost:9500 -raft_tls_cert_file /tmp/node.crt -raft_tls_key_file /tmp/node.key -raft_tls_ca_file /tmp/node.crt'",
+            command=f"sh -c 'printenv CERT > /tmp/node.crt && printenv KEY > /tmp/node.key && {RAFT_COMMAND} -raft_peer_url https://localhost:9500 -raft_tls_cert_file /tmp/node.crt -raft_tls_key_file /tmp/node.key -raft_tls_ca_file /tmp/node.crt'",
         )
         .with_env("CERT", cert.decode())
         .with_env("KEY", key.decode())
@@ -315,7 +315,7 @@ def no_tls_raft(request):
     server = DockerContainer(
         image=DSS_IMAGE,
         ports=[9500],
-        command=f"{RAFT_COMMAND} -raft_peers 1=http://localhost:9500 -raft_insecure",
+        command=f"{RAFT_COMMAND} -raft_peer_url http://localhost:9500 -raft_insecure",
     )
     server.waiting_for(LogMessageWaitStrategy("raft listener started"))
     server.start()
