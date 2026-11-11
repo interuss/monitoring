@@ -93,7 +93,9 @@ def group_operations(executed_ops: list[ExecutedOperation]) -> list[OperationsBy
 
 
 def record_operation(
-    op: ExecutedOperation, operations: list[ExecutedOperation]
+    op: ExecutedOperation,
+    operations: list[ExecutedOperation],
+    record_query_details: bool,
 ) -> None:
     operations.append(op)
     if not op.successful:
@@ -109,3 +111,5 @@ def record_operation(
             )
         else:
             logger.debug(f"Operation '{op.type}' from origin '{op.origin}' failed.")
+    if not record_query_details:
+        op.query = None

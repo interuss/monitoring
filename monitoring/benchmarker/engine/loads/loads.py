@@ -29,6 +29,7 @@ async def run_scenario_load(
     executor: ThreadPoolExecutor,
     coordinator: Coordinator,
     scenario_name: BenchmarkScenarioName,
+    record_query_details: bool,
 ) -> tuple[
     list[ExecutedOperation], list[BenchmarkScenarioStepReport], CleanupReport | None
 ]:
@@ -41,6 +42,7 @@ async def run_scenario_load(
             executor,
             coordinator,
             scenario_name,
+            record_query_details,
         )
     elif load_spec.user_search:
         return await run_user_search_load(
@@ -50,6 +52,7 @@ async def run_scenario_load(
             executor,
             coordinator,
             scenario_name,
+            record_query_details,
         )
     else:
         raise NotImplementedError(

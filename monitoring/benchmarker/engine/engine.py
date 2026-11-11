@@ -107,6 +107,7 @@ async def _run_benchmark_async(
                 executor,
                 coordinator,
                 scenario_spec.name,
+                scenario_spec.record_query_details,
             )
 
             # Generate and record scenario report

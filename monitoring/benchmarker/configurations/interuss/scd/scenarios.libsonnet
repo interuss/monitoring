@@ -101,6 +101,7 @@ local users = import './users.libsonnet';
         name: 'DSS instance %d' % uss,
         [if uss == 1 then 'setup']: ['Create subscription %d' % (i + 1) for i in subscription_indices],
         load: 'Flight planner search for USS %d' % uss,
+        record_query_details: true,
         teardown:
           (if uss < num_uss then ['Generate intermediate artifacts'] else [])
           + (if uss == num_uss then ['Delete subscription %d' % (i + 1) for i in subscription_indices] else []),
