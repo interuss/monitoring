@@ -21,6 +21,7 @@ from monitoring.benchmarker.engine.coordination import Coordinator
 from monitoring.benchmarker.engine.operations import ExecutedOperation
 from monitoring.benchmarker.engine.users.framework import Action, VirtualUser
 from monitoring.monitorlib.fetch.rid import Subscription
+from monitoring.monitorlib.geo import EARTH_RADIUS_M
 from monitoring.monitorlib.mutate.rid import delete_subscription, upsert_subscription
 from monitoring.monitorlib.testing import make_fake_url
 from monitoring.uss_qualifier.resources.astm.f3411.dss import (
@@ -29,6 +30,8 @@ from monitoring.uss_qualifier.resources.astm.f3411.dss import (
     DSSInstancesResource,
 )
 from monitoring.uss_qualifier.resources.definitions import ResourceID
+
+SUBSCRIPTION_VERTEX_INSET_M = 5
 
 
 class NetRIDDisplayProviderUser(VirtualUser):
@@ -258,11 +261,17 @@ class NetRIDDisplayProviderUser(VirtualUser):
     ) -> None:
         dss_instance = self.select_dss_instance()
         cell = s2sphere.Cell(cell_id)
+        center = cell.get_center()
+        area_vertices = []
+        for v in range(4):
+            vertex = cell.get_vertex(v)
+            f = SUBSCRIPTION_VERTEX_INSET_M / (vertex.angle(center) * EARTH_RADIUS_M)
+            area_vertices.append(
+                s2sphere.LatLng.from_point((vertex + (center - vertex) * f).normalize())
+            )
         change = await self.run_sync_client_call(
             upsert_subscription,
-            area_vertices=[
-                s2sphere.LatLng.from_point(cell.get_vertex(v)) for v in range(4)
-            ],
+            area_vertices=area_vertices,
             alt_lo=self.s2_grid.min_alt.to_w84_m(),
             alt_hi=self.s2_grid.max_alt.to_w84_m(),
             start_time=start_time,
