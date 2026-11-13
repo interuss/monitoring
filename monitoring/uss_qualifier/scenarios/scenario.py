@@ -120,7 +120,7 @@ class PendingCheck:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if not self._outcome_recorded:
+        if exc_type is None and not self._outcome_recorded:
             self.record_passed()
 
     def record_failed(

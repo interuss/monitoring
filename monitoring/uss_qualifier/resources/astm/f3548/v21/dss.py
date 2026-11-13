@@ -226,8 +226,9 @@ class DSSInstance:
             scope=Scope.StrategicCoordination,
         )
         if query.status_code != 200:
+            details = query.failure_details
             raise QueryError(
-                f"Received code {query.status_code} when attempting to retrieve operational intent details for {op_intent_ref.id}{f'; error message: `{query.error_message}`' if query.error_message is not None else ''}",
+                f"Received code {query.status_code} when attempting to retrieve operational intent details for {op_intent_ref.id}{f'; response: `{details}`' if details is not None else ''}",
                 query,
             )
         else:

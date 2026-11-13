@@ -425,6 +425,7 @@ def test_run_user_search_load_recovers_from_unstable_step():
                 executor,
                 Coordinator([]),
                 BenchmarkScenarioName("test_scenario"),
+                False,
             )
         )
 

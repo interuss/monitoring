@@ -2,6 +2,8 @@
  * without any contention-causing subscriptions, sweeping through inter-node latency values.
  */
 
+local users = import './users.libsonnet';
+
 local num_uss = 3;
 local num_nodes = 3;
 local latencies_ms = [50, 25, 1];
@@ -76,57 +78,7 @@ local nodeIndex = function(uss, node) std.format('%02d', node + num_nodes * (uss
   user_types: [
     {
       name: 'FPU%d' % uss, // Flight planner user, DSS instance/USS i
-      flight_planner: {
-        flight_generation: {
-          independent_time_location_shape: {
-            time: {
-              fixed_spacing: '0s',
-            },
-            location: {
-              fixed_location: {
-                horizontal: {lat: 34, lng: -118},
-                vertical: {value: 300, reference: 'W84', units: 'M'},
-              },
-            },
-            shape: {
-              fixed_volumes: {
-                origin_horizontal: {lat: 0, lng: 0},
-                origin_vertical: {value: 0, reference: 'W84', units: 'M'},
-                origin_time: '2026-01-01T00:00:00Z',
-                volumes: [
-                  {
-                    volume: {
-                      outline_polygon: {
-                        vertices: [
-                          {lat: -0.00001, lng: -0.00001},
-                          {lat: 0.00001, lng: -0.00001},
-                          {lat: 0.00001, lng: 0.00001},
-                          {lat: -0.00001, lng: 0.00001},
-                        ],
-                      },
-                      altitude_lower: {value: 0, reference: 'W84', units: 'M'},
-                      altitude_upper: {value: 20, reference: 'W84', units: 'M'},
-                    },
-                    time_start: '2026-01-01T00:00:00Z',
-                    time_end: '2026-01-01T00:00:05Z',
-                  },
-                ],
-              },
-            },
-          },
-        },
-        astm_netrid_behavior: {
-          rid_version: 'F3411-22a',
-          dss_pool: ['dss_pool_%d' % uss],
-          dss_selection_strategy: 'Random',
-          isa_strategy: {
-            isa_per_flight: {
-              before_flight_start: '0s',
-              after_flight_end: '2s',
-            },
-          },
-        },
-      },
+      flight_planner: users.basic_flight_planner(['dss_pool_%d' % uss]),
     } for uss in std.range(1, num_uss)
   ],
 

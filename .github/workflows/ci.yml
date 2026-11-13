@@ -17,7 +17,7 @@ jobs:
         echo "Trigger: ${{ github.event_name }}"
         echo "Host: ${{ runner.os }}"
         echo "Repository: ${{ github.repository }}"
-        echo "Branch: ${{ github.ref }}"
+        echo "Branch: ${GITHUB_REF}"
         docker images
         docker version
         docker compose version
@@ -28,6 +28,7 @@ jobs:
         fetch-tags: true
         fetch-depth: 0
         filter: tree:0
+        persist-credentials: false
     - name: Set up Python
       uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
       with:
@@ -64,7 +65,7 @@ jobs:
         echo "Trigger: ${{ github.event_name }}"
         echo "Host: ${{ runner.os }}"
         echo "Repository: ${{ github.repository }}"
-        echo "Branch: ${{ github.ref }}"
+        echo "Branch: ${GITHUB_REF}"
         docker images
         docker version
         docker compose version
@@ -72,8 +73,9 @@ jobs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         submodules: true
+        persist-credentials: false
     - name: Load monitoring image
-      uses: ./.github/actions/load-image
+      uses: $/.github/actions/load-image
     - name: Automated hygiene verification
       run: make check-hygiene
 
@@ -91,7 +93,7 @@ jobs:
           echo "Trigger: ${{ github.event_name }}"
           echo "Host: ${{ runner.os }}"
           echo "Repository: ${{ github.repository }}"
-          echo "Branch: ${{ github.ref }}"
+          echo "Branch: ${GITHUB_REF}"
           docker images
           docker version
           docker compose version
@@ -99,8 +101,9 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           submodules: true
+          persist-credentials: false
       - name: Load monitoring image
-        uses: ./.github/actions/load-image
+        uses: $/.github/actions/load-image
       - name: Unit tests
         run: make unit-test
 
@@ -123,6 +126,7 @@ jobs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         submodules: true
+        persist-credentials: false
     # Run on the host because configuration actions invoke Docker and Docker Compose.
     - name: Set up Python
       uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
@@ -162,7 +166,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: mock_uss
       script: |
@@ -175,7 +179,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-noop-test
       script: |
@@ -190,7 +194,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-geoawareness_cis-test
       script: |
@@ -205,7 +209,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-generate_rid_test_data-test
       script: |
@@ -220,7 +224,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-geospatial_comprehension-test
       script: |
@@ -235,7 +239,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-general_flight_auth-test
       script: |
@@ -250,7 +254,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-message_signing-test
       script: |
@@ -265,7 +269,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-access_tokens-test
       script: |
@@ -281,7 +285,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-dss_probing-test
       script: |
@@ -296,7 +300,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-f3548_self_contained-test
       script: |
@@ -311,7 +315,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-utm_implementation_us-test
       script: |
@@ -326,7 +330,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-netrid_v22a-test
       script: |
@@ -341,7 +345,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-netrid_v19-test
       script: |
@@ -356,7 +360,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-uspace-test
       script: |
@@ -371,7 +375,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-minimal_probing_simulations-crdb-test
       script: |
@@ -391,7 +395,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: uss_qualifier-minimal_probing_simulations-ybdb-test
       script: |
@@ -411,7 +415,7 @@ jobs:
       - build-monitoring-images
     permissions:
       contents: read
-    uses: ./.github/workflows/monitoring-test.yml
+    uses: $/.github/workflows/monitoring-test.yml
     with:
       name: prober
       script: |
@@ -449,6 +453,7 @@ jobs:
         with:
           submodules: true
           path: monitoring
+          persist-credentials: false
 
       - name: Get uss_qualifier reports
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
