@@ -34,7 +34,7 @@ jobs:
           echo "Trigger: ${{ github.event_name }}"
           echo "Host: ${{ runner.os }}"
           echo "Repository: ${{ github.repository }}"
-          echo "Branch: ${{ github.ref }}"
+          echo "Branch: ${GITHUB_REF}"
           docker images
           cosign version
 
@@ -43,6 +43,7 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Log in to Docker Hub
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550  # v4.8.0
