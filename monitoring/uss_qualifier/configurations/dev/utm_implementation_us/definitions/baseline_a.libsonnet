@@ -16,6 +16,7 @@ function(env) {
 
           // Mapping of <resource name in test suite> to <resource name in resource pool>
           resources: {
+            shared_asset_coordinator: 'shared_asset_coordinator',
             id_generator: 'id_generator',
             utm_client_identity: 'utm_client_identity',
             test_env_version_providers: 'test_env_version_providers',
@@ -64,6 +65,13 @@ function(env) {
       //   2) to create another resource in the pool
       resources: {
         resource_declarations: env.resource_declarations + {
+          shared_asset_coordinator: {
+            resource_type: 'resources.interuss.shared_asset_coordination.TestRunSharedAssetCoordinatorResource',
+            specification: {
+              retry_interval_seconds: 3,
+              max_wait_time_seconds: 60,
+            },
+          },
 
           // Controls query behavior (but not provided explicitly to any test scenario)
           query_behavior: {

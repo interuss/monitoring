@@ -4,6 +4,7 @@ resources:
   f3411v22a_dss_instances: resources.astm.f3411.DSSInstancesResource?
   f3548v21_dss_instances: resources.astm.f3548.v21.dss.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
+  shared_asset_coordinator: resources.interuss.shared_asset_coordination.SharedAssetCoordinatorResource?
 
   utm_client_identity: resources.communications.ClientIdentityResource
   id_generator: resources.interuss.IDGeneratorResource
@@ -21,6 +22,7 @@ actions:
       resources:
         dss_instances: f3548v21_dss_instances
         dss_datastore_cluster: dss_datastore_cluster?
+        shared_asset_coordinator: shared_asset_coordinator?
         second_utm_auth: second_utm_auth?
         utm_client_identity: utm_client_identity
         flight_intents: flight_intents
@@ -37,6 +39,7 @@ actions:
               utm_client_identity: utm_client_identity
               all_dss_instances: dss_instances
               dss_datastore_cluster: dss_datastore_cluster?
+              shared_asset_coordinator: shared_asset_coordinator?
               flight_intents: flight_intents
               id_generator: id_generator
               planning_area: planning_area

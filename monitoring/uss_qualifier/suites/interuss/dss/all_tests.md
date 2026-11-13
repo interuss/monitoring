@@ -8,6 +8,7 @@
 - `f3411v22a_dss_instances`: `resources.astm.f3411.DSSInstancesResource` (optional)
 - `f3548v21_dss_instances`: `resources.astm.f3548.v21.dss.DSSInstancesResource` (optional)
 - `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `shared_asset_coordinator`: `resources.interuss.shared_asset_coordination.SharedAssetCoordinatorResource` (optional)
 - `utm_client_identity`: `resources.communications.ClientIdentityResource`
 - `id_generator`: `resources.interuss.IDGeneratorResource`
 - `service_area`: `resources.netrid.ServiceAreaResource` (optional)

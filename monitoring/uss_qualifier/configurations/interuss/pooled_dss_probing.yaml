@@ -3,6 +3,7 @@ v1:
   test_run:
     resources:
       resource_declarations:
+        shared_asset_coordinator: { $ref: '../dev/library/resources.yaml#/shared_asset_coordinator' }
         kentland_service_area_volume: {$ref: '../dev/library/resources.yaml#/kentland_service_area_volume'}
         kentland_service_area: { $ref: '../dev/library/resources.yaml#/kentland_service_area' }
         kentland_planning_area_volume: { $ref: '../dev/library/resources.yaml#/kentland_planning_area_volume' }
@@ -29,6 +30,7 @@ v1:
       test_suite:
         suite_type: suites.interuss.dss.all_tests
         resources:
+          shared_asset_coordinator: shared_asset_coordinator
           f3411v19_dss_instances: netrid_dss_instances_v19
           f3411v22a_dss_instances: netrid_dss_instances_v22a
           f3548v21_dss_instances: scd_dss_instances
