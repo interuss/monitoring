@@ -24,3 +24,4 @@ from .subscription_validation import SubscriptionValidation as SubscriptionValid
 from .uss_availability_mutation import (
     UssAvailabilityMutation as UssAvailabilityMutation,
 )
+from .oir_circle_overlap import OIRCircleOverlap as OIRCircleOverlap
