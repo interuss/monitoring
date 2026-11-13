@@ -25,7 +25,7 @@ configurations: $(YAML_CONFIGS)
 validate_config = docker container run --rm \
                  -v $(CURDIR):/app/monitoring/benchmarker/configurations/interuss \
                  -u ${USER_GROUP} \
-                 -e PYTHONBUFFERED=1 \
+                 -e PYTHONUNBUFFERED=1 \
                  -w /app/monitoring/benchmarker \
                  interuss/monitoring \
                  uv run benchmark.py \
@@ -35,7 +35,7 @@ validate_config = docker container run --rm \
 build_yaml = docker container run --rm \
                  -v $(CURDIR):/app/monitoring/benchmarker/configurations/interuss \
                  -u ${USER_GROUP} \
-                 -e PYTHONBUFFERED=1 \
+                 -e PYTHONUNBUFFERED=1 \
                  -w /app/monitoring/benchmarker \
                  interuss/monitoring \
                  uv run benchmark.py \

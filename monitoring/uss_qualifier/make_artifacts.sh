@@ -62,7 +62,7 @@ mkdir -p "$CACHE_DIR"
 docker run --name uss_qualifier \
   --rm \
   -u "$(id -u):$(id -g)" \
-  -e PYTHONBUFFERED=1 \
+  -e PYTHONUNBUFFERED=1 \
   -e MONITORING_GITHUB_ROOT=${MONITORING_GITHUB_ROOT:-} \
   -v "${REPORT_PATH}:/input/${REPORT_FILENAME}" \
   -v "${OUTPUT_PATH}:/app/monitoring/uss_qualifier/output/${OUTPUT_FOLDERNAME}" \
