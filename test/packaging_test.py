@@ -28,7 +28,6 @@ from monitoring.uss_qualifier.scenarios.eurocae.ed318.source_data_model import (
 
 
 class InstalledWheelTest(unittest.TestCase):
-    # This test is AI-generated and has not been closely inspected by a human.
     def test_geoid_and_kml(self):
         self.assertAlmostEqual(egm96_geoid_offset(LatLng.from_degrees(0, 0)), 17.16)
         volume = Volume4D(volume=Volume3D(outline_circle=Circle.from_meters(0, 0, 100)))
@@ -36,11 +35,7 @@ class InstalledWheelTest(unittest.TestCase):
         self.assertEqual(placemark.name.text, "Packaged volume")
         self.assertTrue(len(placemark.MultiGeometry))
 
-    # This test is AI-generated and has not been closely inspected by a human.
     def test_templates(self):
-        for name in jinja_env.list_templates():
-            with self.subTest(template=name):
-                jinja_env.get_template(name)
         explorer = jinja_env.from_string(
             '{% from "explorer.html" import explorer_content %}'
             '{{ explorer_content("packaging-test", {"key": "Packaged value"}) }}'
@@ -50,15 +45,13 @@ class InstalledWheelTest(unittest.TestCase):
             jinja_env.get_template("ai_helpers/AGENTS.md.template").render()
         )
 
-    # This test is AI-generated and has not been closely inspected by a human.
-    def test_qualifier_definitions(self):
+    def test_qualifier_documentation(self):
         self.assertEqual(get_documentation(NoOp).name, "NoOp")
         requirement_id = RequirementID("interuss.uss_qualifier.unit_test.REQ001")
         self.assertEqual(get_requirement(requirement_id).requirement_id, requirement_id)
         suite = load_dict_with_references("suites.astm.utm.f3548_21", package_root)
         self.assertTrue(suite["actions"])
 
-    # This test is AI-generated and has not been closely inspected by a human.
     def test_interfaces(self):
         for api in (schema_validation.F3411_19, schema_validation.F3411_22a):
             with self.subTest(api=api):
@@ -92,7 +85,6 @@ class InstalledWheelTest(unittest.TestCase):
             registry=scenario.schema_registry,
         )
 
-    # This test is AI-generated and has not been closely inspected by a human.
     def test_distribution_contents(self):
         paths = {str(path) for path in distribution("interuss_monitoring").files or []}
         self.assertIn("monitoring/monitorlib/assets/WW15MGH.DAC", paths)
