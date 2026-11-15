@@ -2,6 +2,9 @@
  * and loss between nodes.
  */
 
+local actions = import './actions.libsonnet';
+local users = import './users.libsonnet';
+
 local num_uss = 3;
 local num_nodes = 3;
 local num_subscriptions = 8;
@@ -73,93 +76,17 @@ local nodeIndex = function(uss, node) std.format('%02d', node + num_nodes * (uss
       },
     }
   ] + [
-    {
-      name: 'Create subscription %d' % sub_index,
-      f3411: {
-        create_subscription: {
-          subscription: {
-            subscription_id: '16b87239-6063-47d4-a2ff-%d05086859f32' % (sub_index - 1),
-            rid_version: 'F3411-22a',
-            duration: '23h',
-            area: {
-              lat_min: 34 - 0.00001,
-              lng_min: -118 - 0.00001,
-              lat_max: 34 + 0.00001,
-              lng_max: -118 + 0.00001,
-            },
-            min_alt: {value: 0, units: 'M', reference: 'W84'},
-            max_alt: {value: 3000, units: 'M', reference: 'W84'},
-          },
-          mode: 'GetDeleteCreate',
-        },
-      },
-    } for sub_index in std.range(1, num_subscriptions)
+    actions.create_subscription('Create subscription %d' % sub_index, '16b87239-6063-47d4-a2ff-%d05086859f32' % (sub_index - 1))
+    for sub_index in std.range(1, num_subscriptions)
   ] + [
-    {
-      name: 'Delete subscription %d' % sub_index,
-      f3411: {
-        delete_subscription: {
-          subscription_id: '16b87239-6063-47d4-a2ff-%d05086859f32' % (sub_index - 1),
-          mode: 'GetDeleteIfExist',
-        },
-      },
-    } for sub_index in std.range(1, num_subscriptions)
+    actions.delete_subscription('Delete subscription %d' % sub_index, '16b87239-6063-47d4-a2ff-%d05086859f32' % (sub_index - 1))
+    for sub_index in std.range(1, num_subscriptions)
   ],
 
   user_types: [
     {
       name: 'FPU%d' % uss, // Flight planner user, DSS instance/USS i
-      flight_planner: {
-        flight_generation: {
-          independent_time_location_shape: {
-            time: {
-              fixed_spacing: '0s',
-            },
-            location: {
-              fixed_location: {
-                horizontal: {lat: 34, lng: -118},
-                vertical: {value: 300, reference: 'W84', units: 'M'},
-              },
-            },
-            shape: {
-              fixed_volumes: {
-                origin_horizontal: {lat: 0, lng: 0},
-                origin_vertical: {value: 0, reference: 'W84', units: 'M'},
-                origin_time: '2026-01-01T00:00:00Z',
-                volumes: [
-                  {
-                    volume: {
-                      outline_polygon: {
-                        vertices: [
-                          {lat: -0.00001, lng: -0.00001},
-                          {lat: 0.00001, lng: -0.00001},
-                          {lat: 0.00001, lng: 0.00001},
-                          {lat: -0.00001, lng: 0.00001},
-                        ],
-                      },
-                      altitude_lower: {value: 0, reference: 'W84', units: 'M'},
-                      altitude_upper: {value: 20, reference: 'W84', units: 'M'},
-                    },
-                    time_start: '2026-01-01T00:00:00Z',
-                    time_end: '2026-01-01T00:00:05Z',
-                  },
-                ],
-              },
-            },
-          },
-        },
-        astm_netrid_behavior: {
-          rid_version: 'F3411-22a',
-          dss_pool: ['dss_pool_%d' % uss],
-          dss_selection_strategy: 'Random',
-          isa_strategy: {
-            isa_per_flight: {
-              before_flight_start: '0s',
-              after_flight_end: '2s',
-            },
-          },
-        },
-      },
+      flight_planner: users.basic_flight_planner(['dss_pool_%d' % uss]),
     } for uss in std.range(1, num_uss)
   ],
 

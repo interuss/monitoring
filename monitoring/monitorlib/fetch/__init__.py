@@ -501,11 +501,13 @@ class Query(ImplicitDict):
 
     @property
     def error_message(self) -> str | None:
-        return (
-            self.json_result["message"]
-            if self.json_result is not None and "message" in self.json_result
-            else None
-        )
+        """Return a string message from a JSON object response, if available."""
+        result = self.json_result
+        if isinstance(result, dict):
+            message = result.get("message")
+            if isinstance(message, str):
+                return message
+        return None
 
     @property
     def failure_details(self) -> str | None:
@@ -518,7 +520,7 @@ class Query(ImplicitDict):
         err_msg = self.error_message
         if err_msg:
             return err_msg
-        return self.response.json
+        return self.response.content
 
     def get_client_sub(self):
         headers = self.request.headers

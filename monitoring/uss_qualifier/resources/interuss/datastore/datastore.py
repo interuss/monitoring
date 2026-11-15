@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import datetime
 import socket
 import ssl
+import tempfile
 from abc import ABC, abstractmethod
 
 import psycopg
-from implicitdict import ImplicitDict
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.x509.oid import NameOID
+from implicitdict import ImplicitDict, Optional
 
 from monitoring.uss_qualifier.configurations.configuration import ParticipantID
 from monitoring.uss_qualifier.resources.resource import Resource
@@ -24,6 +30,9 @@ class DatastoreDBNodeSpecification(ImplicitDict):
     is_yugabyte: bool = False
     """True if DatastoreDB node is a YugabyteDB node."""
 
+    is_raft: Optional[bool]
+    """True if DatastoreDB node is a Raft node of the DSS. In this case, the port should be the one used in the node's Raft peer URL."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
 
@@ -40,11 +49,21 @@ class DatastoreDBNodeResource(Resource[DatastoreDBNodeSpecification]):
         resource_origin: str,
     ):
         super().__init__(specification, resource_origin)
+        if specification.is_yugabyte and specification.is_raft:
+            raise ValueError(
+                f"is_yugabyte and is_raft cannot both be true for {resource_origin}"
+            )
         self._specification = specification
 
     def get_client(self) -> DatastoreDBNode:
         if self._specification.is_yugabyte:
             return YugabyteDBNode(
+                self._specification.participant_id,
+                self._specification.host,
+                self._specification.port,
+            )
+        if self._specification.is_raft:
+            return RaftNode(
                 self._specification.participant_id,
                 self._specification.host,
                 self._specification.port,
@@ -168,6 +187,32 @@ class DatastoreDBNode(ABC):
 
         return content_type == 0x15 and alert_description == 0x46
 
+    def _legacy_client_hello_rejected(self) -> tuple[bool, Exception | None]:
+        """
+        Returns True if the node rejects the usage of the legacy cryptographic
+        protocols TLSv1 and TLSv1.1.
+        This is detected by attempting to establish a connection with the node
+        forcing the client to use a TLS version < 1.2 and validating that the
+        connection fails with the expected error message.
+
+        Modern libraries and Python have dropped support for TLS versions older than 1.2, as these are now considered legacy.
+
+        To be able to test those old protocols, we manually send TLS packets (captured from legacy code) and parse the result.
+        Parsing is limited, but should be good enough for our cases.
+        """
+
+        try:
+            with self.build_socket() as sock:
+                sock.sendall(self.build_client_hello())
+                data = sock.recv(1024)
+
+                if not data:
+                    return True, None  # Server will close the connection without reply
+
+                return self.is_protocol_failure(data), None
+        except Exception as e:
+            return False, e
+
 
 class CockroachDBNode(DatastoreDBNode):
     def _connect(self, **kwargs) -> psycopg.Connection:
@@ -290,27 +335,70 @@ class YugabyteDBNode(DatastoreDBNode):
         return self._attempt_insecure_request(with_tls=True)
 
     def legacy_tls_version_rejected(self) -> tuple[bool, Exception | None]:
-        """
-        Returns True if the node rejects the usage of the legacy cryptographic
-        protocols TLSv1 and TLSv1.1.
-        This is detected by attempting to establish a connection with the node
-        forcing the client to use a TLS version < 1.2 and validating that the
-        connection fails with the expected error message.
+        return self._legacy_client_hello_rejected()
 
-        Modern libraries and Python have dropped support for TLS versions older than 1.2, as these are now considered legacy.
 
-        To be able to test those old protocols, we manually send TLS packets (captured from legacy code) and parse the result.
-        Parsing is limited, but should be good enough for our cases.
-        """
+def self_signed_certificate() -> tuple[bytes, bytes]:
+    """Generates a new self-signed certificate and its private key in PEM format."""
+    key = ec.generate_private_key(ec.SECP256R1())
+    name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "uss_qualifier")])
+    now = datetime.datetime.now(datetime.UTC)
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(name)
+        .issuer_name(name)
+        .public_key(key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(now)
+        .not_valid_after(now + datetime.timedelta(days=1))
+        .sign(key, hashes.SHA256())
+    )
+    return cert.public_bytes(serialization.Encoding.PEM), key.private_bytes(
+        serialization.Encoding.PEM,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    )
 
+
+class RaftNode(DatastoreDBNode):
+    def _request_rejected(
+        self, ctx: ssl.SSLContext | None = None
+    ) -> tuple[bool, Exception | None]:
+        sock = self.build_socket()
         try:
-            with self.build_socket() as sock:
-                sock.sendall(self.build_client_hello())
-                data = sock.recv(1024)
+            if ctx:
+                try:
+                    sock = ctx.wrap_socket(sock)
+                except ssl.SSLError as e:
+                    return False, e
+            sock.sendall(b"GET /raft/probing HTTP/1.1\r\nHost: raft\r\n\r\n")
+            data = sock.recv(16)
+        except (ConnectionError, ssl.SSLError) as e:
+            return True, e
+        finally:
+            sock.close()
+        if data:
+            return False, Exception(f"Received response: {data!r}")
+        return True, None
 
-                if not data:
-                    return True, None  # Server will close the connection without reply
+    def no_tls_rejected(self) -> tuple[bool, Exception | None]:
+        return self._request_rejected()
 
-                return self.is_protocol_failure(data), None
-        except Exception as e:
-            return False, e
+    def unauthenticated_rejected(self) -> tuple[bool, Exception | None]:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        # Attempt the request without a client certificate first
+        rejected, e = self._request_rejected(ctx)
+        if not rejected:
+            return rejected, e
+        # Generate a self-signed certificate and use it for the client certificate
+        cert, key = self_signed_certificate()
+        with tempfile.NamedTemporaryFile() as f:
+            f.write(cert + key)
+            f.flush()
+            ctx.load_cert_chain(f.name)
+        return self._request_rejected(ctx)
+
+    def legacy_tls_version_rejected(self) -> tuple[bool, Exception | None]:
+        return self._legacy_client_hello_rejected()
