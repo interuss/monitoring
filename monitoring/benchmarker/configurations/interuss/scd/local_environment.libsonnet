@@ -27,4 +27,15 @@
       ]),
     },
   },
+
+  // Resources declaring utm_auth and uss<N>_dss_pool (1-based) with num_nodes nodes for each of num_uss USSs
+  scd_resources: function(num_uss, num_nodes) {
+    resource_declarations: {
+      utm_auth: $.dummy_oauth_resource_declaration,
+    } + {
+      ['uss%d_dss_pool' % uss]: $.dss_instances_resource_declaration(
+        [uss - 1], std.range(0, num_nodes - 1), 'utm_auth'
+      ) for uss in std.range(1, num_uss)
+    },
+  },
 }
