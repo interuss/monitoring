@@ -160,6 +160,8 @@ class GeneralFlightAuthorization(TestScenario):
     def _plan_flights(self):
         for row in self.table.rows:
             self.begin_test_step(row.flight_check_id)
+            if row.description:
+                self.record_note(f"{row.flight_check_id}.description", row.description)
 
             # Attempt planning action
             info = self.flight_intents[row.flight_intent].resolve(

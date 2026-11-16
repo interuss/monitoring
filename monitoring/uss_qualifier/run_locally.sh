@@ -76,7 +76,7 @@ docker run ${docker_args} --name uss_qualifier \
   --network interop_ecosystem_network \
   --add-host=host.docker.internal:host-gateway \
   -u "$(id -u):$(id -g)" \
-  -e PYTHONBUFFERED=1 \
+  -e PYTHONUNBUFFERED=1 \
   -e AUTH_SPEC=${AUTH_SPEC} \
   -e AUTH_SPEC_2=${AUTH_SPEC_2} \
   -e PROJ_NETWORK \
