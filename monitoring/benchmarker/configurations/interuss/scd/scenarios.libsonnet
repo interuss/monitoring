@@ -1,6 +1,5 @@
 local actions = import './actions.libsonnet';
 local artifacts = import '../artifacts.libsonnet';
-local environment = import './local_environment.libsonnet';
 local loads = import '../loads.libsonnet';
 local users = import './users.libsonnet';
 
@@ -9,7 +8,7 @@ local users = import './users.libsonnet';
    * and OVN coordination group.  subscription_id_prefix is the first four UUID groups
    * followed by a hyphen; the final group is constructed from the site's 0-based index.
    */
-  multi_site_flight_planner_search: function(test_name, num_uss, num_nodes, initial_users, rects, subscription_id_prefix, lat_size, lng_size)
+  multi_site_flight_planner_search: function(test_name, num_uss, resources, initial_users, rects, subscription_id_prefix, lat_size, lng_size)
     local site_indices = std.range(0, std.length(rects) - 1);
     local subscriptions = [
       {
@@ -18,7 +17,7 @@ local users = import './users.libsonnet';
       } for i in site_indices
     ];
     $.flight_planner_search(
-      test_name, num_nodes, initial_users,
+      test_name, resources, initial_users,
       [
         [
           {
@@ -37,21 +36,13 @@ local users = import './users.libsonnet';
    * array of arrays of user specifications, one array per USS.  Users are assigned
    * round-robin within each array; repeated entries can weight traffic toward busy sites.
    * subscriptions is an array of {id, rect} objects, established before the first search
-   * and removed after the last.
+   * and removed after the last.  resources must declare uss<N>_dss_pool (1-based) for each USS.
    */
-  flight_planner_search: function(test_name, num_nodes, initial_users, user_types_by_uss, subscriptions) {
+  flight_planner_search: function(test_name, resources, initial_users, user_types_by_uss, subscriptions) {
     local num_uss = std.length(user_types_by_uss),
     local subscription_indices = std.range(0, std.length(subscriptions) - 1),
 
-    resources: {
-      resource_declarations: {
-        utm_auth: environment.dummy_oauth_resource_declaration,
-      } + {
-        ['uss%d_dss_pool' % uss]: environment.dss_instances_resource_declaration(
-          [uss - 1], std.range(0, num_nodes - 1), 'utm_auth'
-        ) for uss in std.range(1, num_uss)
-      },
-    },
+    resources: resources,
 
     actions: [
       {
