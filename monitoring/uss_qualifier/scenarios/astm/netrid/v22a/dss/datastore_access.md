@@ -2,10 +2,11 @@
 
 ## Overview
 
-Attempt to directly access the datastore (CockroachDB or Yugabyte) nodes intercommunicating to form the DSS Airspace Representation for the DSS instances under test, for the purpose of determining compliance to certain DSS interoperability requirements.
+Attempt to directly access the datastore (CockroachDB, Yugabyte or Raft) nodes intercommunicating to form the DSS Airspace Representation for the DSS instances under test, for the purpose of determining compliance to certain DSS interoperability requirements.
 
 For CockroachDB, the psycopg library is used to attempt standard PostgreSQL connections to the nodes as it is the most straightforward way of connecting directly to the datastore nodes while controlling the connection parameters (such as for encryption).
 For YugabyteDB, RPC messages are sent to the nodes directly.
+For Raft, HTTP requests are sent directly to the Raft port of the nodes in plain text, over TLS without a client certificate and over TLS with a client certificate signed by an unknown CA.
 
 This scenario aims at validating the following requirements:
 - **[astm.f3411.v22a.DSS0110](../../../../../requirements/astm/f3411/v22a.md)**
@@ -13,7 +14,7 @@ This scenario aims at validating the following requirements:
 
 ## Resources
 ### datastore_cluster
-DatastoreDBClusterResource that provides access to a set of CockroachDB or Yugabyte nodes constituting the DSS instances under test.
+DatastoreDBClusterResource that provides access to a set of CockroachDB, Yugabyte or Raft nodes constituting the DSS instances under test.
 
 ## Setup test case
 ### Validate nodes are reachable test step

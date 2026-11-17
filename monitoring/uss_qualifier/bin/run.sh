@@ -45,7 +45,7 @@ fi
 docker run ${docker_args} --name uss_qualifier \
   --rm \
   -e QUALIFIER_OPTIONS="${QUALIFIER_OPTIONS}" \
-  -e PYTHONBUFFERED=1 \
+  -e PYTHONUNBUFFERED=1 \
   -v "$(pwd)/$OUTPUT_DIR:/app/$OUTPUT_DIR" \
   -v "${CONFIG_LOCATION}:/config.json" \
   -w /app/monitoring/uss_qualifier \

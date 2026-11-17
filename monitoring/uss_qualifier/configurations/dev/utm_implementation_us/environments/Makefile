@@ -13,7 +13,7 @@ configurations: $(YAML_CONFIGS)
 build_yaml = docker container run \
                  -v $(CURDIR)/..:/app/monitoring/uss_qualifier/configurations/utmimplementationus \
                  -u ${USER_GROUP} \
-                 -e PYTHONBUFFERED=1 \
+                 -e PYTHONUNBUFFERED=1 \
                  -w /app/monitoring/uss_qualifier  \
                  interuss/monitoring \
                  uv run main.py \
