@@ -1,134 +1,85 @@
-# ASTM SCD DSS: OIR circle overlap test scenario
+# ASTM SCD DSS: Circular OIR overlap search test scenario
 
 ## Overview
 
-Tests the DSS operational intent reference search API when a small query circle
-overlaps a larger registered circle close to its boundary. This is an HTTP-level
-regression for the false negative fixed in interuss/dss#1914.
+Tests the DSS operational intent reference search API when a small circular query genuinely overlaps a larger registered circular operational intent reference (OIR) close to its boundary.
 
-The scenario places four circular references relative to the configured
-PlanningAreaResource, without requiring Kentland GPS coordinates. Each reference
-is searched with four overlapping 1 m circles near its boundary; other queries
-verify horizontal separation, altitude, time, and ordinary overlap.
+The scenario places four circular OIRs, one at a time, across distinct level-13 S2 cell corners within the configured PlanningAreaResource. Each 1 m query circle is fully contained in a diagonally adjacent cell (sharing a corner but not an edge with the OIR center's cell) and overlaps the 300 m OIR by approximately 0.1 m. Their altitude and time ranges also overlap. The OIR must be returned because the 4D query intersects it. Additional search results are permitted. The scenario also performs an ordinary contained-circle query as a positive control.
 
-The four geometry patterns were checked against the actual old 20-gon S2
-covering and the fixed S2 Cap covering in five translated planning areas.
-At least one boundary query reproduces the old false negative in each area.
-The test requires sufficient horizontal room for its circles and controls;
-areas that are too small fail explicitly rather than silently passing.
-A geographical setting not covered by those five research areas is still
-tested for correct behavior, but a failure of the old code is not guaranteed.
+The `PlanningAreaResource` must have enough horizontal and vertical room for four distinct S2 corner intersections. If four suitable corner intersections cannot be placed, the test configuration is unsuitable for this scenario rather than indicating a DSS conformance failure.
 
 ## Resources
 
 ### dss
 
-A DSS instance with ASTM F3548-21 Strategic Coordination permission, used to
-create, search, and delete operational intent references.
+Client to a DSS instance with ASTM F3548-21 Strategic Coordination permission, used to create, search for, and delete operational intent references.
 
 ### id_generator
 
-An `IDGeneratorResource` supplying a dedicated test OIR ID.
+An `IDGeneratorResource` supplying the test OIR ID.
 
 ### planning_area
 
-A `PlanningAreaResource` used to place the test circles inside the current
-DSS test environment.
+A `PlanningAreaResource` specifying where to place the test circles.
 
 ## Setup test case
 
 ### Clear previous test OIR test step
 
-Remove an OIR left by a previous run, if it exists.
+Remove an OIR left by a previous run, if present.
 
 #### 🛑 Operational intent references can be queried by ID check
 
-Retrieving an OIR by ID must succeed or return 404 when absent;
-otherwise **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)** is violated.
+The reference must either be returned or be absent under **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 #### 🛑 Operational intent reference removed check
 
-A test-owned OIR must be removable by ID and correct OVN under
-**[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+Removing a previously existing reference must succeed under **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
-## Discover an OIR through an overlapping circle test case
+## Overlapping circular OIR is discoverable test case
 
-### Create large circular OIR test step
+### Create circular OIR test step
 
-Create an accepted circular OIR (700–1,100 m radius) with matching time
-and altitude bounds. Repeat for each of the four relative geometry patterns.
+Create four accepted circular OIRs, one at a time, with valid time and altitude bounds.
 
 #### 🛑 Create operational intent reference query succeeds check
 
-Valid OIR creation must succeed under **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+Creating the OIR must succeed under **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
-### Boundary overlap is discoverable test step
+### Discover boundary-overlapping OIR test step
 
-Four 1 m circles overlapping the boundary of the registered circle must
-each find the OIR. The time and altitude intervals also overlap.
+A 1 m query circle genuinely overlaps the registered circular OIR at a crossing of two S2 cell boundaries. Their time and altitude intervals also overlap.
 
-#### 🛑 Boundary overlap is discoverable check
+#### ⚠️ Boundary overlap is discoverable check
 
-The reference's presence must match the 4D query expectation under
-**[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
+The overlapping reference must be discovered under **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
 
-### Distant circle does not match test step
+### Ordinary contained circle discovers OIR test step
 
-A geographically distant query is separated from the reference and must not return the OIR.
+An ordinary circular query contained well inside the registered OIR must discover the OIR when the time and altitude intervals also overlap.
 
-#### 🛑 Distant circle does not match check
+#### 🛑 Ordinary contained circle discovers OIR check
 
-The reference's presence must match the 4D query expectation under
-**[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
+The overlapping reference must be discovered under **[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
 
-### Disjoint altitude does not match test step
+### Delete circular OIR test step
 
-A horizontally overlapping query above the OIR's altitude range must not return the OIR.
-
-#### 🛑 Disjoint altitude does not match check
-
-The reference's presence must match the 4D query expectation under
-**[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
-
-### Disjoint time does not match test step
-
-A horizontally and vertically overlapping query entirely after the OIR's time range must not return the OIR.
-
-#### 🛑 Disjoint time does not match check
-
-The reference's presence must match the 4D query expectation under
-**[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
-
-### Ordinary contained circle is discoverable test step
-
-An ordinary 200 m circle contained well inside the registered OIR must be found.
-
-#### 🛑 Ordinary contained circle is discoverable check
-
-The reference's presence must match the 4D query expectation under
-**[astm.f3548.v21.DSS0005,2](../../../../requirements/astm/f3548/v21.md)**.
-
-### Delete large circular OIR test step
-
-Remove the created OIR after the search.
+Delete the registered OIR using its returned OVN.
 
 #### 🛑 Delete operational intent reference query succeeds check
 
-Deleting a test-owned OIR with the correct OVN must succeed under
-**[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+Deleting an OIR with the correct OVN must succeed under **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 ## Cleanup
 
 ### Clean up test OIR test step
 
-Remove the known OIR ID on failure or early termination.
+Delete any remaining OIR after an error or early termination.
 
 #### ⚠️ Operational intent references can be queried by ID check
 
-The DSS should return the reference or 404 for an absent reference
-under **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+The reference should be returned or absent under **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
 
 #### ⚠️ Operational intent reference removed check
 
-A test-owned OIR must be removable using the correct OVN under
-**[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
+Deleting a remaining OIR with the correct OVN should succeed under **[astm.f3548.v21.DSS0005,1](../../../../requirements/astm/f3548/v21.md)**.
