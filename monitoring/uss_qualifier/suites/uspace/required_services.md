@@ -18,6 +18,7 @@
 - `scd_dss`: `resources.astm.f3548.v21.DSSInstanceResource`
 - `scd_dss_instances`: `resources.astm.f3548.v21.DSSInstancesResource` (optional)
 - `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `shared_asset_coordinator`: `resources.interuss.shared_asset_coordination.SharedAssetCoordinatorResource` (optional)
 - `flights_data`: `resources.netrid.FlightDataResource`
 - `service_providers`: `resources.netrid.NetRIDServiceProviders` (optional)
 - `observers`: `resources.netrid.NetRIDObserversResource`

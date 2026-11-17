@@ -3,6 +3,7 @@ v1:
   test_run:
     resources:
       resource_declarations:
+        shared_asset_coordinator: { $ref: 'library/resources.yaml#/shared_asset_coordinator' }
         kentland_planning_area_volume: { $ref: 'library/resources.yaml#/kentland_planning_area_volume' }
         kentland_planning_area: { $ref: 'library/resources.yaml#/kentland_planning_area' }
 
@@ -20,6 +21,7 @@ v1:
       test_suite:
         suite_type: suites.astm.utm.prod_probe
         resources:
+          shared_asset_coordinator: shared_asset_coordinator
           dss_instances: scd_dss_instances
           id_generator: id_generator
           planning_area: kentland_planning_area
