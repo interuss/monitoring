@@ -4,6 +4,8 @@
 
 This document suggests approaches a test designer may adopt when designing a uss_qualifier automated [test configuration](./README.md) to accomplish various maintainability and scalability goals as described below.
 
+The basic instructions for building a test configuration can be found in [the configuration README](./README.md#building); these guidelines accompany that documentation.
+
 ## Strategies
 
 ### Define all test configurations using Jsonnet

@@ -50,5 +50,6 @@ The release notes should contain at least the following sections:
 ## Important information
 
 * The benchmarker tool should now be ready for nominal use.
+* uss_qualifier now supports parallel test scenario invocation in many test suites; see [documentation](./monitoring/uss_qualifier/parallel_execution.md) to parallelize your test configurations.
 * The obsolete deployment_manager tool has been removed from this repository.
 * The obsolete participant verifiable capabilities in uss_qualifier has been removed from this repository.
