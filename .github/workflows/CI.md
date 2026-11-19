@@ -10,6 +10,19 @@ The downside of `make presubmit` is that it takes a long time, and a lot of that
 
 ## Checks
 
+### Python package
+
+The [package workflow](package.yml) builds the source distribution and then a wheel from it, installs the wheel in a fresh environment, and runs [packaging smoke checks](../../test/packaging_test.py) with Python's isolated mode so the source checkout cannot hide missing package data.  These checks exercise geoid lookup, KML generation, report templates, interface schemas, and qualifier definitions, and check that deployment files and local configurations are not included.
+
+To run it locally from the repository root:
+
+```bash
+uv build
+uv venv /tmp/monitoring-package-test
+uv pip install --python /tmp/monitoring-package-test/bin/python dist/*.whl
+/tmp/monitoring-package-test/bin/python -I test/packaging_test.py
+```
+
 ### Repository hygiene (`make check-hygiene`)
 
 This set of tests including  [miscellaneous hygiene checks](../../test/repo_hygiene/README.md) ensures consistent formatting and performs other hygiene-related tasks that are not usually related to the actual functionality of the repository.
