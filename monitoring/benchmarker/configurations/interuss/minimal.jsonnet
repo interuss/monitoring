@@ -97,7 +97,7 @@ local short_flights = {
           // One node per USS keeps startup small while exercising inter-USS replication.
           NUM_USS: '2',
           NUM_NODES: '1',
-          DSS_IMAGE: 'interuss/dss:v0.23.0',
+          DSS_IMAGE: 'interuss/dss:v0.24.0',
           DB_TYPE: 'crdb',
           INTRA_USS_NETEM_CONF: 'delay 600us 40us 25% distribution normal loss 0.0005%',
           INTER_USS_NETEM_CONF: 'delay 25ms 1.25ms 50% distribution paretonormal loss 0.25% 15%',
