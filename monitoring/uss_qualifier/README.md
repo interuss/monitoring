@@ -55,6 +55,10 @@ To capture artifacts produced during the test run, the content of the output fol
 
 For a concrete example of how to invoke uss_qualifier in the manner described above, see [`run_locally.sh`](./run_locally.sh) which is used to run uss_qualifier on standard local system deployments like the ones involved in [continuous integration tests](../../.github/workflows/CI.md).
 
+## Parallel execution
+
+See [parallel execution documentation](./parallel_execution.md) for how to execute elements of a test run in parallel.
+
 ## Troubleshooting
 
 ### Skipped actions

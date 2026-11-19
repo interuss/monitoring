@@ -7,6 +7,7 @@
 - `second_utm_auth`: `resources.communications.AuthAdapterResource` (optional)
 - `dss_instances`: `resources.astm.f3548.v21.DSSInstancesResource` (optional)
 - `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `shared_asset_coordinator`: `resources.interuss.shared_asset_coordination.SharedAssetCoordinatorResource` (optional)
 - `id_generator`: `resources.interuss.IDGeneratorResource`
 - `planning_area`: `resources.PlanningAreaResource`
 - `utm_client_identity`: `resources.communications.ClientIdentityResource`

@@ -16,6 +16,7 @@
 - `dss`: `resources.astm.f3548.v21.DSSInstanceResource`
 - `dss_instances`: `resources.astm.f3548.v21.DSSInstancesResource` (optional)
 - `dss_datastore_cluster`: `resources.interuss.datastore.DatastoreDBClusterResource` (optional)
+- `shared_asset_coordinator`: `resources.interuss.shared_asset_coordination.SharedAssetCoordinatorResource` (optional)
 - `id_generator`: `resources.interuss.IDGeneratorResource`
 - `utm_client_identity`: `resources.communications.ClientIdentityResource`
 - `utm_auth`: `resources.communications.AuthAdapterResource` (optional)

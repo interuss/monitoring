@@ -3,6 +3,7 @@ resources:
   second_utm_auth: resources.communications.AuthAdapterResource?
   dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
   dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
+  shared_asset_coordinator: resources.interuss.shared_asset_coordination.SharedAssetCoordinatorResource?
   id_generator: resources.interuss.IDGeneratorResource
   planning_area: resources.PlanningAreaResource
   utm_client_identity: resources.communications.ClientIdentityResource
@@ -12,6 +13,7 @@ actions:
       resources:
         dss_instances: dss_instances
         dss_datastore_cluster: dss_datastore_cluster?
+        shared_asset_coordinator: shared_asset_coordinator?
         second_utm_auth: second_utm_auth?
         id_generator: id_generator
         planning_area: planning_area
@@ -26,6 +28,7 @@ actions:
               second_utm_auth: second_utm_auth?
               all_dss_instances: dss_instances
               dss_datastore_cluster: dss_datastore_cluster?
+              shared_asset_coordinator: shared_asset_coordinator?
               id_generator: id_generator
               planning_area: planning_area
               utm_client_identity: utm_client_identity
@@ -36,6 +39,7 @@ actions:
                 second_utm_auth: resources.communications.AuthAdapterResource?
                 all_dss_instances: resources.astm.f3548.v21.DSSInstancesResource?
                 dss_datastore_cluster: resources.interuss.datastore.DatastoreDBClusterResource?
+                shared_asset_coordinator: resources.interuss.shared_asset_coordination.SharedAssetCoordinatorResource?
                 id_generator: resources.interuss.IDGeneratorResource
                 planning_area: resources.PlanningAreaResource
               actions:
@@ -53,6 +57,7 @@ actions:
                       dss: primary_dss_instance
                       other_instances: all_dss_instances
                       client_identity: utm_client_identity
+                      shared_asset_coordinator: shared_asset_coordinator?
                 - test_scenario:
                     scenario_type: scenarios.astm.utm.dss.SubscriptionInteractionsDeletion
                     resources:
