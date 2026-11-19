@@ -24,7 +24,7 @@ export NUM_USS=${NUM_USS:-2}
 NUM_NODES=${NUM_NODES:-1}
 DB_TYPE=${DB_TYPE:-crdb}
 
-export DSS_IMAGE="${DSS_IMAGE:-interuss/dss:v0.23.0}"
+export DSS_IMAGE="${DSS_IMAGE:-interuss/dss:v0.24.0}"
 export CORE_SERVICE_EXTRA_FLAGS="${CORE_SERVICE_EXTRA_FLAGS:---enable_time_based_notification_index}"
 
 DC_COMMAND=$*
@@ -128,7 +128,7 @@ else
         export PADDED_NODE_IDX
         PADDED_NODE_IDX="$(printf "%02d" "$USS_NODE_IDX")"
         export NUM_USS=1
-        export DSS_IMAGE="${DSS_IMAGE:-interuss/dss:v0.23.0}"
+        export DSS_IMAGE="${DSS_IMAGE:-interuss/dss:v0.24.0}"
         export COMPOSE_PROFILES="*"
 
         # shellcheck disable=SC2086
