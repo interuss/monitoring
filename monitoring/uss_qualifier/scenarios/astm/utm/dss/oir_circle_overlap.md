@@ -4,7 +4,7 @@
 
 Tests the DSS operational intent reference search API when a small circular query genuinely overlaps a larger registered circular operational intent reference (OIR) close to its boundary.
 
-The scenario places four circular OIRs, one at a time, across distinct level-13 S2 cell corners within the configured PlanningAreaResource. Each 1 m query circle is fully contained in a diagonally adjacent cell (sharing a corner but not an edge with the OIR center's cell) and overlaps the 300 m OIR by approximately 0.1 m. Their altitude and time ranges also overlap. The OIR must be returned because the 4D query intersects it. Additional search results are permitted. The scenario also performs an ordinary contained-circle query as a positive control.
+The scenario places four circular 300 m OIRs, one at a time, across distinct level-13 S2 cell corners within the configured PlanningAreaResource. These OIRs are queried by 1 m query circles, each fully contained in a diagonally adjacent cell (sharing a corner but not an edge with the OIR center's cell) and overlapping the 300 m OIR by approximately 0.1 m. Their altitude and time ranges also overlap. The OIR must be returned because the 4D query intersects it. Additional search results are permitted. The scenario also performs an ordinary contained-circle query as a positive control.
 
 The `PlanningAreaResource` must have enough horizontal and vertical room for four distinct S2 corner intersections. If four suitable corner intersections cannot be placed, the test configuration is unsuitable for this scenario rather than indicating a DSS conformance failure.
 
