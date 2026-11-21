@@ -1,6 +1,7 @@
 from .constraint_ref_simple import CRSimple as CRSimple
 from .datastore_access import DatastoreAccess as DatastoreAccess
 from .dss_interoperability import DSSInteroperability as DSSInteroperability
+from .oir_circle_overlap import OIRCircleOverlap as OIRCircleOverlap
 from .oir_explicit_sub_handling import OIRExplicitSubHandling as OIRExplicitSubHandling
 from .oir_implicit_sub_handling import OIRImplicitSubHandling as OIRImplicitSubHandling
 from .op_intent_ref_access_control import (
