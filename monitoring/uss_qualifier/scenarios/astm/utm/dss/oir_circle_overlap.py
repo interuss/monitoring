@@ -49,7 +49,7 @@ class OIRCircleOverlap(TestScenario):
     QUERY_CORNER_DISTANCE_M = 2.5
     # Tilting the OIR centerline produces a narrow but positive overlap
     # with the diagonal cell, without assuming a particular DSS index.
-    CENTER_TILT_DEG = -30.0
+    CENTER_TILT_DEGS = (-30.0, 30.0)
     TRUE_OVERLAP_M = 0.1
     OVERLAP_TOLERANCE_M = 0.001
     PLANNING_AREA_MARGIN_M = 1.0
@@ -182,42 +182,43 @@ class OIRCircleOverlap(TestScenario):
                     vertex - query_center * query_center.dot_prod(vertex)
                 ).normalize()
                 sideways = query_center.cross_prod(toward_corner).normalize()
-                tilt = radians(self.CENTER_TILT_DEG)
-                toward_source = (
-                    toward_corner * cos(tilt) + sideways * sin(tilt)
-                ).normalize()
-                oir_center = self._move(
-                    query_center,
-                    toward_source,
-                    self.OIR_RADIUS_M + self.QUERY_RADIUS_M - self.TRUE_OVERLAP_M,
-                )
-                if self._cell(oir_center) != source_id or not self._fits(
-                    oir_center, self.OIR_RADIUS_M, volume, planning_reference
-                ):
-                    continue
-                overlap = (
-                    self.OIR_RADIUS_M
-                    + self.QUERY_RADIUS_M
-                    - oir_center.angle(query_center) * EARTH_RADIUS_M
-                )
-                # Validate real-circle intersection; do not test membership
-                # against any particular polygon approximation or index.
-                if abs(overlap - self.TRUE_OVERLAP_M) > self.OVERLAP_TOLERANCE_M:
-                    continue
-
-                fixtures.append(
-                    (
-                        self._circle(oir_center, self.OIR_RADIUS_M),
-                        self._circle(query_center, self.QUERY_RADIUS_M),
+                for tilt_deg in self.CENTER_TILT_DEGS:
+                    tilt = radians(tilt_deg)
+                    toward_source = (
+                        toward_corner * cos(tilt) + sideways * sin(tilt)
+                    ).normalize()
+                    oir_center = self._move(
+                        query_center,
+                        toward_source,
+                        self.OIR_RADIUS_M + self.QUERY_RADIUS_M - self.TRUE_OVERLAP_M,
                     )
-                )
-                self.record_note(
-                    "fixture_constructed",
-                    f"source_cell={source_id.id()}; query_cell={query_cell_id.id()}; "
-                    f"corner={corner_index}; overlap_m={overlap:.3f}",
-                )
-                if len(fixtures) == 4:
-                    return fixtures
+                    if self._cell(oir_center) != source_id or not self._fits(
+                        oir_center, self.OIR_RADIUS_M, volume, planning_reference
+                    ):
+                        continue
+                    overlap = (
+                        self.OIR_RADIUS_M
+                        + self.QUERY_RADIUS_M
+                        - oir_center.angle(query_center) * EARTH_RADIUS_M
+                    )
+                    # Validate real-circle intersection; do not test membership
+                    # against any particular polygon approximation or index.
+                    if abs(overlap - self.TRUE_OVERLAP_M) > self.OVERLAP_TOLERANCE_M:
+                        continue
+
+                    fixtures.append(
+                        (
+                            self._circle(oir_center, self.OIR_RADIUS_M),
+                            self._circle(query_center, self.QUERY_RADIUS_M),
+                        )
+                    )
+                    self.record_note(
+                        "fixture_constructed",
+                        f"source_cell={source_id.id()}; query_cell={query_cell_id.id()}; "
+                        f"corner={corner_index}; overlap_m={overlap:.3f}",
+                    )
+                    if len(fixtures) == 4:
+                        return fixtures
 
         raise FixtureUnavailable(
             f"PlanningAreaResource {bounds} cannot fit four true-circle "
