@@ -202,10 +202,8 @@ services:
       start_interval: 5s
 
   oauth:
-    image: interuss/dummy-oauth
-    command: -private_key_file /var/test-certs/auth2.key
-    volumes:
-      - $PWD/../test-certs:/var/test-certs:ro
+    image: interuss/monitoring
+    command: sh /app/monitoring/dummy_oauth/start.sh
     profiles: [oauth]
     hostname: oauth.authority.localutm
     networks:
@@ -215,7 +213,7 @@ services:
     ports:
       - "8085:8085"
     healthcheck:
-      test: wget -O - 'http://localhost:8085/token?intended_audience=-&scope=-' || exit 1
+      test: curl --fail 'http://localhost:8085/token?intended_audience=-&scope=-' || exit 1
       interval: 3m
       start_period: 30s
       start_interval: 5s
