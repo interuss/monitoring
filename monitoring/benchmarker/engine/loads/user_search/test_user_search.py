@@ -18,6 +18,8 @@ from monitoring.benchmarker.configurations.users import (
 )
 from monitoring.benchmarker.engine.coordination import Coordinator
 from monitoring.benchmarker.engine.loads.user_search.search import (
+    MeasuredStep,
+    build_measured_steps,
     check_search_completion_criteria,
     determine_next_user_count,
 )
@@ -149,10 +151,13 @@ def test_prompt_walkthrough_when_45_is_unstable():
 
     steps: list[BenchmarkScenarioStepReport] = []
     operations: list[ExecutedOperation] = []
+    measured_steps_cache: dict[int, MeasuredStep] = {}
     chosen_users: list[int] = []
 
     while True:
-        next_u = determine_next_user_count(search, steps, operations)
+        next_u = determine_next_user_count(
+            search, steps, operations, measured_steps_cache
+        )
         if next_u is None:
             break
         chosen_users.append(next_u)
@@ -199,7 +204,9 @@ def test_prompt_walkthrough_when_45_is_unstable():
         25,
     ]
     assert chosen_users == expected_sequence
-    assert check_search_completion_criteria(search, steps, operations)
+    assert check_search_completion_criteria(
+        search, steps, operations, measured_steps_cache
+    )
 
 
 # This test is AI-generated and has not been closely inspected by a human.
@@ -214,10 +221,13 @@ def test_prompt_walkthrough_when_45_is_stable():
 
     steps: list[BenchmarkScenarioStepReport] = []
     operations: list[ExecutedOperation] = []
+    measured_steps_cache: dict[int, MeasuredStep] = {}
     chosen_users: list[int] = []
 
     while True:
-        next_u = determine_next_user_count(search, steps, operations)
+        next_u = determine_next_user_count(
+            search, steps, operations, measured_steps_cache
+        )
         if next_u is None:
             break
         chosen_users.append(next_u)
@@ -245,7 +255,9 @@ def test_prompt_walkthrough_when_45_is_stable():
         47,  # unstable -> 45 (stable) followed by 46, 47, 48 (unstable) satisfies consecutive_unstable=3
     ]
     assert chosen_users == expected_sequence
-    assert check_search_completion_criteria(search, steps, operations)
+    assert check_search_completion_criteria(
+        search, steps, operations, measured_steps_cache
+    )
 
 
 # This test is AI-generated and has not been closely inspected by a human.
@@ -274,10 +286,13 @@ def test_initial_users_greater_than_1_and_adjacency_2():
 
     steps: list[BenchmarkScenarioStepReport] = []
     operations: list[ExecutedOperation] = []
+    measured_steps_cache: dict[int, MeasuredStep] = {}
     chosen_users: list[int] = []
 
     while True:
-        next_u = determine_next_user_count(search, steps, operations)
+        next_u = determine_next_user_count(
+            search, steps, operations, measured_steps_cache
+        )
         if next_u is None:
             break
         assert next_u not in chosen_users, f"Duplicate user count selected: {next_u}"
@@ -291,7 +306,9 @@ def test_initial_users_greater_than_1_and_adjacency_2():
     left_points = [0] + sorted(u for u in chosen_users if u <= 30)
     for a, b in zip(left_points, left_points[1:], strict=False):
         assert b - a <= 6
-    assert check_search_completion_criteria(search, steps, operations)
+    assert check_search_completion_criteria(
+        search, steps, operations, measured_steps_cache
+    )
 
 
 # This test is AI-generated and has not been closely inspected by a human.
@@ -319,7 +336,7 @@ def test_any_of_raises_not_implemented():
         UserSearchLoad,
     )
     with pytest.raises(NotImplementedError, match="any_of"):
-        determine_next_user_count(search, [], [])
+        determine_next_user_count(search, [], [], {})
 
 
 class _DummyVirtualUser(VirtualUser):
@@ -444,3 +461,30 @@ def test_isas_uncontended_config_validates():
     config = load_config("configurations.interuss.netrid.isas_uncontended")
     assert len(config.loads) >= 1
     assert all(load.user_search is not None for load in config.loads)
+
+
+# This test is AI-generated and has not been closely inspected by a human.
+def test_build_measured_steps_summarizes_each_step_once():
+    search = _make_search_load()
+    steps: list[BenchmarkScenarioStepReport] = []
+    operations: list[ExecutedOperation] = []
+    for i, (users, stable, tp) in enumerate(
+        [(1, True, 1.0), (2, True, 2.0), (4, False, 0.0)]
+    ):
+        step, ops = _make_step_and_ops(i, users, stable, tp)
+        steps.append(step)
+        operations.extend(ops)
+
+    cache: dict[int, MeasuredStep] = {}
+    measured = build_measured_steps(
+        steps, operations, search.step_completion_criteria, cache
+    )
+    assert sorted(cache.values(), key=lambda m: m.users) == sorted(
+        measured.values(), key=lambda m: m.users
+    )
+    assert measured[2].throughput == pytest.approx(2.0)
+
+    assert (
+        build_measured_steps(steps, [], search.step_completion_criteria, cache)
+        == measured
+    )
