@@ -137,3 +137,18 @@ def test_configured_signing_key(monkeypatch, tmp_path):
     body = response.json
     assert body is not None
     assert body["keys"][0]["kid"] == key.thumbprint()
+
+
+# This test is AI-generated and has not been closely inspected by a human.
+def test_non_rsa_signing_key_rejected(tmp_path):
+    key = jwk.JWK.generate(kty="EC", crv="P-256")
+    path = tmp_path / "ec.key"
+    path.write_bytes(key.export_to_pem(private_key=True, password=None))
+    with pytest.raises(ValueError, match="Dummy OAuth requires an RSA private key"):
+        create_app(str(path))
+
+
+# This test is AI-generated and has not been closely inspected by a human.
+def test_public_only_signing_key_rejected():
+    with pytest.raises(ValueError, match="Dummy OAuth requires an RSA private key"):
+        create_app(str(TEST_CERTS / "auth2.pem"))
