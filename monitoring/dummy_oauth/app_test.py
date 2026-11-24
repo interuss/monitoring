@@ -23,7 +23,6 @@ def client():
     return app.test_client()
 
 
-# This test is AI-generated and has not been closely inspected by a human.
 def test_token_defaults(client):
     before = int(time.time())
     response = client.get("/token", query_string=PARAMS)
@@ -45,7 +44,6 @@ def test_token_defaults(client):
     }
 
 
-# This test is AI-generated and has not been closely inspected by a human.
 @pytest.mark.parametrize("expires", [0, 4102444800])
 def test_explicit_claims(client, expires):
     response = client.get(
@@ -74,7 +72,6 @@ def test_explicit_claims(client, expires):
     }
 
 
-# This test is AI-generated and has not been closely inspected by a human.
 @pytest.mark.parametrize("missing", ["intended_audience", "scope"])
 def test_missing_parameter(client, missing):
     response = client.get(
@@ -84,7 +81,6 @@ def test_missing_parameter(client, missing):
     assert response.json == {"message": f"Missing `{missing}` query parameter"}
 
 
-# This test is AI-generated and has not been closely inspected by a human.
 @pytest.mark.parametrize("expires", ["invalid", "", "1.5"])
 def test_invalid_expiry(client, expires):
     response = client.get("/token", query_string={**PARAMS, "expire": expires})
@@ -92,7 +88,6 @@ def test_invalid_expiry(client, expires):
     assert "expire" in response.json["message"]
 
 
-# This test is AI-generated and has not been closely inspected by a human.
 def test_jwks_verifies_token(client):
     response = client.get("/.well-known/jwks.json")
     assert response.status_code == 200
@@ -120,7 +115,6 @@ def test_jwks_verifies_token(client):
     )
 
 
-# This test is AI-generated and has not been closely inspected by a human.
 def test_configured_signing_key(monkeypatch, tmp_path):
     key = jwk.JWK.generate(kty="RSA", size=2048)
     path = tmp_path / "custom.key"
