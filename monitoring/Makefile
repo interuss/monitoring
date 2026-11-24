@@ -7,7 +7,7 @@ format:
 	cd uss_qualifier && make format
 
 .PHONY: unit-test
-unit-test:
+unit-test: image-dev
 	docker run --rm -u $$(id -u):$$(id -g) -v "$(CURDIR)/..:/app" -w /app interuss/monitoring-dev uv run pytest monitoring/dummy_oauth
 	cd uss_qualifier && make unit_test
 	cd monitorlib && make unit_test
