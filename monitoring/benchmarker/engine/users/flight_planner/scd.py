@@ -354,6 +354,7 @@ class SCDHandler(CoordinationSubscriber):
                         coordination_group,
                         COORDINATION_SUBJECT_REMOVE_OVN,
                         requested_ovn,
+                        cancels=COORDINATION_SUBJECT_ADD_OVN,
                     )
 
         if success:
@@ -393,6 +394,7 @@ class SCDHandler(CoordinationSubscriber):
                     coordination_group,
                     COORDINATION_SUBJECT_REMOVE_OVN,
                     old_ovn,
+                    cancels=COORDINATION_SUBJECT_ADD_OVN,
                 )
             if requested_ovn and op_intent_ref.ovn != requested_ovn:
                 logger.debug(
@@ -402,6 +404,7 @@ class SCDHandler(CoordinationSubscriber):
                     coordination_group,
                     COORDINATION_SUBJECT_REMOVE_OVN,
                     requested_ovn,
+                    cancels=COORDINATION_SUBJECT_ADD_OVN,
                 )
         else:
             if old_ovn and op_intent_ref.ovn != old_ovn:
@@ -507,6 +510,7 @@ class SCDHandler(CoordinationSubscriber):
                 self.op_intent_ref_creation_strategy.ovn_coordination_group,
                 COORDINATION_SUBJECT_REMOVE_OVN,
                 ovn,
+                cancels=COORDINATION_SUBJECT_ADD_OVN,
             )
         else:
             self.receive_coordination_message(
