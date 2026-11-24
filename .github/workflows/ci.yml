@@ -109,6 +109,8 @@ jobs:
 
   benchmarker-minimal-test:
     name: benchmarker minimal configuration
+    needs:
+      - build-monitoring-images
     permissions:
       contents: read
     runs-on: ubuntu-26.04
@@ -127,6 +129,8 @@ jobs:
       with:
         submodules: true
         persist-credentials: false
+    - name: Load monitoring image
+      uses: $/.github/actions/load-image
     # Run on the host because configuration actions invoke Docker and Docker Compose.
     - name: Set up Python
       uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
