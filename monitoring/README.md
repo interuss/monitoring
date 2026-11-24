@@ -39,7 +39,7 @@ brings up the infrastructure for a local interoperability ecosystem including an
 instance of the
 [InterUSS DSS implementation](https://github.com/interuss/dss)
 and a
-[Dummy OAuth server](https://github.com/interuss/dss/tree/master/cmds/dummy-oauth)
+[Dummy OAuth server](./dummy_oauth/README.md)
 which grants properly-formatted access tokens (which can be validated against the
 [test public key](../build/test-certs/auth2.pem)) to anyone requesting them.
 
