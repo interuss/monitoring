@@ -314,7 +314,7 @@ class SCDHandler(CoordinationSubscriber):
                 # TODO: upsert op intent asynchronously
                 op_intent_ref, _, query = await self.user.run_sync_client_call(
                     dss_instance.put_op_intent,
-                    extents=flight.volumes.to_f3548v21(),
+                    extents=flight.f3548v21_extents,
                     key=key,
                     state=state,
                     base_url=uss_base_url,
