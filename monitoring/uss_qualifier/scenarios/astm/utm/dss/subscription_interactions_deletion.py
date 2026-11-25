@@ -18,6 +18,12 @@ from monitoring.uss_qualifier.resources.astm.f3548.v21.dss import (
 )
 from monitoring.uss_qualifier.resources.communications import ClientIdentityResource
 from monitoring.uss_qualifier.resources.interuss.id_generator import IDGeneratorResource
+from monitoring.uss_qualifier.resources.interuss.shared_asset_coordination import (
+    SharedAssetAcquisitionError,
+    SharedAssetCoordinatorResource,
+    SharedAssetIdentifier,
+    SharedAssetType,
+)
 from monitoring.uss_qualifier.scenarios.astm.utm.dss import test_step_fragments
 from monitoring.uss_qualifier.scenarios.astm.utm.dss.fragments.sub.crud import (
     sub_create_query,
@@ -45,6 +51,9 @@ class SubscriptionInteractionsDeletion(TestScenario):
 
     _planning_area: PlanningAreaResource
 
+    _shared_asset_coordinator: SharedAssetCoordinatorResource | None
+    _dss_availability_acquired: bool
+
     def __init__(
         self,
         dss: DSSInstanceResource,
@@ -52,8 +61,11 @@ class SubscriptionInteractionsDeletion(TestScenario):
         id_generator: IDGeneratorResource,
         planning_area: PlanningAreaResource,
         utm_client_identity: ClientIdentityResource,
+        shared_asset_coordinator: SharedAssetCoordinatorResource | None = None,
     ):
         super().__init__()
+        self._shared_asset_coordinator = shared_asset_coordinator
+        self._dss_availability_acquired = False
         scopes = {
             Scope.StrategicCoordination: "create and delete subscriptions and operational intents"
         }
@@ -261,6 +273,7 @@ class SubscriptionInteractionsDeletion(TestScenario):
 
     def _setup_case(self):
         self.begin_test_case("Setup")
+        self._acquire_dss_availability()
 
         self._time_start = datetime.now(UTC)
         self._time_end = self._time_start + timedelta(minutes=20)
@@ -272,6 +285,25 @@ class SubscriptionInteractionsDeletion(TestScenario):
         self._verify_clean_secondaries_step()
 
         self.end_test_case()
+
+    def _acquire_dss_availability(self) -> None:
+        if self._shared_asset_coordinator is None:
+            return
+
+        self.begin_test_step("Acquire exclusive DSS availability access")
+        with self.check("DSS availability access acquired", []) as check:
+            try:
+                self._shared_asset_coordinator.acquire(
+                    SharedAssetIdentifier(asset_type=SharedAssetType.DSSAvailability),
+                    self,
+                )
+                self._dss_availability_acquired = True
+            except SharedAssetAcquisitionError as e:
+                check.record_failed(
+                    summary="Unable to acquire exclusive DSS availability access",
+                    details=str(e),
+                )
+        self.end_test_step()
 
     def _ensure_clean_primary_workspace_step(self):
         self.begin_test_step("Ensure clean workspace")
@@ -311,5 +343,6 @@ class SubscriptionInteractionsDeletion(TestScenario):
 
     def cleanup(self):
         self.begin_cleanup()
-        self._clean_workspace()
+        if self._shared_asset_coordinator is None or self._dss_availability_acquired:
+            self._clean_workspace()
         self.end_cleanup()
