@@ -31,7 +31,7 @@ local s2_expand_latlng_rect = std.native('s2.expand_latlng_rect');
           fixed_spacing: '36s',
           uniform_random_spacing: '7.2s',
         },
-        location: flights.laglng_rect_location(s2_expand_latlng_rect(rect, -lat_size, -lng_size)),
+        location: flights.laglng_rect_location(s2_expand_latlng_rect(rect, -2 * lat_size, -2 * lng_size)),
         shape: flights.latlng_rect_shape(lat_size, lng_size),
       },
     },
