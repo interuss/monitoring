@@ -24,6 +24,7 @@ from monitoring.benchmarker.engine.loads.step_execution import (
     wind_down_and_cleanup_remaining_users,
 )
 from monitoring.benchmarker.engine.loads.user_search.search import (
+    MeasuredStep,
     determine_next_user_count,
 )
 from monitoring.benchmarker.engine.operations import ExecutedOperation, record_operation
@@ -53,8 +54,11 @@ async def run_user_search_load(
 
     operations: list[ExecutedOperation] = []
     steps: list[BenchmarkScenarioStepReport] = []
+    measured_steps_cache: dict[int, MeasuredStep] = {}
 
-    initial_next = determine_next_user_count(search, steps, operations)
+    initial_next = determine_next_user_count(
+        search, steps, operations, measured_steps_cache
+    )
     if initial_next is None:
         raise ValueError("Search completion criteria already satisfied before any step")
     current_load_factor = initial_next
@@ -114,7 +118,9 @@ async def run_user_search_load(
                 progress.update_status_time()
 
             # Determine next step user count or finish if search_completion_criteria are met
-            next_load_factor = determine_next_user_count(search, steps, operations)
+            next_load_factor = determine_next_user_count(
+                search, steps, operations, measured_steps_cache
+            )
             if next_load_factor is None:
                 logger.info(
                     f"Search completion criteria met after step {progress.step_index}. Stopping load."
