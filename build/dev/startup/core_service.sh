@@ -44,7 +44,7 @@ if [ "${COMPOSE_PROFILES#*"ybdb"}" != "${COMPOSE_PROFILES}" ]; then
   DB_PORT=5433
 elif [ "${COMPOSE_PROFILES#*"raft"}" != "${COMPOSE_PROFILES}" ]; then
   echo "Using raft"
-  DATASTORE_CONNECTION="-store_type raft -raft_node_id=${RAFT_ID} -rid_raft_peers=${RID_RAFT_NODES} -scd_raft_peers=${SCD_RAFT_NODES} -aux_raft_peers=${AUX_RAFT_NODES} -raft_datadir /raftdata"
+  DATASTORE_CONNECTION="-store_type raft -raft_peer_url ${RAFT_PEER_URL} -raft_datadir /raftdata -raft_insecure"
   DB_PORT=
 else
   echo "Using CockroachDB"
