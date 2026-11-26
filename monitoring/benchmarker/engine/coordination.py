@@ -28,12 +28,12 @@ class CoordinationSubscriber(ABC):
 class CoordinationGroup:
     lock: Lock
     subscribers: set[CoordinationSubscriber]
-    messages: list[CoordinationMessage]
+    messages: dict[tuple[str, Any], CoordinationMessage]
 
     def __init__(self):
         self.lock = Lock()
         self.subscribers = set()
-        self.messages = []
+        self.messages = {}
 
 
 class Coordinator:
@@ -46,9 +46,16 @@ class Coordinator:
         self._groups = {g: CoordinationGroup() for g in coordination_groups}
 
     def publish(
-        self, group_id: CoordinationGroupID, subject: str, content: Any
+        self,
+        group_id: CoordinationGroupID,
+        subject: str,
+        content: Any,
+        cancels: str | None = None,
     ) -> None:
-        """group_id must be among the coordination_groups identified when Coordinator was instantiated."""
+        """group_id must be among the coordination_groups identified when Coordinator was instantiated.
+
+        Messages are replayed to new subscribers, except those cancelled: when cancels is specified, the message with
+        that subject and the same (hashable) content is not replayed anymore, and neither is this message."""
         msg = CoordinationMessage(
             group_id=group_id,
             subject=subject,
@@ -58,7 +65,11 @@ class Coordinator:
         with group.lock:
             for subscriber in group.subscribers:
                 subscriber.receive_coordination_message(msg)
-            group.messages.append(msg)
+            if cancels is None:
+                group.messages.pop((subject, content), None)
+                group.messages[(subject, content)] = msg
+            else:
+                group.messages.pop((cancels, content), None)
 
     def subscribe(
         self, subscriber: CoordinationSubscriber, group_id: CoordinationGroupID
@@ -66,7 +77,7 @@ class Coordinator:
         group = self._groups[group_id]
         with group.lock:
             group.subscribers.add(subscriber)
-            for msg in group.messages:
+            for msg in group.messages.values():
                 subscriber.receive_coordination_message(msg)
 
     def unsubscribe(
