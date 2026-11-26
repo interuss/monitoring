@@ -1,5 +1,5 @@
-import inspect
 import os
+import sys
 
 from monitoring.monitorlib.formatting import make_datetime
 
@@ -28,7 +28,7 @@ def make_fake_url(suffix: str | None = None, frames_above: int = 1) -> str:
         frames_above: Number of stack frames above this function that the source of this URL is.
     """
 
-    layers = os.path.splitext(inspect.stack()[frames_above].filename)[0].split(
+    layers = os.path.splitext(sys._getframe(frames_above).f_code.co_filename)[0].split(
         os.path.sep
     )
     layers = [layer for layer in layers if layer]
