@@ -33,23 +33,12 @@ The release notes should contain at least the following sections:
 
 --------------------------------------------------------------------------------------------------------------------
 
-# Release Notes for v0.38.0
+# Release Notes for v0.38.1
 
 ## Mandatory migration tasks
-
-* For any uss_qualifier test configurations using any of the test suites `suites.astm.utm.f3548_21`, `suites.faa.uft.message_signing`, `suites.uspace.flight_auth`, or `suites.uspace.required_services`, the following resources must be changed:
-    * A new required resource named `conflicting_flights_provider` must be provided to replace `conflicting_flights`.  It must be a `resources.resource.ResourceProvidingResource` providing `resources.flight_planning.FlightIntentsResource` instances with spatially separated flight intents for each planner combination used by `ConflictEqualPriorityNotPermitted`.  One suitable implementation is `resources.geospatial.TriangularCascadeSoutheastResource` with `conflicting_flights` as its `base_resource`; see [f3548_self_contained](./monitoring/uss_qualifier/configurations/dev/f3548_self_contained.yaml) for an example.  The `conflicting_flights` resource is no longer used as a test suite input.
-    * A new required resource named `non_conflicting_flights_provider` must be provided to replace `non_conflicting_flights`.  It must be a `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]` providing spatially separated flight intents for each DSS instance used in the `dss_probing` test suite.  One suitable implementation is `resources.geospatial.TriangularCascadeSoutheastResource` with `non_conflicting_flights` as its `base_resource`; see [f3548_self_contained](./monitoring/uss_qualifier/configurations/dev/f3548_self_contained.yaml) for an example.  The `non_conflicting_flights` resource is no longer used as a test suite input.
-    * A new required resource named `invalid_flights_provider` must be provided to replace `invalid_flight_intents`.  It must be a `resources.resource.ResourceProvidingResource[resources.flight_planning.FlightIntentsResource]` providing spatially separated invalid flight intents for each flight planner used in the `single_planner` test suite.  One suitable implementation is `resources.geospatial.TriangularCascadeSoutheastResource` with the previous `invalid_flight_intents` as its `base_resource`; see [f3548_self_contained](./monitoring/uss_qualifier/configurations/dev/f3548_self_contained.yaml) for an example.  The `invalid_flight_intents` resource is no longer used as a test suite input.
-    * A new required resource named `planning_area_provider` must be provided to replace `planning_area`.  It must be a `resources.resource.ResourceProvidingResource` providing `resources.planning_area.PlanningAreaResource` instances with spatially separated planning areas for each DSS instance used in the `dss_probing` test suite.  One suitable implementation is `resources.geospatial.TriangularCascadeSoutheastResource` with `planning_area` as its `base_resource`; see [f3548_self_contained](./monitoring/uss_qualifier/configurations/dev/f3548_self_contained.yaml) for an example.  The existing `planning_area` suite input is no longer used except by `suites.uspace.required_services`, which still requires it for NetRID tests.  Keep any underlying planning area resource used as the provider's `base_resource`.
-* For a uss_qualifier test configuration outside this repo using [`validation`](https://github.com/interuss/monitoring/blob/main/monitoring/uss_qualifier/reports/validation/definitions.py), the structure of some test suites has changed and may require an update to validation criteria.
-* The TestExclusionsResource has been removed.  Any uss_qualifier test configurations using this resource need to remove it and replace the functionality with acceptable findings; see [#1837](https://github.com/interuss/monitoring/pull/1837).
 
 ## Optional migration tasks
 
 ## Important information
 
-* The benchmarker tool should now be ready for nominal use.
 * uss_qualifier now supports parallel test scenario invocation in many test suites; see [documentation](./monitoring/uss_qualifier/parallel_execution.md) to parallelize your test configurations.
-* The obsolete deployment_manager tool has been removed from this repository.
-* The obsolete participant verifiable capabilities in uss_qualifier has been removed from this repository.
