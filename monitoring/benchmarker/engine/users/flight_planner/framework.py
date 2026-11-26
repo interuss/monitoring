@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
+from functools import cached_property
+
+from uas_standards.astm.f3548.v21 import api as f3548v21
 
 from monitoring.benchmarker.engine.users.framework import Action
 from monitoring.monitorlib.geotemporal import Volume4DCollection
@@ -64,6 +67,10 @@ class Flight:
         if not self.completed_actions:
             return None
         return min(action.initiated_at for action in self.completed_actions)
+
+    @cached_property
+    def f3548v21_extents(self) -> list[f3548v21.Volume4D]:
+        return self.volumes.to_f3548v21()
 
     @property
     def start_time(self) -> datetime:
