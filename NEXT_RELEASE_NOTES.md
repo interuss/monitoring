@@ -40,3 +40,5 @@ The release notes should contain at least the following sections:
 ## Optional migration tasks
 
 ## Important information
+
+* uss_qualifier now supports parallel test scenario invocation in many test suites; see [documentation](./monitoring/uss_qualifier/parallel_execution.md) to parallelize your test configurations.
