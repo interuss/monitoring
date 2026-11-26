@@ -109,6 +109,9 @@ ENV GIT_COMMIT_HASH=$commit_hash
 ADD ./interfaces /app/interfaces
 ADD ./monitoring /app/monitoring
 
+# Keep the dummy-oauth development key paths compatible with interuss/dummy-oauth.
+COPY ./build/test-certs/auth2.key ./build/test-certs/auth2.pem /var/test-certs/
+
 # Add health check to the /app root and make it executable
 COPY ./monitoring/health_check.sh /app/health_check.sh
 RUN chmod 766 /app/health_check.sh

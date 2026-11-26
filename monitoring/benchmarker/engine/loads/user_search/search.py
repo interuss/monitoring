@@ -34,10 +34,16 @@ def build_measured_steps(
     steps: list[BenchmarkScenarioStepReport],
     operations: list[ExecutedOperation],
     step_completion_criteria: StepCompletionCriteria,
+    cache: dict[int, MeasuredStep],
 ) -> dict[int, MeasuredStep]:
-    """Summarize completed and unstable steps keyed by integer user count."""
+    """Summarize completed and unstable steps keyed by integer user count.
+
+    cache maps step indices to summaries so each step is summarized once."""
     measured: dict[int, MeasuredStep] = {}
-    for step in steps:
+    for i, step in enumerate(steps):
+        if i in cache:
+            measured[cache[i].users] = cache[i]
+            continue
         users = int(round(step.load_factor))
         is_stable = step.termination_reason == StepTerminationReason.Completed
         if is_stable:
@@ -54,6 +60,7 @@ def build_measured_steps(
         else:
             tp = 0.0
         measured[users] = MeasuredStep(users=users, is_stable=is_stable, throughput=tp)
+        cache[i] = measured[users]
     return measured
 
 
@@ -362,6 +369,7 @@ def determine_next_user_count(
     search: UserSearchLoad,
     steps: list[BenchmarkScenarioStepReport],
     operations: list[ExecutedOperation],
+    measured_steps_cache: dict[int, MeasuredStep],
 ) -> int | None:
     """Determine the next user count to evaluate for a UserSearchLoad, or None if search is complete."""
     criteria = search.search_completion_criteria
@@ -370,7 +378,9 @@ def determine_next_user_count(
     if not steps:
         return search.initial_users
 
-    measured = build_measured_steps(steps, operations, search.step_completion_criteria)
+    measured = build_measured_steps(
+        steps, operations, search.step_completion_criteria, measured_steps_cache
+    )
     sorted_users = sorted(measured.keys())
     adj = _get_adjacency(criteria)
 
@@ -465,6 +475,10 @@ def check_search_completion_criteria(
     search: UserSearchLoad,
     steps: list[BenchmarkScenarioStepReport],
     operations: list[ExecutedOperation],
+    measured_steps_cache: dict[int, MeasuredStep],
 ) -> bool:
     """Return True if all search_completion_criteria in UserSearchLoad are satisfied."""
-    return determine_next_user_count(search, steps, operations) is None
+    return (
+        determine_next_user_count(search, steps, operations, measured_steps_cache)
+        is None
+    )

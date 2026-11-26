@@ -125,7 +125,9 @@ package-dir = { "monitoring" = "monitoring" }
 [tool.setuptools.packages.find]
 where = ["."]
 include = [
+  "interfaces",  # Schema data only; do not discover submodule tooling as packages.
   "monitoring",
+  "monitoring.dummy_oauth*",
   "monitoring.mock_uss*",
   "monitoring.monitorlib*",
   "monitoring.prober*",

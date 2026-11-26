@@ -17,7 +17,7 @@
         },
       },
       {
-        phase_duration_at_least: '120s',
+        phase_duration_at_least: '240s',
       },
       {
         average_duration_more_than: {

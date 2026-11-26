@@ -16,7 +16,7 @@ COCKROACHDB_IMAGE = "cockroachdb/cockroach:v24.1.3"
 INSECURE_COCKROACHDB_IMAGE = "interuss/insecurecockroach:latest"
 YUGABYTE_IMAGE = "interuss/yugabyte:2025.1.2.1-interuss"
 INSECURE_YUGABYTE_IMAGE = "yugabytedb/yugabyte:2.25.2.0-b359"
-DSS_IMAGE = os.environ.get("DSS_IMAGE", "interuss/dss:v0.24.0-rc4")
+DSS_IMAGE = os.environ.get("DSS_IMAGE", "interuss/dss:v0.24.0")
 RAFT_COMMAND = "core-service -store_type raft -raft_datadir /tmp/raft -public_key_files /test-certs/auth2.pem -accepted_jwt_audiences localhost -public_endpoint http://localhost -locality test"
 
 

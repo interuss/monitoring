@@ -86,6 +86,10 @@ The contents of a test configuration are a JSON-like representation of an instan
 
 An optional convention encouraged in test configurations is to annotate the type of objects whose type may be unclear (especially resource declarations) with a `$content_schema` key containing, as its value, the path to the JSON schema of the object type relative to the [`schemas`](../../../schemas) folder.  These annotations are not required and are not used at runtime by uss_qualifier, but [can be used](../../../schemas/README.md) to improve the ease of editing test configuration files.  Note these annotations take advantage of the behavior that all keys present in a test configuration, but not specified in the appropriate schema, are ignored by uss_qualifier.
 
+#### Parallelization
+
+To run test scenarios in parallel, see [parallel execution documentation](../parallel_execution.md).
+
 #### Acceptable findings
 
 Configurations for local environments can list checks in `v1.artifacts.tested_requirements[].acceptable_findings`, for example when local services use private addresses or cleartext HTTP.  Each entry identifies the scenario, test case, test step, and check by name.  The checks still run and record failures, while the tested requirements report marks their findings as acceptable.

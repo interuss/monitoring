@@ -17,6 +17,7 @@ def check_stability_criteria(
     virtual_users: list[VirtualUser],
     phase_start_time: datetime,
     now: datetime,
+    step_start_time: datetime,
 ) -> bool:
     has_any_of = criteria.any_of
     has_each_user = criteria.each_user_completed_at_least
@@ -43,6 +44,7 @@ def check_stability_criteria(
                 virtual_users,
                 phase_start_time,
                 now,
+                step_start_time,
             )
             for child in criteria.any_of
         ):
@@ -57,6 +59,7 @@ def check_stability_criteria(
             if (
                 op.completed_at.datetime < phase_start_time
                 or op.completed_at.datetime > now
+                or op.initiated_at.datetime < step_start_time
             ):
                 continue
             if op.successful and str(op.type) in req_ops and op.origin in user_counts:
@@ -81,6 +84,7 @@ def check_stability_criteria(
             if op.successful
             and op.type in relevant_ops
             and phase_start_time <= op.completed_at.datetime <= now
+            and op.initiated_at.datetime >= step_start_time
         ]
         if not matching_ops:
             return False
@@ -101,6 +105,7 @@ def check_stability_criteria(
             and op.type in relevant_ops
             and op.completed_at.datetime >= phase_start_time
             and op.completed_at.datetime <= now
+            and op.initiated_at.datetime >= step_start_time
         )
         if fails <= req_count:
             return False

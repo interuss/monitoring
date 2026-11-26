@@ -88,7 +88,7 @@ function(test_name, delays_ms, instances, initial_users, isa_criteria, scd_crite
           path: '$REPO_ROOT',
           command: 'make start-locally',
           env: pool_env + {
-            DSS_IMAGE: 'interuss/dss:v0.23.0',
+            DSS_IMAGE: 'interuss/dss:v0.24.0',
             INTRA_USS_NETEM_CONF: 'delay 0ms',
             INTER_USS_NETEM_CONF: netem(delay_ms),
           },
