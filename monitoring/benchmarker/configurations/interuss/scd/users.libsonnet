@@ -31,6 +31,7 @@ local s2_expand_latlng_rect = std.native('s2.expand_latlng_rect');
           fixed_spacing: '36s',
           uniform_random_spacing: '7.2s',
         },
+        // Flight shapes keep their size in meters when translated: rotation and longitude stretching (1/cos(lat)) can extend them up to ~1.7x their nominal size, so the area is shrunk by 2x to keep flights within the subscription.
         location: flights.laglng_rect_location(s2_expand_latlng_rect(rect, -2 * lat_size, -2 * lng_size)),
         shape: flights.latlng_rect_shape(lat_size, lng_size),
       },
