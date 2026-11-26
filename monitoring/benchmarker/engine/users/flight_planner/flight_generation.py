@@ -72,13 +72,29 @@ class IndependentTimeLocationShape(FlightGenerator):
                 )
 
         self.random = random
+        self.first_flight = True
 
     def generate_flight(self, previous_flight_end: datetime) -> Flight:
         dt = timedelta(seconds=0)
+        max_dt = timedelta(seconds=0)
         if self.spec.time.fixed_spacing:
             dt += self.spec.time.fixed_spacing.timedelta
+            max_dt += self.spec.time.fixed_spacing.timedelta
         if self.spec.time.uniform_random_spacing:
             dt += self.spec.time.uniform_random_spacing.timedelta * self.random.random()
+            max_dt += self.spec.time.uniform_random_spacing.timedelta
+        if self.first_flight:
+            fixed_volumes = self.spec.shape.fixed_volumes
+            planned_duration = (
+                (
+                    Volume4DCollection(fixed_volumes.volumes).time_end_not_none.datetime
+                    - fixed_volumes.origin_time.datetime
+                )
+                if fixed_volumes
+                else timedelta()
+            )
+            dt += (planned_duration + max_dt) * self.random.random()
+            self.first_flight = False
         t0 = previous_flight_end + dt
 
         if self.spec.location.fixed_location:
