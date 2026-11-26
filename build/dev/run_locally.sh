@@ -55,25 +55,6 @@ if [[ "$DC_COMMAND" == up* ]]; then
 fi
 
 if [[ "$DC_COMMAND" == up* ]]; then
-  if [[ "$DB_TYPE" == "raft" ]]; then
-    RID_RAFT_NODES=""
-    SCD_RAFT_NODES=""
-    AUX_RAFT_NODES=""
-    for ((i=1; i<=NUM_USS; i++)); do
-      for ((j=1; j<=NUM_NODES; j++)); do
-        NODE_IDX=$(( (i-1) * NUM_NODES + j ))
-        PADDED_NODE_IDX=$(printf "%02d" "$NODE_IDX")
-        NODE_IP="172.27.${i}.${j}"
-        RID_RAFT_NODES="${RID_RAFT_NODES},${NODE_IDX}=http://${NODE_IP}:95${PADDED_NODE_IDX}"
-        SCD_RAFT_NODES="${SCD_RAFT_NODES},${NODE_IDX}=http://${NODE_IP}:96${PADDED_NODE_IDX}"
-        AUX_RAFT_NODES="${AUX_RAFT_NODES},${NODE_IDX}=http://${NODE_IP}:97${PADDED_NODE_IDX}"
-      done
-    done
-    export RID_RAFT_NODES=${RID_RAFT_NODES#,}
-    export SCD_RAFT_NODES=${SCD_RAFT_NODES#,}
-    export AUX_RAFT_NODES=${AUX_RAFT_NODES#,}
-  fi
-
   echo "=== Local DSS pool configuration ==="
   echo "NUM_USS=${NUM_USS}"
   echo "NUM_NODES=${NUM_NODES}"
@@ -90,7 +71,6 @@ if [[ "$DC_COMMAND" == up* ]]; then
       export USS_IDX=$i
       export USS_NODE_IDX=$j
       NODE_IDX=$(( (i-1) * NUM_NODES + j ))
-      export RAFT_ID=$NODE_IDX
       PADDED_NODE_IDX=$(printf "%02d" "$NODE_IDX")
       export PADDED_NODE_IDX
 
@@ -171,6 +151,40 @@ if [[ "$DC_COMMAND" == up* ]]; then
 
   check_and_connect "local_infra_1-1-oauth-1" "interop_ecosystem_network"
   echo "Network verification complete."
+
+  if [ "$DB_TYPE" == "raft" ]; then
+    first_node="local_infra_1-1-dss-1"
+    for ((i=1; i<=NUM_USS; i++)); do
+      for ((j=1; j<=NUM_NODES; j++)); do
+        container="local_infra_${i}-${j}-dss-1"
+        nodes=""
+        for _ in $(seq 1 60); do
+          if nodes=$(docker exec "${container}" dssctl raft node 2>/dev/null); then
+            break
+          fi
+          nodes=""
+          sleep 2
+        done
+        if [[ -z "${nodes}" ]]; then
+          echo "Error: the admin API of ${container} is not available."
+          exit 1
+        fi
+        groups=$(echo "${nodes}" | awk '$2 == "waiting" {sub(":", "", $1); print $1}' | paste -s -d, -)
+        if [[ -z "${groups}" ]]; then
+          continue
+        fi
+        if [[ "${container}" == "${first_node}" ]]; then
+          echo "Bootstrapping the ${groups} Raft groups on ${container}..."
+          docker exec "${first_node}" dssctl raft bootstrap --groups "${groups}"
+        else
+          echo "Adding ${container} to the ${groups} Raft groups..."
+          padded_node_idx=$(printf "%02d" "$(( (i-1) * NUM_NODES + j ))")
+          docker exec "${first_node}" dssctl raft add --url "http://172.27.${i}.${j}:95${padded_node_idx}" --groups "${groups}"
+        fi
+      done
+    done
+    echo "Raft groups formed."
+  fi
 
   echo "Waiting for all containers to become healthy..."
   timeout=240
