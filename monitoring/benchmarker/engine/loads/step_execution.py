@@ -228,6 +228,7 @@ async def run_load_step(
             current_virtual_users,
             step_start_time,
             now,
+            step_start_time,
         ):
             logger.warning(
                 f"Step {step_index} (load_factor={current_load_factor}) became unstable during throughput stability phase after {(now - step_start_time).total_seconds():.1f}s"
@@ -242,6 +243,7 @@ async def run_load_step(
             current_virtual_users,
             step_start_time,
             now,
+            step_start_time,
         ):
             stability_time = now
             progress.stability_time = stability_time
@@ -267,6 +269,7 @@ async def run_load_step(
                 current_virtual_users,
                 stability_time,
                 now,
+                step_start_time,
             ):
                 logger.warning(
                     f"Step {step_index} (load_factor={current_load_factor}) became unstable during sampling phase after {(now - stability_time).total_seconds():.1f}s"
