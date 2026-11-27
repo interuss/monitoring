@@ -1,3 +1,4 @@
+import gc
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
@@ -34,27 +35,32 @@ async def run_scenario_load(
     list[ExecutedOperation], list[BenchmarkScenarioStepReport], CleanupReport | None
 ]:
     """Execute a scenario load."""
-    if load_spec.user_ramp:
-        return await run_user_ramp_load(
-            load_spec.user_ramp,
-            user_specs_map,
-            resource_pool,
-            executor,
-            coordinator,
-            scenario_name,
-            record_query_details,
-        )
-    elif load_spec.user_search:
-        return await run_user_search_load(
-            load_spec.user_search,
-            user_specs_map,
-            resource_pool,
-            executor,
-            coordinator,
-            scenario_name,
-            record_query_details,
-        )
-    else:
-        raise NotImplementedError(
-            f"Load specification '{load_spec.name}' does not specify any supported load type"
-        )
+    gc.disable()
+    try:
+        if load_spec.user_ramp:
+            return await run_user_ramp_load(
+                load_spec.user_ramp,
+                user_specs_map,
+                resource_pool,
+                executor,
+                coordinator,
+                scenario_name,
+                record_query_details,
+            )
+        elif load_spec.user_search:
+            return await run_user_search_load(
+                load_spec.user_search,
+                user_specs_map,
+                resource_pool,
+                executor,
+                coordinator,
+                scenario_name,
+                record_query_details,
+            )
+        else:
+            raise NotImplementedError(
+                f"Load specification '{load_spec.name}' does not specify any supported load type"
+            )
+    finally:
+        gc.unfreeze()
+        gc.enable()

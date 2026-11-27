@@ -1,4 +1,5 @@
 import asyncio
+import gc
 import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
@@ -324,5 +325,8 @@ async def run_load_step(
         total_tasks=len(active_users),
         ended_tasks=sum(1 if au.task.done() else 0 for au in active_users),
     )
+    # GC is disabled during the load (see run_scenario_load): collect between steps, then freeze surviving objects so the next collection only goes through objects created during the next step.
+    gc.collect()
+    gc.freeze()
     progress.update_status_time()
     return step_report
