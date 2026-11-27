@@ -276,6 +276,6 @@
     <td rowspan="1" style="vertical-align:top;"><a href="../../../requirements/interuss/automated_testing/coordination.md">interuss<br>.automated_testing<br>.coordination</a></td>
     <td><a href="../../../requirements/interuss/automated_testing/coordination.md">AccessSharedAssets</a></td>
     <td>Implemented</td>
-    <td><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
+    <td><a href="../../../scenarios/astm/utm/dss/subscription_interactions_deletion.md">ASTM SCD DSS: Subscription and entity deletion interaction</a><br><a href="../../../scenarios/astm/utm/dss/synchronization/uss_availability_synchronization.md">ASTM SCD DSS: USS Availability Synchronization</a></td>
   </tr>
 </table>

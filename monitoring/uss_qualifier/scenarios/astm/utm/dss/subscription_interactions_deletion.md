@@ -26,7 +26,22 @@ Create and mutate subscriptions as well as entities, and verify that the DSS han
 
 [`ClientIdentityResource`](../../../../resources/communications/client_identity.py) provides the identity that will be used to interact with the DSS.
 
+### shared_asset_coordinator
+
+Optional SharedAssetCoordinatorResource that coordinates exclusive access to USS availability states in the DSS pool.
+Creating and modifying operational intents requires the test USS to remain available, so this scenario acquires ownership before setup and holds it through cleanup.
+Ownership is automatically released by the scenario's ExitStack. When no coordinator is provided, no shared-asset coordination is performed.
+
 ## Setup test case
+
+### Acquire exclusive DSS availability access test step
+
+This step is performed only when a shared asset coordinator is provided.
+Acquire exclusive access to USS availability states so another scenario cannot mark the test USS Down while this scenario creates or modifies operational intents.
+
+#### 🛑 DSS availability access acquired check
+
+If the shared asset coordinator does not grant exclusive access to USS availability states in the DSS pool, the coordinator and/or test design will have failed to meet **[interuss.automated_testing.coordination.AccessSharedAssets](../../../../requirements/interuss/automated_testing/coordination.md)**.
 
 ### Ensure clean workspace test step
 
@@ -124,6 +139,8 @@ If the DSS includes a deleted subscription, it fails to implement **[astm.f3548.
 
 
 ## Cleanup
+
+Cleanup is skipped when a coordinator is provided but exclusive access could not be acquired.
 
 ### [Clean any straggling OIRs with known test IDs](clean_workspace_op_intents_during_cleanup.md)
 
