@@ -42,3 +42,8 @@ The release notes should contain at least the following sections:
 ## Important information
 
 * uss_qualifier now supports parallel test scenario invocation in many test suites; see [documentation](./monitoring/uss_qualifier/parallel_execution.md) to parallelize your test configurations.
+* benchmarker received several improvements:
+    * Performance fixes that reduce slowdowns over time during long benchmarks.
+    * Less noise in results with many parallel users: flight start times are now spread out, and step stability criteria only count operations initiated during the current step.
+    * The sample InterUSS configurations changed: the minimum phase duration doubled from 120s to 240s, and SCD flights are generated within a smaller area so they stay inside the subscription.
+    * Benchmark results are therefore not directly comparable with those from earlier versions, and benchmarks take longer to run.
