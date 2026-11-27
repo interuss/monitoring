@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from datetime import datetime
 
 from monitoring.benchmarker.configurations.loads import (
@@ -11,6 +12,29 @@ from monitoring.benchmarker.engine.users.framework import VirtualUser
 from monitoring.benchmarker.reports.report import BenchmarkScenarioStepReport
 
 
+@dataclass
+class OpsCounter:
+    next_index: int
+    count: int = 0
+    total_s: float = 0.0
+    counts_by_key: dict[str, int] = field(default_factory=dict)
+
+
+def _consume_new_ops(
+    counters: dict[tuple, OpsCounter] | None,
+    key: tuple,
+    operations: list[ExecutedOperation],
+    ops_start: int,
+) -> tuple[OpsCounter, list[ExecutedOperation]]:
+    if counters is None:
+        counter = OpsCounter(next_index=ops_start)
+    else:
+        counter = counters.setdefault(key, OpsCounter(next_index=ops_start))
+    new_ops = operations[counter.next_index :]
+    counter.next_index = len(operations)
+    return counter, new_ops
+
+
 def check_stability_criteria(
     criteria: ThroughputStabilityCriteria,
     operations: list[ExecutedOperation],
@@ -18,6 +42,8 @@ def check_stability_criteria(
     phase_start_time: datetime,
     now: datetime,
     step_start_time: datetime,
+    counters: dict[tuple, OpsCounter] | None = None,
+    phase_ops_start: int = 0,
 ) -> bool:
     has_any_of = criteria.any_of
     has_each_user = criteria.each_user_completed_at_least
@@ -45,6 +71,8 @@ def check_stability_criteria(
                 phase_start_time,
                 now,
                 step_start_time,
+                counters,
+                phase_ops_start,
             )
             for child in criteria.any_of
         ):
@@ -54,18 +82,28 @@ def check_stability_criteria(
         req_count = criteria.each_user_completed_at_least.count
         req_ops = set(criteria.each_user_completed_at_least.operations)
 
-        user_counts: dict[str, int] = {vu.user_id: 0 for vu in virtual_users}
-        for op in operations:
+        counter, new_ops = _consume_new_ops(
+            counters,
+            (id(criteria), "each_user", phase_start_time),
+            operations,
+            phase_ops_start,
+        )
+        for op in new_ops:
             if (
                 op.completed_at.datetime < phase_start_time
                 or op.completed_at.datetime > now
                 or op.initiated_at.datetime < step_start_time
             ):
                 continue
-            if op.successful and str(op.type) in req_ops and op.origin in user_counts:
-                user_counts[op.origin] += 1
+            if op.successful and str(op.type) in req_ops:
+                counter.counts_by_key[op.origin] = (
+                    counter.counts_by_key.get(op.origin, 0) + 1
+                )
 
-        if not all(c >= req_count for c in user_counts.values()):
+        if not all(
+            counter.counts_by_key.get(vu.user_id, 0) >= req_count
+            for vu in virtual_users
+        ):
             return False
 
     if has_phase_duration and criteria.phase_duration_at_least:
@@ -78,36 +116,47 @@ def check_stability_criteria(
             criteria.average_duration_more_than.duration.timedelta.total_seconds()
         )
         relevant_ops = set(criteria.average_duration_more_than.operations)
-        matching_ops = [
-            op
-            for op in operations
-            if op.successful
-            and op.type in relevant_ops
-            and phase_start_time <= op.completed_at.datetime <= now
-            and op.initiated_at.datetime >= step_start_time
-        ]
-        if not matching_ops:
+        counter, new_ops = _consume_new_ops(
+            counters,
+            (id(criteria), "avg_duration", phase_start_time),
+            operations,
+            phase_ops_start,
+        )
+        for op in new_ops:
+            if (
+                op.successful
+                and op.type in relevant_ops
+                and phase_start_time <= op.completed_at.datetime <= now
+                and op.initiated_at.datetime >= step_start_time
+            ):
+                counter.count += 1
+                counter.total_s += (
+                    op.completed_at.datetime - op.initiated_at.datetime
+                ).total_seconds()
+        if not counter.count:
             return False
-        average_duration_s = sum(
-            (op.completed_at.datetime - op.initiated_at.datetime).total_seconds()
-            for op in matching_ops
-        ) / len(matching_ops)
-        if average_duration_s <= required_duration_s:
+        if counter.total_s / counter.count <= required_duration_s:
             return False
 
     if has_failures and criteria.failures_more_than:
         req_count = criteria.failures_more_than.count
         relevant_ops = set(criteria.failures_more_than.operations)
-        fails = sum(
-            1
-            for op in operations
-            if not op.successful
-            and op.type in relevant_ops
-            and op.completed_at.datetime >= phase_start_time
-            and op.completed_at.datetime <= now
-            and op.initiated_at.datetime >= step_start_time
+        counter, new_ops = _consume_new_ops(
+            counters,
+            (id(criteria), "failures", phase_start_time),
+            operations,
+            phase_ops_start,
         )
-        if fails <= req_count:
+        for op in new_ops:
+            if (
+                not op.successful
+                and op.type in relevant_ops
+                and op.completed_at.datetime >= phase_start_time
+                and op.completed_at.datetime <= now
+                and op.initiated_at.datetime >= step_start_time
+            ):
+                counter.count += 1
+        if counter.count <= req_count:
             return False
 
     return True
@@ -119,6 +168,9 @@ def check_step_completion_criteria(
     stability_time: datetime | None,
     now: datetime,
     operations: list[ExecutedOperation],
+    counters: dict[tuple, OpsCounter] | None = None,
+    step_ops_start: int = 0,
+    stability_ops_start: int = 0,
 ) -> bool:
     has_any_of = criteria.any_of
     has_duration = criteria.sampling_duration_at_least
@@ -145,6 +197,9 @@ def check_step_completion_criteria(
                 stability_time,
                 now,
                 operations,
+                counters,
+                step_ops_start,
+                stability_ops_start,
             )
             for child in criteria.any_of
         ):
@@ -160,18 +215,23 @@ def check_step_completion_criteria(
     if has_completed_ops and criteria.completed_at_least:
         req_count = criteria.completed_at_least.count
         relevant_ops = set(criteria.completed_at_least.operations)
-        completed = (
-            sum(
-                1
-                for op in operations
-                if op.successful
-                and op.completed_at.datetime >= stability_time
-                and op.type in relevant_ops
-                and op.completed_at.datetime <= now
+        completed = 0
+        if stability_time:
+            counter, new_ops = _consume_new_ops(
+                counters,
+                (id(criteria), "completed", stability_time),
+                operations,
+                stability_ops_start,
             )
-            if stability_time
-            else 0
-        )
+            for op in new_ops:
+                if (
+                    op.successful
+                    and op.completed_at.datetime >= stability_time
+                    and op.type in relevant_ops
+                    and op.completed_at.datetime <= now
+                ):
+                    counter.count += 1
+            completed = counter.count
         if completed < req_count:
             return False
 
@@ -180,24 +240,27 @@ def check_step_completion_criteria(
             criteria.average_duration_more_than.duration.timedelta.total_seconds()
         )
         relevant_ops = set(criteria.average_duration_more_than.operations)
-        matching_ops = (
-            [
-                op
-                for op in operations
-                if op.successful
+        if not stability_time:
+            return False
+        counter, new_ops = _consume_new_ops(
+            counters,
+            (id(criteria), "avg_duration", stability_time),
+            operations,
+            stability_ops_start,
+        )
+        for op in new_ops:
+            if (
+                op.successful
                 and op.type in relevant_ops
                 and stability_time <= op.completed_at.datetime <= now
-            ]
-            if stability_time
-            else []
-        )
-        if not matching_ops:
+            ):
+                counter.count += 1
+                counter.total_s += (
+                    op.completed_at.datetime - op.initiated_at.datetime
+                ).total_seconds()
+        if not counter.count:
             return False
-        average_duration_s = sum(
-            (op.completed_at.datetime - op.initiated_at.datetime).total_seconds()
-            for op in matching_ops
-        ) / len(matching_ops)
-        if average_duration_s <= required_duration_s:
+        if counter.total_s / counter.count <= required_duration_s:
             return False
 
     if has_stability_duration and criteria.throughput_stability_took_longer_than:
@@ -210,14 +273,19 @@ def check_step_completion_criteria(
     if has_failures and criteria.failures_more_than:
         req_count = criteria.failures_more_than.count
         relevant_ops = set(criteria.failures_more_than.operations)
-        fails = sum(
-            1
-            for op in operations
-            if not op.successful
-            and op.type in relevant_ops
-            and op.completed_at.datetime >= step_start_time
-            and op.completed_at.datetime <= now
+        counter, new_ops = _consume_new_ops(
+            counters, ("step_failures",), operations, step_ops_start
         )
+        for op in new_ops:
+            if (
+                not op.successful
+                and op.completed_at.datetime >= step_start_time
+                and op.completed_at.datetime <= now
+            ):
+                counter.counts_by_key[op.type] = (
+                    counter.counts_by_key.get(op.type, 0) + 1
+                )
+        fails = sum(counter.counts_by_key.get(t, 0) for t in relevant_ops)
         if fails <= req_count:
             return False
 

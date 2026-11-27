@@ -18,6 +18,7 @@ from monitoring.benchmarker.configurations.users import (
 )
 from monitoring.benchmarker.engine.coordination import Coordinator
 from monitoring.benchmarker.engine.loads.criteria import (
+    OpsCounter,
     check_stability_criteria,
     check_step_completion_criteria,
 )
@@ -49,6 +50,7 @@ class StepProgressState:
     step_index: int = 0
     step_start_time: datetime | None = None
     stability_time: datetime | None = None
+    step_ops_start: int = 0
     last_status_time: float = field(default_factory=time.monotonic)
 
     def update_status_time(self) -> None:
@@ -101,7 +103,7 @@ def start_periodic_status_logger(
                 msg = format_waiting_status(
                     load,
                     progress.step_index,
-                    operations,
+                    operations[progress.step_ops_start :],
                     progress.step_start_time,
                     progress.stability_time,
                     [au.user for au in active_users],
@@ -215,6 +217,10 @@ async def run_load_step(
     progress.stability_time = None
 
     current_virtual_users = [au.user for au in active_users]
+    counters: dict[tuple, OpsCounter] = {}
+    step_ops_start = len(operations)
+    progress.step_ops_start = step_ops_start
+    stability_ops_start = step_ops_start
 
     # Wait for throughput to become stable for this step
     stability_time: datetime | None = None
@@ -229,6 +235,8 @@ async def run_load_step(
             step_start_time,
             now,
             step_start_time,
+            counters,
+            step_ops_start,
         ):
             logger.warning(
                 f"Step {step_index} (load_factor={current_load_factor}) became unstable during throughput stability phase after {(now - step_start_time).total_seconds():.1f}s"
@@ -244,8 +252,11 @@ async def run_load_step(
             step_start_time,
             now,
             step_start_time,
+            counters,
+            step_ops_start,
         ):
             stability_time = now
+            stability_ops_start = len(operations)
             progress.stability_time = stability_time
             logger.info(
                 f"Step {step_index} (load_factor={current_load_factor}) reached throughput stability after {(stability_time - step_start_time).total_seconds():.1f}s"
@@ -270,6 +281,8 @@ async def run_load_step(
                 stability_time,
                 now,
                 step_start_time,
+                counters,
+                stability_ops_start,
             ):
                 logger.warning(
                     f"Step {step_index} (load_factor={current_load_factor}) became unstable during sampling phase after {(now - stability_time).total_seconds():.1f}s"
@@ -284,6 +297,9 @@ async def run_load_step(
                 stability_time,
                 now,
                 operations,
+                counters,
+                step_ops_start,
+                stability_ops_start,
             ):
                 step_end_time = now
                 break
@@ -304,7 +320,7 @@ async def run_load_step(
         step_end_time=step_end_time,
         is_unstable=is_unstable,
         step_completion_criteria=load.step_completion_criteria,
-        operations=operations,
+        operations=operations[step_ops_start:],
         total_tasks=len(active_users),
         ended_tasks=sum(1 if au.task.done() else 0 for au in active_users),
     )
